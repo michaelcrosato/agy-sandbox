@@ -120,6 +120,21 @@
         </div>
       </div>
 
+      <!-- Sector Chat System (Bottom Left Glass Panel) -->
+      <div id="chat-panel" class="hud-panel glass-panel">
+        <div class="hud-bar-label tracker-header-line" style="color: var(--color-cyan); text-shadow: 0 0 6px rgba(0, 242, 254, 0.4);">SECTOR COMMS</div>
+        <div id="chat-log" class="chat-log-box">
+          <div class="chat-msg system-msg">[SYSTEM] Channels online. Press Enter to chat.</div>
+        </div>
+        <div class="chat-input-row">
+          <select id="chat-channel-select" class="chat-select">
+            <option value="global">ALL</option>
+            <option value="fleet">FLEET</option>
+          </select>
+          <input type="text" id="chat-input" placeholder="Type message..." maxlength="80">
+        </div>
+      </div>
+
     </div>
 
     <!-- Interactive Landing Proximity Trigger Prompts -->

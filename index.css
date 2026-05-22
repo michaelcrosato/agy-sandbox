@@ -986,3 +986,115 @@ h1, h2, h3, h4 {
   border-radius: 2px;
 }
 
+/* CHAT SYSTEM GLASSMORPHIC STYLING */
+#chat-panel {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  width: 270px;
+  height: 190px;
+  display: flex;
+  flex-direction: column;
+  z-index: 15;
+  pointer-events: auto;
+  padding: 12px;
+}
+
+.chat-log-box {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  padding-right: 4px;
+}
+
+.chat-log-box::-webkit-scrollbar {
+  width: 3px;
+}
+.chat-log-box::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chat-log-box::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2.5px;
+}
+
+.chat-msg {
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.chat-msg.system-msg {
+  color: var(--color-text-secondary);
+  font-style: italic;
+  font-size: 10px;
+}
+
+.chat-msg.global-msg {
+  color: var(--color-text-primary);
+}
+
+.chat-msg.global-msg .chat-sender {
+  color: var(--color-cyan);
+  font-weight: 600;
+}
+
+.chat-msg.fleet-msg {
+  color: #ebd7ff;
+}
+
+.chat-msg.fleet-msg .chat-sender {
+  color: #a040fb;
+  font-weight: 600;
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.chat-select {
+  background: rgba(18, 20, 28, 0.85);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 4px;
+  outline: none;
+  cursor: pointer;
+  height: 24px;
+  transition: all 0.2s ease;
+}
+
+.chat-select:focus {
+  border-color: var(--color-cyan);
+  color: var(--color-cyan);
+}
+
+#chat-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: 11px;
+  padding: 4px 8px;
+  outline: none;
+  height: 14px;
+  transition: all 0.2s ease;
+}
+
+#chat-input:focus {
+  border-color: var(--color-cyan);
+  box-shadow: 0 0 6px rgba(0, 242, 254, 0.25);
+  background: rgba(0, 0, 0, 0.55);
+}
+

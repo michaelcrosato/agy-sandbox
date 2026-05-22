@@ -747,6 +747,47 @@ wss.on("connection", (ws) => {
         });
       }
     }
+
+    else if (msg.type === "chat") {
+      const channel = msg.channel || "global";
+      const text = (msg.text || "").trim().substring(0, 100);
+      if (!text) return;
+
+      if (channel === "fleet") {
+        if (!clientObj.fleetName) {
+          clientObj.send({
+            type: "notification",
+            message: "You are not in a fleet! Join a fleet to use Fleet comms.",
+            style: "error"
+          });
+          return;
+        }
+
+        const fleetSet = fleets.get(clientObj.fleetName);
+        if (fleetSet) {
+          const chatPayload = {
+            type: "chat",
+            channel: "fleet",
+            sender: clientObj.nickname,
+            text: text
+          };
+          for (const member of fleetSet) {
+            member.send(chatPayload);
+          }
+        }
+      } else {
+        // Global comms
+        const chatPayload = {
+          type: "chat",
+          channel: "global",
+          sender: clientObj.nickname,
+          text: text
+        };
+        for (const c of clients.values()) {
+          c.send(chatPayload);
+        }
+      }
+    }
   });
 
   ws.on("close", () => {

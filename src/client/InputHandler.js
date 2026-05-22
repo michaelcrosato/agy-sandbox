@@ -19,6 +19,15 @@ export class InputHandler {
    */
   setupListeners() {
     window.addEventListener("keydown", (e) => {
+      // Ignore key events if the user is typing in a text input field
+      if (
+        document.activeElement &&
+        (document.activeElement.tagName === "INPUT" ||
+          document.activeElement.tagName === "TEXTAREA")
+      ) {
+        return;
+      }
+
       // Prevent standard browser scrolling behavior for gaming keys
       if (
         ["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(
@@ -43,6 +52,14 @@ export class InputHandler {
     });
 
     window.addEventListener("keyup", (e) => {
+      // Ignore key events if typing
+      if (
+        document.activeElement &&
+        (document.activeElement.tagName === "INPUT" ||
+          document.activeElement.tagName === "TEXTAREA")
+      ) {
+        return;
+      }
       this.keys[e.code] = false;
     });
 
@@ -58,6 +75,22 @@ export class InputHandler {
    */
   applyInputToShip(playerShip) {
     if (!playerShip || playerShip.isDestroyed) return;
+
+    // Suppress movement controls while typing in input elements
+    if (
+      document.activeElement &&
+      (document.activeElement.tagName === "INPUT" ||
+        document.activeElement.tagName === "TEXTAREA")
+    ) {
+      playerShip.setControls({
+        isThrusting: false,
+        isBraking: false,
+        isTurningLeft: false,
+        isTurningRight: false,
+        isFiring: false,
+      });
+      return;
+    }
 
     playerShip.setControls({
       isThrusting: !!(this.keys["ArrowUp"] || this.keys["KeyW"]),

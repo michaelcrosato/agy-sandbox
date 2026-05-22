@@ -28,6 +28,7 @@ export class NetworkHandler {
     this.onFleetSync = null;
     this.onProjectileFired = null;
     this.onNotification = null;
+    this.onChatReceived = null;
 
     // Throttle input packets sending (only send when controls flags change)
     this.lastSentControls = null;
@@ -99,6 +100,10 @@ export class NetworkHandler {
 
         case "notification":
           if (this.onNotification) this.onNotification(msg);
+          break;
+
+        case "chat":
+          if (this.onChatReceived) this.onChatReceived(msg);
           break;
       }
     };
@@ -238,5 +243,18 @@ export class NetworkHandler {
    */
   requestFleetLeave() {
     this.send({ type: "fleet_leave" });
+  }
+
+  /**
+   * Dispatches chat message broadcast request.
+   * @param {string} channel - "global" or "fleet".
+   * @param {string} text - Message content.
+   */
+  sendChat(channel, text) {
+    this.send({
+      type: "chat",
+      channel,
+      text
+    });
   }
 }

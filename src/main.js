@@ -1110,6 +1110,66 @@ btnFleetLeave?.addEventListener("click", () => {
   network.requestFleetLeave();
 });
 
+// Chat message sync and element updates
+network.onChatReceived = (msg) => {
+  const logChat = document.getElementById("chat-log");
+  if (!logChat) return;
+
+  const msgDiv = document.createElement("div");
+  if (msg.channel === "fleet") {
+    msgDiv.className = "chat-msg fleet-msg";
+    msgDiv.innerHTML = `<span class="chat-sender">[FLEET] ${escapeHTML(msg.sender)}:</span> ${escapeHTML(msg.text)}`;
+  } else {
+    msgDiv.className = "chat-msg global-msg";
+    msgDiv.innerHTML = `<span class="chat-sender">[GLOBAL] ${escapeHTML(msg.sender)}:</span> ${escapeHTML(msg.text)}`;
+  }
+
+  logChat.appendChild(msgDiv);
+  logChat.scrollTop = logChat.scrollHeight;
+};
+
+// Safe sanitization for comms messages
+function escapeHTML(str) {
+  return (str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// Comms input bindings
+const chatInput = document.getElementById("chat-input");
+const chatChannel = document.getElementById("chat-channel-select");
+
+if (chatInput) {
+  chatInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      const text = chatInput.value.trim();
+      if (text) {
+        network.sendChat(chatChannel ? chatChannel.value : "global", text);
+      }
+      chatInput.value = "";
+      chatInput.blur();
+    }
+  });
+
+  // Global keyhook: Enter toggles focus onto the Sector Comms text field
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      if (document.activeElement !== chatInput) {
+        // Only trigger focus if not currently typing in callsign input
+        const activeTag = document.activeElement ? document.activeElement.tagName : "";
+        const activeId = document.activeElement ? document.activeElement.id : "";
+        if (activeTag !== "INPUT" && activeId !== "fleet-nick-input" && activeId !== "fleet-code-input") {
+          e.preventDefault();
+          chatInput.focus();
+        }
+      }
+    }
+  });
+}
+
 // Auto-connect to authoritative server
 network.connect();
 

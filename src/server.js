@@ -150,6 +150,81 @@ const roguesPlanet = new Planet({
 planets.push(roguesPlanet);
 engine.addEntity(roguesPlanet);
 
+const BASE_MARKETS = {
+  "Sol": { food: 100, electronics: 300, minerals: 150, luxuries: 600, contraband: 250, machinery: 100 },
+  "New Polaris": { food: 220, electronics: 320, minerals: 50, luxuries: 650, contraband: 300, machinery: 220 },
+  "Sigma Draconis": { food: 120, electronics: 120, minerals: 250, luxuries: 500, contraband: 200, machinery: 160 },
+  "Kaelis Colony": { food: 40, electronics: 420, minerals: 180, luxuries: 550, contraband: 280, machinery: 190 },
+  "Aurelia Mining Hub": { food: 150, electronics: 290, minerals: 70, luxuries: 580, contraband: 260, machinery: 150 },
+  "Tenebris Prime": { food: 160, electronics: 450, minerals: 200, luxuries: 220, contraband: 400, machinery: 240 },
+  "Valkyrie Depot": { food: 110, electronics: 380, minerals: 190, luxuries: 520, contraband: 220, machinery: 80 },
+  "Rogue's Hollow": { food: 250, electronics: 220, minerals: 160, luxuries: 450, contraband: 60, machinery: 180 }
+};
+
+let activeEconomicEvent = null; // { planetName, commodity, originalPrice }
+
+function runDynamicEconomyTick() {
+  // Revert previous event to baseline
+  if (activeEconomicEvent) {
+    const prevPlanet = planets.find(p => p.name === activeEconomicEvent.planetName);
+    if (prevPlanet && BASE_MARKETS[activeEconomicEvent.planetName]) {
+      const origPrice = BASE_MARKETS[activeEconomicEvent.planetName][activeEconomicEvent.commodity];
+      prevPlanet.market[activeEconomicEvent.commodity] = origPrice;
+      
+      broadcast({
+        type: "market_sync",
+        planetName: prevPlanet.name,
+        market: prevPlanet.market
+      });
+    }
+  }
+
+  // Select random planet & commodity
+  const planet = planets[Math.floor(Math.random() * planets.length)];
+  const commodities = Object.keys(BASE_MARKETS[planet.name]);
+  const commodity = commodities[Math.floor(Math.random() * commodities.length)];
+  const isShortage = Math.random() < 0.5;
+
+  const originalPrice = BASE_MARKETS[planet.name][commodity];
+  const multiplier = isShortage ? 1.8 : 0.5;
+  const newPrice = Math.round(originalPrice * multiplier);
+
+  planet.market[commodity] = newPrice;
+  activeEconomicEvent = {
+    planetName: planet.name,
+    commodity,
+    originalPrice
+  };
+
+  // Broadcast market sync to all connected clients
+  broadcast({
+    type: "market_sync",
+    planetName: planet.name,
+    market: planet.market
+  });
+
+  const formattedMsg = isShortage
+    ? `MARKET ALERT: ${planet.name} reports severe ${commodity.toUpperCase()} shortage! Prices soared to ${newPrice} CR!`
+    : `MARKET ALERT: ${planet.name} reports massive ${commodity.toUpperCase()} surplus! Prices dropped to ${newPrice} CR!`;
+
+  broadcastNotification(formattedMsg, isShortage ? "error" : "success");
+
+  // Send system chat message so they see it in sector comms
+  const chatPayload = {
+    type: "chat",
+    channel: "global",
+    sender: "SYSTEM-ECONOMY",
+    text: formattedMsg
+  };
+  for (const c of clients.values()) {
+    c.send(chatPayload);
+  }
+}
+
+// Start economy loop running every 45 seconds
+setInterval(runDynamicEconomyTick, 45000);
+
+
 // Generate Asteroids
 const asteroidCount = 45;
 for (let i = 0; i < asteroidCount; i++) {
@@ -487,6 +562,16 @@ wss.on("connection", (ws) => {
 
       broadcastNotification(`${clientObj.nickname} has entered Nebula Sector!`, "info");
       clientObj.sendStats();
+
+      // Send bulk markets of all planets to synchronize prices on load
+      const bulkMarkets = {};
+      for (const p of planets) {
+        bulkMarkets[p.name] = p.market;
+      }
+      clientObj.send({
+        type: "market_bulk_sync",
+        markets: bulkMarkets
+      });
     }
 
     else if (msg.type === "controls") {

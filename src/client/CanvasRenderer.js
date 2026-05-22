@@ -129,6 +129,11 @@ export class CanvasRenderer {
     if (playerShip) {
       this.drawOffScreenPointers(playerShip, entities, targetEntity, localPlayerId, fleetMembers);
     }
+
+    // 7. Draw holographic sweeping HUD radar overlay
+    if (playerShip) {
+      this.drawRadar(dt, playerShip, entities, localPlayerId, fleetMembers);
+    }
   }
 
   /**
@@ -685,5 +690,177 @@ export class CanvasRenderer {
         this.ctx.restore();
       }
     }
+  }
+
+  /**
+   * Renders the retro-modern holographic sweeping HUD radar panel.
+   * @param {number} dt - Time delta.
+   * @param {Ship} player - Local player ship.
+   * @param {Array} entities - Space entities.
+   * @param {string} localPlayerId - Player ID.
+   * @param {Array} fleetMembers - Teammate data.
+   */
+  drawRadar(dt, player, entities, localPlayerId, fleetMembers) {
+    const radarRadius = 75;
+    const padding = 20;
+    const cx = this.canvas.width - radarRadius - padding;
+    const cy = this.canvas.height - radarRadius - padding;
+
+    // Increment radar sweep angle
+    this.radarSweepAngle = (this.radarSweepAngle || 0) + 1.8 * dt;
+    const sweepAngle = this.radarSweepAngle % (Math.PI * 2);
+
+    // 1. Draw Glassmorphic Radar Container Background
+    this.ctx.save();
+    this.ctx.beginPath();
+    this.ctx.arc(cx, cy, radarRadius, 0, Math.PI * 2);
+    this.ctx.closePath();
+    this.ctx.fillStyle = "rgba(10, 15, 30, 0.7)";
+    this.ctx.fill();
+    this.ctx.strokeStyle = "rgba(0, 242, 254, 0.3)";
+    this.ctx.lineWidth = 1.5;
+    this.ctx.stroke();
+
+    // 2. Draw Concentric Scale Range Rings (25%, 50%, 75%, 100% of 3000u)
+    this.ctx.strokeStyle = "rgba(0, 242, 254, 0.08)";
+    this.ctx.lineWidth = 1;
+    this.ctx.setLineDash([2, 4]); // dashed look for range rings
+    const rings = [0.25, 0.5, 0.75, 1.0];
+    for (const rRatio of rings) {
+      this.ctx.beginPath();
+      this.ctx.arc(cx, cy, radarRadius * rRatio, 0, Math.PI * 2);
+      this.ctx.stroke();
+    }
+    this.ctx.setLineDash([]); // reset line dash
+
+    // 3. Draw Radar Crosshair Axes Grid
+    this.ctx.strokeStyle = "rgba(0, 242, 254, 0.06)";
+    this.ctx.beginPath();
+    this.ctx.moveTo(cx - radarRadius, cy);
+    this.ctx.lineTo(cx + radarRadius, cy);
+    this.ctx.moveTo(cx, cy - radarRadius);
+    this.ctx.lineTo(cx, cy + radarRadius);
+    this.ctx.stroke();
+
+    // 4. Draw Radar Sweeping Trail Slice (gradient trailing clockwise)
+    this.ctx.beginPath();
+    this.ctx.moveTo(cx, cy);
+    // Draw sector arc trailing behind the sweep angle by 0.55 radians
+    this.ctx.arc(cx, cy, radarRadius, sweepAngle - 0.55, sweepAngle);
+    this.ctx.closePath();
+    const trailGrad = this.ctx.createRadialGradient(cx, cy, 0, cx, cy, radarRadius);
+    trailGrad.addColorStop(0, "rgba(0, 242, 254, 0.2)");
+    trailGrad.addColorStop(0.8, "rgba(0, 242, 254, 0.06)");
+    trailGrad.addColorStop(1, "rgba(0, 242, 254, 0)");
+    this.ctx.fillStyle = trailGrad;
+    this.ctx.fill();
+
+    // 5. Draw Sweeping Neon Beam Line
+    this.ctx.strokeStyle = "rgba(0, 242, 254, 0.85)";
+    this.ctx.shadowBlur = 8;
+    this.ctx.shadowColor = "rgba(0, 242, 254, 0.85)";
+    this.ctx.lineWidth = 1.5;
+    this.ctx.beginPath();
+    this.ctx.moveTo(cx, cy);
+    this.ctx.lineTo(cx + Math.cos(sweepAngle) * radarRadius, cy + Math.sin(sweepAngle) * radarRadius);
+    this.ctx.stroke();
+    this.ctx.shadowBlur = 0; // reset shadow
+
+    // 6. Plot Surrounding Scanned Entities within range
+    const MAX_RANGE = 3000;
+    for (const ent of entities) {
+      if (ent.id === "player" || ent.id === localPlayerId || ent.type === "projectile") continue;
+
+      const dx = ent.position.x - player.position.x;
+      const dy = ent.position.y - player.position.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist > MAX_RANGE) continue;
+
+      // Calculate entity polar angle
+      const relAngle = Math.atan2(dy, dx);
+
+      // Determine intensity based on angle difference behind the sweep line
+      let diff = (sweepAngle - relAngle) % (Math.PI * 2);
+      if (diff < 0) diff += Math.PI * 2;
+      const intensity = Math.max(0, 1 - diff / (Math.PI * 2));
+      const alpha = Math.pow(intensity, 3); // curve alpha to drop off faster
+
+      // Map to radar screen coords
+      const screenDist = (dist / MAX_RANGE) * radarRadius;
+      const ex = cx + Math.cos(relAngle) * screenDist;
+      const ey = cy + Math.sin(relAngle) * screenDist;
+
+      // Color-coding rules
+      let color = `rgba(128, 130, 133, ${alpha})`; // Faint grey asteroid default
+      let dotSize = 2;
+
+      if (ent.type === "planet") {
+        color = `rgba(0, 242, 254, ${alpha})`; // Holographic blue planet
+        dotSize = 3.5;
+      } else if (ent.type === "ship") {
+        const isTeammate = fleetMembers && fleetMembers.some(m => m.id === ent.id && m.id !== localPlayerId);
+        const isPirate = ent.name && (ent.name.includes("Pirate") || ent.name.includes("Raider") || ent.name.includes("Marauder") || ent.name.includes("Boss") || ent.name.includes("Viper"));
+        const isGuard = ent.name && (ent.name.includes("Guard") || ent.name.includes("Police") || ent.name.includes("Navy") || ent.name.includes("Aegis") || ent.name.includes("Sentinel") || ent.name.includes("Patrol"));
+        const isMerchant = ent.name && (ent.name.includes("freighter") || ent.name.includes("Cargo") || ent.name.includes("Hauler") || ent.name.includes("Behemoth") || ent.name.includes("Voyager") || ent.name.includes("Galleon") || ent.name.includes("Atlas") || ent.name.includes("Hermes"));
+
+        if (isTeammate) {
+          color = `rgba(160, 64, 251, ${alpha})`; // Neon purple teammate
+          dotSize = 3.5;
+        } else if (isPirate) {
+          color = `rgba(255, 59, 48, ${alpha})`; // Crimson pirate
+          dotSize = 3.5;
+        } else if (isGuard) {
+          color = `rgba(48, 209, 88, ${alpha})`; // Emerald guard
+          dotSize = 3;
+        } else if (isMerchant) {
+          color = `rgba(255, 230, 0, ${alpha})`; // Gold merchant
+          dotSize = 3;
+        } else {
+          color = `rgba(0, 255, 204, ${alpha})`; // Cyan other player
+          dotSize = 3.5;
+        }
+      }
+
+      // Draw dot
+      this.ctx.fillStyle = color;
+      this.ctx.beginPath();
+      this.ctx.arc(ex, ey, dotSize, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      // Additional planetary border ring to distinguish it
+      if (ent.type === "planet") {
+        this.ctx.strokeStyle = `rgba(0, 242, 254, ${alpha * 0.5})`;
+        this.ctx.lineWidth = 1;
+        this.ctx.beginPath();
+        this.ctx.arc(ex, ey, dotSize + 2, 0, Math.PI * 2);
+        this.ctx.stroke();
+      }
+    }
+
+    // 7. Plot local player ship at center of radar
+    this.ctx.save();
+    this.ctx.translate(cx, cy);
+    this.ctx.rotate(player.heading);
+    this.ctx.strokeStyle = "#00ff88"; // Green for player
+    this.ctx.fillStyle = "rgba(0, 255, 136, 0.35)";
+    this.ctx.lineWidth = 1.5;
+    this.ctx.beginPath();
+    this.ctx.moveTo(5, 0); // nose tip
+    this.ctx.lineTo(-4, -3); // back wing left
+    this.ctx.lineTo(-2, 0); // cutout
+    this.ctx.lineTo(-4, 3); // back wing right
+    this.ctx.closePath();
+    this.ctx.fill();
+    this.ctx.stroke();
+    this.ctx.restore();
+
+    // 8. Draw Range Label Overlay
+    this.ctx.fillStyle = "rgba(0, 242, 254, 0.4)";
+    this.ctx.font = "8px Orbitron, sans-serif";
+    this.ctx.textAlign = "center";
+    this.ctx.fillText("3000u", cx, cy + radarRadius - 6);
+
+    this.ctx.restore();
   }
 }

@@ -29,6 +29,8 @@ export class NetworkHandler {
     this.onProjectileFired = null;
     this.onNotification = null;
     this.onChatReceived = null;
+    this.onMarketSync = null;
+    this.onMarketBulkSync = null;
 
     // Throttle input packets sending (only send when controls flags change)
     this.lastSentControls = null;
@@ -104,6 +106,14 @@ export class NetworkHandler {
 
         case "chat":
           if (this.onChatReceived) this.onChatReceived(msg);
+          break;
+
+        case "market_sync":
+          if (this.onMarketSync) this.onMarketSync(msg);
+          break;
+
+        case "market_bulk_sync":
+          if (this.onMarketBulkSync) this.onMarketBulkSync(msg);
           break;
       }
     };

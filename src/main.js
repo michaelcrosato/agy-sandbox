@@ -1128,6 +1128,32 @@ network.onChatReceived = (msg) => {
   logChat.scrollTop = logChat.scrollHeight;
 };
 
+// Handle live economic market shifts from server
+network.onMarketSync = (msg) => {
+  const targetPlanet = planets.find(p => p.name === msg.planetName);
+  if (targetPlanet) {
+    targetPlanet.market = msg.market;
+    if (isLanded && spaceportUI.planet && spaceportUI.planet.name === targetPlanet.name) {
+      spaceportUI.refreshActiveTab();
+    }
+  }
+};
+
+network.onMarketBulkSync = (msg) => {
+  if (msg.markets) {
+    for (const [pName, market] of Object.entries(msg.markets)) {
+      const targetPlanet = planets.find(p => p.name === pName);
+      if (targetPlanet) {
+        targetPlanet.market = market;
+      }
+    }
+    if (isLanded && spaceportUI.planet) {
+      spaceportUI.refreshActiveTab();
+    }
+  }
+};
+
+
 // Safe sanitization for comms messages
 function escapeHTML(str) {
   return (str || "")

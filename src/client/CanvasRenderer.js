@@ -84,8 +84,10 @@ export class CanvasRenderer {
    * @param {string} [localPlayerId] - Local player connection ID.
    * @param {Array} [fleetMembers] - Teammates in the current fleet.
    * @param {string} [fleetName] - Name/Code of the current fleet.
+   * @param {Object} [activeSectorEvent] - Active threat event.
    */
-  draw(dt, playerShip, entities, targetEntity, localPlayerId = null, fleetMembers = [], fleetName = null) {
+  draw(dt, playerShip, entities, targetEntity, localPlayerId = null, fleetMembers = [], fleetName = null, activeSectorEvent = null) {
+    this.activeSectorEvent = activeSectorEvent;
     // 1. Update Camera to center on Player
     if (playerShip) {
       this.camera.x = playerShip.position.x - this.canvas.width / 2;
@@ -287,6 +289,103 @@ export class CanvasRenderer {
       planet.position.x,
       planet.position.y - planet.radius - 12,
     );
+
+    // Active Sector Event planetary indicators
+    if (this.activeSectorEvent && this.activeSectorEvent.planetName === planet.name) {
+      if (this.activeSectorEvent.type === "siege") {
+        // Red flashing outer warning field at 400u
+        const flashAlpha = 0.3 + Math.sin(Date.now() / 200) * 0.15;
+        this.ctx.strokeStyle = `rgba(255, 59, 48, ${flashAlpha})`;
+        this.ctx.lineWidth = 2;
+        this.ctx.setLineDash([8, 12]);
+        this.ctx.beginPath();
+        this.ctx.arc(planet.position.x, planet.position.y, 400, 0, Math.PI * 2);
+        this.ctx.stroke();
+        this.ctx.setLineDash([]);
+
+        // Danger zone shade
+        const dangerGrad = this.ctx.createRadialGradient(
+          planet.position.x, planet.position.y, planet.radius * 1.3,
+          planet.position.x, planet.position.y, 400
+        );
+        dangerGrad.addColorStop(0, "rgba(255, 59, 48, 0)");
+        dangerGrad.addColorStop(1, `rgba(255, 59, 48, ${0.05 * (0.5 + Math.sin(Date.now() / 300) * 0.5)})`);
+        this.ctx.fillStyle = dangerGrad;
+        this.ctx.beginPath();
+        this.ctx.arc(planet.position.x, planet.position.y, 400, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Warning Label floating above
+        this.ctx.fillStyle = "#ff3b30";
+        this.ctx.font = "bold 11px Orbitron, sans-serif";
+        this.ctx.shadowBlur = 8;
+        this.ctx.shadowColor = "#ff3b30";
+        this.ctx.fillText(
+          "⚠️ UNDER SIEGE - DEFEND PORT",
+          planet.position.x,
+          planet.position.y - planet.radius - 30
+        );
+        this.ctx.shadowBlur = 0;
+      } else if (this.activeSectorEvent.type === "emp") {
+        // Neon-Cyan crackling field at 400u
+        const pulseAlpha = 0.25 + Math.sin(Date.now() / 150) * 0.15;
+        this.ctx.strokeStyle = `rgba(0, 242, 254, ${pulseAlpha})`;
+        this.ctx.lineWidth = 1.5;
+        this.ctx.setLineDash([4, 6]);
+        this.ctx.beginPath();
+        this.ctx.arc(planet.position.x, planet.position.y, 400, 0, Math.PI * 2);
+        this.ctx.stroke();
+        this.ctx.setLineDash([]);
+
+        // Electric blue atmosphere shade
+        const empGrad = this.ctx.createRadialGradient(
+          planet.position.x, planet.position.y, planet.radius * 1.3,
+          planet.position.x, planet.position.y, 400
+        );
+        empGrad.addColorStop(0, "rgba(0, 242, 254, 0)");
+        empGrad.addColorStop(1, "rgba(0, 242, 254, 0.05)");
+        this.ctx.fillStyle = empGrad;
+        this.ctx.beginPath();
+        this.ctx.arc(planet.position.x, planet.position.y, 400, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Crackling lightning storm arcs (15% chance per frame)
+        if (Math.random() < 0.15) {
+          this.ctx.strokeStyle = "rgba(0, 242, 254, 0.85)";
+          this.ctx.lineWidth = 1.5;
+          this.ctx.shadowBlur = 6;
+          this.ctx.shadowColor = "#00f2fe";
+          this.ctx.beginPath();
+          const startAngle = Math.random() * Math.PI * 2;
+          let currX = planet.position.x + Math.cos(startAngle) * planet.radius;
+          let currY = planet.position.y + Math.sin(startAngle) * planet.radius;
+          this.ctx.moveTo(currX, currY);
+          
+          const steps = 4;
+          const stepDist = (400 - planet.radius) / steps;
+          for (let j = 0; j < steps; j++) {
+            const angle = startAngle + (Math.random() - 0.5) * 0.4;
+            currX += Math.cos(angle) * stepDist;
+            currY += Math.sin(angle) * stepDist;
+            this.ctx.lineTo(currX, currY);
+          }
+          this.ctx.stroke();
+          this.ctx.shadowBlur = 0;
+        }
+
+        // Warning Label floating above
+        this.ctx.fillStyle = "#00f2fe";
+        this.ctx.font = "bold 11px Orbitron, sans-serif";
+        this.ctx.shadowBlur = 8;
+        this.ctx.shadowColor = "#00f2fe";
+        this.ctx.fillText(
+          "⚡ ION EMP STORM - NO SHIELDS",
+          planet.position.x,
+          planet.position.y - planet.radius - 30
+        );
+        this.ctx.shadowBlur = 0;
+      }
+    }
 
     this.ctx.restore();
   }

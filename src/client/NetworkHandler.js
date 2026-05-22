@@ -18,6 +18,7 @@ export class NetworkHandler {
 
     // Client entities cache synced from server states
     this.entitiesData = [];
+    this.activeSectorEvent = null;
 
     // Message Hook callbacks
     this.onInit = null;
@@ -31,6 +32,7 @@ export class NetworkHandler {
     this.onChatReceived = null;
     this.onMarketSync = null;
     this.onMarketBulkSync = null;
+    this.onEventSync = null;
 
     // Throttle input packets sending (only send when controls flags change)
     this.lastSentControls = null;
@@ -114,6 +116,11 @@ export class NetworkHandler {
 
         case "market_bulk_sync":
           if (this.onMarketBulkSync) this.onMarketBulkSync(msg);
+          break;
+
+        case "event_sync":
+          this.activeSectorEvent = msg.event;
+          if (this.onEventSync) this.onEventSync(msg);
           break;
       }
     };

@@ -18,6 +18,7 @@ const ais = [];
 const planets = [];
 let eventCheckTimer = 0;
 let empTimer = 0;
+let activeSectorEvent = null;
 
 // Initialize DOM controllers
 const uiController = new UIController();
@@ -1153,6 +1154,10 @@ network.onMarketBulkSync = (msg) => {
   }
 };
 
+network.onEventSync = (msg) => {
+  activeSectorEvent = msg.event;
+};
+
 
 // Safe sanitization for comms messages
 function escapeHTML(str) {
@@ -1216,8 +1221,19 @@ function gameLoop(time) {
   if (dt > 0.1) dt = 0.1;
 
   if (!isLanded) {
-    // A. Handle active Solar EMP Flare effects (offline only)
-    if ((!network || !network.connected) && empTimer > 0) {
+    // A. Handle active Solar EMP Flare effects
+    if (network && network.connected) {
+      if (activeSectorEvent && activeSectorEvent.type === "emp") {
+        const empPlanet = planets.find(p => p.name === activeSectorEvent.planetName);
+        if (empPlanet && player.position.distance(empPlanet.position) <= 400) {
+          player.shieldRegen = 0;
+        } else {
+          player.shieldRegen = 10;
+        }
+      } else {
+        player.shieldRegen = 10;
+      }
+    } else if (empTimer > 0) {
       empTimer -= dt;
       player.shieldRegen = 0;
       player.thrustPower = 9000; // nerf thrust power
@@ -1277,7 +1293,8 @@ function gameLoop(time) {
     playerTarget,
     network ? network.playerId : null,
     network && network.fleet ? network.fleet.members : [],
-    network && network.fleet ? network.fleet.name : null
+    network && network.fleet ? network.fleet.name : null,
+    activeSectorEvent
   );
 
   // 5. Synchronize dynamic health bars and targeting dials with overlay DOM dashboard

@@ -224,6 +224,150 @@ function runDynamicEconomyTick() {
 // Start economy loop running every 45 seconds
 setInterval(runDynamicEconomyTick, 45000);
 
+let activeSectorEvent = null; // { type: "siege"|"emp", planetName, spawnedShipIds: [] }
+
+function runDynamicSectorEventTick() {
+  // 1. Clean up previous event
+  if (activeSectorEvent) {
+    if (activeSectorEvent.type === "siege") {
+      // Clear spawned raiders
+      for (const shipId of activeSectorEvent.spawnedShipIds) {
+        const ent = engine.entities.find(e => e.id === shipId);
+        if (ent) {
+          engine.removeEntity(ent);
+        }
+        const aiIdx = ais.findIndex(a => a.ship.id === shipId);
+        if (aiIdx !== -1) {
+          ais.splice(aiIdx, 1);
+        }
+      }
+      
+      const formattedMsg = `EVENT OVER: The Pirate Siege at ${activeSectorEvent.planetName} has been repelled!`;
+      broadcastNotification(formattedMsg, "success");
+      
+      const chatPayload = {
+        type: "chat",
+        channel: "global",
+        sender: "SYSTEM-ALERTS",
+        text: formattedMsg
+      };
+      broadcast(chatPayload);
+    } else if (activeSectorEvent.type === "emp") {
+      const formattedMsg = `EVENT OVER: The Solar EMP Ion Storm at ${activeSectorEvent.planetName} has subsided.`;
+      broadcastNotification(formattedMsg, "success");
+      
+      const chatPayload = {
+        type: "chat",
+        channel: "global",
+        sender: "SYSTEM-ALERTS",
+        text: formattedMsg
+      };
+      broadcast(chatPayload);
+    }
+    activeSectorEvent = null;
+  }
+
+  // 2. Decide new event type and planet (50/50 chance of siege or emp)
+  const eventTypes = ["siege", "emp"];
+  const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+
+  // Sol is a safe zone (no EMP storms should affect Sol)
+  let targetPlanet;
+  if (eventType === "emp") {
+    // Exclude Sol planet
+    const nonSolPlanets = planets.filter(p => p.name !== "Sol");
+    targetPlanet = nonSolPlanets[Math.floor(Math.random() * nonSolPlanets.length)];
+  } else {
+    targetPlanet = planets[Math.floor(Math.random() * planets.length)];
+  }
+
+  if (!targetPlanet) return;
+
+  if (eventType === "siege") {
+    const spawnedShipIds = [];
+    const count = 2; // Spawn 2 heavy raiders as per specifications
+    
+    for (let i = 0; i < count; i++) {
+      const spawnAngle = Math.random() * Math.PI * 2;
+      const spawnDist = targetPlanet.landingRadius + 180 + Math.random() * 50;
+      const spawnPos = targetPlanet.position.add(new Vector2D(Math.cos(spawnAngle) * spawnDist, Math.sin(spawnAngle) * spawnDist));
+      const shipId = "siege-raider-" + Math.random().toString(36).substring(2, 9);
+      
+      const raiderShip = new Ship({
+        id: shipId,
+        name: "Siege Raider",
+        position: spawnPos,
+        velocity: new Vector2D((Math.random() - 0.5) * 30, (Math.random() - 0.5) * 30),
+        heading: Math.random() * Math.PI * 2,
+        maxShield: 500,
+        maxArmor: 350,
+        thrustPower: 18000,
+        turnRate: 2.2,
+        weaponDamage: 30,
+        weaponCooldown: 0.25,
+      });
+      raiderShip.role = "pirate";
+
+      const controller = new AIController(raiderShip, "pirate");
+      engine.addEntity(raiderShip);
+      ais.push(controller);
+      spawnedShipIds.push(shipId);
+    }
+
+    activeSectorEvent = {
+      type: "siege",
+      planetName: targetPlanet.name,
+      spawnedShipIds: spawnedShipIds
+    };
+
+    const formattedMsg = `RED ALERT: Pirate Siege detected at ${targetPlanet.name}! Heavy raiders are attacking the trade hub!`;
+    broadcastNotification(formattedMsg, "error");
+
+    const chatPayload = {
+      type: "chat",
+      channel: "global",
+      sender: "SYSTEM-ALERTS",
+      text: formattedMsg
+    };
+    broadcast(chatPayload);
+
+  } else if (eventType === "emp") {
+    activeSectorEvent = {
+      type: "emp",
+      planetName: targetPlanet.name,
+      spawnedShipIds: []
+    };
+
+    const formattedMsg = `ENVIRONMENT ALERT: Solar EMP Ion Storm detected at ${targetPlanet.name}! Shield regeneration disabled within 400u!`;
+    broadcastNotification(formattedMsg, "error");
+
+    const chatPayload = {
+      type: "chat",
+      channel: "global",
+      sender: "SYSTEM-ALERTS",
+      text: formattedMsg
+    };
+    broadcast(chatPayload);
+  }
+
+  // Sync event status to all connected clients
+  broadcastEventSync();
+}
+
+function broadcastEventSync() {
+  const eventPayload = {
+    type: "event_sync",
+    event: activeSectorEvent ? {
+      type: activeSectorEvent.type,
+      planetName: activeSectorEvent.planetName
+    } : null
+  };
+  broadcast(eventPayload);
+}
+
+// Run dynamic sector events every 90 seconds
+setInterval(runDynamicSectorEventTick, 90000);
+
 
 // Generate Asteroids
 const asteroidCount = 45;
@@ -347,6 +491,7 @@ engine.onProjectileFired = (proj, ship) => {
 };
 
 function scheduleAIRespawn(name, role) {
+  if (name === "Siege Raider") return;
   setTimeout(() => {
     // Re-create AI with identical parameters
     if (role === "pirate") {
@@ -572,6 +717,15 @@ wss.on("connection", (ws) => {
         type: "market_bulk_sync",
         markets: bulkMarkets
       });
+
+      // Send active event on join
+      clientObj.send({
+        type: "event_sync",
+        event: activeSectorEvent ? {
+          type: activeSectorEvent.type,
+          planetName: activeSectorEvent.planetName
+        } : null
+      });
     }
 
     else if (msg.type === "controls") {
@@ -588,6 +742,29 @@ wss.on("connection", (ws) => {
           // Process mission arrivals on server
           const completed = clientObj.missionManager.checkArrivalCompletions(targetPlanet.name, clientObj.ship);
           for (const m of completed) {
+            if (clientObj.fleetName) {
+              const fleetSet = fleets.get(clientObj.fleetName);
+              if (fleetSet && fleetSet.size > 1) {
+                const share = Math.floor(m.reward / fleetSet.size);
+                // Revert full addition on the local landed player (added inside checkArrivalCompletions)
+                clientObj.ship.credits -= m.reward;
+                // Add split share to all online fleet members
+                for (const member of fleetSet) {
+                  if (member.ship) {
+                    member.ship.credits += share;
+                    member.send({
+                      type: "notification",
+                      message: `Fleet Contract Completed: ${m.title} by ${clientObj.nickname}! Share: +${share.toLocaleString()} CR`,
+                      style: "success"
+                    });
+                    member.sendStats();
+                  }
+                }
+                continue;
+              }
+            }
+
+            // Default fallback for solo pilots
             clientObj.send({
               type: "notification",
               message: `Contract Completed: ${m.title}! Received +${m.reward.toLocaleString()} CR`,
@@ -991,7 +1168,28 @@ setInterval(() => {
   }
 
   // B. Advance Newtonian kinematics, elastic rebounds, and laser damage
+  const originalRegens = new Map();
+  if (activeSectorEvent && activeSectorEvent.type === "emp") {
+    const empPlanet = planets.find(p => p.name === activeSectorEvent.planetName);
+    if (empPlanet) {
+      for (const ent of engine.entities) {
+        if (ent.type === "ship" && !ent.isDestroyed) {
+          const dist = ent.position.distance(empPlanet.position);
+          if (dist <= 400) {
+            originalRegens.set(ent, ent.shieldRegen);
+            ent.shieldRegen = 0;
+          }
+        }
+      }
+    }
+  }
+
   engine.update(dt);
+
+  // Restore original shield regeneration rates immediately after engine update
+  for (const [ship, origRegen] of originalRegens.entries()) {
+    ship.shieldRegen = origRegen;
+  }
 
   // C. Space Entity Spawning replenishment bounds check
   const activeAsteroids = engine.entities.filter(e => e.type === "generic" || e.type === "gem_asteroid");
@@ -1099,6 +1297,43 @@ engine.onEntityDestroyed = (ent) => {
     for (const client of clients.values()) {
       const completedBounty = client.missionManager.checkBountyCompletion(ent.name, client.ship);
       if (completedBounty) {
+        if (client.fleetName) {
+          const fleetSet = fleets.get(client.fleetName);
+          if (fleetSet && fleetSet.size > 1) {
+            const share = Math.floor(completedBounty.reward / fleetSet.size);
+            // Revert full addition on the local player (added inside checkBountyCompletion)
+            client.ship.credits -= completedBounty.reward;
+            // Add split share to all online fleet members
+            for (const member of fleetSet) {
+              if (member.ship) {
+                member.ship.credits += share;
+                if (completedBounty.campaignCompleted) {
+                  member.send({
+                    type: "notification",
+                    message: `Fleet Campaign Complete: ${completedBounty.title}! Share: +${share.toLocaleString()} CR`,
+                    style: "success"
+                  });
+                } else if (completedBounty.stageAdvanced) {
+                  member.send({
+                    type: "notification",
+                    message: `Fleet Story Stage Completed: ${completedBounty.title}! Share: +${share.toLocaleString()} CR`,
+                    style: "success"
+                  });
+                } else {
+                  member.send({
+                    type: "notification",
+                    message: `Fleet Bounty Claimed: ${completedBounty.title} by ${client.nickname}! Share: +${share.toLocaleString()} CR`,
+                    style: "success"
+                  });
+                }
+                member.sendStats();
+              }
+            }
+            continue;
+          }
+        }
+
+        // Solo pilot fallback
         if (completedBounty.campaignCompleted) {
           client.send({ type: "notification", message: completedBounty.message, style: "success" });
         } else if (completedBounty.stageAdvanced) {

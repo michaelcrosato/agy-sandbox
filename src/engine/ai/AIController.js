@@ -61,13 +61,21 @@ export class AIController {
       if (dist < closestDist) {
         if (this.role === "pirate") {
           // Pirates target any player or non-pirate ship
-          if (ent.name !== "Pirate Raider") {
+          const isAnotherPirate = ent.name === "Pirate Raider" || 
+                                  ent.name === "Siege Raider" || 
+                                  ent.name.includes("Pirate") || 
+                                  ent.name.includes("Raider");
+          if (!isAnotherPirate) {
             closestTarget = ent;
             closestDist = dist;
           }
         } else if (this.role === "guard") {
           // Guards target pirate ships
-          if (ent.name === "Pirate Raider") {
+          const isThreat = ent.name === "Pirate Raider" || 
+                           ent.name === "Siege Raider" || 
+                           ent.name.includes("Pirate") || 
+                           ent.name.includes("Raider");
+          if (isThreat) {
             closestTarget = ent;
             closestDist = dist;
           }

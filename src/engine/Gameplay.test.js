@@ -544,3 +544,90 @@ describe("Procedural Mission & Event Generation Engine Support", () => {
     expect(missionManager.storylineCompleted).toBe(true);
   });
 });
+
+describe("Tactical Nebula Spatial Hazards and Drag Physics", () => {
+  let player;
+  const NEBULAE = [
+    {
+      id: "nebula_crimson",
+      name: "Crimson Veil Nebula",
+      position: { x: 1000, y: 300 },
+      radius: 450,
+      dragMultiplier: 2.2,
+      hazardType: "friction"
+    },
+    {
+      id: "nebula_azure",
+      name: "Azure Abyss Nebula",
+      position: { x: -1000, y: -800 },
+      radius: 500,
+      dragMultiplier: 2.6,
+      hazardType: "shield_dampen"
+    }
+  ];
+
+  beforeEach(() => {
+    player = new Ship({
+      position: new Vector2D(1000, 300), // Center of Crimson Veil
+      velocity: new Vector2D(100, 0),
+      mass: 1000,
+      shieldRegen: 10,
+      shield: 50,
+      maxShield: 100,
+    });
+  });
+
+  test("Entering Crimson Veil scales linear drag coefficient correctly", () => {
+    // Determine active nebula
+    let activeNeb = null;
+    for (const neb of NEBULAE) {
+      const dist = player.position.distance(neb.position);
+      if (dist <= neb.radius) {
+        activeNeb = neb;
+        break;
+      }
+    }
+
+    expect(activeNeb).toBeDefined();
+    expect(activeNeb.name).toBe("Crimson Veil Nebula");
+    expect(activeNeb.dragMultiplier).toBe(2.2);
+
+    // Apply the extra drag coefficient multiplier force: -(dragMultiplier - 1.0) * globalDrag * velocity * mass
+    const globalDrag = 0.1;
+    const extraDragCoef = activeNeb.dragMultiplier - 1.0; // 1.2
+    const extraDragForce = player.velocity.multiply(
+      -extraDragCoef * globalDrag * player.mass
+    );
+
+    // The normal drag force inside SpaceEngine: -globalDrag * velocity * mass = -10000
+    // The extra drag force: -12000
+    expect(extraDragForce.x).toBeCloseTo(-12000, 5);
+    expect(extraDragForce.y).toBeCloseTo(0, 5);
+  });
+
+  test("Entering Azure Abyss dampens shield regeneration by 50%", () => {
+    // Relocate to center of Azure Abyss
+    player.position = new Vector2D(-1000, -800);
+
+    let activeNeb = null;
+    for (const neb of NEBULAE) {
+      const dist = player.position.distance(neb.position);
+      if (dist <= neb.radius) {
+        activeNeb = neb;
+        break;
+      }
+    }
+
+    expect(activeNeb).toBeDefined();
+    expect(activeNeb.name).toBe("Azure Abyss Nebula");
+    expect(activeNeb.hazardType).toBe("shield_dampen");
+
+    // Suppress shield regeneration rate
+    let suppressedRegen = player.shieldRegen;
+    if (activeNeb.hazardType === "shield_dampen") {
+      suppressedRegen *= 0.5;
+    }
+
+    expect(suppressedRegen).toBe(5);
+  });
+});

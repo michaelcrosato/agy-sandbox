@@ -11,6 +11,7 @@ import { SpaceEngine } from "./engine/SpaceEngine.js";
 import { SpaceEntity } from "./engine/SpaceEntity.js";
 import { AIController } from "./engine/ai/AIController.js";
 import { MissionManager } from "./engine/MissionManager.js";
+import { NEBULAE } from "./engine/Nebulae.js";
 
 // Paths for static file server
 const __filename = fileURLToPath(import.meta.url);
@@ -1179,6 +1180,42 @@ setInterval(() => {
             originalRegens.set(ent, ent.shieldRegen);
             ent.shieldRegen = 0;
           }
+        }
+      }
+    }
+  }
+
+  // Apply Nebula Hazards: Drag & Shield Dampening
+  for (const ent of engine.entities) {
+    if (ent.type === "ship" && !ent.isDestroyed) {
+      let activeNebula = null;
+      for (const neb of NEBULAE) {
+        const dx = ent.position.x - neb.position.x;
+        const dy = ent.position.y - neb.position.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist <= neb.radius) {
+          activeNebula = neb;
+          break;
+        }
+      }
+
+      if (activeNebula) {
+        // 1. Scale linear drag: Apply extra drag force
+        if (engine.globalDrag > 0 && ent.velocity.magnitude() > 0) {
+          const extraDragCoef = activeNebula.dragMultiplier - 1.0;
+          const extraDragForce = ent.velocity.multiply(
+            -extraDragCoef * engine.globalDrag * ent.mass
+          );
+          ent.applyForce(extraDragForce);
+        }
+
+        // 2. Shield Dampening hazard
+        if (activeNebula.hazardType === "shield_dampen") {
+          const currentRegen = originalRegens.has(ent) ? 0 : ent.shieldRegen;
+          if (!originalRegens.has(ent)) {
+            originalRegens.set(ent, ent.shieldRegen);
+          }
+          ent.shieldRegen = currentRegen * 0.5; // Cut shield regen by 50%
         }
       }
     }

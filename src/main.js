@@ -10,6 +10,7 @@ import { UIController } from "./client/UIController.js";
 import { SpaceportUI } from "./client/SpaceportUI.js";
 import { MissionManager } from "./engine/MissionManager.js";
 import { NetworkHandler } from "./client/NetworkHandler.js";
+import { NEBULAE } from "./engine/Nebulae.js";
 
 // Global game variables
 let isLanded = false;
@@ -1282,7 +1283,61 @@ function gameLoop(time) {
     }
 
     // 3. Advance Newtonian kinematics, elastic rebounds, and laser damage
+    const originalRegens = new Map();
+    if (activeSectorEvent && activeSectorEvent.type === "emp") {
+      const empPlanet = planets.find(p => p.name === activeSectorEvent.planetName);
+      if (empPlanet) {
+        for (const ent of engine.entities) {
+          if (ent.type === "ship" && !ent.isDestroyed) {
+            const dist = ent.position.distance(empPlanet.position);
+            if (dist <= 400) {
+              originalRegens.set(ent, ent.shieldRegen);
+              ent.shieldRegen = 0;
+            }
+          }
+        }
+      }
+    }
+
+    // Apply Nebula Hazards locally for flawless motion prediction
+    for (const ent of engine.entities) {
+      if (ent.type === "ship" && !ent.isDestroyed) {
+        let activeNebula = null;
+        for (const neb of NEBULAE) {
+          const dx = ent.position.x - neb.position.x;
+          const dy = ent.position.y - neb.position.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist <= neb.radius) {
+            activeNebula = neb;
+            break;
+          }
+        }
+
+        if (activeNebula) {
+          if (engine.globalDrag > 0 && ent.velocity.magnitude() > 0) {
+            const extraDragCoef = activeNebula.dragMultiplier - 1.0;
+            const extraDragForce = ent.velocity.multiply(
+              -extraDragCoef * engine.globalDrag * ent.mass
+            );
+            ent.applyForce(extraDragForce);
+          }
+
+          if (activeNebula.hazardType === "shield_dampen") {
+            const currentRegen = originalRegens.has(ent) ? 0 : ent.shieldRegen;
+            if (!originalRegens.has(ent)) {
+              originalRegens.set(ent, ent.shieldRegen);
+            }
+            ent.shieldRegen = currentRegen * 0.5;
+          }
+        }
+      }
+    }
+
     engine.update(dt);
+
+    for (const [ship, origRegen] of originalRegens.entries()) {
+      ship.shieldRegen = origRegen;
+    }
   }
 
   // 4. Render stellar parallax, engine trails, ship vectors, target corner brackets, HUD pointer arrows
@@ -1298,7 +1353,7 @@ function gameLoop(time) {
   );
 
   // 5. Synchronize dynamic health bars and targeting dials with overlay DOM dashboard
-  uiController.update(player, playerTarget, planets);
+  uiController.update(player, playerTarget, planets, NEBULAE);
 
   requestAnimationFrame(gameLoop);
 }

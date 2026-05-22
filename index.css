@@ -1098,3 +1098,56 @@ h1, h2, h3, h4 {
   background: rgba(0, 0, 0, 0.55);
 }
 
+/* ==========================================================================
+   NEBULA STATUS OVERLAY CARD
+   ========================================================================== */
+
+#nebula-status-hud {
+  position: absolute;
+  top: -80px; /* Hidden offscreen initially for a beautiful slide down */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 290px;
+  padding: 10px 18px;
+  text-align: center;
+  border-radius: 8px;
+  border: 1px solid rgba(192, 128, 255, 0.4);
+  background: rgba(12, 8, 22, 0.82);
+  box-shadow: 0 0 15px rgba(192, 128, 255, 0.2);
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0;
+  transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#nebula-status-hud.visible {
+  top: 20px;
+  opacity: 1;
+}
+
+#nebula-hud-title {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #c080ff;
+  margin-bottom: 2px;
+  text-shadow: 0 0 8px rgba(192, 128, 255, 0.5);
+  transition: color 0.3s ease;
+}
+
+#nebula-hud-name {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 3px;
+}
+
+#nebula-hud-details {
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  color: var(--color-text-secondary);
+}
+

@@ -1,4 +1,5 @@
 import { Vector2D } from "../physics/Vector2D.js";
+import { NEBULAE } from "../engine/Nebulae.js";
 
 /**
  * Manages the HTML5 Canvas context, viewport camera tracking, parallax starfields, custom vector drawing, and particle effects.
@@ -21,6 +22,27 @@ export class CanvasRenderer {
 
     // Visual Explosion/Spark Particles
     this.particles = [];
+
+    // Visual Gaseous Nebula Vapor Particles
+    this.nebulaParticles = [];
+    for (const neb of NEBULAE) {
+      for (let i = 0; i < 30; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * neb.radius;
+        this.nebulaParticles.push({
+          nebulaId: neb.id,
+          x: neb.position.x + Math.cos(angle) * dist,
+          y: neb.position.y + Math.sin(angle) * dist,
+          radius: 60 + Math.random() * 80,
+          vx: (Math.random() - 0.5) * 12,
+          vy: (Math.random() - 0.5) * 12,
+          alpha: 0.12 + Math.random() * 0.14,
+          color: neb.particleColor,
+          pulseSpeed: 0.2 + Math.random() * 0.3,
+          pulsePhase: Math.random() * Math.PI * 2
+        });
+      }
+    }
   }
 
   /**
@@ -108,6 +130,9 @@ export class CanvasRenderer {
     this.ctx.save();
     this.ctx.translate(-this.camera.x, -this.camera.y);
 
+    // Render Tactical Nebula gas clouds & slow-drifting vapor
+    this.drawNebulae(dt);
+
     for (const ent of entities) {
       if (ent.type === "planet") {
         this.drawPlanet(ent);
@@ -135,6 +160,69 @@ export class CanvasRenderer {
     // 7. Draw holographic sweeping HUD radar overlay
     if (playerShip) {
       this.drawRadar(dt, playerShip, entities, localPlayerId, fleetMembers);
+    }
+  }
+
+  /**
+   * Renders the soft structural cloud boundaries and slow-drifting vapor particles.
+   * @param {number} dt - Frame time delta.
+   */
+  drawNebulae(dt) {
+    // 1. Draw large structural gradient backgrounds for each nebula
+    for (const neb of NEBULAE) {
+      this.ctx.save();
+      const grad = this.ctx.createRadialGradient(
+        neb.position.x, neb.position.y, 0,
+        neb.position.x, neb.position.y, neb.radius
+      );
+      grad.addColorStop(0, neb.color);
+      grad.addColorStop(0.5, neb.color.replace(/[\d.]+\)$/, "0.08)"));
+      grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      
+      this.ctx.fillStyle = grad;
+      this.ctx.beginPath();
+      this.ctx.arc(neb.position.x, neb.position.y, neb.radius, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.restore();
+    }
+
+    // 2. Draw drifting cloud vapor particles
+    for (const p of this.nebulaParticles) {
+      // Update position
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+
+      // Keep particles bounded within the nebula's radius (rebound gently)
+      const neb = NEBULAE.find(n => n.id === p.nebulaId);
+      if (neb) {
+        const dx = p.x - neb.position.x;
+        const dy = p.y - neb.position.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > neb.radius) {
+          const angle = Math.atan2(dy, dx) + Math.PI + (Math.random() - 0.5) * 0.5;
+          p.vx = Math.cos(angle) * (6 + Math.random() * 8);
+          p.vy = Math.sin(angle) * (6 + Math.random() * 8);
+          p.x = neb.position.x + Math.cos(angle) * (neb.radius - 15);
+          p.y = neb.position.y + Math.sin(angle) * (neb.radius - 15);
+        }
+      }
+
+      // Slowly breathe alpha
+      p.pulsePhase += p.pulseSpeed * dt;
+      const currentAlpha = p.alpha * (0.7 + 0.3 * Math.sin(p.pulsePhase));
+
+      // Draw soft fuzzy vapor puff
+      this.ctx.save();
+      const grad = this.ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
+      grad.addColorStop(0, p.color.replace(/[\d.]+\)$/, `${currentAlpha})`));
+      grad.addColorStop(0.5, p.color.replace(/[\d.]+\)$/, `${currentAlpha * 0.4})`));
+      grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+      this.ctx.fillStyle = grad;
+      this.ctx.beginPath();
+      this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.restore();
     }
   }
 
@@ -426,7 +514,28 @@ export class CanvasRenderer {
     const isTeammate = !!teammate;
     const isOtherPlayer = localPlayerId && !isLocalPlayer && !isTeammate && (ship.id !== "player" && !ship.name.includes("Pirate") && !ship.name.includes("Guard"));
 
+    // Check if ship is inside a nebula cloud
+    let activeNeb = null;
+    for (const neb of NEBULAE) {
+      const dx = ship.position.x - neb.position.x;
+      const dy = ship.position.y - neb.position.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist <= neb.radius) {
+        activeNeb = neb;
+        break;
+      }
+    }
+
     this.ctx.save();
+
+    if (activeNeb) {
+      if (isLocalPlayer || isTeammate) {
+        this.ctx.globalAlpha = 0.45; // Shimmering translucent look for local feedback
+      } else {
+        this.ctx.globalAlpha = 0.12; // Deep stealth silhouette for rivals
+      }
+    }
+
     this.ctx.translate(ship.position.x, ship.position.y);
 
     // Draw Nameplate & Fleet Tag upright (before rotation to prevent text rotating)
@@ -673,11 +782,35 @@ export class CanvasRenderer {
 
     // Always track activeTarget and planets
     if (activeTarget && entities.includes(activeTarget)) {
-      targets.push({
-        position: activeTarget.position,
-        name: activeTarget.name || "Target",
-        color: "#ffb300"
-      });
+      let isVisible = true;
+      if (activeTarget.type === "ship") {
+        let insideNebula = false;
+        for (const neb of NEBULAE) {
+          const ndx = activeTarget.position.x - neb.position.x;
+          const ndy = activeTarget.position.y - neb.position.y;
+          const ndist = Math.sqrt(ndx * ndx + ndy * ndy);
+          if (ndist <= neb.radius) {
+            insideNebula = true;
+            break;
+          }
+        }
+
+        if (insideNebula) {
+          const isTeammate = fleetMembers && fleetMembers.some(m => m.id === activeTarget.id && m.id !== localPlayerId);
+          const dist = player.position.distance(activeTarget.position);
+          if (!isTeammate && dist > 250) {
+            isVisible = false;
+          }
+        }
+      }
+
+      if (isVisible) {
+        targets.push({
+          position: activeTarget.position,
+          name: activeTarget.name || "Target",
+          color: "#ffb300"
+        });
+      }
     }
 
     for (const ent of entities) {
@@ -875,6 +1008,28 @@ export class CanvasRenderer {
       const dist = Math.sqrt(dx * dx + dy * dy);
 
       if (dist > MAX_RANGE) continue;
+
+      // Stealth cloaking filter inside Nebula Clouds
+      if (ent.type === "ship") {
+        let insideNebula = false;
+        for (const neb of NEBULAE) {
+          const ndx = ent.position.x - neb.position.x;
+          const ndy = ent.position.y - neb.position.y;
+          const ndist = Math.sqrt(ndx * ndx + ndy * ndy);
+          if (ndist <= neb.radius) {
+            insideNebula = true;
+            break;
+          }
+        }
+
+        if (insideNebula) {
+          const isTeammate = fleetMembers && fleetMembers.some(m => m.id === ent.id && m.id !== localPlayerId);
+          // Hidden from radar scans unless teammate or close combat lock (<250u)
+          if (!isTeammate && dist > 250) {
+            continue;
+          }
+        }
+      }
 
       // Calculate entity polar angle
       const relAngle = Math.atan2(dy, dx);

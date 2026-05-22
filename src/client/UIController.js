@@ -25,6 +25,12 @@ export class UIController {
     this.landingPrompt = document.getElementById("landing-prompt");
     this.notificationContainer = document.getElementById("notification-log");
     this.missionsList = document.getElementById("hud-missions-list");
+
+    // Nebula status elements
+    this.nebulaPanel = document.getElementById("nebula-status-hud");
+    this.nebulaTitle = document.getElementById("nebula-hud-title");
+    this.nebulaName = document.getElementById("nebula-hud-name");
+    this.nebulaDetails = document.getElementById("nebula-hud-details");
   }
 
   /**
@@ -61,7 +67,7 @@ export class UIController {
    * @param {SpaceEntity} target - Selected target entity.
    * @param {Array<Planet>} planets - Loaded planets list to check landing zone prompts.
    */
-  update(player, target, planets) {
+  update(player, target, planets, nebulae = []) {
     if (!player) return;
 
     // 1. Update Shields & Armor bars
@@ -120,6 +126,56 @@ export class UIController {
       this.landingPrompt.classList.add("visible");
     } else if (this.landingPrompt) {
       this.landingPrompt.classList.remove("visible");
+    }
+
+    // 5. Update active nebula status panel
+    let currentNebula = null;
+    if (player && !player.isDestroyed) {
+      for (const neb of nebulae) {
+        const dx = player.position.x - neb.position.x;
+        const dy = player.position.y - neb.position.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist <= neb.radius) {
+          currentNebula = neb;
+          break;
+        }
+      }
+    }
+
+    if (currentNebula && this.nebulaPanel) {
+      this.nebulaPanel.classList.add("visible");
+      if (this.nebulaName) this.nebulaName.innerText = currentNebula.name.toUpperCase();
+      
+      let title = "NEBULA STEALTH ACTIVE";
+      let details = `DRAG: ${currentNebula.dragMultiplier}x | `;
+      let color = "rgba(192, 128, 255, 0.7)"; // violet
+      let glow = "rgba(192, 128, 255, 0.3)";
+
+      if (currentNebula.hazardType === "friction") {
+        title = "STATIC FRICTION DETECTED";
+        details += "HAZARD: MOVEMENT DRAG";
+        color = "rgba(255, 59, 48, 0.7)"; // red
+        glow = "rgba(255, 59, 48, 0.3)";
+      } else if (currentNebula.hazardType === "shield_dampen") {
+        title = "SHIELD DAMPENER ACTIVE";
+        details += "HAZARD: -50% REGEN RATE";
+        color = "rgba(0, 191, 255, 0.7)"; // sky blue
+        glow = "rgba(0, 191, 255, 0.3)";
+      } else {
+        title = "FULL RADAR CLOAK ACTIVE";
+        details += "STEALTH: 100% UNTRACEABLE";
+      }
+
+      if (this.nebulaTitle) {
+        this.nebulaTitle.innerText = title;
+        this.nebulaTitle.style.color = color;
+      }
+      if (this.nebulaDetails) this.nebulaDetails.innerText = details;
+      
+      this.nebulaPanel.style.borderColor = color;
+      this.nebulaPanel.style.boxShadow = `0 0 15px ${glow}`;
+    } else if (this.nebulaPanel) {
+      this.nebulaPanel.classList.remove("visible");
     }
   }
 

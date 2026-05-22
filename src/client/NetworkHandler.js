@@ -122,6 +122,10 @@ export class NetworkHandler {
           this.activeSectorEvent = msg.event;
           if (this.onEventSync) this.onEventSync(msg);
           break;
+
+        case "cargo_pickup":
+          if (this.onCargoPickup) this.onCargoPickup(msg);
+          break;
       }
     };
 

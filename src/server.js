@@ -12,6 +12,7 @@ import { SpaceEntity } from "./engine/SpaceEntity.js";
 import { AIController } from "./engine/ai/AIController.js";
 import { MissionManager } from "./engine/MissionManager.js";
 import { NEBULAE } from "./engine/Nebulae.js";
+import { CargoPod } from "./engine/CargoPod.js";
 
 // Paths for static file server
 const __filename = fileURLToPath(import.meta.url);
@@ -1144,6 +1145,9 @@ function serializeEntities() {
         base.armor = ent.armor;
         base.maxArmor = ent.maxArmor;
         base.controls = ent.controls;
+      } else if (ent.type === "cargo_pod") {
+        base.resourceType = ent.resourceType;
+        base.amount = ent.amount;
       }
       return base;
     });
@@ -1183,6 +1187,76 @@ setInterval(() => {
         }
       }
     }
+  }
+
+  // Apply Tractor Beam Matrix pull forces
+  for (const ent of engine.entities) {
+    if (ent.type === "ship" && !ent.isDestroyed) {
+      if (ent.outfits && ent.outfits.includes("Tractor Beam Matrix")) {
+        for (const pod of engine.entities) {
+          if (pod.type === "cargo_pod") {
+            const toShip = ent.position.subtract(pod.position);
+            const dist = toShip.magnitude();
+            if (dist > 1 && dist <= 250) {
+              const forceMag = 400000 / (dist * dist + 100);
+              const pullForce = toShip.normalize().multiply(forceMag * pod.mass);
+              pod.applyForce(pullForce);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Handle CargoPod collisions and collection ingestion
+  const podsToRemove = [];
+  for (const pod of engine.entities) {
+    if (pod.type === "cargo_pod") {
+      for (const ship of engine.entities) {
+        if (ship.type === "ship" && !ship.isDestroyed) {
+          const dist = ship.position.distance(pod.position);
+          if (dist <= ship.radius + pod.radius) {
+            // Check cargo holds capacity limits
+            const success = ship.addCargo(pod.resourceType, pod.amount);
+            if (success) {
+              podsToRemove.push(pod);
+              const client = Array.from(clients.values()).find(c => c.ship === ship);
+              if (client) {
+                client.send({
+                  type: "notification",
+                  message: `+${pod.amount} ${pod.resourceType.toUpperCase()} collected!`,
+                  style: "success"
+                });
+                client.send({
+                  type: "cargo_pickup",
+                  resourceType: pod.resourceType,
+                  amount: pod.amount,
+                  x: pod.position.x,
+                  y: pod.position.y
+                });
+                client.sendStats();
+              }
+              break;
+            } else {
+              // Throttled cargo hold full notification alerts
+              const client = Array.from(clients.values()).find(c => c.ship === ship);
+              if (client && (!ship.lastCargoFullAlert || Date.now() - ship.lastCargoFullAlert > 2000)) {
+                ship.lastCargoFullAlert = Date.now();
+                client.send({
+                  type: "notification",
+                  message: "Cargo bay is FULL! Upgrade cargo holds or sell commodities.",
+                  style: "error"
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  for (const pod of podsToRemove) {
+    engine.removeEntity(pod);
   }
 
   // Apply Nebula Hazards: Drag & Shield Dampening
@@ -1264,65 +1338,21 @@ engine.onEntityDestroyed = (ent) => {
   // --- Asteroids destroyed ---
   if (ent.type === "generic" || ent.type === "gem_asteroid") {
     const isGem = ent.type === "gem_asteroid";
-    const rewardBase = isGem ? 500 : 250;
+    const count = isGem ? (Math.floor(Math.random() * 2) + 2) : (Math.floor(Math.random() * 2) + 1);
+    const resource = isGem ? "luxuries" : "minerals";
 
-    if (killerClient) {
-      if (killerFleetMembers) {
-        const share = Math.floor(rewardBase / killerFleetMembers.length);
-        for (const member of killerFleetMembers) {
-          if (isGem) {
-            const added = member.ship.addCargo("luxuries", 1);
-            if (added) {
-              member.send({
-                type: "notification",
-                message: `Fleet shattered Rare Gem! Cargo added: 1 unit luxuries (${killerClient.nickname} mined).`,
-                style: "success"
-              });
-            } else {
-              member.ship.credits += share;
-              member.send({
-                type: "notification",
-                message: `Fleet shattered Rare Gem! Cargo full, minerals sold for ${share} CR.`,
-                style: "info"
-              });
-            }
-          } else {
-            member.ship.credits += share;
-            member.send({
-              type: "notification",
-              message: `Fleet shattered Asteroid! Share awarded: +${share} CR (${killerClient.nickname} mined).`,
-              style: "success"
-            });
-          }
-          member.sendStats();
-        }
-      } else {
-        if (isGem) {
-          const added = killerClient.ship.addCargo("luxuries", 1);
-          if (added) {
-            killerClient.send({
-              type: "notification",
-              message: "Rare Gem Asteroid shattered! Yielded 1 unit of high-value luxuries cargo.",
-              style: "success"
-            });
-          } else {
-            killerClient.ship.credits += 500;
-            killerClient.send({
-              type: "notification",
-              message: "Rare Gem Asteroid shattered! Cargo full, minerals sold immediately for 500 CR.",
-              style: "info"
-            });
-          }
-        } else {
-          killerClient.ship.credits += 250;
-          killerClient.send({
-            type: "notification",
-            message: "Asteroid shattered! Recovered 250 CR minerals.",
-            style: "success"
-          });
-        }
-        killerClient.sendStats();
-      }
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 40 + Math.random() * 50;
+      const podVel = new Vector2D(Math.cos(angle) * speed, Math.sin(angle) * speed).add(ent.velocity);
+      
+      const pod = new CargoPod({
+        resourceType: resource,
+        amount: 1,
+        position: ent.position.clone(),
+        velocity: podVel
+      });
+      engine.addEntity(pod);
     }
   }
 
@@ -1387,6 +1417,24 @@ engine.onEntityDestroyed = (ent) => {
     }
 
     if (isPirate) {
+      // Eject pirate loot pods!
+      const lootCount = Math.floor(Math.random() * 2) + 1; // 1-2
+      const lootTypes = ["contraband", "electronics", "machinery"];
+      for (let i = 0; i < lootCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 40 + Math.random() * 60;
+        const podVel = new Vector2D(Math.cos(angle) * speed, Math.sin(angle) * speed).add(ent.velocity);
+        const resource = lootTypes[Math.floor(Math.random() * lootTypes.length)];
+        
+        const pod = new CargoPod({
+          resourceType: resource,
+          amount: 1,
+          position: ent.position.clone(),
+          velocity: podVel
+        });
+        engine.addEntity(pod);
+      }
+
       const rewardBase = 1000;
       if (killerClient) {
         if (killerFleetMembers) {
@@ -1411,6 +1459,24 @@ engine.onEntityDestroyed = (ent) => {
         }
       }
     } else {
+      // Player/Merchant ship: eject its cargo hold contents as pods
+      if (ent.cargo) {
+        for (const [resource, count] of Object.entries(ent.cargo)) {
+          for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 30 + Math.random() * 50;
+            const podVel = new Vector2D(Math.cos(angle) * speed, Math.sin(angle) * speed).add(ent.velocity);
+            
+            const pod = new CargoPod({
+              resourceType: resource,
+              amount: 1,
+              position: ent.position.clone(),
+              velocity: podVel
+            });
+            engine.addEntity(pod);
+          }
+        }
+      }
       broadcastNotification(`${ent.name} has been destroyed in combat.`, "info");
     }
 

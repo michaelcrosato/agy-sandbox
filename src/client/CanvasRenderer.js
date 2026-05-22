@@ -23,6 +23,9 @@ export class CanvasRenderer {
     // Visual Explosion/Spark Particles
     this.particles = [];
 
+    // Floating text feedback array for cargo collections
+    this.pickupTexts = [];
+
     // Visual Gaseous Nebula Vapor Particles
     this.nebulaParticles = [];
     for (const neb of NEBULAE) {
@@ -140,8 +143,22 @@ export class CanvasRenderer {
         this.drawProjectile(ent);
       } else if (ent.type === "ship") {
         this.drawShip(ent, localPlayerId, fleetMembers, fleetName);
+      } else if (ent.type === "cargo_pod") {
+        this.drawCargoPod(ent);
       } else {
         this.drawAsteroid(ent);
+      }
+    }
+
+    // Draw active Tractor Beam lightning tethers if player ship has the outfitter module equipped
+    if (playerShip && playerShip.outfits && playerShip.outfits.includes("Tractor Beam Matrix")) {
+      for (const ent of entities) {
+        if (ent.type === "cargo_pod") {
+          const dist = playerShip.position.distance(ent.position);
+          if (dist > 1 && dist <= 250) {
+            this.drawTractorBeam(playerShip.position.x, playerShip.position.y, ent.position.x, ent.position.y);
+          }
+        }
       }
     }
 
@@ -161,6 +178,9 @@ export class CanvasRenderer {
     if (playerShip) {
       this.drawRadar(dt, playerShip, entities, localPlayerId, fleetMembers);
     }
+
+    // 8. Render floating pickups overlay
+    this.drawPickupTexts(dt);
   }
 
   /**
@@ -281,6 +301,48 @@ export class CanvasRenderer {
     }
 
     this.particles = activeParticles;
+  }
+
+  /**
+   * Spawns a floating text pop-up at target space coordinates.
+   */
+  addPickupText(text, x, y, color = "#ffd700") {
+    this.pickupTexts.push({
+      text: text,
+      x: x,
+      y: y,
+      alpha: 1.0,
+      color: color,
+      vy: -45
+    });
+  }
+
+  /**
+   * Animates and renders floating cargo feedback texts.
+   */
+  drawPickupTexts(dt) {
+    const activeTexts = [];
+    for (const t of this.pickupTexts) {
+      t.y += t.vy * dt;
+      t.alpha -= dt * 0.85;
+
+      if (t.alpha > 0) {
+        this.ctx.save();
+        this.ctx.globalAlpha = t.alpha;
+        this.ctx.fillStyle = t.color;
+        this.ctx.font = "bold 13px 'Outfit', sans-serif";
+        this.ctx.shadowBlur = 8;
+        this.ctx.shadowColor = t.color;
+        this.ctx.textAlign = "center";
+        this.ctx.strokeStyle = "rgba(0, 0, 0, 0.85)";
+        this.ctx.lineWidth = 3.5;
+        this.ctx.strokeText(t.text, t.x - this.camera.x, t.y - this.camera.y);
+        this.ctx.fillText(t.text, t.x - this.camera.x, t.y - this.camera.y);
+        this.ctx.restore();
+        activeTexts.push(t);
+      }
+    }
+    this.pickupTexts = activeTexts;
   }
 
   /**
@@ -474,6 +536,123 @@ export class CanvasRenderer {
         this.ctx.shadowBlur = 0;
       }
     }
+
+    this.ctx.restore();
+  }
+
+  /**
+   * Renders a floating, rotating, glowing cargo pod capsule.
+   */
+  drawCargoPod(pod) {
+    this.ctx.save();
+    this.ctx.translate(pod.position.x, pod.position.y);
+    this.ctx.rotate(pod.heading || 0);
+
+    let color = "#ffffff";
+    switch (pod.resourceType) {
+      case "luxuries":
+        color = "#ffd700"; // Gold
+        break;
+      case "minerals":
+        color = "#cd7f32"; // Bronze / Copper
+        break;
+      case "food":
+        color = "#39ff14"; // Neon Green
+        break;
+      case "electronics":
+        color = "#00f0ff"; // Electric Cyan
+        break;
+      case "contraband":
+        color = "#d03ffc"; // Neon Purple
+        break;
+      case "machinery":
+        color = "#b0b0b0"; // Metallic Gray
+        break;
+    }
+
+    const pulse = 1.0 + 0.15 * Math.sin(Date.now() * 0.005);
+    const radius = pod.radius || 8;
+
+    this.ctx.shadowBlur = 10 * pulse;
+    this.ctx.shadowColor = color;
+    this.ctx.strokeStyle = color;
+    this.ctx.lineWidth = 1.5;
+
+    // Hexagonal capsule shape
+    this.ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const angle = (i * Math.PI) / 3;
+      const x = Math.cos(angle) * radius * pulse;
+      const y = Math.sin(angle) * radius * pulse;
+      if (i === 0) this.ctx.moveTo(x, y);
+      else this.ctx.lineTo(x, y);
+    }
+    this.ctx.closePath();
+    this.ctx.fillStyle = "rgba(10, 10, 15, 0.85)";
+    this.ctx.fill();
+    this.ctx.stroke();
+
+    // Inner glowing core
+    this.ctx.beginPath();
+    this.ctx.arc(0, 0, radius * 0.4 * pulse, 0, Math.PI * 2);
+    this.ctx.fillStyle = color;
+    this.ctx.shadowBlur = 15;
+    this.ctx.fill();
+
+    this.ctx.restore();
+  }
+
+  /**
+   * Draws a crackling electric cyan lightning bolt connecting a ship to a cargo pod.
+   */
+  drawTractorBeam(x1, y1, x2, y2) {
+    this.ctx.save();
+
+    const beamColor = "#00f0ff";
+    this.ctx.strokeStyle = beamColor;
+    this.ctx.shadowColor = beamColor;
+
+    // Outer glow thick path
+    this.ctx.lineWidth = 4.5;
+    this.ctx.shadowBlur = 15;
+    this.ctx.globalAlpha = 0.4;
+    this.ctx.beginPath();
+    this.ctx.moveTo(x1, y1);
+    this.ctx.lineTo(x2, y2);
+    this.ctx.stroke();
+
+    // Inner hot-white crackling lightning core
+    this.ctx.globalAlpha = 1.0;
+    this.ctx.lineWidth = 1.5;
+    this.ctx.shadowBlur = 8;
+    this.ctx.strokeStyle = "#ffffff";
+
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    
+    // Determine number of segments based on distance
+    const segments = Math.max(4, Math.floor(dist / 25));
+    
+    this.ctx.beginPath();
+    this.ctx.moveTo(x1, y1);
+
+    const normalX = -dy / dist;
+    const normalY = dx / dist;
+
+    for (let i = 1; i < segments; i++) {
+      const t = i / segments;
+      const lx = x1 + dx * t;
+      const ly = y1 + dy * t;
+      // High-frequency electric jitter
+      const offset = (Math.random() - 0.5) * 10;
+      const px = lx + normalX * offset;
+      const py = ly + normalY * offset;
+      this.ctx.lineTo(px, py);
+    }
+    
+    this.ctx.lineTo(x2, y2);
+    this.ctx.stroke();
 
     this.ctx.restore();
   }

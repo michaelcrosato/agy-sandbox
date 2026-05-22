@@ -85,6 +85,13 @@ export class Planet extends SpaceEntity {
               type: "cargo",
               value: 45,
             },
+            {
+              name: "Tractor Beam Matrix",
+              cost: 2500,
+              type: "tractor",
+              value: 250,
+              description: "Emits a high-frequency gravimetric tether that automatically pulls floating cargo pods within 250u towards the ship's bay."
+            }
           ];
 
     // Store Shipyard Catalog

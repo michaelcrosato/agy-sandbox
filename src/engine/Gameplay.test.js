@@ -2,6 +2,7 @@ import { Ship } from "./Ship.js";
 import { Planet } from "./Planet.js";
 import { MissionManager } from "./MissionManager.js";
 import { Vector2D } from "../physics/Vector2D.js";
+import { CargoPod } from "./CargoPod.js";
 
 describe("Commodity Trading and Economy Mechanics", () => {
   let player;
@@ -629,5 +630,111 @@ describe("Tactical Nebula Spatial Hazards and Drag Physics", () => {
     }
 
     expect(suppressedRegen).toBe(5);
+  });
+});
+
+describe("Tractor Beam Matrix & Cargo Pod Physics", () => {
+  test("CargoPod creates standard lightweight spatial container with resource type and count", () => {
+    const pod = new CargoPod({
+      resourceType: "electronics",
+      amount: 3,
+      position: new Vector2D(100, 150)
+    });
+
+    expect(pod.type).toBe("cargo_pod");
+    expect(pod.resourceType).toBe("electronics");
+    expect(pod.amount).toBe(3);
+    expect(pod.mass).toBe(50);
+    expect(pod.radius).toBe(8);
+    expect(pod.position.x).toBe(100);
+    expect(pod.position.y).toBe(150);
+    expect(pod.heading).toBeGreaterThanOrEqual(0);
+    expect(pod.heading).toBeLessThanOrEqual(Math.PI * 2);
+  });
+
+  test("Ship.addCargo checks capacities and correctly ingests cargo pods", () => {
+    const ship = new Ship({
+      cargoCapacity: 5
+    });
+
+    // Ingest some food
+    let success = ship.addCargo("food", 2);
+    expect(success).toBe(true);
+    expect(ship.cargo.food).toBe(2);
+    expect(ship.getCargoWeight()).toBe(2);
+
+    // Ingest minerals up to limit
+    success = ship.addCargo("minerals", 3);
+    expect(success).toBe(true);
+    expect(ship.getCargoWeight()).toBe(5);
+
+    // Ingesting more should exceed capacity and fail
+    success = ship.addCargo("luxuries", 1);
+    expect(success).toBe(false);
+    expect(ship.cargo.luxuries).toBe(0);
+    expect(ship.getCargoWeight()).toBe(5);
+  });
+
+  test("Tractor Beam Matrix applies mathematically correct gravimetric pull forces inside 250u", () => {
+    const ship = new Ship({
+      position: new Vector2D(0, 0),
+    });
+    ship.outfits.push("Tractor Beam Matrix");
+
+    const pod = new CargoPod({
+      resourceType: "minerals",
+      amount: 1,
+      position: new Vector2D(100, 0) // Distance is exactly 100 units
+    });
+
+    // Reset pod forces
+    pod.accumulatorForce = new Vector2D(0, 0);
+
+    // Replicate server tractor physics logic
+    const toShip = ship.position.subtract(pod.position);
+    const dist = toShip.magnitude();
+    
+    expect(dist).toBe(100);
+    expect(ship.outfits).toContain("Tractor Beam Matrix");
+
+    if (dist > 1 && dist <= 250) {
+      const forceMag = 400000 / (dist * dist + 100);
+      const pullForce = toShip.normalize().multiply(forceMag * pod.mass);
+      pod.applyForce(pullForce);
+    }
+
+    // Force magnitude should be 400000 / (10000 + 100) = 400000 / 10100 = ~39.60396
+    // Pull force = ((-1, 0)) * (39.60396 * 50) = (-1980.198, 0)
+    expect(pod.accumulatorForce.x).toBeCloseTo(-1980.198, 2);
+    expect(pod.accumulatorForce.y).toBe(0);
+  });
+
+  test("Tractor Beam Matrix does not pull cargo pods outside 250u limit", () => {
+    const ship = new Ship({
+      position: new Vector2D(0, 0),
+    });
+    ship.outfits.push("Tractor Beam Matrix");
+
+    const pod = new CargoPod({
+      resourceType: "minerals",
+      amount: 1,
+      position: new Vector2D(300, 0) // Distance is exactly 300 units (> 250)
+    });
+
+    pod.accumulatorForce = new Vector2D(0, 0);
+
+    const toShip = ship.position.subtract(pod.position);
+    const dist = toShip.magnitude();
+
+    expect(dist).toBe(300);
+
+    if (dist > 1 && dist <= 250) {
+      const forceMag = 400000 / (dist * dist + 100);
+      const pullForce = toShip.normalize().multiply(forceMag * pod.mass);
+      pod.applyForce(pullForce);
+    }
+
+    expect(pod.accumulatorForce.x).toBe(0);
+    expect(pod.accumulatorForce.y).toBe(0);
   });
 });

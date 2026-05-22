@@ -910,6 +910,9 @@ function syncEntitiesFromServer(serverEntities) {
           localEnt.armor = ent.armor;
           localEnt.maxArmor = ent.maxArmor;
           localEnt.controls = ent.controls;
+        } else if (localEnt.type === "cargo_pod") {
+          localEnt.resourceType = ent.resourceType;
+          localEnt.amount = ent.amount;
         }
       }
     } else {
@@ -950,6 +953,18 @@ function syncEntitiesFromServer(serverEntities) {
         });
         newProj.ownerId = ent.ownerId;
         engine.addEntity(newProj);
+      } else if (ent.type === "cargo_pod") {
+        const newPod = new SpaceEntity({
+          id: ent.id,
+          type: "cargo_pod",
+          position: new Vector2D(ent.x, ent.y),
+          velocity: new Vector2D(ent.vx, ent.vy),
+          radius: ent.radius,
+          heading: ent.heading
+        });
+        newPod.resourceType = ent.resourceType;
+        newPod.amount = ent.amount;
+        engine.addEntity(newPod);
       } else {
         const newAsteroid = new SpaceEntity({
           id: ent.id,
@@ -1084,6 +1099,19 @@ network.onProjectileFired = (msg) => {
 
 network.onNotification = (msg) => {
   uiController.notify(msg.message, msg.style || "info");
+};
+
+network.onCargoPickup = (msg) => {
+  let color = "#ffffff";
+  switch (msg.resourceType) {
+    case "luxuries": color = "#ffd700"; break;
+    case "minerals": color = "#cd7f32"; break;
+    case "food": color = "#39ff14"; break;
+    case "electronics": color = "#00f0ff"; break;
+    case "contraband": color = "#d03ffc"; break;
+    case "machinery": color = "#b0b0b0"; break;
+  }
+  renderer.addPickupText(`+${msg.amount} ${msg.resourceType.toUpperCase()}`, msg.x, msg.y, color);
 };
 
 // Bind Fleet HUD Control elements

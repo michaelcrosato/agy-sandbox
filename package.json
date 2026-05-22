@@ -1,0 +1,19 @@
+{
+  "name": "agy-sandbox",
+  "version": "1.0.0",
+  "description": "Sandbox configured for maximum fully autonomous coding",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "lint": "eslint src scripts",
+    "format": "prettier --write \"src/**/*.{js,json}\" \"scripts/**/*.js\" \".github/**/*.md\" README.md"
+  },
+  "devDependencies": {
+    "@google/generative-ai": "^0.11.0",
+    "dotenv": "^16.4.5",
+    "eslint": "^9.3.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.2.5"
+  }
+}

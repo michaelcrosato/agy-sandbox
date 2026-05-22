@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Endless Sky: Nebula Sector (Autonomous Sandbox)</title>
+  
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+  <!-- Viewport Game Area -->
+  <div id="game-viewport">
+    
+    <!-- Canvas Portal -->
+    <canvas id="space-canvas"></canvas>
+
+    <!-- Top Left Notification Logs -->
+    <div id="notification-log"></div>
+
+    <!-- HUD Overlay Dashboard -->
+    <div id="hud-dashboard">
+      
+      <!-- Left Panel: Vital Defensive Bars -->
+      <div class="hud-panel glass-panel left-hud">
+        <div class="hud-bar-container">
+          <div class="hud-bar-label">SHIELDS</div>
+          <div class="hud-bar-track">
+            <div id="hud-shield-fill" class="hud-bar-fill shield-color"></div>
+          </div>
+          <div id="hud-shield-text" class="hud-bar-value">200 / 200</div>
+        </div>
+
+        <div class="hud-bar-container">
+          <div class="hud-bar-label">ARMOR</div>
+          <div class="hud-bar-track">
+            <div id="hud-armor-fill" class="hud-bar-fill armor-color"></div>
+          </div>
+          <div id="hud-armor-text" class="hud-bar-value">100 / 100</div>
+        </div>
+      </div>
+
+      <!-- Fleet / Party Management Panel -->
+      <div id="fleet-panel" class="hud-panel glass-panel">
+        <div class="hud-bar-label tracker-header-line" style="color: var(--color-green); text-shadow: 0 0 6px var(--color-green-glow);">FLEET COMMAND</div>
+        
+        <!-- Setup Fleet connection -->
+        <div id="fleet-setup">
+          <div class="fleet-input-group">
+            <label>PILOT CALLSIGN</label>
+            <input type="text" id="fleet-nick-input" placeholder="Callsign..." maxlength="12" value="Commander">
+          </div>
+          <div class="fleet-input-group" style="margin-top: 8px;">
+            <label>FLEET CODE</label>
+            <input type="text" id="fleet-code-input" placeholder="E.g. RED-ONE" maxlength="10">
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button id="btn-fleet-join" class="btn-primary" style="padding: 6px 12px; font-size: 10px; flex: 1;">JOIN / CREATE</button>
+          </div>
+        </div>
+
+        <!-- Active Fleet Roster info -->
+        <div id="fleet-roster" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid var(--color-border); padding-bottom: 4px;">
+            <span id="fleet-active-name" style="font-family: var(--font-display); font-size: 11px; font-weight: 700; color: var(--color-green);">FLEET: NONE</span>
+            <button id="btn-fleet-leave" class="btn-danger" style="font-size: 9px; padding: 2px 6px; border-radius: 4px; background: rgba(255, 59, 48, 0.1); border: 1px solid rgba(255, 59, 48, 0.4); color: #ff3b30;">LEAVE</button>
+          </div>
+          <div id="fleet-members-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel: Space Navigation Stats -->
+      <div class="hud-panel glass-panel right-hud">
+        <div class="stat-row">
+          <span class="stat-label">SPEED:</span>
+          <span id="stat-speed" class="stat-value">0 u/s</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">COORDS:</span>
+          <span id="stat-coords" class="stat-value">X: 0, Y: 0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">CREDITS:</span>
+          <span id="stat-credits" class="stat-value">5,000 CR</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">CARGO:</span>
+          <span id="stat-cargo" class="stat-value">0 / 20 t</span>
+        </div>
+      </div>
+
+      <!-- Active HUD Mission Tracker (glowing list below stats) -->
+      <div id="hud-missions-tracker" class="hud-panel glass-panel">
+        <div class="hud-bar-label tracker-header-line">ACTIVE CONTRACTS</div>
+        <div id="hud-missions-list">
+          <div class="empty-tracker">No active contracts</div>
+        </div>
+      </div>
+
+      <!-- Center Bottom: Target Scanner Overlay -->
+      <div id="target-scanner" class="glass-panel">
+        <div class="scanner-title">ACTIVE TARGET SCANNER</div>
+        <div id="target-name" class="scanner-name">NO TARGET</div>
+        <div class="hud-bar-container compact">
+          <div class="hud-bar-track">
+            <div id="target-shield-fill" class="hud-bar-fill shield-color" style="width: 100%"></div>
+          </div>
+        </div>
+        <div class="hud-bar-container compact">
+          <div class="hud-bar-track">
+            <div id="target-armor-fill" class="hud-bar-fill armor-color" style="width: 100%"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Interactive Landing Proximity Trigger Prompts -->
+    <div id="landing-prompt">
+      LOCKED FOR LANDING IN range OF SOL<br>
+      <small>PRESS [L] TO LAND SPACEPORT</small>
+    </div>
+
+    <!-- Spaceport Overlay Menu System (Landed State) -->
+    <div id="spaceport-overlay" class="glass-overlay">
+      <div class="spaceport-window glass-panel">
+        <div class="spaceport-header">
+          <h1 id="spaceport-title">SOL SPACEPORT</h1>
+          <p id="spaceport-description">The cradle of humanity and trade center of the inner system.</p>
+        </div>
+
+        <!-- Tab Selection Menu -->
+        <div class="spaceport-tabs">
+          <button id="tab-trade" class="tab-btn active">COMMODITY DECK</button>
+          <button id="tab-missions" class="tab-btn">MISSION BOARD</button>
+          <button id="tab-outfitter" class="tab-btn">OUTFITTER SHOP</button>
+          <button id="tab-shipyard" class="tab-btn">SHIPYARD DEALER</button>
+        </div>
+
+        <!-- Dialog Body Panes -->
+        <div class="spaceport-body">
+          <div id="pane-trade" class="tab-pane active"></div>
+          <div id="pane-missions" class="tab-pane"></div>
+          <div id="pane-outfitter" class="tab-pane"></div>
+          <div id="pane-shipyard" class="tab-pane"></div>
+        </div>
+
+        <!-- Launch Navigation -->
+        <div class="spaceport-footer">
+          <button id="btn-launch" class="btn-primary">LAUNCH SHIP INTO ORBIT</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Splash Instruction Overlay on Initial Load -->
+    <div id="welcome-screen" class="glass-overlay visible">
+      <div class="welcome-card glass-panel text-center">
+        <h2>NEBULA SECTOR</h2>
+        <p>A top-down 2D Space Simulator sandbox inspired by Endless Sky & Escape Velocity.</p>
+        
+        <div class="controls-guide">
+          <h3>PILOT COMMAND MANUAL</h3>
+          <div class="guide-row"><span class="key">W</span> / <span class="key">↑</span> : Main Forward Engines (Thrust)</div>
+          <div class="guide-row"><span class="key">S</span> / <span class="key">↓</span> : Retro-thruster Brakes (Decelerate)</div>
+          <div class="guide-row"><span class="key">A</span> / <span class="key">D</span> / <span class="key">←</span> / <span class="key">→</span> : Thruster Steering (Rotational Turn)</div>
+          <div class="guide-row"><span class="key">SPACE</span> : Engage Front Laser Battery</div>
+          <div class="guide-row"><span class="key">T</span> : Cycle Targeting Scanners</div>
+          <div class="guide-row"><span class="key">R</span> : Lock-on Closest Hostile (Pirates)</div>
+          <div class="guide-row"><span class="key">L</span> : Initiate Planetary Landing Sequence</div>
+        </div>
+
+        <button id="btn-start" class="btn-primary">ENTER SPACELANES</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Entry Script -->
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

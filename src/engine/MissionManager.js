@@ -1,0 +1,359 @@
+/**
+ * Manages the procedural mission generation, active contract tracking, and completion cycles.
+ */
+export class MissionManager {
+  constructor() {
+    this.activeMissions = [];
+    this.availableMissions = {}; // Map of planetName -> Array of missions
+    this.storylineCompleted = false;
+    this.onStorylineStageAdvanced = null; // Callback to spawn boss ships
+    this.onBountyAccepted = null; // Callback for spawning normal bounties
+
+    // Static database of elite/named bounty targets
+    this.bountyNames = [
+      "Void Serpent",
+      "Shadow Fang",
+      "Karr the Merciless",
+      "Eclipse Phantom",
+      "Viper Monarch",
+      "Gallows Reaper",
+      "Nova Scourge",
+      "Cinder Vanguard",
+    ];
+
+    // Static database of flavor texts for missions
+    this.courierCommodities = [
+      "food",
+      "electronics",
+      "minerals",
+      "machinery",
+      "luxuries",
+    ];
+  }
+
+  /**
+   * Generates 2-3 random missions for a specific planet if not already populated.
+   * @param {string} planetName - Name of current planet.
+   * @param {Array<Planet>} allPlanets - List of all planets in the sector.
+   */
+  generateMissionsForPlanet(planetName, allPlanets) {
+    const missions = [];
+    const count = 3; // 3 procedural missions per landing
+
+    const destinationPlanets = allPlanets.filter((p) => p.name !== planetName);
+    if (destinationPlanets.length === 0) return;
+
+    for (let i = 0; i < count; i++) {
+      const typeRand = Math.random();
+      const destPlanet =
+        destinationPlanets[
+          Math.floor(Math.random() * destinationPlanets.length)
+        ];
+
+      if (typeRand < 0.35) {
+        // 1. Courier Delivery Mission
+        const commodity =
+          this.courierCommodities[
+            Math.floor(Math.random() * this.courierCommodities.length)
+          ];
+        const amount = 2 + Math.floor(Math.random() * 5); // 2 to 6 tons
+        const distance = destPlanet.position.distance(
+          allPlanets.find((p) => p.name === planetName).position,
+        );
+        const reward = Math.round(500 + distance * 0.4 + amount * 80);
+
+        missions.push({
+          id: `courier-${planetName}-${Date.now()}-${i}`,
+          type: "courier",
+          title: `Courier Delivery to ${destPlanet.name}`,
+          description: `Transport ${amount} tons of ${commodity} to ${destPlanet.name}. Safe transit required.`,
+          reward: reward,
+          origin: planetName,
+          destination: destPlanet.name,
+          cargoItem: commodity,
+          cargoAmount: amount,
+          isAccepted: false,
+          isCompleted: false,
+        });
+      } else if (typeRand < 0.7) {
+        // 2. High-Risk Smuggling Mission
+        const amount = 3 + Math.floor(Math.random() * 4); // 3 to 6 tons of contraband
+        const distance = destPlanet.position.distance(
+          allPlanets.find((p) => p.name === planetName).position,
+        );
+        const reward = Math.round((800 + distance * 0.5 + amount * 120) * 3);
+
+        missions.push({
+          id: `smuggle-${planetName}-${Date.now()}-${i}`,
+          type: "smuggle",
+          title: `Smuggle Contraband to ${destPlanet.name}`,
+          description: `High-risk, high-payout cargo smuggling. Transport ${amount} tons of black-market contraband to ${destPlanet.name}. Avoid security scans on arrival!`,
+          reward: reward,
+          origin: planetName,
+          destination: destPlanet.name,
+          cargoItem: "contraband",
+          cargoAmount: amount,
+          isAccepted: false,
+          isCompleted: false,
+        });
+      } else {
+        // 3. Combat Bounty Hunt
+        const targetName =
+          this.bountyNames[
+            Math.floor(Math.random() * this.bountyNames.length)
+          ] +
+          " " +
+          (10 + Math.floor(Math.random() * 89));
+        const distance = destPlanet.position.distance(
+          allPlanets.find((p) => p.name === planetName).position,
+        );
+        const reward = Math.round(3000 + distance * 0.8 + Math.random() * 1000);
+
+        missions.push({
+          id: `bounty-${planetName}-${Date.now()}-${i}`,
+          type: "bounty",
+          title: `Wanted: ${targetName}`,
+          description: `Neutralize the infamous pirate boss ${targetName} reported terrorizing outer flight paths in orbit of ${destPlanet.name}.`,
+          reward: reward,
+          origin: planetName,
+          destination: destPlanet.name,
+          targetName: targetName,
+          isAccepted: false,
+          isCompleted: false,
+        });
+      }
+    }
+
+    // Proactively generate campaign storyline quest if none active and not completed
+    const hasActiveStory = this.activeMissions.some(
+      (m) => m.type === "storyline",
+    );
+    if (!hasActiveStory && !this.storylineCompleted) {
+      const storyMission = this.generateStorylineMission(
+        planetName,
+        allPlanets,
+      );
+      if (storyMission) {
+        missions.push(storyMission);
+      }
+    }
+
+    this.availableMissions[planetName] = missions;
+  }
+
+  /**
+   * Generates a 3-stage storyline quest.
+   */
+  generateStorylineMission(planetName, allPlanets) {
+    const titles = ["Void Cipher", "Ancient Relic", "Nebula Legacy"];
+    const campaignName = titles[Math.floor(Math.random() * titles.length)];
+
+    const destinationPlanets = allPlanets.filter((p) => p.name !== planetName);
+    if (destinationPlanets.length < 2) return null;
+
+    // Pick 2 distinct destination planets
+    const dest1 =
+      destinationPlanets[Math.floor(Math.random() * destinationPlanets.length)];
+    const remaining = destinationPlanets.filter((p) => p.name !== dest1.name);
+    const dest2 = remaining[Math.floor(Math.random() * remaining.length)];
+
+    return {
+      id: `storyline-${planetName}-${Date.now()}`,
+      type: "storyline",
+      campaignName: campaignName,
+      title: `Story: ${campaignName} (Stage 1/3)`,
+      description: `Stage 1: A mysterious encrypted signal was intercepted. Deliver the encrypted transmission archives (electronics) to our contact on ${dest1.name} to decipher them.`,
+      reward: 15000,
+      origin: planetName,
+      destination: dest1.name,
+      cargoItem: "electronics",
+      cargoAmount: 1,
+      isAccepted: false,
+      isCompleted: false,
+      stage: 1,
+      planets: [planetName, dest1.name, dest2.name],
+    };
+  }
+
+  /**
+   * Accepts a mission, validating cargo limits and applying cargo payload.
+   */
+  acceptMission(planetName, missionId, player) {
+    const list = this.availableMissions[planetName] || [];
+    const mission = list.find((m) => m.id === missionId);
+
+    if (!mission) {
+      return { success: false, message: "Mission not found.", mission: null };
+    }
+
+    // 1. Cargo Space check
+    if (mission.cargoAmount && mission.cargoItem) {
+      if (
+        player.getCargoWeight() + mission.cargoAmount >
+        player.cargoCapacity
+      ) {
+        return {
+          success: false,
+          message: `Insufficient cargo capacity! Needs ${mission.cargoAmount} tons of free space.`,
+          mission: null,
+        };
+      }
+
+      // Add cargo immediately
+      player.addCargo(mission.cargoItem, mission.cargoAmount);
+    }
+
+    // 2. Mark accepted
+    mission.isAccepted = true;
+    this.activeMissions.push(mission);
+
+    // Remove from available
+    this.availableMissions[planetName] = list.filter((m) => m.id !== missionId);
+
+    // Fire normal bounty accept hooks
+    if (mission.type === "bounty" && this.onBountyAccepted) {
+      this.onBountyAccepted(mission);
+    }
+
+    return {
+      success: true,
+      message: `Accepted contract: ${mission.title}`,
+      mission: mission,
+    };
+  }
+
+  /**
+   * Triggers courier/smuggling landing validation on arrival.
+   */
+  checkArrivalCompletions(destinationName, player) {
+    const completed = [];
+    const remaining = [];
+
+    for (const mission of this.activeMissions) {
+      if (
+        (mission.type === "courier" || mission.type === "smuggle") &&
+        mission.destination === destinationName
+      ) {
+        // Complete the delivery
+        mission.isCompleted = true;
+        player.credits += mission.reward;
+
+        // Remove cargo
+        player.removeCargo(mission.cargoItem, mission.cargoAmount);
+
+        completed.push(mission);
+      } else if (
+        mission.type === "storyline" &&
+        mission.destination === destinationName &&
+        mission.stage === 1
+      ) {
+        // Advance to Stage 2!
+        player.removeCargo(mission.cargoItem, mission.cargoAmount); // remove logs
+
+        mission.stage = 2;
+        mission.title = `Story: ${mission.campaignName} (Stage 2/3)`;
+        mission.destination = mission.planets[2];
+        mission.description = `Stage 2: The contact deciphered the archives! They point to a secret data vault at ${mission.destination}. Defeat the Rival Spy Agent intercepting us in orbit of ${mission.destination}!`;
+        mission.targetName = `Rival Agent ${10 + Math.floor(Math.random() * 89)}`;
+        mission.cargoItem = null;
+        mission.cargoAmount = 0;
+
+        remaining.push(mission);
+        completed.push({
+          ...mission,
+          title: `${mission.campaignName} - Stage 1 Decoded!`,
+        }); // trigger notification
+
+        // Callback to spawn Stage 2 Boss
+        if (this.onStorylineStageAdvanced) {
+          this.onStorylineStageAdvanced(mission);
+        }
+      } else {
+        remaining.push(mission);
+      }
+    }
+
+    this.activeMissions = remaining;
+    return completed;
+  }
+
+  /**
+   * Evaluates if a destroyed bounty matches active targets.
+   */
+  checkBountyCompletion(shipName, player) {
+    const index = this.activeMissions.findIndex(
+      (m) =>
+        (m.type === "bounty" && m.targetName === shipName) ||
+        (m.type === "storyline" && m.targetName === shipName),
+    );
+
+    if (index !== -1) {
+      const mission = this.activeMissions[index];
+
+      if (mission.type === "storyline") {
+        if (mission.stage === 2) {
+          // Advance to Stage 3!
+          mission.stage = 3;
+          mission.title = `Story: ${mission.campaignName} (Stage 3/3)`;
+          mission.destination = mission.planets[0]; // back to starting system for climax
+          mission.description = `Stage 3: The Rival Agent's black box revealed the mastermind! Return to ${mission.destination} and destroy the massive Nebula Dreadnought dreadnought flagship!`;
+          mission.targetName = `Nebula Dreadnought`;
+
+          // Callback to spawn Stage 3 Final Boss!
+          if (this.onStorylineStageAdvanced) {
+            this.onStorylineStageAdvanced(mission);
+          }
+          return {
+            ...mission,
+            stageAdvanced: true,
+            message: `Defeated Rival Agent! black box coordinates retrieved. Return to ${mission.destination} for the final showdown!`,
+          };
+        } else if (mission.stage === 3) {
+          // Complete Storyline!
+          mission.isCompleted = true;
+          player.credits += mission.reward;
+
+          // Reward a legendary outfit!
+          player.outfits.push("Aegis Shield Matrix");
+          player.maxShield += 800;
+          player.shield = player.maxShield;
+
+          this.storylineCompleted = true;
+          this.activeMissions.splice(index, 1);
+          return {
+            ...mission,
+            campaignCompleted: true,
+            message: `CAMPAIGN COMPLETE: ${mission.campaignName} completed! Neutralized the Nebula Dreadnought! Received +15,000 CR and Aegis Shield Matrix upgrade!`,
+          };
+        }
+      } else {
+        // Standard Bounty Complete
+        mission.isCompleted = true;
+        player.credits += mission.reward;
+
+        // Remove from active
+        this.activeMissions.splice(index, 1);
+        return mission;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Cancels/abandons an active contract.
+   */
+  abandonMission(missionId, player) {
+    const index = this.activeMissions.findIndex((m) => m.id === missionId);
+    if (index !== -1) {
+      const mission = this.activeMissions[index];
+
+      // Remove cargo if applicable
+      if (mission.cargoAmount && mission.cargoItem) {
+        player.removeCargo(mission.cargoItem, mission.cargoAmount);
+      }
+
+      this.activeMissions.splice(index, 1);
+    }
+  }
+}

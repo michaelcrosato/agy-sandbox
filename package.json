@@ -5,6 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
+    "dev": "npx http-server .",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "lint": "eslint src scripts",
     "format": "prettier --write \"src/**/*.{js,json}\" \"scripts/**/*.js\" \".github/**/*.md\" README.md"
@@ -15,5 +16,8 @@
     "eslint": "^9.3.0",
     "jest": "^29.7.0",
     "prettier": "^3.2.5"
+  },
+  "dependencies": {
+    "ws": "^8.20.1"
   }
 }

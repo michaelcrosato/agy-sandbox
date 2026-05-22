@@ -1,0 +1,1201 @@
+import { Vector2D } from "./physics/Vector2D.js";
+import { Ship } from "./engine/Ship.js";
+import { Planet } from "./engine/Planet.js";
+import { SpaceEngine } from "./engine/SpaceEngine.js";
+import { SpaceEntity } from "./engine/SpaceEntity.js";
+import { AIController } from "./engine/ai/AIController.js";
+import { InputHandler } from "./client/InputHandler.js";
+import { CanvasRenderer } from "./client/CanvasRenderer.js";
+import { UIController } from "./client/UIController.js";
+import { SpaceportUI } from "./client/SpaceportUI.js";
+import { MissionManager } from "./engine/MissionManager.js";
+import { NetworkHandler } from "./client/NetworkHandler.js";
+
+// Global game variables
+let isLanded = false;
+let playerTarget = null;
+const ais = [];
+const planets = [];
+let eventCheckTimer = 0;
+let empTimer = 0;
+
+// Initialize DOM controllers
+const uiController = new UIController();
+const missionManager = new MissionManager();
+const spaceportUI = new SpaceportUI(uiController, missionManager);
+
+// Set up Mission Manager event hooks
+missionManager.onBountyAccepted = (mission) => {
+  const destPlanet = planets.find((p) => p.name === mission.destination);
+  if (!destPlanet) return;
+
+  const spawnAngle = Math.random() * Math.PI * 2;
+  const spawnDist = destPlanet.landingRadius + 200 + Math.random() * 200;
+  const spawnPos = destPlanet.position.add(
+    new Vector2D(
+      Math.cos(spawnAngle) * spawnDist,
+      Math.sin(spawnAngle) * spawnDist,
+    ),
+  );
+
+  const bossShip = new Ship({
+    name: mission.targetName,
+    position: spawnPos,
+    velocity: new Vector2D(
+      (Math.random() - 0.5) * 40,
+      (Math.random() - 0.5) * 40,
+    ),
+    maxShield: 700,
+    maxArmor: 450,
+    thrustPower: 22000,
+    turnRate: 2.2,
+    weaponDamage: 40,
+    weaponCooldown: 0.22,
+  });
+
+  const controller = new AIController(bossShip, "pirate");
+  engine.addEntity(bossShip);
+  ais.push(controller);
+
+  uiController.notify(
+    `ALERT: Wanted threat ${mission.targetName} spotted in orbit of ${destPlanet.name}!`,
+    "error",
+  );
+};
+
+missionManager.onStorylineStageAdvanced = (mission) => {
+  const destPlanet = planets.find((p) => p.name === mission.destination);
+  if (!destPlanet) return;
+
+  const spawnAngle = Math.random() * Math.PI * 2;
+  const spawnDist = destPlanet.landingRadius + 220 + Math.random() * 150;
+  const spawnPos = destPlanet.position.add(
+    new Vector2D(
+      Math.cos(spawnAngle) * spawnDist,
+      Math.sin(spawnAngle) * spawnDist,
+    ),
+  );
+
+  let bossShip;
+  if (mission.stage === 2) {
+    // Rival Agent: Fast combat starfighter
+    bossShip = new Ship({
+      name: mission.targetName,
+      position: spawnPos,
+      velocity: new Vector2D(
+        (Math.random() - 0.5) * 50,
+        (Math.random() - 0.5) * 50,
+      ),
+      maxShield: 500,
+      maxArmor: 300,
+      thrustPower: 26000,
+      turnRate: 2.8,
+      weaponDamage: 30,
+      weaponCooldown: 0.2,
+    });
+  } else if (mission.stage === 3) {
+    // Nebula Dreadnought: Massive combat flagship boss!
+    bossShip = new Ship({
+      name: mission.targetName,
+      position: spawnPos,
+      velocity: new Vector2D(
+        (Math.random() - 0.5) * 20,
+        (Math.random() - 0.5) * 20,
+      ),
+      maxShield: 1500,
+      maxArmor: 1000,
+      thrustPower: 35000,
+      turnRate: 1.2,
+      weaponDamage: 60,
+      weaponCooldown: 0.4,
+    });
+  }
+
+  const controller = new AIController(bossShip, "pirate");
+  engine.addEntity(bossShip);
+  ais.push(controller);
+
+  uiController.notify(
+    `STORY ALERT: ${mission.targetName} spotted in orbit of ${destPlanet.name}!`,
+    "error",
+  );
+};
+
+// Initialize Client inputs and renderer
+const canvas = document.getElementById("space-canvas");
+const renderer = new CanvasRenderer(canvas);
+const inputHandler = new InputHandler();
+
+// Trigger initial viewport size calculations
+renderer.resize();
+window.addEventListener("resize", () => renderer.resize());
+
+// Initialize physical simulator engine
+const engine = new SpaceEngine({ globalDrag: 0.1, restitution: 0.4 });
+
+// Setup player starship
+const player = new Ship({
+  id: "player",
+  name: "Starfarer",
+  position: new Vector2D(0, -150), // Start slightly above Sol orbit
+  velocity: new Vector2D(0, 0),
+  heading: -Math.PI / 2, // point upwards
+  maxShield: 200,
+  maxArmor: 100,
+  credits: 5000,
+  cargoCapacity: 20,
+  thrustPower: 28000, // ~3.3x faster acceleration
+  brakePower: 15000, // proportional retro braking for fast stops
+  maxSpeed: 950, // ~3.1x faster maximum terminal velocity
+  turnRate: 3.2, // snappier turning to complement high-speed steering
+});
+engine.addEntity(player);
+
+// Initialize solar systems / planets (8 detailed systems)
+const solPlanet = new Planet({
+  name: "Sol",
+  description:
+    "The historic cradle of humanity and bustling trade center of the inner systems. High luxury demand, cheap machinery.",
+  color: "#4d6fff",
+  position: new Vector2D(0, 0),
+  radius: 65,
+  market: {
+    food: 100,
+    electronics: 300,
+    minerals: 150,
+    luxuries: 600,
+    contraband: 250,
+    machinery: 100,
+  },
+});
+planets.push(solPlanet);
+engine.addEntity(solPlanet);
+
+const polarisPlanet = new Planet({
+  name: "New Polaris",
+  description:
+    "An icy frontier industrial colony rich in raw mineral extractions. High food demand, cheap raw minerals.",
+  color: "#e0f7fa",
+  position: new Vector2D(2000, -1200),
+  radius: 55,
+  market: {
+    food: 220,
+    electronics: 320,
+    minerals: 50,
+    luxuries: 650,
+    contraband: 300,
+    machinery: 220,
+  },
+});
+planets.push(polarisPlanet);
+engine.addEntity(polarisPlanet);
+
+const draconisPlanet = new Planet({
+  name: "Sigma Draconis",
+  description:
+    "A high-tech research outpost specializing in advanced electronics production. Demands minerals, cheap electronics.",
+  color: "#00f2fe",
+  position: new Vector2D(-2200, 1600),
+  radius: 60,
+  market: {
+    food: 120,
+    electronics: 120,
+    minerals: 250,
+    luxuries: 500,
+    contraband: 200,
+    machinery: 160,
+  },
+});
+planets.push(draconisPlanet);
+engine.addEntity(draconisPlanet);
+
+const kaelisPlanet = new Planet({
+  name: "Kaelis Colony",
+  description:
+    "An agricultural breadbasket producing vast food supplies. Demands electronics, cheap food.",
+  color: "#00e676",
+  position: new Vector2D(-1800, -1800),
+  radius: 60,
+  market: {
+    food: 40,
+    electronics: 420,
+    minerals: 180,
+    luxuries: 550,
+    contraband: 280,
+    machinery: 190,
+  },
+});
+planets.push(kaelisPlanet);
+engine.addEntity(kaelisPlanet);
+
+const aureliaPlanet = new Planet({
+  name: "Aurelia Mining Hub",
+  description:
+    "Outer planetary asteroid refinery. Demands food, produces cheap raw metals and machinery.",
+  color: "#ff9100",
+  position: new Vector2D(1800, 1800),
+  radius: 58,
+  market: {
+    food: 150,
+    electronics: 290,
+    minerals: 70,
+    luxuries: 580,
+    contraband: 260,
+    machinery: 150,
+  },
+});
+planets.push(aureliaPlanet);
+engine.addEntity(aureliaPlanet);
+
+const tenebrisPlanet = new Planet({
+  name: "Tenebris Prime",
+  description:
+    "A mysterious colony inside a dark nebula. Produces top-tier scientific luxuries, demands electronics.",
+  color: "#d500f9",
+  position: new Vector2D(-600, 2400),
+  radius: 55,
+  market: {
+    food: 160,
+    electronics: 450,
+    minerals: 200,
+    luxuries: 220,
+    contraband: 400,
+    machinery: 240,
+  },
+});
+planets.push(tenebrisPlanet);
+engine.addEntity(tenebrisPlanet);
+
+const valkyriePlanet = new Planet({
+  name: "Valkyrie Depot",
+  description:
+    "Core fleet military staging area. Produces high-grade heavy machinery, demands electronics.",
+  color: "#ff1744",
+  position: new Vector2D(2500, 300),
+  radius: 62,
+  market: {
+    food: 110,
+    electronics: 380,
+    minerals: 190,
+    luxuries: 520,
+    contraband: 220,
+    machinery: 80,
+  },
+});
+planets.push(valkyriePlanet);
+engine.addEntity(valkyriePlanet);
+
+const roguesPlanet = new Planet({
+  name: "Rogue's Hollow",
+  description:
+    "A lawless pirate anchorage hidden deep inside a dense asteroid field. Smuggler contraband is cheap here.",
+  color: "#e040fb",
+  position: new Vector2D(-2800, -500),
+  radius: 52,
+  market: {
+    food: 250,
+    electronics: 220,
+    minerals: 160,
+    luxuries: 450,
+    contraband: 60,
+    machinery: 180,
+  },
+});
+planets.push(roguesPlanet);
+engine.addEntity(roguesPlanet);
+
+// Generate drifting spinning asteroids (including Rare Gem Asteroids)
+const asteroidCount = 45;
+for (let i = 0; i < asteroidCount; i++) {
+  const angle = Math.random() * Math.PI * 2;
+  const dist = 500 + Math.random() * 3200;
+  const x = Math.cos(angle) * dist;
+  const y = Math.sin(angle) * dist;
+
+  const vx = (Math.random() - 0.5) * 40;
+  const vy = (Math.random() - 0.5) * 40;
+  const spin = (Math.random() - 0.5) * 0.8;
+  const size = 18 + Math.random() * 20;
+
+  const isGem = Math.random() < 0.25; // 25% Gem Asteroids
+  const type = isGem ? "gem_asteroid" : "generic";
+
+  const asteroid = new SpaceEntity({
+    type: type,
+    position: new Vector2D(x, y),
+    velocity: new Vector2D(vx, vy),
+    mass: size * 30,
+    heading: Math.random() * Math.PI,
+    angularVelocity: spin,
+    radius: size,
+  });
+  engine.addEntity(asteroid);
+}
+
+// Generate NPC faction fleets
+// 1. Spawning AI Faction Merchants
+const merchantNames = [
+  "Atlas Hauler",
+  "Hermes Cargo",
+  "Heavy Freighter",
+  "Behemoth",
+  "Voyager Hauler",
+  "Galleon",
+];
+for (let i = 0; i < 8; i++) {
+  const spawnPlanet = planets[i % planets.length];
+  const spawnPos = spawnPlanet.position.add(
+    new Vector2D((Math.random() - 0.5) * 400, (Math.random() - 0.5) * 400),
+  );
+
+  // Merchants use Cargo Hauler or Heavy Freighter stats
+  const isHeavy = i % 2 === 0;
+  const mShip = new Ship({
+    name: merchantNames[i % merchantNames.length],
+    position: spawnPos,
+    velocity: new Vector2D(
+      (Math.random() - 0.5) * 15,
+      (Math.random() - 0.5) * 15,
+    ),
+    maxShield: isHeavy ? 500 : 300,
+    maxArmor: isHeavy ? 350 : 200,
+    cargoCapacity: isHeavy ? 200 : 80,
+    credits: 8000,
+    thrustPower: isHeavy ? 16000 : 11000,
+    turnRate: isHeavy ? 1.2 : 1.5,
+  });
+
+  const controller = new AIController(mShip, "merchant");
+  engine.addEntity(mShip);
+  ais.push(controller);
+}
+
+// 2. Spawning AI Pirate Raiders
+const pirateNames = [
+  "Pirate Raider",
+  "Viper Scout",
+  "Marauder",
+  "Corsair Star",
+  "Gallows Destroyer",
+];
+for (let i = 0; i < 7; i++) {
+  const angle = Math.random() * Math.PI * 2;
+  const dist = 1000 + Math.random() * 2000;
+  const spawnPos = new Vector2D(Math.cos(angle) * dist, Math.sin(angle) * dist);
+
+  // Pirates use Courier, Star Fighter or military-grade hulls
+  const isHeavy = i === 6; // boss pirate
+  const pShip = new Ship({
+    name: isHeavy ? "Pirate Boss Gallows" : pirateNames[i % pirateNames.length],
+    position: spawnPos,
+    velocity: new Vector2D(
+      (Math.random() - 0.5) * 50,
+      (Math.random() - 0.5) * 50,
+    ),
+    maxShield: isHeavy ? 600 : 250,
+    maxArmor: isHeavy ? 400 : 150,
+    thrustPower: isHeavy ? 20000 : 14000,
+    turnRate: isHeavy ? 2.0 : 3.0,
+    weaponDamage: isHeavy ? 35 : 18,
+    weaponCooldown: isHeavy ? 0.2 : 0.3,
+  });
+
+  const controller = new AIController(pShip, "pirate");
+  engine.addEntity(pShip);
+  ais.push(controller);
+}
+
+// 3. Spawning AI System Guards
+const guardNames = [
+  "System Guard",
+  "Sector Police",
+  "Navy Destroyer",
+  "Aegis Cruiser",
+  "Defense Sentinel",
+  "Patrol Frigate",
+];
+for (let i = 0; i < 6; i++) {
+  const spawnPlanet = planets[i % planets.length];
+  const spawnPos = spawnPlanet.position.add(
+    new Vector2D((Math.random() - 0.5) * 200, (Math.random() - 0.5) * 200),
+  );
+
+  // Guards use military destroyer hulls
+  const isDestroyer = i % 2 === 0;
+  const gShip = new Ship({
+    name: guardNames[i % guardNames.length],
+    position: spawnPos,
+    velocity: new Vector2D(
+      (Math.random() - 0.5) * 10,
+      (Math.random() - 0.5) * 10,
+    ),
+    maxShield: isDestroyer ? 900 : 400,
+    maxArmor: isDestroyer ? 600 : 250,
+    thrustPower: isDestroyer ? 26000 : 18000,
+    turnRate: isDestroyer ? 1.6 : 2.5,
+    weaponDamage: isDestroyer ? 45 : 25,
+    weaponCooldown: isDestroyer ? 0.3 : 0.25,
+  });
+
+  const controller = new AIController(gShip, "guard");
+  engine.addEntity(gShip);
+  ais.push(controller);
+}
+
+// Spark particle trigger hooks
+engine.onProjectileFired = (proj, ship) => {
+  // Spawn subtle exhaust flash when lasers fire
+  const dir = ship.getDirectionVector();
+  const muzzleX = ship.position.x + dir.x * (ship.radius + 2);
+  const muzzleY = ship.position.y + dir.y * (ship.radius + 2);
+  renderer.spawnExplosion(
+    muzzleX,
+    muzzleY,
+    ship.id === "player" ? "#00ffcc" : "#ff3333",
+  );
+};
+
+engine.onEntityDestroyed = (ent) => {
+  if (ent.type === "projectile") return;
+
+  // Determine explosion colors based on faction and type
+  let color = "#ff4a1c"; // orange-red for regular ships
+  if (ent.type === "generic") {
+    color = "#888c94"; // grey debris dust for asteroids
+  } else if (ent.type === "gem_asteroid") {
+    const hashVal = ent.id ? ent.id.charCodeAt(0) : 0;
+    color = hashVal % 2 === 0 ? "#ffd700" : "#00ff66"; // Gold or emerald sparkling flash
+  } else if (ent.id === "player") {
+    color = "#00ffff"; // electric blue for player shield explosion
+  } else if (
+    ent.name &&
+    (ent.name === "Pirate Raider" || ent.name.includes("Pirate"))
+  ) {
+    color = "#ff3b30"; // blood red for pirate raiders
+  }
+
+  // Trigger high-fidelity vector explosion
+  renderer.spawnExplosion(ent.position.x, ent.position.y, color);
+
+  // Award player on targets destruction (offline only)
+  if (!window.network || !window.network.connected) {
+    if (ent.type === "generic" || ent.type === "gem_asteroid") {
+      if (ent.type === "gem_asteroid") {
+        const added = player.addCargo("luxuries", 1);
+        if (added) {
+          uiController.notify(
+            "Rare Gem Asteroid shattered! Yielded 1 unit of high-value luxuries cargo.",
+            "success",
+          );
+        } else {
+          player.credits += 500;
+          uiController.notify(
+            "Rare Gem Asteroid shattered! Cargo full, minerals sold immediately for 500 CR.",
+            "info",
+          );
+        }
+      } else {
+        player.credits += 250;
+        uiController.notify(
+          "Asteroid shattered! Recovered 250 CR minerals.",
+          "success",
+        );
+      }
+    } else if (ent.type === "ship") {
+      // Check if this ship satisfies an active bounty mission
+      const completedBounty = missionManager.checkBountyCompletion(
+        ent.name,
+        player,
+      );
+      if (completedBounty) {
+        if (completedBounty.campaignCompleted) {
+          uiController.notify(completedBounty.message, "success");
+          // Trigger massive gold-colored fireworks explosion visuals
+          for (let i = 0; i < 8; i++) {
+            setTimeout(() => {
+              renderer.spawnExplosion(
+                player.position.x + (Math.random() - 0.5) * 200,
+                player.position.y + (Math.random() - 0.5) * 200,
+                "#ffd700",
+              );
+            }, i * 200);
+          }
+        } else if (completedBounty.stageAdvanced) {
+          uiController.notify(completedBounty.message, "success");
+        } else {
+          uiController.notify(
+            `Contract Completed: Bounty for ${completedBounty.targetName} claimed! +${completedBounty.reward.toLocaleString()} CR`,
+            "success",
+          );
+        }
+        uiController.updateActiveMissionsHUD(missionManager.activeMissions);
+      }
+
+      if (
+        ent.name &&
+        (ent.name === "Pirate Raider" || ent.name.includes("Pirate"))
+      ) {
+        player.credits += 1000;
+        uiController.notify(
+          `${ent.name} neutralized! Bounty claimed +1,000 CR`,
+          "success",
+        );
+      } else {
+        uiController.notify(`${ent.name} has been destroyed in combat.`, "info");
+      }
+
+      // Clean from active target scanner
+      if (playerTarget === ent) {
+        playerTarget = null;
+      }
+    }
+  } else {
+    // In multiplayer, just clean up targets locally if destroyed
+    if (playerTarget === ent) {
+      playerTarget = null;
+    }
+  }
+
+  // Handle Player Death Respawn sequence (offline only)
+  if (ent.id === "player" && (!window.network || !window.network.connected)) {
+    handlePlayerRespawn();
+  }
+};
+
+/**
+ * Initiates the player respawn cycle at Sol spaceport with 10% credit insurance fee.
+ */
+function handlePlayerRespawn() {
+  uiController.notify(
+    "CRITICAL ERROR: Reactor core compromised! Ejecting capsule...",
+    "error",
+  );
+
+  setTimeout(() => {
+    // 10% financial penalty
+    const insuranceFee = Math.floor(player.credits * 0.1);
+    player.credits = Math.max(0, player.credits - insuranceFee);
+
+    // Revive and reset player properties
+    player.armor = player.maxArmor;
+    player.shield = player.maxShield;
+    player.position = new Vector2D(0, -150); // orbit coordinates above Sol
+    player.velocity = new Vector2D(0, 0);
+    player.heading = -Math.PI / 2;
+    player.clearControls();
+
+    engine.addEntity(player);
+    uiController.notify(
+      `Cloned replacement hull activated at Sol. Insurance fee: ${insuranceFee.toLocaleString()} CR.`,
+      "info",
+    );
+  }, 3000);
+}
+
+// Binds planetary landing hooks
+inputHandler.onLandPressed = () => {
+  if (isLanded) return;
+
+  if (window.network && window.network.connected) {
+    window.network.requestLanding();
+    return;
+  }
+
+  // Search if currently in suitable proximity of any planet
+  const targetPlanet = planets.find((p) => p.canLand(player));
+  if (targetPlanet) {
+    // 1. Complete active delivery / smuggling contracts on arrival
+    const completed = missionManager.checkArrivalCompletions(
+      targetPlanet.name,
+      player,
+    );
+    for (const m of completed) {
+      uiController.notify(
+        `Contract Completed: ${m.title}! Received +${m.reward.toLocaleString()} CR`,
+        "success",
+      );
+    }
+    uiController.updateActiveMissionsHUD(missionManager.activeMissions);
+
+    // 2. SECURITY SCAN check for contraband on core planets (any planet except Rogue's Hollow)
+    if (targetPlanet.name !== "Rogue's Hollow" && player.cargo.contraband > 0) {
+      player.cargo.contraband = 0;
+      player.credits = Math.max(0, player.credits - 1500);
+      uiController.notify(
+        "Security Scan: Contraband detected! Confiscated and fined 1,500 CR.",
+        "error",
+      );
+    }
+
+    isLanded = true;
+    player.velocity = new Vector2D(0, 0);
+    player.clearControls();
+
+    // Open glassmorphic trading/outfit spaceport screen
+    spaceportUI.open(player, targetPlanet, planets);
+    uiController.notify(
+      `Landed safely on ${targetPlanet.name}. Ship systems secured.`,
+      "success",
+    );
+  } else {
+    uiController.notify(
+      "Cannot land here. Travel within trigger radius at low speed (< 80 u/s).",
+      "error",
+    );
+  }
+};
+
+// Bind launch callback to resume game simulation
+spaceportUI.onLaunch = () => {
+  isLanded = false;
+
+  // Reposition ship slightly outside the planet coordinate radius to prevent immediately re-landing
+  const targetPlanet = spaceportUI.planet;
+  if (targetPlanet) {
+    player.position = targetPlanet.position.add(
+      new Vector2D(0, targetPlanet.landingRadius + 30),
+    );
+  }
+  player.velocity = new Vector2D(0, 0);
+  player.clearControls();
+
+  uiController.notify(
+    "Launch sequence completed! Thrusters online.",
+    "success",
+  );
+};
+
+// Target Selection cycle listeners
+inputHandler.onTargetPressed = () => {
+  const localId = (window.network && window.network.playerId) || "player";
+  // Pull all active ships excluding player
+  const candidateShips = engine.entities.filter(
+    (ent) => ent.type === "ship" && ent.id !== localId && !ent.isDestroyed,
+  );
+
+  if (candidateShips.length === 0) {
+    playerTarget = null;
+    uiController.notify("No scanner signals detected in range.", "error");
+    return;
+  }
+
+  // Cycle sequentially
+  if (!playerTarget || !candidateShips.includes(playerTarget)) {
+    playerTarget = candidateShips[0];
+  } else {
+    const currentIndex = candidateShips.indexOf(playerTarget);
+    const nextIndex = (currentIndex + 1) % candidateShips.length;
+    playerTarget = candidateShips[nextIndex];
+  }
+
+  uiController.notify(`Scanners locked: ${playerTarget.name}`, "info");
+};
+
+inputHandler.onHostilePressed = () => {
+  // Pull active hostile pirate ships
+  const hostiles = engine.entities.filter(
+    (ent) => ent.name === "Pirate Raider" && !ent.isDestroyed,
+  );
+
+  if (hostiles.length === 0) {
+    uiController.notify("No hostiles registered in local sector.", "success");
+    return;
+  }
+
+  // Lock the closest hostile pirate ship
+  let closestPirate = null;
+  let closestDist = Infinity;
+
+  for (const pirate of hostiles) {
+    const dist = player.position.distance(pirate.position);
+    if (dist < closestDist) {
+      closestDist = dist;
+      closestPirate = pirate;
+    }
+  }
+
+  if (closestPirate) {
+    playerTarget = closestPirate;
+    uiController.notify(
+      `WARNING: Locked threat vector: ${playerTarget.name}`,
+      "error",
+    );
+  }
+};
+
+// Startup menu bindings
+const welcomeScreen = document.getElementById("welcome-screen");
+const btnStart = document.getElementById("btn-start");
+btnStart.addEventListener("click", () => {
+  welcomeScreen.classList.remove("visible");
+  uiController.notify("Welcome to Nebula Sector! Pilot cautiously.", "success");
+
+  // Kick off high precision animation loop
+  lastTime = 0;
+  requestAnimationFrame(gameLoop);
+});
+
+/**
+ * Triggers a procedural dynamic event in local space.
+ */
+function triggerRandomSpaceEvent() {
+  const rand = Math.random();
+  if (rand < 0.3) {
+    // 1. Solar Storm / EMP Event
+    empTimer = 15; // 15 seconds duration
+    uiController.notify(
+      "WARNING: Solar EMP Flare detected! Shields offline, thrust power halved!",
+      "error",
+    );
+  } else if (rand < 0.65) {
+    // 2. Merchant Distress Call
+    uiController.notify(
+      "DISTRESS SIGNAL: Civilian freighter under pirate raider ambush nearby!",
+      "error",
+    );
+
+    // Spawn distressed freighter near player
+    const angleF = Math.random() * Math.PI * 2;
+    const spawnPosF = player.position.add(
+      new Vector2D(Math.cos(angleF) * 500, Math.sin(angleF) * 500),
+    );
+
+    const distressedMerchant = new Ship({
+      name: "Distress Freighter",
+      position: spawnPosF,
+      velocity: new Vector2D(0, 0),
+      maxShield: 400,
+      maxArmor: 250,
+      thrustPower: 12000,
+      turnRate: 1.5,
+    });
+
+    const mController = new AIController(distressedMerchant, "merchant");
+    engine.addEntity(distressedMerchant);
+    ais.push(mController);
+
+    // Spawn 1-2 pirate raiders attacking it
+    const pirateCount = 1 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < pirateCount; i++) {
+      const angleP = Math.random() * Math.PI * 2;
+      const spawnPosP = spawnPosF.add(
+        new Vector2D(Math.cos(angleP) * 150, Math.sin(angleP) * 150),
+      );
+
+      const attacker = new Ship({
+        name: `Distress Raider #${i + 1}`,
+        position: spawnPosP,
+        velocity: new Vector2D(0, 0),
+        maxShield: 200,
+        maxArmor: 100,
+        thrustPower: 10000,
+        turnRate: 2.5,
+        weaponDamage: 15,
+        weaponCooldown: 0.3,
+      });
+
+      // Make pirate attack the merchant
+      const pController = new AIController(attacker, "pirate");
+      pController.target = distressedMerchant;
+
+      engine.addEntity(attacker);
+      ais.push(pController);
+    }
+  } else if (rand < 0.9) {
+    // 3. Wormhole Anomaly
+    uiController.notify(
+      "WARNING: Spatial anomaly detected! Wormhole gravity rift has teleported ship!",
+      "info",
+    );
+
+    // Teleport player to random far coordinates
+    const warpX = (Math.random() - 0.5) * 5000;
+    const warpY = (Math.random() - 0.5) * 5000;
+    player.position = new Vector2D(warpX, warpY);
+    player.velocity = new Vector2D(0, 0);
+
+    // Spawn a couple of Gem Asteroids around player for rewards
+    for (let i = 0; i < 3; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const pos = player.position.add(
+        new Vector2D(
+          Math.cos(angle) * (150 + Math.random() * 100),
+          Math.sin(angle) * (150 + Math.random() * 100),
+        ),
+      );
+      const gem = new SpaceEntity({
+        type: "gem_asteroid",
+        position: pos,
+        velocity: new Vector2D(
+          (Math.random() - 0.5) * 20,
+          (Math.random() - 0.5) * 20,
+        ),
+        mass: 600,
+        radius: 20,
+      });
+      engine.addEntity(gem);
+    }
+
+    // Flash explosion visual at player new coordinates
+    renderer.spawnExplosion(player.position.x, player.position.y, "#9b5de5");
+  }
+}
+
+// ==========================================
+// MULTIPLAYER NETWORKING & STATE SYNC SETUP
+// ==========================================
+
+const network = new NetworkHandler();
+window.network = network;
+
+// Keep client physics entities completely in sync with authoritative server coordinates
+function syncEntitiesFromServer(serverEntities) {
+  const localId = (network && network.playerId) || "player";
+  
+  // Track IDs from server update
+  const serverIds = new Set(serverEntities.map(e => e.id));
+  
+  // 1. Clean up local entities (except planets and local player ship) that are destroyed or left
+  const toRemove = [];
+  for (const ent of engine.entities) {
+    if (ent.type === "planet") continue;
+    if (ent.id === localId) continue;
+    
+    if (!serverIds.has(ent.id)) {
+      toRemove.push(ent);
+    }
+  }
+  
+  for (const ent of toRemove) {
+    engine.removeEntity(ent);
+    if (ent.type === "ship" || ent.type === "generic" || ent.type === "gem_asteroid") {
+      if (typeof engine.onEntityDestroyed === "function") {
+        engine.onEntityDestroyed(ent);
+      }
+    }
+  }
+
+  // 2. Synchronize current properties or instantiate brand new ones
+  for (const ent of serverEntities) {
+    let localEnt = engine.entities.find(e => e.id === ent.id);
+    
+    if (localEnt) {
+      if (ent.id === localId) {
+        // Client-side prediction reconciliation for local player coordinates
+        const serverPos = new Vector2D(ent.x, ent.y);
+        const dist = localEnt.position.distance(serverPos);
+        if (dist > 150) {
+          localEnt.position = serverPos; // hard correction
+        } else {
+          localEnt.position = localEnt.position.multiply(0.85).add(serverPos.multiply(0.15)); // soft blend
+        }
+        localEnt.velocity = new Vector2D(ent.vx, ent.vy);
+        localEnt.shield = ent.shield;
+        localEnt.maxShield = ent.maxShield;
+        localEnt.armor = ent.armor;
+        localEnt.maxArmor = ent.maxArmor;
+      } else {
+        // Smoothly interpolate other entities positions to hide latency gaps
+        localEnt.position = localEnt.position.multiply(0.8).add(new Vector2D(ent.x, ent.y).multiply(0.2));
+        localEnt.velocity = new Vector2D(ent.vx, ent.vy);
+        localEnt.heading = ent.heading;
+        localEnt.radius = ent.radius;
+        
+        if (localEnt.type === "ship") {
+          localEnt.name = ent.name;
+          localEnt.shield = ent.shield;
+          localEnt.maxShield = ent.maxShield;
+          localEnt.armor = ent.armor;
+          localEnt.maxArmor = ent.maxArmor;
+          localEnt.controls = ent.controls;
+        }
+      }
+    } else {
+      // Add new entity
+      if (ent.id === localId) {
+        player.id = localId;
+        player.position = new Vector2D(ent.x, ent.y);
+        player.velocity = new Vector2D(ent.vx, ent.vy);
+        player.heading = ent.heading;
+        player.radius = ent.radius;
+        player.shield = ent.shield;
+        player.maxShield = ent.maxShield;
+        player.armor = ent.armor;
+        player.maxArmor = ent.maxArmor;
+      } else if (ent.type === "ship") {
+        const newShip = new Ship({
+          id: ent.id,
+          name: ent.name,
+          position: new Vector2D(ent.x, ent.y),
+          velocity: new Vector2D(ent.vx, ent.vy),
+          heading: ent.heading,
+          radius: ent.radius,
+          maxShield: ent.maxShield,
+          maxArmor: ent.maxArmor
+        });
+        newShip.shield = ent.shield;
+        newShip.armor = ent.armor;
+        newShip.controls = ent.controls || { isThrusting: false, isBraking: false, isFiring: false };
+        engine.addEntity(newShip);
+      } else if (ent.type === "projectile") {
+        const newProj = new SpaceEntity({
+          id: ent.id,
+          type: "projectile",
+          position: new Vector2D(ent.x, ent.y),
+          velocity: new Vector2D(ent.vx, ent.vy),
+          radius: ent.radius,
+          heading: ent.heading
+        });
+        newProj.ownerId = ent.ownerId;
+        engine.addEntity(newProj);
+      } else {
+        const newAsteroid = new SpaceEntity({
+          id: ent.id,
+          type: ent.type,
+          position: new Vector2D(ent.x, ent.y),
+          velocity: new Vector2D(ent.vx, ent.vy),
+          radius: ent.radius,
+          heading: ent.heading
+        });
+        engine.addEntity(newAsteroid);
+      }
+    }
+  }
+}
+
+// Bind WebSocket network lifecycle listeners
+network.onInit = (msg) => {
+  player.id = msg.playerId;
+  player.name = msg.nickname;
+  uiController.notify(`Connected to Nebula Server as ${msg.nickname}!`, "success");
+};
+
+network.onStateReceived = (serverEntities) => {
+  syncEntitiesFromServer(serverEntities);
+};
+
+network.onStatsReceived = (msg) => {
+  player.credits = msg.credits;
+  player.shield = msg.shield;
+  player.maxShield = msg.maxShield;
+  player.armor = msg.armor;
+  player.maxArmor = msg.maxArmor;
+  player.cargoCapacity = msg.cargoCapacity;
+  player.cargo = msg.cargo;
+  player.outfits = msg.outfits;
+  player.weaponDamage = msg.weaponDamage;
+  player.weaponCooldown = msg.weaponCooldown;
+  player.thrustPower = msg.thrustPower;
+  player.maxSpeed = msg.maxSpeed;
+  player.name = msg.nickname;
+  
+  uiController.update(player, playerTarget, planets);
+  spaceportUI.refreshActiveTab();
+};
+
+network.onLanded = (msg) => {
+  isLanded = true;
+  player.velocity = new Vector2D(0, 0);
+  player.clearControls();
+  
+  const targetPlanet = planets.find(p => p.name === msg.planetName);
+  if (targetPlanet) {
+    spaceportUI.open(player, targetPlanet, planets);
+    uiController.notify(`Landed safely on ${targetPlanet.name}. Ship systems secured.`, "success");
+  }
+};
+
+network.onLaunched = () => {
+  isLanded = false;
+  spaceportUI.close();
+  
+  const targetPlanet = spaceportUI.planet;
+  if (targetPlanet) {
+    player.position = targetPlanet.position.add(new Vector2D(0, targetPlanet.landingRadius + 30));
+  }
+  player.velocity = new Vector2D(0, 0);
+  player.clearControls();
+  uiController.notify("Launch sequence completed! Thrusters online.", "success");
+};
+
+network.onFleetSync = (msg) => {
+  const setupEl = document.getElementById("fleet-setup");
+  const rosterEl = document.getElementById("fleet-roster");
+  const nameEl = document.getElementById("fleet-active-name");
+  const listEl = document.getElementById("fleet-members-list");
+
+  if (msg.name) {
+    if (setupEl) setupEl.style.display = "none";
+    if (rosterEl) rosterEl.style.display = "block";
+    if (nameEl) nameEl.innerText = `FLEET: ${msg.name}`;
+    
+    if (listEl) {
+      listEl.innerHTML = "";
+      for (const member of msg.members) {
+        const memberCard = document.createElement("div");
+        memberCard.className = "fleet-member-card";
+        
+        const isSelf = member.id === network.playerId;
+        const memberColor = isSelf ? "#00ff88" : "#c080ff";
+        const shieldRatio = Math.max(0, Math.min(100, (member.shield / member.maxShield) * 100));
+        const armorRatio = Math.max(0, Math.min(100, (member.armor / member.maxArmor) * 100));
+        
+        memberCard.innerHTML = `
+          <div class="fleet-member-header">
+            <span class="fleet-member-name" style="color: ${memberColor};">${member.nickname}</span>
+            <span class="fleet-member-status">${member.isLanded ? `Landed: ${member.landedOn || "Port"}` : "Orbiting"}</span>
+          </div>
+          <div class="fleet-bars-container">
+            <div class="fleet-bar-row">
+              <span class="fleet-bar-label">SHIELD</span>
+              <div class="fleet-mini-bar">
+                <div class="fleet-mini-bar-fill" style="width: ${shieldRatio}%; background: #00ff88;"></div>
+              </div>
+            </div>
+            <div class="fleet-bar-row">
+              <span class="fleet-bar-label">ARMOR</span>
+              <div class="fleet-mini-bar">
+                <div class="fleet-mini-bar-fill" style="width: ${armorRatio}%; background: #ff3b30;"></div>
+              </div>
+            </div>
+          </div>
+        `;
+        listEl.appendChild(memberCard);
+      }
+    }
+  } else {
+    if (setupEl) setupEl.style.display = "block";
+    if (rosterEl) rosterEl.style.display = "none";
+  }
+  spaceportUI.refreshActiveTab();
+};
+
+network.onProjectileFired = (msg) => {
+  const shooter = engine.entities.find(e => e.id === msg.ownerId);
+  if (shooter) {
+    const dir = new Vector2D(Math.cos(msg.heading), Math.sin(msg.heading));
+    const muzzleX = msg.x + dir.x * (shooter.radius + 2);
+    const muzzleY = msg.y + dir.y * (shooter.radius + 2);
+    renderer.spawnExplosion(muzzleX, muzzleY, "#00ffcc");
+  }
+};
+
+network.onNotification = (msg) => {
+  uiController.notify(msg.message, msg.style || "info");
+};
+
+// Bind Fleet HUD Control elements
+const btnFleetJoin = document.getElementById("btn-fleet-join");
+const btnFleetLeave = document.getElementById("btn-fleet-leave");
+const inputFleetNick = document.getElementById("fleet-nick-input");
+const inputFleetCode = document.getElementById("fleet-code-input");
+
+if (inputFleetNick) {
+  inputFleetNick.value = localStorage.getItem("nebula_callsign") || "Commander";
+}
+
+btnFleetJoin?.addEventListener("click", () => {
+  const nick = inputFleetNick ? inputFleetNick.value.trim() : "Commander";
+  const code = inputFleetCode ? inputFleetCode.value.toUpperCase().trim() : "";
+  
+  if (!code) {
+    uiController.notify("Please enter a Fleet Code!", "error");
+    return;
+  }
+  
+  network.requestFleetJoin(nick, code);
+});
+
+btnFleetLeave?.addEventListener("click", () => {
+  network.requestFleetLeave();
+});
+
+// Auto-connect to authoritative server
+network.connect();
+
+// Setup High-Precision GameLoop
+let lastTime = 0;
+function gameLoop(time) {
+  if (!lastTime) {
+    lastTime = time;
+    requestAnimationFrame(gameLoop);
+    return;
+  }
+
+  // Calculate elapsed frame step in seconds
+  let dt = (time - lastTime) / 1000;
+  lastTime = time;
+
+  // Cap delta time to prevent massive position skipping on browser tab sleeps
+  if (dt > 0.1) dt = 0.1;
+
+  if (!isLanded) {
+    // A. Handle active Solar EMP Flare effects (offline only)
+    if ((!network || !network.connected) && empTimer > 0) {
+      empTimer -= dt;
+      player.shieldRegen = 0;
+      player.thrustPower = 9000; // nerf thrust power
+      if (empTimer <= 0) {
+        player.shieldRegen = 10;
+        player.thrustPower = 28000; // restore original thrust power
+        uiController.notify(
+          "Solar EMP Storm subsided. All ship systems restored.",
+          "success",
+        );
+      }
+    }
+
+    // B. Increment and trigger random flight space events periodically (offline only)
+    if (!network || !network.connected) {
+      eventCheckTimer += dt;
+      if (eventCheckTimer >= 40) {
+        eventCheckTimer = 0;
+        triggerRandomSpaceEvent();
+      }
+    }
+
+    // 1. Map player steering keys directly to ship propulsion accumulator
+    inputHandler.applyInputToShip(player);
+
+    // Send input controls to the server if in multiplayer
+    if (network && network.connected) {
+      network.sendControls(player.controls, player.heading);
+    }
+
+    // 2. Drive AI merchant itineraries dynamically between planetary hubs (offline only)
+    if (!network || !network.connected) {
+      for (const ai of ais) {
+        if (ai.role === "merchant" && !ai.destination) {
+          const potentialHubs = planets.filter(
+            (p) => p.position.distance(ai.ship.position) > 250,
+          );
+          if (potentialHubs.length > 0) {
+            const nextHub =
+              potentialHubs[Math.floor(Math.random() * potentialHubs.length)];
+            ai.destination = nextHub.position.clone();
+          }
+        }
+        ai.update(dt, engine.entities);
+      }
+    }
+
+    // 3. Advance Newtonian kinematics, elastic rebounds, and laser damage
+    engine.update(dt);
+  }
+
+  // 4. Render stellar parallax, engine trails, ship vectors, target corner brackets, HUD pointer arrows
+  renderer.draw(
+    dt,
+    player,
+    engine.entities,
+    playerTarget,
+    network ? network.playerId : null,
+    network && network.fleet ? network.fleet.members : [],
+    network && network.fleet ? network.fleet.name : null
+  );
+
+  // 5. Synchronize dynamic health bars and targeting dials with overlay DOM dashboard
+  uiController.update(player, playerTarget, planets);
+
+  requestAnimationFrame(gameLoop);
+}

@@ -1,0 +1,988 @@
+/* ==========================================================================
+   NEBULA SECTOR: CORE GLOBAL DESIGN SYSTEM
+   ========================================================================== */
+
+:root {
+  --font-display: 'Orbitron', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
+
+  /* Premium Space Neon Color Palette */
+  --color-bg: #020205;
+  --color-panel: rgba(10, 14, 26, 0.65);
+  --color-border: rgba(255, 255, 255, 0.08);
+  
+  --color-shield: #00b3ff;
+  --color-shield-glow: rgba(0, 179, 255, 0.4);
+  --color-armor: #ff6a00;
+  --color-armor-glow: rgba(255, 106, 0, 0.4);
+  
+  --color-green: #00ff88;
+  --color-green-glow: rgba(0, 255, 136, 0.4);
+  --color-gold: #ffb300;
+  --color-gold-glow: rgba(255, 179, 0, 0.4);
+  
+  --color-text-primary: #f0f2fa;
+  --color-text-secondary: #8a90a6;
+  --color-text-dark: #0f111a;
+  
+  --blur-radius: 16px;
+  --shadow-premium: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+}
+
+/* Reset Defaults */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--color-bg);
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  cursor: pointer;
+  outline: none;
+  font-family: var(--font-display);
+  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Typography Helpers */
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.text-center { text-align: center; }
+.capitalize { text-transform: capitalize; }
+
+/* ==========================================================================
+   GAMEPLAY VIEWPORT LAYOUT
+   ========================================================================== */
+
+#game-viewport {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+#space-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Glassmorphic Panel Core Styling */
+.glass-panel {
+  background: var(--color-panel);
+  backdrop-filter: blur(var(--blur-radius)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--blur-radius)) saturate(180%);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-premium);
+  transition: all 0.3s ease;
+}
+
+.glass-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(2, 2, 5, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.glass-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ==========================================================================
+   HUD HUD & OVERLAY SYSTEMS
+   ========================================================================== */
+
+#hud-dashboard {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none; /* Let clicks pass to canvas if necessary */
+}
+
+/* HUD Panels Positions */
+.hud-panel {
+  position: absolute;
+  padding: 16px 20px;
+  z-index: 15;
+  pointer-events: auto; /* Allow interactions on panels */
+}
+
+.left-hud {
+  top: 20px;
+  left: 20px;
+  width: 250px;
+}
+
+.right-hud {
+  top: 20px;
+  right: 20px;
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* HUD Progress Bars */
+.hud-bar-container {
+  margin-bottom: 12px;
+}
+.hud-bar-container:last-child {
+  margin-bottom: 0;
+}
+.hud-bar-container.compact {
+  margin-bottom: 6px;
+}
+
+.hud-bar-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  color: var(--color-text-secondary);
+}
+
+.hud-bar-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hud-bar-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: 4px;
+  transition: width 0.15s ease-out;
+}
+
+.shield-color {
+  background: var(--color-shield);
+  box-shadow: 0 0 10px var(--color-shield-glow);
+}
+
+.armor-color {
+  background: var(--color-armor);
+  box-shadow: 0 0 10px var(--color-armor-glow);
+}
+
+.hud-bar-value {
+  font-family: var(--font-display);
+  font-size: 9px;
+  text-align: right;
+  margin-top: 3px;
+  color: var(--color-text-secondary);
+}
+
+/* Stat Blocks */
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+.stat-label {
+  color: var(--color-text-secondary);
+}
+.stat-value {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+/* Target Scanner Panel */
+#target-scanner {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  padding: 12px 16px;
+  text-align: center;
+  z-index: 15;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+#target-scanner.visible {
+  opacity: 1;
+  transform: translate(-50%, -10px);
+}
+
+.scanner-title {
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--color-gold);
+  margin-bottom: 4px;
+}
+
+.scanner-name {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-shadow: 0 0 10px var(--color-gold-glow);
+}
+
+/* ==========================================================================
+   PROMPTS & SYSTEM NOTIFICATIONS
+   ========================================================================== */
+
+#landing-prompt {
+  position: absolute;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 255, 136, 0.15);
+  border: 1.5px solid var(--color-green);
+  border-radius: 8px;
+  padding: 12px 24px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 1px;
+  z-index: 12;
+  box-shadow: 0 0 20px var(--color-green-glow);
+  opacity: 0;
+  pointer-events: none;
+  animation: pulse-border 1.5s infinite alternate;
+  transition: opacity 0.3s ease;
+}
+
+#landing-prompt.visible {
+  opacity: 1;
+}
+
+#landing-prompt strong {
+  color: var(--color-green);
+}
+
+#landing-prompt small {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+/* Floater Alerts top-left */
+#notification-log {
+  position: absolute;
+  top: 20px;
+  left: 290px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.notification-badge {
+  background: rgba(10, 12, 22, 0.85);
+  border-left: 4px solid var(--color-shield);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+  border-radius: 0 6px 6px 0;
+  padding: 10px 16px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  box-shadow: var(--shadow-premium);
+  animation: slide-in 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+  transition: opacity 0.5s ease;
+}
+
+.notification-badge.success { border-left-color: var(--color-green); }
+.notification-badge.error { border-left-color: var(--color-armor); }
+
+.notification-badge.fade-out {
+  opacity: 0;
+}
+
+/* ==========================================================================
+   SPACEPORT dialog OVERLAY
+   ========================================================================== */
+
+.spaceport-window {
+  width: 800px;
+  height: 580px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  z-index: 110;
+}
+
+.spaceport-header {
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+}
+
+.spaceport-header h1 {
+  font-size: 26px;
+  color: var(--color-text-primary);
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.25);
+  margin-bottom: 4px;
+}
+
+.spaceport-header p {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+/* Navigation Tabs */
+.spaceport-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  padding: 12px 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border-radius: 6px;
+}
+
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-text-primary);
+}
+
+.tab-btn.active {
+  background: rgba(0, 179, 255, 0.1);
+  border-color: var(--color-shield);
+  color: var(--color-shield);
+  box-shadow: 0 0 10px var(--color-shield-glow);
+}
+
+/* Tab panes display */
+.spaceport-body {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 20px;
+}
+
+.tab-pane {
+  display: none;
+  height: 100%;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+/* --- Trade Tables Layout --- */
+.trade-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-display);
+}
+
+.trade-table th, .trade-table td {
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.trade-table th {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  letter-spacing: 1px;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.trade-table td {
+  font-size: 13px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Tab Cards grids */
+.outfitter-grid, .shipyard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.outfit-card, .ship-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 190px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.outfit-card:hover, .ship-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.outfit-card h3, .ship-card h3 {
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: var(--color-text-primary);
+}
+
+.outfit-card p, .ship-stats {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.ship-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.cost {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-gold);
+  margin-top: auto;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+/* Button Classes */
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  margin-right: 6px;
+}
+
+.btn-sm:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-trade-buy:hover {
+  background: rgba(0, 255, 136, 0.2);
+  border-color: var(--color-green);
+  color: var(--color-green);
+}
+
+.btn-trade-sell:hover {
+  background: rgba(255, 106, 0, 0.2);
+  border-color: var(--color-armor);
+  color: var(--color-armor);
+}
+
+.btn-block {
+  width: 100%;
+  padding: 10px 0;
+  font-size: 10px;
+  border-radius: 4px;
+  background: var(--color-shield);
+  border: none;
+  color: var(--color-text-dark);
+  font-weight: 900;
+}
+
+.btn-block:hover:not(:disabled) {
+  box-shadow: 0 0 15px var(--color-shield-glow);
+  transform: translateY(-1px);
+}
+
+.btn-block:disabled {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  cursor: default;
+}
+
+.btn-primary {
+  padding: 14px 28px;
+  font-size: 12px;
+  font-weight: 900;
+  border-radius: 6px;
+  background: var(--color-green);
+  border: none;
+  color: var(--color-text-dark);
+  letter-spacing: 1.5px;
+  box-shadow: 0 4px 15px var(--color-green-glow);
+}
+
+.btn-primary:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 22px var(--color-green-glow);
+}
+
+.spaceport-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ==========================================================================
+   STARTUP WELCOME MODULE
+   ========================================================================== */
+
+.welcome-card {
+  width: 500px;
+  padding: 40px;
+}
+
+.welcome-card h2 {
+  font-size: 32px;
+  letter-spacing: 4px;
+  color: var(--color-green);
+  text-shadow: 0 0 20px var(--color-green-glow);
+  margin-bottom: 8px;
+}
+
+.welcome-card p {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.controls-guide {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+.controls-guide h3 {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--color-gold);
+  margin-bottom: 14px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 8px;
+}
+
+.guide-row {
+  font-family: var(--font-display);
+  font-size: 11px;
+  margin-bottom: 10px;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+}
+.guide-row:last-child {
+  margin-bottom: 0;
+}
+
+.key {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 3px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 9px;
+  font-weight: 700;
+  margin: 0 4px;
+  display: inline-block;
+}
+
+/* ==========================================================================
+   CSS TRANSITIONS & KEYFRAMES
+   ========================================================================== */
+
+@keyframes pulse-border {
+  from {
+    border-color: rgba(0, 255, 136, 0.3);
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
+  }
+  to {
+    border-color: var(--color-green);
+    box-shadow: 0 0 25px var(--color-green-glow);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(-100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   MISSION BOARD & HUD TRACKER SYSTEM
+   ========================================================================== */
+
+#hud-missions-tracker {
+  position: absolute;
+  top: 175px;
+  right: 20px;
+  width: 240px;
+  padding: 12px 14px;
+  z-index: 15;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.tracker-header-line {
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: var(--color-gold);
+  text-shadow: 0 0 6px var(--color-gold-glow);
+}
+
+.empty-tracker {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  font-style: italic;
+  padding: 4px 0;
+}
+
+.tracker-item {
+  font-size: 10px;
+  font-family: var(--font-display);
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border-left: 2px solid var(--color-shield);
+  padding-left: 8px;
+}
+
+.tracker-item.courier { border-left-color: var(--color-shield); }
+.tracker-item.smuggle { border-left-color: var(--color-gold); }
+.tracker-item.bounty { border-left-color: var(--color-armor); }
+.tracker-item.storyline { border-left-color: #e040fb; }
+
+.tracker-title {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.tracker-objective {
+  font-size: 9px;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.objective-check {
+  color: var(--color-green);
+  font-weight: 900;
+}
+
+/* Spaceport Mission Board Tab styles */
+.pane-missions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+}
+
+.mission-section-title {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: var(--color-gold);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+
+.mission-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  max-height: 350px;
+  padding-right: 4px;
+}
+
+.mission-card {
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  transition: all 0.2s ease;
+}
+
+.mission-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.mission-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mission-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mission-title {
+  font-size: 13px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.badge {
+  padding: 2px 6px;
+  font-size: 8px;
+  font-family: var(--font-display);
+  font-weight: 900;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+}
+
+.badge-courier {
+  background: rgba(0, 179, 255, 0.1);
+  color: var(--color-shield);
+  border: 1px solid rgba(0, 179, 255, 0.3);
+}
+
+.badge-smuggle {
+  background: rgba(255, 179, 0, 0.1);
+  color: var(--color-gold);
+  border: 1px solid rgba(255, 179, 0, 0.3);
+}
+
+.badge-bounty {
+  background: rgba(255, 106, 0, 0.1);
+  color: var(--color-armor);
+  border: 1px solid rgba(255, 106, 0, 0.3);
+}
+
+.badge-storyline {
+  background: rgba(224, 64, 251, 0.1);
+  color: #e040fb;
+  border: 1px solid rgba(224, 64, 251, 0.3);
+}
+
+.mission-desc {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.mission-reward {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-green);
+  text-shadow: 0 0 6px var(--color-green-glow);
+  white-space: nowrap;
+}
+
+.mission-actions {
+  display: flex;
+  align-items: center;
+}
+
+/* Custom Scrollbars for Mission lists */
+.mission-grid::-webkit-scrollbar, #hud-missions-tracker::-webkit-scrollbar {
+  width: 4px;
+}
+.mission-grid::-webkit-scrollbar-track, #hud-missions-tracker::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+.mission-grid::-webkit-scrollbar-thumb, #hud-missions-tracker::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+/* ==========================================================================
+   FLEET COMMAND MULTIPLAYER STYLING
+   ========================================================================= */
+
+#fleet-panel {
+  position: absolute;
+  top: 175px;
+  left: 20px;
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  max-height: 300px;
+  z-index: 15;
+  pointer-events: auto;
+}
+
+.fleet-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fleet-input-group label {
+  font-family: var(--font-display);
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.5px;
+}
+
+.fleet-input-group input {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  color: var(--color-text-primary);
+  padding: 6px 10px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+.fleet-input-group input:focus {
+  border-color: var(--color-green);
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.25);
+}
+
+.fleet-member-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.fleet-member-card:hover {
+  border-color: rgba(0, 255, 136, 0.25);
+  transform: translateX(2px);
+}
+
+.fleet-member-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fleet-member-name {
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  color: var(--color-text-primary);
+}
+
+.fleet-member-status {
+  font-size: 9px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.fleet-bars-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fleet-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fleet-bar-label {
+  font-family: var(--font-display);
+  font-size: 8px;
+  width: 30px;
+  color: var(--color-text-secondary);
+}
+
+.fleet-mini-bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  position: relative;
+}
+
+.fleet-mini-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.fleet-members-list::-webkit-scrollbar {
+  width: 3px;
+}
+.fleet-members-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.fleet-members-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+}
+

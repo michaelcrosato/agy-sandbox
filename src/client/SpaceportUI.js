@@ -286,6 +286,13 @@ export class SpaceportUI {
           this.player.weaponDamage += outfit.value;
         } else if (outfit.type === "cargo") {
           this.player.cargoCapacity += outfit.value;
+        } else if (outfit.type === "reactor") {
+          this.player.energyRegen += outfit.value;
+        } else if (outfit.type === "radiator") {
+          this.player.heatDissipation += outfit.value;
+        } else if (outfit.type === "capacitor") {
+          this.player.maxEnergy += outfit.value;
+          this.player.energy = this.player.maxEnergy;
         }
 
         this.ui.notify(`Equipped: ${outfit.name}!`, "success");

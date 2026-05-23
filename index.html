@@ -43,6 +43,24 @@
           </div>
           <div id="hud-armor-text" class="hud-bar-value">100 / 100</div>
         </div>
+
+        <div class="hud-bar-container">
+          <div class="hud-bar-label">ENERGY</div>
+          <div class="hud-bar-track">
+            <div id="hud-energy-fill" class="hud-bar-fill energy-color"></div>
+          </div>
+          <div id="hud-energy-text" class="hud-bar-value">100 / 100</div>
+        </div>
+
+        <div class="hud-bar-container">
+          <div class="hud-bar-label">HEAT</div>
+          <div class="hud-bar-track">
+            <div id="hud-heat-fill" class="hud-bar-fill heat-color"></div>
+          </div>
+          <div id="hud-heat-text" class="hud-bar-value">0%</div>
+        </div>
+
+        <div id="hud-overheat-alert" class="hud-alert-flash" style="display: none; text-align: center; font-size: 8px; font-weight: 700; color: #ff1744; margin-top: 4px; letter-spacing: 1px; text-shadow: 0 0 8px rgba(255, 23, 68, 0.8);">REACTOR OVERHEAT ACTIVE</div>
       </div>
 
       <!-- Fleet / Party Management Panel -->
@@ -168,6 +186,12 @@
       <small>PRESS [L] TO LAND SPACEPORT</small>
     </div>
 
+    <!-- Interactive Warp Proximity Trigger Prompts -->
+    <div id="warp-prompt">
+      LOCKED ON HYPERLANE TO <strong>OUTER SYSTEMS</strong><br>
+      <small>PRESS [J] TO ENGAGE WARP DRIVE (20 HYPER-FUEL)</small>
+    </div>
+
     <!-- Spaceport Overlay Menu System (Landed State) -->
     <div id="spaceport-overlay" class="glass-overlay">
       <div class="spaceport-window glass-panel">
@@ -213,11 +237,39 @@
           <div class="guide-row"><span class="key">SPACE</span> : Engage Front Laser Battery</div>
           <div class="guide-row"><span class="key">T</span> : Cycle Targeting Scanners</div>
           <div class="guide-row"><span class="key">R</span> : Lock-on Closest Hostile (Pirates)</div>
+          <div class="guide-row"><span class="key">B</span> : Initialize Tactical Boarding Sequence</div>
           <div class="guide-row"><span class="key">L</span> : Initiate Planetary Landing Sequence</div>
         </div>
 
         <button id="btn-start" class="btn-primary">ENTER SPACELANES</button>
       </div>
+    </div>
+
+    <!-- Tactical Boarding & Plundering Matrix -->
+    <div id="boarding-panel" class="glass-panel" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 420px; z-index: 1000; padding: 20px; border-radius: 12px; border: 1px solid var(--color-border);">
+      <div class="boarding-header" style="font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--color-red); text-shadow: 0 0 6px var(--color-red-glow); text-align: center; margin-bottom: 5px;">TACTICAL BOARDING MATRIX</div>
+      <div id="boarding-ship-info" style="font-size: 10px; color: #a0a5b5; text-align: center; margin-bottom: 20px;">TARGET: DRIVER HULL (DISABLED)</div>
+      
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <button id="btn-board-plunder" class="btn-primary" style="display: flex; flex-direction: column; align-items: flex-start; padding: 10px; border-radius: 8px;">
+          <span style="font-weight: 700; font-size: 11px; margin-bottom: 2px;">PLUNDER COMMODITIES</span>
+          <span style="font-size: 9px; color: rgba(255, 255, 255, 0.6); font-weight: 400; text-align: left;">Siphon cargo pods directly from the target holds into your bay</span>
+        </button>
+        <button id="btn-board-salvage" class="btn-primary" style="display: flex; flex-direction: column; align-items: flex-start; padding: 10px; border-radius: 8px;">
+          <span style="font-weight: 700; font-size: 11px; margin-bottom: 2px;">SALVAGE HULL COMPONENTS</span>
+          <span style="font-size: 9px; color: rgba(255, 255, 255, 0.6); font-weight: 400; text-align: left;">Tractor out a random module/outfit for immediate installation</span>
+        </button>
+        <button id="btn-board-capture" class="btn-primary" style="display: flex; flex-direction: column; align-items: flex-start; padding: 10px; border-radius: 8px;">
+          <span style="font-weight: 700; font-size: 11px; margin-bottom: 2px;">CAPTURE AS ESCORT DRONE</span>
+          <span style="font-size: 9px; color: rgba(255, 255, 255, 0.6); font-weight: 400; text-align: left;">Reprogram command links to align ship as wingman escort (Costs 1,500 CR)</span>
+        </button>
+        <button id="btn-board-scuttle" class="btn-danger" style="display: flex; flex-direction: column; align-items: flex-start; padding: 10px; border-radius: 8px; width: 100%;">
+          <span style="font-weight: 700; font-size: 11px; margin-bottom: 2px;">SCUTTLE & SCRAP</span>
+          <span style="font-size: 9px; color: rgba(255, 255, 255, 0.7); font-weight: 400; text-align: left;">Deconstruct reactor core to salvage raw metals for credits</span>
+        </button>
+      </div>
+      
+      <button id="btn-board-exit" class="btn-sm btn-block" style="margin-top: 15px; border-radius: 6px;">ABORT BOARDING OPERATIONS</button>
     </div>
 
   </div>

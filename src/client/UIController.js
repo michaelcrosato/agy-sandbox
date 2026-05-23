@@ -6,9 +6,14 @@ export class UIController {
     // Cache DOM Elements
     this.shieldBar = document.getElementById("hud-shield-fill");
     this.armorBar = document.getElementById("hud-armor-fill");
+    this.energyBar = document.getElementById("hud-energy-fill");
+    this.heatBar = document.getElementById("hud-heat-fill");
 
     this.shieldVal = document.getElementById("hud-shield-text");
     this.armorVal = document.getElementById("hud-armor-text");
+    this.energyVal = document.getElementById("hud-energy-text");
+    this.heatVal = document.getElementById("hud-heat-text");
+    this.overheatAlert = document.getElementById("hud-overheat-alert");
 
     this.speedDisplay = document.getElementById("stat-speed");
     this.coordDisplay = document.getElementById("stat-coords");
@@ -23,6 +28,7 @@ export class UIController {
 
     // Prompt HUD overlays
     this.landingPrompt = document.getElementById("landing-prompt");
+    this.warpPrompt = document.getElementById("warp-prompt");
     this.notificationContainer = document.getElementById("notification-log");
     this.missionsList = document.getElementById("hud-missions-list");
 
@@ -66,21 +72,35 @@ export class UIController {
    * @param {Ship} player - Player entity.
    * @param {SpaceEntity} target - Selected target entity.
    * @param {Array<Planet>} planets - Loaded planets list to check landing zone prompts.
+   * @param {Array} [nebulae] - Nebula hazards active.
+   * @param {Array} [entities] - Active physics engine entities for proximity checks.
    */
-  update(player, target, planets, nebulae = []) {
+  update(player, target, planets, nebulae = [], entities = []) {
     if (!player) return;
 
-    // 1. Update Shields & Armor bars
+    // 1. Update Shields, Armor, Energy & Heat bars
     const shieldPct = Math.max(0, (player.shield / player.maxShield) * 100);
     const armorPct = Math.max(0, (player.armor / player.maxArmor) * 100);
+    const energyPct = Math.max(0, ((player.energy || 0) / (player.maxEnergy || 100)) * 100);
+    const heatPct = Math.max(0, ((player.heat || 0) / (player.maxHeat || 100)) * 100);
 
     if (this.shieldBar) this.shieldBar.style.width = `${shieldPct}%`;
     if (this.armorBar) this.armorBar.style.width = `${armorPct}%`;
+    if (this.energyBar) this.energyBar.style.width = `${energyPct}%`;
+    if (this.heatBar) this.heatBar.style.width = `${heatPct}%`;
 
     if (this.shieldVal)
       this.shieldVal.innerText = `${Math.floor(player.shield)} / ${player.maxShield}`;
     if (this.armorVal)
       this.armorVal.innerText = `${Math.floor(player.armor)} / ${player.maxArmor}`;
+    if (this.energyVal)
+      this.energyVal.innerText = `${Math.floor(player.energy || 0)} / ${player.maxEnergy || 100}`;
+    if (this.heatVal)
+      this.heatVal.innerText = `${Math.floor(heatPct)}%`;
+
+    if (this.overheatAlert) {
+      this.overheatAlert.style.display = player.isOverheated ? "block" : "none";
+    }
 
     // 2. Update Stats
     const currentSpeed = Math.round(player.velocity.magnitude());
@@ -126,6 +146,26 @@ export class UIController {
       this.landingPrompt.classList.add("visible");
     } else if (this.landingPrompt) {
       this.landingPrompt.classList.remove("visible");
+    }
+
+    // Update warp gate proximity alerts
+    let nearWarpGate = null;
+    for (const ent of entities) {
+      if (ent.type === "warp_gate") {
+        const dist = player.position.distance(ent.position);
+        if (dist <= 150) {
+          nearWarpGate = ent;
+          break;
+        }
+      }
+    }
+
+    if (nearWarpGate && this.warpPrompt) {
+      const dest = nearWarpGate.targetSector ? nearWarpGate.targetSector.toUpperCase() : "UNKNOWN";
+      this.warpPrompt.innerHTML = `LOCKED ON HYPERLANE TO <strong>${dest} SECTOR</strong><br><small>PRESS [J] TO ENGAGE WARP DRIVE (20 HYPER-FUEL)</small>`;
+      this.warpPrompt.classList.add("visible");
+    } else if (this.warpPrompt) {
+      this.warpPrompt.classList.remove("visible");
     }
 
     // 5. Update active nebula status panel

@@ -18,6 +18,10 @@ export class AIController {
     // AI state counters
     this.wanderTimer = 0;
     this.wanderAngle = 0;
+
+    // Escort AI parameters
+    this.flagship = null;
+    this.escortMode = "follow"; // "follow" (defend), "hold" (stay), "attack" (target lock)
   }
 
   /**
@@ -26,7 +30,7 @@ export class AIController {
    * @param {Array<SpaceEntity>} entities - All active entities in the space simulation.
    */
   update(dt, entities) {
-    if (this.ship.isDestroyed) return;
+    if (this.ship.isDestroyed || this.ship.isDisabled) return;
 
     this.ship.clearControls();
 
@@ -38,6 +42,8 @@ export class AIController {
       this.executePirateAI(dt);
     } else if (this.role === "guard") {
       this.executeGuardAI(dt);
+    } else if (this.role === "escort") {
+      this.executeEscortAI(dt, entities);
     } else {
       this.executeMerchantAI(dt);
     }
@@ -218,6 +224,115 @@ export class AIController {
     } else {
       // Gently cruise forward
       this.ship.controls.isThrusting = Math.random() > 0.3;
+    }
+  }
+
+  /**
+   * Defensive Escort autopilot executing defend formation or target interception commands.
+   * @param {number} dt - Frame time step.
+   * @param {Array<SpaceEntity>} entities - All entities.
+   */
+  executeEscortAI(dt, entities) {
+    if (!this.flagship || this.flagship.isDestroyed) {
+      this.executeWander(dt);
+      return;
+    }
+
+    // 1. Hold Command - stop in place
+    if (this.escortMode === "hold") {
+      const speed = this.ship.velocity.magnitude();
+      if (speed > 5) {
+        this.ship.controls.isBraking = true;
+      }
+      return;
+    }
+
+    // 2. Focus Attack Command - find and intercept hostile target
+    if (this.escortMode === "attack") {
+      let currentTarget = this.target;
+
+      if (!currentTarget || currentTarget.isDestroyed) {
+        // scan for closest active pirate raider threat
+        const hostiles = entities.filter(ent => (ent.name === "Pirate Raider" || ent.name.includes("Pirate")) && !ent.isDestroyed);
+        let closestDist = 600;
+        for (const pirate of hostiles) {
+          const dist = this.ship.position.distance(pirate.position);
+          if (dist < closestDist) {
+            closestDist = dist;
+            currentTarget = pirate;
+          }
+        }
+      }
+
+      if (currentTarget && !currentTarget.isDestroyed) {
+        this.steerTowards(currentTarget.position);
+        const dist = this.ship.position.distance(currentTarget.position);
+        if (dist < 400) {
+          this.ship.controls.isThrusting = dist > 140;
+          const angle = Math.atan2(currentTarget.position.y - this.ship.position.y, currentTarget.position.x - this.ship.position.x);
+          const headingDiff = Math.abs(this.normalizeAngle(angle - this.ship.heading));
+          if (headingDiff < 0.25) {
+            this.ship.controls.isFiring = true;
+          }
+        } else {
+          this.ship.controls.isThrusting = true;
+        }
+      } else {
+        // Default follow
+        this.escortMode = "follow";
+      }
+      return;
+    }
+
+    // 3. Defend Flagship Command (Formation keeping + threat intercepts)
+    let threat = null;
+    let closestThreatDist = 400;
+    for (const ent of entities) {
+      if (ent.isDestroyed || ent.type !== "ship") continue;
+      const isPirate = ent.name === "Pirate Raider" || ent.name.includes("Pirate") || ent.name.includes("Raider");
+      if (isPirate) {
+        const distToFlagship = ent.position.distance(this.flagship.position);
+        if (distToFlagship < closestThreatDist) {
+          closestThreatDist = distToFlagship;
+          threat = ent;
+        }
+      }
+    }
+
+    if (threat) {
+      // Intercept intruder targeting our flagship
+      this.steerTowards(threat.position);
+      const dist = this.ship.position.distance(threat.position);
+      if (dist < 350) {
+        this.ship.controls.isThrusting = dist > 120;
+        const angle = Math.atan2(threat.position.y - this.ship.position.y, threat.position.x - this.ship.position.x);
+        const headingDiff = Math.abs(this.normalizeAngle(angle - this.ship.heading));
+        if (headingDiff < 0.3) {
+          this.ship.controls.isFiring = true;
+        }
+      } else {
+        this.ship.controls.isThrusting = true;
+      }
+    } else {
+      // Formation cruising behind flagship
+      const distToFlag = this.ship.position.distance(this.flagship.position);
+      if (distToFlag > 160) {
+        this.steerTowards(this.flagship.position);
+        this.ship.controls.isThrusting = true;
+      } else if (distToFlag < 70) {
+        this.ship.controls.isBraking = true;
+      } else {
+        // Gently match flagship heading
+        const angleDiff = this.normalizeAngle(this.flagship.heading - this.ship.heading);
+        if (Math.abs(angleDiff) > 0.08) {
+          if (angleDiff > 0) this.ship.controls.isTurningLeft = true;
+          else this.ship.controls.isTurningRight = true;
+        }
+        // Match speed relative to target flagship
+        if (this.ship.velocity.magnitude() < this.flagship.velocity.magnitude()) {
+          this.ship.controls.isThrusting = true;
+        }
+      }
     }
   }
 

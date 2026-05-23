@@ -64,24 +64,40 @@ const planets = [];
 const ais = [];
 
 // Initialize Systems / Planets
+// Initialize Systems / Planets
 const solPlanet = new Planet({
   name: "Sol",
   description: "The historic cradle of humanity and bustling trade center of the inner systems. High luxury demand, cheap machinery.",
   color: "#4d6fff",
   position: new Vector2D(0, 0),
   radius: 65,
-  market: { food: 100, electronics: 300, minerals: 150, luxuries: 600, contraband: 250, machinery: 100 }
+  market: { food: 100, electronics: 300, minerals: 150, luxuries: 600, contraband: 250, machinery: 100 },
+  sector: "core"
 });
 planets.push(solPlanet);
 engine.addEntity(solPlanet);
 
+const valkyriePlanet = new Planet({
+  name: "Valkyrie Depot",
+  description: "Core fleet military staging area. Produces high-grade heavy machinery, demands electronics.",
+  color: "#ff1744",
+  position: new Vector2D(2000, 500),
+  radius: 62,
+  market: { food: 110, electronics: 380, minerals: 190, luxuries: 520, contraband: 220, machinery: 80 },
+  sector: "core"
+});
+planets.push(valkyriePlanet);
+engine.addEntity(valkyriePlanet);
+
+// Frontier Systems Sector (Offset X:+20000, Y:+20000)
 const polarisPlanet = new Planet({
   name: "New Polaris",
   description: "An icy frontier industrial colony rich in raw mineral extractions. High food demand, cheap raw minerals.",
   color: "#e0f7fa",
-  position: new Vector2D(2000, -1200),
+  position: new Vector2D(22000, 18800),
   radius: 55,
-  market: { food: 220, electronics: 320, minerals: 50, luxuries: 650, contraband: 300, machinery: 220 }
+  market: { food: 220, electronics: 320, minerals: 50, luxuries: 650, contraband: 300, machinery: 220 },
+  sector: "frontier"
 });
 planets.push(polarisPlanet);
 engine.addEntity(polarisPlanet);
@@ -90,67 +106,116 @@ const draconisPlanet = new Planet({
   name: "Sigma Draconis",
   description: "A high-tech research outpost specializing in advanced electronics production. Demands minerals, cheap electronics.",
   color: "#00f2fe",
-  position: new Vector2D(-2200, 1600),
+  position: new Vector2D(17800, 21600),
   radius: 60,
-  market: { food: 120, electronics: 120, minerals: 250, luxuries: 500, contraband: 200, machinery: 160 }
+  market: { food: 120, electronics: 120, minerals: 250, luxuries: 500, contraband: 200, machinery: 160 },
+  sector: "frontier"
 });
 planets.push(draconisPlanet);
 engine.addEntity(draconisPlanet);
-
-const kaelisPlanet = new Planet({
-  name: "Kaelis Colony",
-  description: "An agricultural breadbasket producing vast food supplies. Demands electronics, cheap food.",
-  color: "#00e676",
-  position: new Vector2D(-1800, -1800),
-  radius: 60,
-  market: { food: 40, electronics: 420, minerals: 180, luxuries: 550, contraband: 280, machinery: 190 }
-});
-planets.push(kaelisPlanet);
-engine.addEntity(kaelisPlanet);
 
 const aureliaPlanet = new Planet({
   name: "Aurelia Mining Hub",
   description: "Outer planetary asteroid refinery. Demands food, produces cheap raw metals and machinery.",
   color: "#ff9100",
-  position: new Vector2D(1800, 1800),
+  position: new Vector2D(21800, 21800),
   radius: 58,
-  market: { food: 150, electronics: 290, minerals: 70, luxuries: 580, contraband: 260, machinery: 150 }
+  market: { food: 150, electronics: 290, minerals: 70, luxuries: 580, contraband: 260, machinery: 150 },
+  sector: "frontier"
 });
 planets.push(aureliaPlanet);
 engine.addEntity(aureliaPlanet);
+
+// Outer Lawless Rim Sector (Offset X:-20000, Y:-20000)
+const kaelisPlanet = new Planet({
+  name: "Kaelis Colony",
+  description: "An agricultural breadbasket producing vast food supplies. Demands electronics, cheap food.",
+  color: "#00e676",
+  position: new Vector2D(-21800, -21800),
+  radius: 60,
+  market: { food: 40, electronics: 420, minerals: 180, luxuries: 550, contraband: 280, machinery: 190 },
+  sector: "rim"
+});
+planets.push(kaelisPlanet);
+engine.addEntity(kaelisPlanet);
 
 const tenebrisPlanet = new Planet({
   name: "Tenebris Prime",
   description: "A mysterious colony inside a dark nebula. Produces top-tier scientific luxuries, demands electronics.",
   color: "#d500f9",
-  position: new Vector2D(-600, 2400),
+  position: new Vector2D(-20600, -17600),
   radius: 55,
-  market: { food: 160, electronics: 450, minerals: 200, luxuries: 220, contraband: 400, machinery: 240 }
+  market: { food: 160, electronics: 450, minerals: 200, luxuries: 220, contraband: 400, machinery: 240 },
+  sector: "rim"
 });
 planets.push(tenebrisPlanet);
 engine.addEntity(tenebrisPlanet);
-
-const valkyriePlanet = new Planet({
-  name: "Valkyrie Depot",
-  description: "Core fleet military staging area. Produces high-grade heavy machinery, demands electronics.",
-  color: "#ff1744",
-  position: new Vector2D(2500, 300),
-  radius: 62,
-  market: { food: 110, electronics: 380, minerals: 190, luxuries: 520, contraband: 220, machinery: 80 }
-});
-planets.push(valkyriePlanet);
-engine.addEntity(valkyriePlanet);
 
 const roguesPlanet = new Planet({
   name: "Rogue's Hollow",
   description: "A lawless pirate anchorage hidden deep inside a dense asteroid field. Smuggler contraband is cheap here.",
   color: "#e040fb",
-  position: new Vector2D(-2800, -500),
+  position: new Vector2D(-22800, -20500),
   radius: 52,
-  market: { food: 250, electronics: 220, minerals: 160, luxuries: 450, contraband: 60, machinery: 180 }
+  market: { food: 250, electronics: 220, minerals: 160, luxuries: 450, contraband: 60, machinery: 180 },
+  sector: "rim"
 });
 planets.push(roguesPlanet);
 engine.addEntity(roguesPlanet);
+
+// Hyperlane Warp Stargates Seeding (Endless Sky Navigation)
+const gateCoreToFrontier = new SpaceEntity({
+  id: "gate-core-to-frontier",
+  type: "warp_gate",
+  position: new Vector2D(3500, 0),
+  radius: 45,
+  heading: 0,
+});
+gateCoreToFrontier.name = "Frontier Stargate";
+gateCoreToFrontier.sector = "core";
+gateCoreToFrontier.targetSector = "frontier";
+gateCoreToFrontier.targetPosition = new Vector2D(17200, 20000);
+engine.addEntity(gateCoreToFrontier);
+
+const gateFrontierToCore = new SpaceEntity({
+  id: "gate-frontier-to-core",
+  type: "warp_gate",
+  position: new Vector2D(17000, 20000),
+  radius: 45,
+  heading: 0,
+});
+gateFrontierToCore.name = "Core Stargate";
+gateFrontierToCore.sector = "frontier";
+gateFrontierToCore.targetSector = "core";
+gateFrontierToCore.targetPosition = new Vector2D(3300, 0);
+engine.addEntity(gateFrontierToCore);
+
+const gateFrontierToRim = new SpaceEntity({
+  id: "gate-frontier-to-rim",
+  type: "warp_gate",
+  position: new Vector2D(23000, 20000),
+  radius: 45,
+  heading: 0,
+});
+gateFrontierToRim.name = "Outer Rim Stargate";
+gateFrontierToRim.sector = "frontier";
+gateFrontierToRim.targetSector = "rim";
+gateFrontierToRim.targetPosition = new Vector2D(-17200, -20000);
+engine.addEntity(gateFrontierToRim);
+
+const gateRimToFrontier = new SpaceEntity({
+  id: "gate-rim-to-frontier",
+  type: "warp_gate",
+  position: new Vector2D(-17000, -20000),
+  radius: 45,
+  heading: 0,
+});
+gateRimToFrontier.name = "Frontier Stargate";
+gateRimToFrontier.sector = "rim";
+gateRimToFrontier.targetSector = "frontier";
+gateRimToFrontier.targetPosition = new Vector2D(22800, 20000);
+engine.addEntity(gateRimToFrontier);
+
 
 const BASE_MARKETS = {
   "Sol": { food: 100, electronics: 300, minerals: 150, luxuries: 600, contraband: 250, machinery: 100 },
@@ -575,6 +640,14 @@ wss.on("connection", (ws) => {
         turnRate: this.ship.turnRate,
         weaponDamage: this.ship.weaponDamage,
         activeMissions: this.missionManager.activeMissions,
+        energy: this.ship.energy,
+        maxEnergy: this.ship.maxEnergy,
+        heat: this.ship.heat,
+        maxHeat: this.ship.maxHeat,
+        hyperFuel: this.ship.hyperFuel,
+        maxHyperFuel: this.ship.maxHyperFuel,
+        isOverheated: this.ship.isOverheated,
+        isDisabled: this.ship.isDisabled,
       });
     }
   };
@@ -866,6 +939,7 @@ wss.on("connection", (ws) => {
           clientObj.planetLandedOn = targetPlanet;
           clientObj.ship.velocity = new Vector2D(0, 0);
           clientObj.ship.clearControls();
+          clientObj.ship.hyperFuel = clientObj.ship.maxHyperFuel; // Refuel hyper-fuel tank on landing (Endless Sky fuel system)
           engine.removeEntity(clientObj.id); // temporarily take out of orbit simulation
 
           clientObj.send({
@@ -1002,6 +1076,13 @@ wss.on("connection", (ws) => {
           clientObj.ship.weaponDamage += outfit.value;
         } else if (outfit.type === "cargo") {
           clientObj.ship.cargoCapacity += outfit.value;
+        } else if (outfit.type === "reactor") {
+          clientObj.ship.energyRegen += outfit.value;
+        } else if (outfit.type === "radiator") {
+          clientObj.ship.heatDissipation += outfit.value;
+        } else if (outfit.type === "capacitor") {
+          clientObj.ship.maxEnergy += outfit.value;
+          clientObj.ship.energy = clientObj.ship.maxEnergy;
         }
 
         clientObj.send({
@@ -1156,6 +1237,194 @@ wss.on("connection", (ws) => {
       }
     }
 
+    else if (msg.type === "warp_jump") {
+      const gate = engine.getEntity(msg.gateId);
+      if (!gate || gate.type !== "warp_gate") {
+        clientObj.send({ type: "notification", message: "Warp Gate invalid or not found!", style: "error" });
+        return;
+      }
+      const dist = clientObj.ship.position.distance(gate.position);
+      if (dist > 150) {
+        clientObj.send({ type: "notification", message: "Too far from stargate to initiate warp jump! Move within 150u.", style: "error" });
+        return;
+      }
+      if (clientObj.ship.hyperFuel < 20) {
+        clientObj.send({ type: "notification", message: "Insufficient Hyper-Fuel! Requires 20 units. Land on a planet to refuel.", style: "error" });
+        return;
+      }
+
+      // Deduct fuel, warp ship coordinates
+      clientObj.ship.hyperFuel = Math.max(0, clientObj.ship.hyperFuel - 20);
+      clientObj.ship.position = gate.targetPosition.clone();
+      clientObj.ship.velocity.set(0, 0); // halt drift momentum to avoid launching offscreen
+
+      // Sync the warp success with the client
+      clientObj.send({
+        type: "warp_success",
+        targetSector: gate.targetSector,
+        position: { x: gate.targetPosition.x, y: gate.targetPosition.y },
+        hyperFuel: clientObj.ship.hyperFuel
+      });
+
+      clientObj.send({
+        type: "notification",
+        message: `Hyperspace drive engaged! Warp transition to ${gate.targetSector.toUpperCase()} Sector completed.`,
+        style: "success"
+      });
+
+      // Move associated escorts with flagship
+      let escortCount = 0;
+      for (const ai of ais) {
+        if (ai.role === "escort" && ai.flagship === clientObj.ship) {
+          ai.ship.position = gate.targetPosition.add(new Vector2D((Math.random() - 0.5) * 100, (Math.random() - 0.5) * 100));
+          ai.ship.velocity.set(0, 0);
+          escortCount++;
+        }
+      }
+      if (escortCount > 0) {
+        clientObj.send({
+          type: "notification",
+          message: `${escortCount} AI escorts made the hyperspace jump with you.`,
+          style: "info"
+        });
+      }
+
+      clientObj.sendStats();
+      broadcastRosterUpdate();
+    }
+
+    else if (msg.type === "boarding_action") {
+      const target = engine.getEntity(msg.targetId);
+      if (!target || target.type !== "ship" || !target.isDisabled) {
+        clientObj.send({ type: "notification", message: "Target invalid or not disabled!", style: "error" });
+        return;
+      }
+      const dist = clientObj.ship.position.distance(target.position);
+      if (dist > 250) {
+        clientObj.send({ type: "notification", message: "Target too far for boarding! Move within 250u.", style: "error" });
+        return;
+      }
+
+      if (msg.action === "plunder") {
+        let plunderedCount = 0;
+        if (target.cargo) {
+          for (const [commodity, amount] of Object.entries(target.cargo)) {
+            if (amount > 0) {
+              for (let i = 0; i < amount; i++) {
+                if (clientObj.ship.addCargo(commodity, 1)) {
+                  target.cargo[commodity]--;
+                  plunderedCount++;
+                }
+              }
+            }
+          }
+        }
+        if (plunderedCount > 0) {
+          clientObj.send({ type: "notification", message: `Success! Plundered ${plunderedCount} tons of commodities.`, style: "success" });
+          clientObj.sendStats();
+        } else {
+          clientObj.send({ type: "notification", message: "Plunder complete: target hold was empty or your cargo bay is full.", style: "info" });
+        }
+      }
+
+      else if (msg.action === "salvage") {
+        const salvagable = target.outfits ? target.outfits.filter(o => !clientObj.ship.outfits.includes(o)) : [];
+        if (salvagable.length > 0) {
+          const chosen = salvagable[Math.floor(Math.random() * salvagable.length)];
+          clientObj.ship.outfits.push(chosen);
+          
+          // Apply upgrade authoritatively on salvage
+          const defaultCatalog = [
+            { name: "Heavy Shields", cost: 1200, type: "shield", value: 350 },
+            { name: "Aegis Shield Matrix", cost: 4500, type: "shield", value: 800 },
+            { name: "Overcharged Engines", cost: 1500, type: "engine", value: 12000 },
+            { name: "Hyper-Drive Thrusters", cost: 3800, type: "engine", value: 25000 },
+            { name: "Plasma Cannon", cost: 1800, type: "weapon", value: 25 },
+            { name: "Neutron Blaster", cost: 4200, type: "weapon", value: 55 },
+            { name: "Expanded Cargo Holds", cost: 1000, type: "cargo", value: 15 },
+            { name: "Sub-space Cargo Compressor", cost: 2800, type: "cargo", value: 45 },
+            { name: "Tractor Beam Matrix", cost: 2500, type: "tractor", value: 250 },
+            { name: "Cold-Fusion Reactor", cost: 3000, type: "reactor", value: 30 },
+            { name: "Cryo-Cooling Radiator", cost: 2200, type: "radiator", value: 15 },
+            { name: "Supercapacitor Cells", cost: 1600, type: "capacitor", value: 100 }
+          ];
+          const match = defaultCatalog.find(o => o.name === chosen);
+          if (match) {
+            if (match.type === "shield") {
+              clientObj.ship.maxShield += match.value;
+              clientObj.ship.shield = clientObj.ship.maxShield;
+            } else if (match.type === "engine") {
+              clientObj.ship.thrustPower += match.value;
+              clientObj.ship.maxSpeed += 50;
+            } else if (match.type === "weapon") {
+              clientObj.ship.weaponDamage += match.value;
+            } else if (match.type === "cargo") {
+              clientObj.ship.cargoCapacity += match.value;
+            } else if (match.type === "reactor") {
+              clientObj.ship.energyRegen += match.value;
+            } else if (match.type === "radiator") {
+              clientObj.ship.heatDissipation += match.value;
+            } else if (match.type === "capacitor") {
+              clientObj.ship.maxEnergy += match.value;
+              clientObj.ship.energy = clientObj.ship.maxEnergy;
+            }
+          }
+
+          clientObj.send({ type: "notification", message: `Hull Component Salvaged! Equipped: ${chosen}`, style: "success" });
+          clientObj.sendStats();
+        } else {
+          clientObj.ship.credits += 800;
+          clientObj.send({ type: "notification", message: "No new modules found. Salvaged hull scrap for +800 CR.", style: "info" });
+          clientObj.sendStats();
+        }
+      }
+
+      else if (msg.action === "capture") {
+        const fee = 1500;
+        if (clientObj.ship.credits < fee) {
+          clientObj.send({ type: "notification", message: "Insufficient credits for escort crew fees (1,500 CR required)!", style: "error" });
+          return;
+        }
+        clientObj.ship.credits -= fee;
+
+        target.isDisabled = false;
+        target.armor = Math.floor(target.maxArmor * 0.4);
+        target.shield = 0;
+        target.name = `${clientObj.nickname}'s Escort`;
+
+        const controller = new AIController(target, "escort");
+        controller.flagship = clientObj.ship;
+        ais.push(controller);
+
+        clientObj.send({ type: "notification", message: `Neural Command Link Established! Escort active.`, style: "success" });
+        clientObj.sendStats();
+      }
+
+      else if (msg.action === "scuttle") {
+        const scrapReward = Math.floor(target.maxArmor * 4 + Math.random() * 200);
+        clientObj.ship.credits += scrapReward;
+
+        engine.removeEntity(target.id);
+
+        clientObj.send({ type: "notification", message: `Hull scuttled. Salvaged scraps for +${scrapReward} CR`, style: "success" });
+        clientObj.sendStats();
+      }
+
+      broadcastRosterUpdate();
+    }
+
+    else if (msg.type === "escort_command") {
+      const cmd = msg.command; // "follow", "hold", "attack"
+      let count = 0;
+      for (const ai of ais) {
+        if (ai.role === "escort" && ai.flagship === clientObj.ship) {
+          ai.escortMode = cmd;
+          count++;
+        }
+      }
+      clientObj.send({ type: "notification", message: `Transmitted [${cmd.toUpperCase()}] commands to ${count} AI wingmen.`, style: "success" });
+    }
+
     else if (msg.type === "ping") {
       clientObj.send({
         type: "pong",
@@ -1266,9 +1535,20 @@ function serializeEntities() {
         base.armor = ent.armor;
         base.maxArmor = ent.maxArmor;
         base.controls = ent.controls;
+        base.energy = ent.energy;
+        base.maxEnergy = ent.maxEnergy;
+        base.heat = ent.heat;
+        base.maxHeat = ent.maxHeat;
+        base.isOverheated = ent.isOverheated;
+        base.isDisabled = ent.isDisabled;
       } else if (ent.type === "cargo_pod") {
         base.resourceType = ent.resourceType;
         base.amount = ent.amount;
+      } else if (ent.type === "warp_gate") {
+        base.name = ent.name;
+        base.sector = ent.sector;
+        base.targetSector = ent.targetSector;
+        base.targetPosition = ent.targetPosition ? { x: ent.targetPosition.x, y: ent.targetPosition.y } : null;
       }
       return base;
     });

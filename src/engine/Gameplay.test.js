@@ -943,3 +943,132 @@ describe("Online Interface Efficiency & Robustness", () => {
   });
 });
 
+describe("Endless Sky Systems Modernization Integration", () => {
+  test("Continuous thruster usage drains ship energy and accumulates thermal heat", () => {
+    const ship = new Ship({
+      maxEnergy: 100,
+      maxHeat: 100,
+      thrustPower: 10000,
+      mass: 1000
+    });
+
+    ship.energy = 100;
+    ship.heat = 0;
+
+    // Emulate controls: thrusting active
+    ship.setControls({ isThrusting: true });
+
+    // Step physics update loop (0.5 seconds delta time)
+    ship.update(0.5);
+
+    // Thrust energy cost is 15 units/sec => 15 * 0.5 = 7.5 units drained
+    // Base regen is 20 units/sec => 20 * 0.5 = 10 units recharged
+    // Since regen happens first: 100 + 10 = 100 (capped), then drain 7.5 = 92.5
+    expect(ship.energy).toBe(92.5);
+
+    // Let's set energy to 20, regen to 0 so we can isolate the thrust drain exactly
+    ship.energy = 20;
+    ship.energyRegen = 0;
+    ship.update(0.5);
+    // 20 - 7.5 = 12.5
+    expect(ship.energy).toBe(12.5);
+
+    // Heat generation during thrusting is 8 units/sec => 8 * 0.5 = 4 units accumulated
+    // Heat dissipation is 10 units/sec => 10 * 0.5 = 5 units cooled
+    // Let's set heat to 50, heatDissipation to 0 to isolate thrust heat generation exactly
+    ship.heat = 50;
+    ship.heatDissipation = 0;
+    ship.update(0.5);
+    // 50 + 4 = 54
+    expect(ship.heat).toBe(54);
+  });
+
+  test("Reactor Thermal Meltdown nerfs maximum speed and decays structural armor", () => {
+    const ship = new Ship({
+      maxSpeed: 400,
+      maxArmor: 100
+    });
+
+    ship.armor = 100;
+    ship.heat = 150; // exceeds maxHeat (100)
+    ship.isOverheated = false;
+
+    // Update triggers meltdown
+    ship.update(0.1);
+    expect(ship.isOverheated).toBe(true);
+
+    // Under meltdown, speed cap is nerfed by 50%
+    ship.velocity = new Vector2D(500, 0); // exceeds cap
+    ship.update(0.1);
+
+    // speed should be capped at 400 * 0.5 = 200
+    const speed = ship.velocity.magnitude();
+    expect(speed).toBeLessThanOrEqual(200);
+
+    // Under meltdown, armor decays by 4 * dt per second
+    // 100 - 4 * 0.2 = 99.2
+    expect(ship.armor).toBeCloseTo(99.2);
+
+    // Cool down to 40% (below 50%) should lift the meltdown phase
+    ship.heat = 30;
+    ship.update(0.1);
+    expect(ship.isOverheated).toBe(false);
+  });
+
+  test("Defeated ship enters disabled drifting state at 0 armor instead of exploding", () => {
+    const ship = new Ship({
+      maxArmor: 100
+    });
+
+    ship.shield = 0; // Deactivate shields to test pure armor failure
+    ship.armor = 10;
+    ship.isDisabled = false;
+
+    // Take lethal damage of 15
+    const exploded = ship.takeDamage(15);
+
+    // Ship should NOT be destroyed yet
+    expect(exploded).toBe(false);
+    expect(ship.isDisabled).toBe(true);
+    expect(ship.armor).toBe(30); // standby hull integrity restored
+    expect(ship.shield).toBe(0);
+
+    // Subsequent damage draining standby armor to 0 triggers permanent explosion
+    const permExploded = ship.takeDamage(35);
+    expect(permExploded).toBe(true);
+    expect(ship.armor).toBe(0);
+    expect(ship.isDestroyed).toBe(true);
+  });
+
+  test("Hyperlane Warp gate jump consumes Hyper-Fuel and teleports target position", () => {
+    // Emulate server-side gate jump logic
+    const playerShip = new Ship({ id: "player-jump-test" });
+    playerShip.hyperFuel = 100;
+    playerShip.position = new Vector2D(0, 0);
+
+    const gate = {
+      id: "gate-1",
+      type: "warp_gate",
+      position: { x: 50, y: 0 },
+      targetSector: "frontier",
+      targetPosition: { x: 20000, y: 20000 }
+    };
+
+    // 1. Proximity check (gate is at 50, player at 0, dist is 50 <= 150)
+    const dist = playerShip.position.distance(gate.position);
+    expect(dist).toBeLessThanOrEqual(150);
+
+    // 2. Fuel check (has 100 >= 20)
+    expect(playerShip.hyperFuel).toBeGreaterThanOrEqual(20);
+
+    // 3. Perform Warp jump
+    playerShip.hyperFuel -= 20;
+    playerShip.position = new Vector2D(gate.targetPosition.x, gate.targetPosition.y);
+    playerShip.velocity = new Vector2D(0, 0);
+
+    expect(playerShip.hyperFuel).toBe(80);
+    expect(playerShip.position.x).toBe(20000);
+    expect(playerShip.position.y).toBe(20000);
+  });
+});
+

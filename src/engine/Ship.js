@@ -47,6 +47,20 @@ export class Ship extends SpaceEntity {
     this.armor = maxArmor;
     this.shieldRegen = shieldRegen;
 
+    // Energy & Thermal Systems (Endless Sky Modernization)
+    this.maxEnergy = 100;
+    this.energy = 100;
+    this.energyRegen = 20; // units/sec
+    this.maxHeat = 100;
+    this.heat = 0;
+    this.heatDissipation = 10; // units/sec
+    this.maxHyperFuel = 100;
+    this.hyperFuel = 100;
+
+    // Status states
+    this.isOverheated = false;
+    this.isDisabled = false;
+
     // Trading & Economy Systems
     this.credits = credits;
     this.cargoCapacity = cargoCapacity;
@@ -104,7 +118,7 @@ export class Ship extends SpaceEntity {
   takeDamage(damage) {
     if (damage <= 0) return this.isDestroyed;
 
-    if (this.shield > 0) {
+    if (this.shield > 0 && !this.isDisabled) {
       this.shield -= damage;
       if (this.shield < 0) {
         const overflow = Math.abs(this.shield);
@@ -119,6 +133,16 @@ export class Ship extends SpaceEntity {
       this.armor = 0;
     }
 
+    // Disabled ship check - ship enters drifting standby instead of blowing up instantly on 0 armor
+    if (this.armor <= 0 && !this.isDisabled) {
+      this.isDisabled = true;
+      this.armor = 30; // standby structural hull integrity remaining
+      this.shield = 0;
+      this.clearControls();
+      this.isOverheated = false;
+      this.heat = 0;
+    }
+
     return this.isDestroyed;
   }
 
@@ -131,16 +155,27 @@ export class Ship extends SpaceEntity {
   }
 
   /**
-   * Recharges shields slowly over time if ship is functional.
+   * Recharges shields slowly over time if ship is functional, drawing energy and generating heat.
    * @param {number} dt - Time step in seconds.
    */
   regenerateShields(dt) {
-    if (this.isDestroyed) return;
+    if (this.isDestroyed || this.isDisabled || this.isOverheated) return;
     if (this.shield < this.maxShield) {
-      this.shield = Math.min(
-        this.maxShield,
-        this.shield + this.shieldRegen * dt,
-      );
+      const shieldDeficit = this.maxShield - this.shield;
+      const regenAttempt = Math.min(shieldDeficit, this.shieldRegen * dt);
+      const energyCost = regenAttempt * 1.2; // 1.2 energy per 1 shield unit
+      
+      if (this.energy >= energyCost) {
+        this.energy -= energyCost;
+        this.heat = Math.min(this.maxHeat * 1.5, this.heat + regenAttempt * 0.4);
+        this.shield += regenAttempt;
+      } else {
+        // partial regen if energy is constrained
+        const partialRegen = (this.energy / 1.2);
+        this.energy = 0;
+        this.heat = Math.min(this.maxHeat * 1.5, this.heat + partialRegen * 0.4);
+        this.shield += partialRegen;
+      }
     }
   }
 
@@ -187,11 +222,40 @@ export class Ship extends SpaceEntity {
   }
 
   /**
-   * Overridden update loop. Handles regeneration, cooldowns, and propulsion controls.
+   * Overridden update loop. Handles energy generation, thermal meltdown thresholds, regeneration, cooling, and propulsion controls.
    * @param {number} dt - Frame time step in seconds.
    */
   update(dt) {
     if (dt <= 0 || this.isDestroyed) return;
+
+    if (this.isDisabled) {
+      // Disabled ships drift helplessly, slowly cooling down and losing active power
+      this.shield = 0;
+      this.energy = 0;
+      this.heat = Math.max(0, this.heat - this.heatDissipation * dt);
+      this.clearControls();
+      this.angularVelocity = 0;
+      super.update(dt);
+      return;
+    }
+
+    // 1. Recharge energy reserves
+    this.energy = Math.min(this.maxEnergy, this.energy + this.energyRegen * dt);
+
+    // 2. Dissipate excess thermal buildup
+    this.heat = Math.max(0, this.heat - this.heatDissipation * dt);
+
+    // 3. Reactor Melt-down checking
+    if (this.heat >= this.maxHeat) {
+      this.isOverheated = true;
+    }
+    if (this.isOverheated) {
+      // Core overheat decays structural armor
+      this.armor = Math.max(1, this.armor - 4 * dt); // slow meltdown decay
+      if (this.heat < 50) {
+        this.isOverheated = false; // cooled down
+      }
+    }
 
     // Slow shield regeneration
     this.regenerateShields(dt);
@@ -211,24 +275,36 @@ export class Ship extends SpaceEntity {
     }
 
     // --- Linear Propulsion Control Integration ---
-    if (this.controls.isThrusting) {
-      const direction = this.getDirectionVector();
-      const thrustForce = direction.multiply(this.thrustPower);
-      this.applyForce(thrustForce);
+    if (this.controls.isThrusting && !this.isOverheated) {
+      const thrustEnergyCost = 15 * dt;
+      if (this.energy >= thrustEnergyCost) {
+        this.energy -= thrustEnergyCost;
+        this.heat = Math.min(this.maxHeat * 1.5, this.heat + 8 * dt);
+
+        const direction = this.getDirectionVector();
+        const thrustForce = direction.multiply(this.thrustPower);
+        this.applyForce(thrustForce);
+      }
     }
 
     // --- Retro-Brake Propulsion Control Integration ---
-    if (this.controls.isBraking) {
-      const speed = this.velocity.magnitude();
-      if (speed > 0.01) {
-        const brakeDirection = this.velocity.normalize().multiply(-1);
-        const maxDecelForce = (speed * this.mass) / dt;
-        const actualBrakeForceMagnitude = Math.min(
-          this.brakePower,
-          maxDecelForce,
-        );
-        const brakeForce = brakeDirection.multiply(actualBrakeForceMagnitude);
-        this.applyForce(brakeForce);
+    if (this.controls.isBraking && !this.isOverheated) {
+      const brakeEnergyCost = 10 * dt;
+      if (this.energy >= brakeEnergyCost) {
+        this.energy -= brakeEnergyCost;
+        this.heat = Math.min(this.maxHeat * 1.5, this.heat + 5 * dt);
+
+        const speed = this.velocity.magnitude();
+        if (speed > 0.01) {
+          const brakeDirection = this.velocity.normalize().multiply(-1);
+          const maxDecelForce = (speed * this.mass) / dt;
+          const actualBrakeForceMagnitude = Math.min(
+            this.brakePower,
+            maxDecelForce,
+          );
+          const brakeForce = brakeDirection.multiply(actualBrakeForceMagnitude);
+          this.applyForce(brakeForce);
+        }
       }
     }
 
@@ -237,8 +313,10 @@ export class Ship extends SpaceEntity {
 
     // Apply terminal speed limit cap
     const currentSpeed = this.velocity.magnitude();
-    if (currentSpeed > this.maxSpeed) {
-      this.velocity = this.velocity.normalize().multiply(this.maxSpeed);
+    let speedCap = this.maxSpeed;
+    if (this.isOverheated) speedCap *= 0.5; // nerf max speed by 50% during reactor meltdown
+    if (currentSpeed > speedCap) {
+      this.velocity = this.velocity.normalize().multiply(speedCap);
     }
   }
 }

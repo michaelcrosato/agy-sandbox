@@ -91,10 +91,23 @@ export class SpaceEngine {
   }
 
   /**
-   * Generates a projectile from a firing ship and sets its cooldown.
+   * Generates a projectile from a firing ship and sets its cooldown, drawing energy and generating heat.
    * @param {Ship} ship - The ship firing its weapon.
    */
   fireWeapon(ship) {
+    if (ship.isDisabled || ship.isOverheated) return;
+
+    // Energy check (weapons consume 15 energy per burst)
+    const energyCost = 15;
+    if (ship.energy !== undefined && ship.energy < energyCost) {
+      return; // Weapon system lock - low power
+    }
+
+    if (ship.energy !== undefined) {
+      ship.energy -= energyCost;
+      ship.heat = Math.min(ship.maxHeat * 1.5, ship.heat + 8); // weapon heat buildup
+    }
+
     // Position projectile slightly in front of the ship to avoid firing inside self
     const dir = ship.getDirectionVector();
     const spawnPos = ship.position.add(dir.multiply(ship.radius + 5));

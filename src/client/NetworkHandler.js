@@ -164,6 +164,10 @@ export class NetworkHandler {
         case "lobby_sync":
           if (this.onLobbySync) this.onLobbySync(msg);
           break;
+
+        case "warp_success":
+          if (this.onWarpSuccess) this.onWarpSuccess(msg);
+          break;
       }
     };
  

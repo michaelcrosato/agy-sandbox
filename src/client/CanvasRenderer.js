@@ -20,6 +20,11 @@ export class CanvasRenderer {
     this.stars = [];
     this.initStarfield();
 
+    // Warp animation parameters (Endless Sky Sector Jumping)
+    this.isWarping = false;
+    this.warpTimer = 0;
+    this.warpTunnelStars = [];
+
     // Visual Explosion/Spark Particles
     this.particles = [];
 
@@ -117,14 +122,25 @@ export class CanvasRenderer {
     if (playerShip) {
       this.camera.x = playerShip.position.x - this.canvas.width / 2;
       this.camera.y = playerShip.position.y - this.canvas.height / 2;
+
+      // Apply high-fidelity camera shake during hyperspace warp jumps
+      if (this.isWarping) {
+        const shakeAmt = 12;
+        this.camera.x += (Math.random() - 0.5) * shakeAmt;
+        this.camera.y += (Math.random() - 0.5) * shakeAmt;
+      }
     }
 
     // 2. Clear Context with beautiful space black
     this.ctx.fillStyle = "#020205";
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // 3. Render Parallax Starfield
-    this.drawStarfield();
+    // 3. Render Parallax Starfield or Warp Tunnel streaking stars
+    if (this.isWarping) {
+      this.drawWarpStarfield(dt);
+    } else {
+      this.drawStarfield();
+    }
 
     // 4. Update and Draw Spark Particles
     this.drawParticles(dt);
@@ -145,6 +161,8 @@ export class CanvasRenderer {
         this.drawShip(ent, localPlayerId, fleetMembers, fleetName);
       } else if (ent.type === "cargo_pod") {
         this.drawCargoPod(ent);
+      } else if (ent.type === "warp_gate") {
+        this.drawWarpGate(ent);
       } else {
         this.drawAsteroid(ent);
       }
@@ -159,6 +177,14 @@ export class CanvasRenderer {
             this.drawTractorBeam(playerShip.position.x, playerShip.position.y, ent.position.x, ent.position.y);
           }
         }
+      }
+    }
+
+    // Draw active Boarding Gravimetric tether if player has a disabled ship locked in close range
+    if (playerShip && targetEntity && !targetEntity.isDestroyed && targetEntity.isDisabled) {
+      const dist = playerShip.position.distance(targetEntity.position);
+      if (dist <= 250) {
+        this.drawBoardingTether(playerShip.position.x, playerShip.position.y, targetEntity.position.x, targetEntity.position.y);
       }
     }
 
@@ -827,6 +853,42 @@ export class CanvasRenderer {
       this.ctx.stroke();
     }
 
+    // 1. Render thermal reactor meltdown core glowing (Overheated ships)
+    if (ship.isOverheated && !ship.isDestroyed) {
+      this.ctx.save();
+      this.ctx.fillStyle = `rgba(255, 23, 68, ${0.4 + Math.sin(Date.now() * 0.01) * 0.3})`;
+      this.ctx.shadowBlur = 15;
+      this.ctx.shadowColor = "#ff1744";
+      this.ctx.beginPath();
+      this.ctx.arc(0, 0, ship.radius * 0.6, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.restore();
+    }
+
+    // 2. Render neon electric sparks branching outward (Disabled ships)
+    if (ship.isDisabled && !ship.isDestroyed) {
+      this.ctx.save();
+      this.ctx.strokeStyle = "#00f2fe";
+      this.ctx.lineWidth = 2;
+      this.ctx.shadowBlur = 8;
+      this.ctx.shadowColor = "#00f2fe";
+      this.ctx.beginPath();
+      for (let i = 0; i < 3; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const len = 8 + Math.random() * 12;
+        const sx = Math.cos(angle) * (ship.radius * 0.4);
+        const sy = Math.sin(angle) * (ship.radius * 0.4);
+        this.ctx.moveTo(sx, sy);
+        // Draw jagged electric bolt
+        const midX = sx + Math.cos(angle + (Math.random() - 0.5) * 0.5) * (len * 0.5);
+        const midY = sy + Math.sin(angle + (Math.random() - 0.5) * 0.5) * (len * 0.5);
+        this.ctx.lineTo(midX, midY);
+        this.ctx.lineTo(midX + Math.cos(angle) * (len * 0.5), midY + Math.sin(angle) * (len * 0.5));
+      }
+      this.ctx.stroke();
+      this.ctx.restore();
+    }
+
     this.ctx.restore();
   }
 
@@ -1295,5 +1357,190 @@ export class CanvasRenderer {
     this.ctx.fillText("3000u", cx, cy + radarRadius - 6);
 
     this.ctx.restore();
+  }
+
+  /**
+   * Renders a glowing, animated dashed gravimetric boarding tether between two points.
+   */
+  drawBoardingTether(x1, y1, x2, y2) {
+    this.ctx.save();
+    this.ctx.strokeStyle = "rgba(255, 230, 0, 0.85)";
+    this.ctx.lineWidth = 2.0;
+    this.ctx.shadowBlur = 10;
+    this.ctx.shadowColor = "#ffe600";
+    this.ctx.setLineDash([5, 8]);
+    this.ctx.lineDashOffset = -Math.floor(Date.now() * 0.02) % 13;
+    
+    this.ctx.beginPath();
+    this.ctx.moveTo(x1, y1);
+    this.ctx.lineTo(x2, y2);
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
+  /**
+   * Draws a rotating gravity well wormhole vortex stargate.
+   * @param {Object} gate - Stargate warp portal entity.
+   */
+  drawWarpGate(gate) {
+    this.ctx.save();
+
+    // 1. Vortex background dark accretion disk
+    this.ctx.fillStyle = "rgba(10, 5, 20, 0.95)";
+    this.ctx.beginPath();
+    this.ctx.arc(gate.position.x, gate.position.y, gate.radius, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    // Subtle neon purple border ring
+    this.ctx.strokeStyle = "#e040fb";
+    this.ctx.lineWidth = 2.5;
+    this.ctx.stroke();
+
+    // Glow radial gradient
+    const glowGrad = this.ctx.createRadialGradient(
+      gate.position.x,
+      gate.position.y,
+      gate.radius * 0.5,
+      gate.position.x,
+      gate.position.y,
+      gate.radius * 1.8
+    );
+    glowGrad.addColorStop(0, "rgba(224, 64, 251, 0.5)");
+    glowGrad.addColorStop(0.5, "rgba(172, 59, 255, 0.25)");
+    glowGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+    this.ctx.fillStyle = glowGrad;
+    this.ctx.beginPath();
+    this.ctx.arc(gate.position.x, gate.position.y, gate.radius * 1.8, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    // 2. Concentric swirling rings (rotating with global time or custom angle)
+    const time = Date.now() * 0.001;
+    const numRings = 4;
+    for (let r = 0; r < numRings; r++) {
+      const angleOffset = (r * Math.PI) / 2;
+      const speed = 1.2 + r * 0.4;
+      const rotation = time * speed + angleOffset;
+      const ringRadius = gate.radius * (0.35 + 0.18 * r);
+
+      this.ctx.beginPath();
+      this.ctx.ellipse(
+        gate.position.x,
+        gate.position.y,
+        ringRadius,
+        ringRadius * 0.65,
+        rotation,
+        0,
+        Math.PI * 2
+      );
+      this.ctx.strokeStyle = r % 2 === 0 ? "#e040fb" : "#00f2fe";
+      this.ctx.lineWidth = 2.0;
+      this.ctx.stroke();
+    }
+
+    // 3. Central core gravity singularity
+    const singularityGrad = this.ctx.createRadialGradient(
+      gate.position.x,
+      gate.position.y,
+      0,
+      gate.position.x,
+      gate.position.y,
+      gate.radius * 0.45
+    );
+    singularityGrad.addColorStop(0, "#ffffff");
+    singularityGrad.addColorStop(0.3, "#e040fb");
+    singularityGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+    this.ctx.fillStyle = singularityGrad;
+    this.ctx.beginPath();
+    this.ctx.arc(gate.position.x, gate.position.y, gate.radius * 0.45, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    // 4. Stargate text label
+    this.ctx.font = "bold 10px 'Orbitron', 'Inter', sans-serif";
+    this.ctx.fillStyle = "#e040fb";
+    this.ctx.textAlign = "center";
+    this.ctx.textBaseline = "middle";
+    this.ctx.fillText((gate.name || "WARP GATE").toUpperCase(), gate.position.x, gate.position.y - gate.radius - 18);
+
+    if (gate.targetSector) {
+      this.ctx.font = "8px 'Orbitron', 'Inter', sans-serif";
+      this.ctx.fillStyle = "#00f2fe";
+      this.ctx.fillText(`TO ${gate.targetSector.toUpperCase()}`, gate.position.x, gate.position.y - gate.radius - 6);
+    }
+
+    this.ctx.restore();
+  }
+
+  /**
+   * Renders the stellar warp streak tunnel animation.
+   * @param {number} dt - frame tick delta time.
+   */
+  drawWarpStarfield(dt) {
+    if (!this.isWarping) return;
+
+    // Initialize warp tunnel stars if empty
+    if (!this.warpTunnelStars || this.warpTunnelStars.length === 0) {
+      this.warpTunnelStars = [];
+      const numStars = 200;
+      for (let i = 0; i < numStars; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        this.warpTunnelStars.push({
+          angle: angle,
+          distance: Math.random() * (this.canvas.width / 2),
+          speed: 600 + Math.random() * 1200,
+          length: 30 + Math.random() * 70,
+          color: `hsla(${260 + Math.random() * 80}, 100%, 80%, ${0.6 + Math.random() * 0.4})`
+        });
+      }
+    }
+
+    const centerX = this.canvas.width / 2;
+    const centerY = this.canvas.height / 2;
+
+    for (const star of this.warpTunnelStars) {
+      // Move stars outward from center
+      star.distance += star.speed * dt;
+      // Grow length as they accelerate
+      star.length += star.speed * 0.2 * dt;
+
+      // Wrap stars that go offscreen
+      if (star.distance > Math.max(this.canvas.width, this.canvas.height)) {
+        star.distance = Math.random() * 50;
+        star.length = 15;
+      }
+
+      // Calculate screen positions
+      const startX = centerX + Math.cos(star.angle) * star.distance;
+      const startY = centerY + Math.sin(star.angle) * star.distance;
+      const endX = centerX + Math.cos(star.angle) * (star.distance + star.length);
+      const endY = centerY + Math.sin(star.angle) * (star.distance + star.length);
+
+      // Render glowing streak
+      this.ctx.beginPath();
+      this.ctx.moveTo(startX, startY);
+      this.ctx.lineTo(endX, endY);
+      this.ctx.strokeStyle = star.color;
+      this.ctx.lineWidth = 2.0;
+      this.ctx.stroke();
+    }
+
+    // Concentric expanding warp portal shockwaves
+    this.warpTimer += dt;
+    const waveCount = 3;
+    for (let w = 0; w < waveCount; w++) {
+      const delay = w * 0.6;
+      const t = (this.warpTimer + delay) % 1.8;
+      const progress = t / 1.8;
+      const maxRadius = Math.max(this.canvas.width, this.canvas.height) * 0.9;
+      const radius = progress * maxRadius;
+      const alpha = Math.max(0, 1 - progress);
+
+      this.ctx.beginPath();
+      this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      this.ctx.strokeStyle = `rgba(224, 64, 251, ${alpha * 0.45})`;
+      this.ctx.lineWidth = 5 + (1 - progress) * 10;
+      this.ctx.stroke();
+    }
   }
 }

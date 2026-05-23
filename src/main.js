@@ -594,6 +594,53 @@ function handlePlayerRespawn() {
   }, 3000);
 }
 
+// Binds stargate warp hooks (Endless Sky hyperlane travel)
+inputHandler.onWarpPressed = () => {
+  if (isLanded) return;
+  if (renderer.isWarping) return;
+
+  // Search if currently in suitable proximity of any warp gate
+  const gate = engine.entities.find(ent => ent.type === "warp_gate" && player.position.distance(ent.position) <= 150);
+  if (gate) {
+    if (window.network) {
+      if (window.network.connected) {
+        window.network.send({
+          type: "warp_jump",
+          gateId: gate.id
+        });
+      } else {
+        uiController.notify("Neural link offline! Cannot engage hyperspace warp.", "error");
+      }
+      return;
+    }
+
+    // Offline / single-player fallback jump logic
+    if (player.hyperFuel < 20) {
+      uiController.notify("Insufficient Hyper-Fuel! Requires 20 units. Land on a planet to refuel.", "error");
+      return;
+    }
+
+    // Process offline warp jump
+    player.hyperFuel = Math.max(0, player.hyperFuel - 20);
+    renderer.isWarping = true;
+    renderer.warpTimer = 0;
+    renderer.warpTunnelStars = [];
+    player.clearControls();
+
+    uiController.notify(`Entering Hyperlane Warp Drive to ${gate.targetSector.toUpperCase()} Sector!`, "success");
+
+    setTimeout(() => {
+      renderer.isWarping = false;
+      player.position = gate.targetPosition.clone();
+      player.velocity = new Vector2D(0, 0);
+      uiController.notify("Warp drive disengaged. Sector transition complete.", "info");
+    }, 2000);
+
+  } else {
+    uiController.notify("No hyperlane stargate portal within range! Proximity within 150u required.", "error");
+  }
+};
+
 // Binds planetary landing hooks
 inputHandler.onLandPressed = () => {
   if (isLanded) return;
@@ -900,6 +947,12 @@ function syncEntitiesFromServer(serverEntities) {
         localEnt.maxShield = ent.maxShield;
         localEnt.armor = ent.armor;
         localEnt.maxArmor = ent.maxArmor;
+        localEnt.energy = ent.energy;
+        localEnt.maxEnergy = ent.maxEnergy;
+        localEnt.heat = ent.heat;
+        localEnt.maxHeat = ent.maxHeat;
+        localEnt.isOverheated = ent.isOverheated;
+        localEnt.isDisabled = ent.isDisabled;
       } else {
         // Smoothly interpolate other entities positions to hide latency gaps
         localEnt.position = localEnt.position.multiply(0.8).add(new Vector2D(ent.x, ent.y).multiply(0.2));
@@ -914,6 +967,12 @@ function syncEntitiesFromServer(serverEntities) {
           localEnt.armor = ent.armor;
           localEnt.maxArmor = ent.maxArmor;
           localEnt.controls = ent.controls;
+          localEnt.energy = ent.energy;
+          localEnt.maxEnergy = ent.maxEnergy;
+          localEnt.heat = ent.heat;
+          localEnt.maxHeat = ent.maxHeat;
+          localEnt.isOverheated = ent.isOverheated;
+          localEnt.isDisabled = ent.isDisabled;
         } else if (localEnt.type === "cargo_pod") {
           localEnt.resourceType = ent.resourceType;
           localEnt.amount = ent.amount;
@@ -931,6 +990,12 @@ function syncEntitiesFromServer(serverEntities) {
         player.maxShield = ent.maxShield;
         player.armor = ent.armor;
         player.maxArmor = ent.maxArmor;
+        player.energy = ent.energy;
+        player.maxEnergy = ent.maxEnergy;
+        player.heat = ent.heat;
+        player.maxHeat = ent.maxHeat;
+        player.isOverheated = ent.isOverheated;
+        player.isDisabled = ent.isDisabled;
       } else if (ent.type === "ship") {
         const newShip = new Ship({
           id: ent.id,
@@ -944,6 +1009,12 @@ function syncEntitiesFromServer(serverEntities) {
         });
         newShip.shield = ent.shield;
         newShip.armor = ent.armor;
+        newShip.energy = ent.energy;
+        newShip.maxEnergy = ent.maxEnergy;
+        newShip.heat = ent.heat;
+        newShip.maxHeat = ent.maxHeat;
+        newShip.isOverheated = ent.isOverheated;
+        newShip.isDisabled = ent.isDisabled;
         newShip.controls = ent.controls || { isThrusting: false, isBraking: false, isFiring: false };
         engine.addEntity(newShip);
       } else if (ent.type === "projectile") {
@@ -1010,6 +1081,16 @@ network.onStatsReceived = (msg) => {
   player.maxSpeed = msg.maxSpeed;
   player.name = msg.nickname;
   
+  // Endless Sky variables mapping
+  player.energy = msg.energy;
+  player.maxEnergy = msg.maxEnergy;
+  player.heat = msg.heat;
+  player.maxHeat = msg.maxHeat;
+  player.hyperFuel = msg.hyperFuel;
+  player.maxHyperFuel = msg.maxHyperFuel;
+  player.isOverheated = msg.isOverheated;
+  player.isDisabled = msg.isDisabled;
+  
   uiController.update(player, playerTarget, planets);
   spaceportUI.refreshActiveTab();
 };
@@ -1037,6 +1118,28 @@ network.onLaunched = () => {
   player.velocity = new Vector2D(0, 0);
   player.clearControls();
   uiController.notify("Launch sequence completed! Thrusters online.", "success");
+};
+
+network.onWarpSuccess = (msg) => {
+  // Lock steering inputs / set isWarping = true on renderer
+  renderer.isWarping = true;
+  renderer.warpTimer = 0;
+  renderer.warpTunnelStars = [];
+  
+  // Disable user input / set player controls to inactive so ship keeps flying or stops
+  player.clearControls();
+  
+  // Display visual transition notification
+  uiController.notify(`Entering Hyperlane Warp Drive to ${msg.targetSector.toUpperCase()} Sector!`, "success");
+
+  // After 2.0 seconds of stunning warp star effects, set coordinates and restore controls
+  setTimeout(() => {
+    renderer.isWarping = false;
+    player.position = new Vector2D(msg.position.x, msg.position.y);
+    player.velocity = new Vector2D(0, 0);
+    player.hyperFuel = msg.hyperFuel;
+    uiController.notify("Warp drive disengaged. Sector transition complete.", "info");
+  }, 2000);
 };
 
 network.onFleetSync = (msg) => {
@@ -1355,7 +1458,11 @@ function gameLoop(time) {
     }
 
     // 1. Map player steering keys directly to ship propulsion accumulator
-    inputHandler.applyInputToShip(player);
+    if (renderer.isWarping) {
+      player.clearControls();
+    } else {
+      inputHandler.applyInputToShip(player);
+    }
 
     // Send input controls to the server if in multiplayer
     if (network && network.connected) {
@@ -1450,7 +1557,92 @@ function gameLoop(time) {
   );
 
   // 5. Synchronize dynamic health bars and targeting dials with overlay DOM dashboard
-  uiController.update(player, playerTarget, planets, NEBULAE);
+  uiController.update(player, playerTarget, planets, NEBULAE, engine.entities);
 
   requestAnimationFrame(gameLoop);
 }
+
+// ==========================================
+// TACTICAL BOARDING & ESCORT COMMAND SYSTEMS
+// ==========================================
+
+const boardingPanel = document.getElementById("boarding-panel");
+const boardingShipInfo = document.getElementById("boarding-ship-info");
+
+inputHandler.onBoardPressed = () => {
+  if (!playerTarget || playerTarget.isDestroyed || !playerTarget.isDisabled) {
+    uiController.notify("Boarding unavailable: scanners must lock a disabled ship.", "error");
+    return;
+  }
+
+  const dist = player.position.distance(playerTarget.position);
+  if (dist > 250) {
+    uiController.notify("Target too distant! Move within 250u proximity.", "error");
+    return;
+  }
+
+  if (boardingPanel) {
+    if (boardingPanel.style.display === "none") {
+      boardingPanel.style.display = "block";
+      if (boardingShipInfo) {
+        boardingShipInfo.innerText = `TARGET: ${playerTarget.name.toUpperCase()} (DISABLED HULL)`;
+      }
+      uiController.notify("Boarding tethers locked. Ready to infiltrate ship reactor cores.", "success");
+    } else {
+      boardingPanel.style.display = "none";
+    }
+  }
+};
+
+document.getElementById("btn-board-exit")?.addEventListener("click", () => {
+  if (boardingPanel) boardingPanel.style.display = "none";
+});
+
+function sendBoardingAction(action) {
+  if (!playerTarget) return;
+  if (network && network.connected) {
+    network.send({
+      type: "boarding_action",
+      targetId: playerTarget.id,
+      action: action
+    });
+  } else {
+    uiController.notify("Neural link offline! Cannot transmit boarding commands.", "error");
+  }
+  if (boardingPanel) boardingPanel.style.display = "none";
+}
+
+document.getElementById("btn-board-plunder")?.addEventListener("click", () => sendBoardingAction("plunder"));
+document.getElementById("btn-board-salvage")?.addEventListener("click", () => sendBoardingAction("salvage"));
+document.getElementById("btn-board-capture")?.addEventListener("click", () => sendBoardingAction("capture"));
+document.getElementById("btn-board-scuttle")?.addEventListener("click", () => sendBoardingAction("scuttle"));
+
+// Escort Wingman Command Hotkeys Listener (H, F, G)
+window.addEventListener("keydown", (e) => {
+  // Disable game commands if typing in input panels
+  if (
+    document.activeElement &&
+    (document.activeElement.tagName === "INPUT" ||
+      document.activeElement.tagName === "TEXTAREA")
+  ) {
+    return;
+  }
+
+  if (e.code === "KeyH") {
+    // Hold command
+    if (network && network.connected) {
+      network.send({ type: "escort_command", command: "hold" });
+    }
+  } else if (e.code === "KeyF") {
+    // Follow / Defend command
+    if (network && network.connected) {
+      network.send({ type: "escort_command", command: "follow" });
+    }
+  } else if (e.code === "KeyG") {
+    // Attack targeted ship command
+    if (network && network.connected) {
+      network.send({ type: "escort_command", command: "attack" });
+    }
+  }
+});
+

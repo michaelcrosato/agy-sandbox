@@ -925,24 +925,46 @@ wss.on("connection", (ws) => {
           }
           if (clientObj.ship.addCargo(msg.item, 1)) {
             clientObj.ship.credits -= price;
+
+            // Price moves up by 2.2% due to demand
+            const basePrice = (BASE_MARKETS[p.name] && BASE_MARKETS[p.name][msg.item]) || 150;
+            const currentPrice = p.market[msg.item];
+            p.market[msg.item] = Math.min(Math.round(basePrice * 2.5), Math.round(currentPrice * 1.022));
+
             clientObj.send({
               type: "notification",
               message: `Purchased 1 ton of ${msg.item} for ${price} CR`,
               style: "success"
             });
             clientObj.sendStats();
+            broadcast({
+              type: "market_sync",
+              planetName: p.name,
+              market: p.market
+            });
           } else {
             clientObj.send({ type: "notification", message: "Cargo hold is full!", style: "error" });
           }
         } else if (msg.action === "sell") {
           if (clientObj.ship.removeCargo(msg.item, 1)) {
             clientObj.ship.credits += price;
+
+            // Price moves down by 1.8% due to supply surplus
+            const basePrice = (BASE_MARKETS[p.name] && BASE_MARKETS[p.name][msg.item]) || 150;
+            const currentPrice = p.market[msg.item];
+            p.market[msg.item] = Math.max(Math.round(basePrice * 0.4), Math.round(currentPrice * 0.982));
+
             clientObj.send({
               type: "notification",
               message: `Sold 1 ton of ${msg.item} for ${price} CR`,
               style: "success"
             });
             clientObj.sendStats();
+            broadcast({
+              type: "market_sync",
+              planetName: p.name,
+              market: p.market
+            });
           } else {
             clientObj.send({ type: "notification", message: `No ${msg.item} in cargo bay!`, style: "error" });
           }
@@ -1642,6 +1664,40 @@ function broadcastRosterUpdate() {
     client.send(payload);
   }
 }
+
+// Economic market self-normalization ticker (every 6 seconds, prices settle toward baselines by 0.5% or 1 CR)
+setInterval(() => {
+  for (const p of planets) {
+    const base = BASE_MARKETS[p.name];
+    if (!base) continue;
+
+    let planetChanged = false;
+    for (const item of Object.keys(p.market)) {
+      // If an active event is overriding this item, do not normalize it yet!
+      if (activeEconomicEvent && activeEconomicEvent.planetName === p.name && activeEconomicEvent.commodity === item) {
+        continue;
+      }
+
+      const current = p.market[item];
+      const baseline = base[item];
+      if (current !== baseline) {
+        const diff = baseline - current;
+        // Step 1 CR minimum, or 0.5% of baseline
+        const step = Math.sign(diff) * Math.max(1, Math.round(Math.abs(diff) * 0.005));
+        p.market[item] = current + step;
+        planetChanged = true;
+      }
+    }
+
+    if (planetChanged) {
+      broadcast({
+        type: "market_sync",
+        planetName: p.name,
+        market: p.market
+      });
+    }
+  }
+}, 6000);
 
 // 6. Start listening
 server.listen(PORT, () => {

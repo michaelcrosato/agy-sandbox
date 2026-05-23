@@ -800,4 +800,39 @@ describe("Online Interface Efficiency & Robustness", () => {
     expect(clientObj.ship.cargoCapacity).toBe(40);
     expect(clientObj.ship.outfits).toContain("Tractor Beam Matrix");
   });
+
+  test("Dynamic pricing shifts correctly on buying (price rises) and selling (price drops)", () => {
+    const basePrice = 100;
+    let currentPrice = 100;
+
+    // Emulate purchase (price goes up by 2.2%)
+    currentPrice = Math.min(Math.round(basePrice * 2.5), Math.round(currentPrice * 1.022));
+    expect(currentPrice).toBe(102);
+
+    // Emulate another purchase
+    currentPrice = Math.min(Math.round(basePrice * 2.5), Math.round(currentPrice * 1.022));
+    expect(currentPrice).toBe(104);
+
+    // Emulate sale (price goes down by 1.8%)
+    currentPrice = Math.max(Math.round(basePrice * 0.4), Math.round(currentPrice * 0.982));
+    expect(currentPrice).toBe(102);
+  });
+
+  test("Economic self-normalization ticker pushes inflated or deflated prices back to baseline", () => {
+    const baseline = 100;
+    
+    // Test Inflated Price normalization
+    let inflatedPrice = 150;
+    const diffInflated = baseline - inflatedPrice; // -50
+    const stepInflated = Math.sign(diffInflated) * Math.max(1, Math.round(Math.abs(diffInflated) * 0.005)); // -1 * Math.max(1, 0) = -1
+    inflatedPrice = inflatedPrice + stepInflated;
+    expect(inflatedPrice).toBe(149); // Settles downwards
+
+    // Test Deflated Price normalization
+    let deflatedPrice = 60;
+    const diffDeflated = baseline - deflatedPrice; // +40
+    const stepDeflated = Math.sign(diffDeflated) * Math.max(1, Math.round(Math.abs(diffDeflated) * 0.005)); // +1 * Math.max(1, 0) = +1
+    deflatedPrice = deflatedPrice + stepDeflated;
+    expect(deflatedPrice).toBe(61); // Settles upwards
+  });
 });

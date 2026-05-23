@@ -165,7 +165,28 @@ export class CanvasRenderer {
     // Render Tactical Nebula gas clouds & slow-drifting vapor
     this.drawNebulae(dt);
 
+    // Calculate viewport bounds with safety padding to prevent pop-in
+    const pad = 200;
+    const viewLeft = this.camera.x - pad;
+    const viewRight = this.camera.x + this.canvas.width + pad;
+    const viewTop = this.camera.y - pad;
+    const viewBottom = this.camera.y + this.canvas.height + pad;
+
     for (const ent of entities) {
+      // Viewport broad-phase culling
+      const radius = ent.radius || 20;
+      const left = ent.position.x - radius;
+      const right = ent.position.x + radius;
+      const top = ent.position.y - radius;
+      const bottom = ent.position.y + radius;
+
+      const isVisible =
+        right >= viewLeft &&
+        left <= viewRight &&
+        bottom >= viewTop &&
+        top <= viewBottom;
+      if (!isVisible) continue;
+
       if (ent.type === "planet") {
         this.drawPlanet(ent);
       } else if (ent.type === "projectile") {
@@ -359,6 +380,8 @@ export class CanvasRenderer {
     const activeParticles = [];
     const cx = this.camera.x;
     const cy = this.camera.y;
+    const w = this.canvas.width;
+    const h = this.canvas.height;
 
     for (const p of this.particles) {
       p.x += p.vx * dt;
@@ -366,12 +389,24 @@ export class CanvasRenderer {
       p.alpha -= p.decay * dt;
 
       if (p.alpha > 0) {
-        this.ctx.globalAlpha = p.alpha;
-        this.ctx.fillStyle = p.color;
+        const screenX = p.x - cx;
+        const screenY = p.y - cy;
+        const radius = p.radius || 2;
 
-        // High-performance fillRect instead of costly save/restore, path arcs, and CPU shadowBlur
-        const size = p.radius * 2;
-        this.ctx.fillRect(p.x - cx - p.radius, p.y - cy - p.radius, size, size);
+        // Perform fast viewport culling for particles
+        if (
+          screenX >= -radius &&
+          screenX <= w + radius &&
+          screenY >= -radius &&
+          screenY <= h + radius
+        ) {
+          this.ctx.globalAlpha = p.alpha;
+          this.ctx.fillStyle = p.color;
+
+          // High-performance fillRect instead of costly save/restore, path arcs, and CPU shadowBlur
+          const size = radius * 2;
+          this.ctx.fillRect(screenX - radius, screenY - radius, size, size);
+        }
 
         activeParticles.push(p);
       }

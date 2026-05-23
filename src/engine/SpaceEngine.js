@@ -167,26 +167,64 @@ export class SpaceEngine {
   }
 
   /**
-   * Evaluates all unique pairs of entities for overlapping circles.
+   * Evaluates overlaps between entities using a highly optimized Uniform Spatial Grid partitioner.
    * Resolves physical impacts or applies projectile damage.
    */
   handleCollisions() {
+    const cellSize = 500;
+    const grid = new Map();
+
+    // 1. Populate the spatial grid
     const len = this.entities.length;
-
     for (let i = 0; i < len; i++) {
-      for (let j = i + 1; j < len; j++) {
-        const e1 = this.entities[i];
-        const e2 = this.entities[j];
+      const ent = this.entities[i];
+      if (ent.isDestroyed || ent.mass <= 0) continue;
 
-        const distance = e1.position.distance(e2.position);
-        const minDist = e1.radius + e2.radius;
+      const minX = Math.floor((ent.position.x - ent.radius) / cellSize);
+      const maxX = Math.floor((ent.position.x + ent.radius) / cellSize);
+      const minY = Math.floor((ent.position.y - ent.radius) / cellSize);
+      const maxY = Math.floor((ent.position.y + ent.radius) / cellSize);
 
-        if (distance < minDist) {
-          // Collision occurred!
-          if (e1.type === "projectile" || e2.type === "projectile") {
-            this.resolveProjectileCollision(e1, e2);
-          } else {
-            this.resolveCollision(e1, e2, distance, minDist);
+      for (let x = minX; x <= maxX; x++) {
+        for (let y = minY; y <= maxY; y++) {
+          const cellKey = `${x},${y}`;
+          let list = grid.get(cellKey);
+          if (!list) {
+            list = [];
+            grid.set(cellKey, list);
+          }
+          list.push(ent);
+        }
+      }
+    }
+
+    // 2. Resolve collisions per cell with checked pairs de-duplication
+    const checked = new Set();
+
+    for (const cellEntities of grid.values()) {
+      const cellLen = cellEntities.length;
+      if (cellLen < 2) continue;
+
+      for (let i = 0; i < cellLen; i++) {
+        for (let j = i + 1; j < cellLen; j++) {
+          const e1 = cellEntities[i];
+          const e2 = cellEntities[j];
+
+          // Formulate unique pair check key
+          const key = e1.id < e2.id ? `${e1.id}:${e2.id}` : `${e2.id}:${e1.id}`;
+          if (checked.has(key)) continue;
+          checked.add(key);
+
+          const distance = e1.position.distance(e2.position);
+          const minDist = e1.radius + e2.radius;
+
+          if (distance < minDist) {
+            // Collision occurred!
+            if (e1.type === "projectile" || e2.type === "projectile") {
+              this.resolveProjectileCollision(e1, e2);
+            } else {
+              this.resolveCollision(e1, e2, distance, minDist);
+            }
           }
         }
       }

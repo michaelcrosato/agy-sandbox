@@ -23,11 +23,15 @@ describe("GameInstance Multi-Room Matchmaking & Isolation Mechanics", () => {
     const roomA = new GameInstance("room-a", "Sector Alpha");
     const roomB = new GameInstance("room-b", "Sector Beta");
 
-    // Add a ship to Room A
+    // Place the probe ships in empty deep space, far from any seeded planets,
+    // asteroids, or NPC ships. Seeded content (including a guard/merchant next
+    // to Sol at the origin) lives within ~23k units of the sector planets, so
+    // 50k+ is collision-free. This keeps the only acting force as global drag,
+    // making the drift deterministic instead of depending on random spawns.
     const shipA = new Ship({
       id: "player-a",
       name: "Alpha Starfighter",
-      position: new Vector2D(0, 0),
+      position: new Vector2D(50000, 0),
       velocity: new Vector2D(100, 0)
     });
     roomA.engine.addEntity(shipA);
@@ -36,20 +40,22 @@ describe("GameInstance Multi-Room Matchmaking & Isolation Mechanics", () => {
     const shipB = new Ship({
       id: "player-b",
       name: "Beta Interceptor",
-      position: new Vector2D(0, 0),
+      position: new Vector2D(60000, 0),
       velocity: new Vector2D(0, 200)
     });
     roomB.engine.addEntity(shipB);
 
+    const startAx = shipA.position.x;
+
     // Run physics updates on room A only
     roomA.engine.update(1.0); // 1 second update
 
-    // Ship A should have drifted (velocity 100 on X-axis, with drag applied)
-    expect(shipA.position.x).toBeGreaterThan(0);
+    // Ship A should have drifted along +X; drag slows it but never deflects it.
+    expect(shipA.position.x).toBeGreaterThan(startAx);
     expect(shipA.position.y).toBe(0);
 
     // Ship B should NOT have changed coordinates since Room B was not updated!
-    expect(shipB.position.x).toBe(0);
+    expect(shipB.position.x).toBe(60000);
     expect(shipB.position.y).toBe(0);
 
     // Now update Room B

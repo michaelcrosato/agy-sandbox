@@ -112,6 +112,22 @@
           <span class="stat-label">CARGO:</span>
           <span id="stat-cargo" class="stat-value">0 / 20 t</span>
         </div>
+        <button id="btn-hud-map" class="btn-primary" style="width: 100%; font-size: 8px; padding: 4px 8px; margin-top: 4px; border-radius: 4px; display: block; pointer-events: auto;">GALAXY MAP [M]</button>
+      </div>
+
+      <!-- Navigation Hub Panel (glowing targeted route info) -->
+      <div id="hud-navigation" class="hud-panel glass-panel" style="display: none; top: 190px; right: 20px; width: 240px;">
+        <div class="hud-bar-label tracker-header-line" style="color: var(--color-cyan); text-shadow: 0 0 6px rgba(0, 242, 254, 0.4); margin-bottom: 6px;">HYPERLANE NAV</div>
+        <div class="stat-row" style="margin-bottom: 4px;">
+          <span class="stat-label" style="font-size: 8px;">TARGET:</span>
+          <span id="nav-target-name" class="stat-value" style="color: var(--color-green); font-size: 9px; font-weight: bold;">NONE</span>
+        </div>
+        <div id="nav-route-steps" style="font-size: 8px; color: #a0a5b5; line-height: 1.3;">
+          No targeted jump coordinates
+        </div>
+        <div id="autopilot-indicator" style="display: none; margin-top: 6px; font-family: var(--font-display); font-size: 8px; font-weight: bold; color: var(--color-gold); text-shadow: 0 0 5px var(--color-gold-glow); text-align: center; animation: pulse 1s infinite alternate;">
+          🤖 AUTOPILOT ACTIVE
+        </div>
       </div>
 
       <!-- Active HUD Mission Tracker (glowing list below stats) -->
@@ -273,7 +289,7 @@
         </div>
 
         <div style="font-size: 9px; color: var(--color-text-secondary); margin-bottom: 20px; line-height: 1.4; text-align: left; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
-          <strong style="color: var(--color-gold);">CONTROLS QUICK GUIDE:</strong> [W/S] Thrust/Brake | [A/D] Steer Turn | [SPACE] Laser Battery | [T] Cycle Target | [R] Target Hostile | [B] Board disabled Ship | [L] Land spaceport | [J] Stargate Warp Jump
+        <strong style="color: var(--color-gold);">CONTROLS QUICK GUIDE:</strong> [W/S] Thrust/Brake | [A/D] Steer Turn | [SPACE] Laser Battery | [T] Cycle Target | [R] Target Hostile | [B] Board disabled Ship | [L] Land spaceport | [J] Stargate Warp / Autopilot | [M] Galaxy Map
         </div>
 
         <button id="btn-start" class="btn-primary" style="width: 100%; border-radius: 8px;">QUICK JOIN PUBLIC SECTOR</button>
@@ -305,6 +321,30 @@
       </div>
       
       <button id="btn-board-exit" class="btn-sm btn-block" style="margin-top: 15px; border-radius: 6px;">ABORT BOARDING OPERATIONS</button>
+    <!-- Galaxy Navigation Map Overlay (Endless Sky Navigation) -->
+    <div id="galaxy-map-overlay" class="glass-overlay">
+      <div class="spaceport-window glass-panel" style="max-width: 800px; width: 90%; height: 80%; display: flex; flex-direction: column; padding: 25px;">
+        <div class="spaceport-header" style="margin-bottom: 10px;">
+          <h1 id="galaxy-map-title" style="font-family: var(--font-display); font-size: 20px; font-weight: 900; color: var(--color-cyan); text-shadow: 0 0 10px rgba(0, 242, 254, 0.4); letter-spacing: 2px;">GALAXY NAVIGATION MAP</h1>
+          <p style="font-size: 10px; color: #a0a5b5; margin-top: 4px;">Chart jump routes between sectors. Click a sector to set navigation coordinates.</p>
+        </div>
+        
+        <div class="galaxy-map-body" style="flex: 1; position: relative; background: rgba(2, 2, 5, 0.9); border: 1px solid var(--color-border); border-radius: 8px; margin: 15px 0; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+          <!-- SVG layer for connection paths -->
+          <svg id="galaxy-map-svg" width="100%" height="100%" style="position: absolute; top: 0; left: 0; pointer-events: auto; z-index: 1;">
+            <!-- Lines will be drawn here dynamically -->
+          </svg>
+          <!-- Dynamic container for HTML nodes -->
+          <div id="galaxy-map-nodes" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2;">
+            <!-- Node elements will be created here dynamically -->
+          </div>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+          <div id="galaxy-map-info" style="font-family: var(--font-display); font-size: 10px; font-weight: 700; color: var(--color-gold); text-shadow: 0 0 6px var(--color-gold-glow); text-transform: uppercase;">SELECT A DESTINATION SYSTEM</div>
+          <button id="btn-close-map" class="btn-trade-sell btn-sm" style="padding: 8px 18px; font-weight: bold; border-radius: 6px; font-size: 10px; cursor: pointer; transition: all 0.2s;">CLOSE MAP [M]</button>
+        </div>
+      </div>
     </div>
 
   </div>

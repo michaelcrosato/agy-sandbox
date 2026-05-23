@@ -21,7 +21,63 @@ let eventCheckTimer = 0;
 let empTimer = 0;
 let activeSectorEvent = null;
 
-// Initialize DOM controllers
+// Endless Sky Navigation & Autopilot state variables
+let navTargetSector = null;
+let navRoute = [];
+let autopilotActive = false;
+
+// Helper to determine sector based on position coordinate thresholds
+function getSectorFromPosition(pos) {
+  if (!pos) return "core";
+  if (pos.x > 10000 && pos.y > 10000) return "frontier";
+  if (pos.x < -10000 && pos.y < -10000) return "rim";
+  return "core";
+}
+
+// BFS shortest path between systems
+function calculateShortestPath(from, to) {
+  if (!from || !to || from === to) return [];
+  if (from === "core") {
+    if (to === "frontier") return ["frontier"];
+    if (to === "rim") return ["frontier", "rim"];
+  }
+  if (from === "frontier") {
+    if (to === "core") return ["core"];
+    if (to === "rim") return ["rim"];
+  }
+  if (from === "rim") {
+    if (to === "frontier") return ["frontier"];
+    if (to === "core") return ["frontier", "core"];
+  }
+  return [];
+}
+
+// After completing a warp jump, recalculate the route from the new position
+function advanceNavRouteAfterWarp() {
+  if (!navTargetSector) return;
+  const currentSector = getSectorFromPosition(player.position);
+  if (currentSector === navTargetSector) {
+    navTargetSector = null;
+    navRoute = [];
+    uiController.notify("DESTINATION REACHED! Navigation coordinates cleared.", "success");
+  } else {
+    navRoute = calculateShortestPath(currentSector, navTargetSector);
+  }
+  updateNavigationHUD();
+}
+
+// Find the warp gate that connects from current sector to the next hop
+function getNextWarpGate(entities) {
+  if (!navRoute || navRoute.length === 0) return null;
+  const currentSector = getSectorFromPosition(player.position);
+  const nextSector = navRoute[0];
+  return entities.find(ent =>
+    ent.type === "warp_gate" &&
+    ent.sector === currentSector &&
+    ent.targetSector === nextSector
+  ) || null;
+}
+
 const uiController = new UIController();
 const missionManager = new MissionManager();
 const spaceportUI = new SpaceportUI(uiController, missionManager);
@@ -594,7 +650,7 @@ function handlePlayerRespawn() {
   }, 3000);
 }
 
-// Binds stargate warp hooks (Endless Sky hyperlane travel)
+// Binds stargate warp hooks (Endless Sky hyperlane travel + autopilot)
 inputHandler.onWarpPressed = () => {
   if (isLanded) return;
   if (renderer.isWarping) return;
@@ -602,6 +658,10 @@ inputHandler.onWarpPressed = () => {
   // Search if currently in suitable proximity of any warp gate
   const gate = engine.entities.find(ent => ent.type === "warp_gate" && player.position.distance(ent.position) <= 150);
   if (gate) {
+    // Disengage autopilot on manual warp entry
+    autopilotActive = false;
+    updateNavigationHUD();
+
     if (window.network) {
       if (window.network.connected) {
         window.network.send({
@@ -634,10 +694,22 @@ inputHandler.onWarpPressed = () => {
       player.position = gate.targetPosition.clone();
       player.velocity = new Vector2D(0, 0);
       uiController.notify("Warp drive disengaged. Sector transition complete.", "info");
+
+      // Advance navigation route after successful warp jump
+      advanceNavRouteAfterWarp();
     }, 2000);
 
+  } else if (navTargetSector && navRoute.length > 0) {
+    // No gate in range but navigation target exists — toggle autopilot
+    autopilotActive = !autopilotActive;
+    if (autopilotActive) {
+      uiController.notify("Hyperspace autopilot ENGAGED. Press [J] again or steer manually to disengage.", "success");
+    } else {
+      uiController.notify("Hyperspace autopilot disengaged. Manual control restored.", "info");
+    }
+    updateNavigationHUD();
   } else {
-    uiController.notify("No hyperlane stargate portal within range! Proximity within 150u required.", "error");
+    uiController.notify("No hyperlane stargate portal within range! Open the Galaxy Map [M] to plot a course.", "error");
   }
 };
 
@@ -1267,6 +1339,11 @@ network.onStatsReceived = (msg) => {
   player.isOverheated = msg.isOverheated;
   player.isDisabled = msg.isDisabled;
   
+  if (msg.activeMissions) {
+    missionManager.activeMissions = msg.activeMissions;
+    uiController.updateActiveMissionsHUD(missionManager.activeMissions);
+  }
+  
   uiController.update(player, playerTarget, planets);
   spaceportUI.refreshActiveTab();
 };
@@ -1275,6 +1352,10 @@ network.onLanded = (msg) => {
   isLanded = true;
   player.velocity = new Vector2D(0, 0);
   player.clearControls();
+  
+  if (msg.availableMissions) {
+    missionManager.availableMissions[msg.planetName] = msg.availableMissions;
+  }
   
   const targetPlanet = planets.find(p => p.name === msg.planetName);
   if (targetPlanet) {
@@ -1302,8 +1383,9 @@ network.onWarpSuccess = (msg) => {
   renderer.warpTimer = 0;
   renderer.warpTunnelStars = [];
   
-  // Disable user input / set player controls to inactive so ship keeps flying or stops
+  // Disable user input and autopilot
   player.clearControls();
+  autopilotActive = false;
   
   // Display visual transition notification
   uiController.notify(`Entering Hyperlane Warp Drive to ${msg.targetSector.toUpperCase()} Sector!`, "success");
@@ -1315,6 +1397,9 @@ network.onWarpSuccess = (msg) => {
     player.velocity = new Vector2D(0, 0);
     player.hyperFuel = msg.hyperFuel;
     uiController.notify("Warp drive disengaged. Sector transition complete.", "info");
+
+    // Advance navigation route after successful warp jump
+    advanceNavRouteAfterWarp();
   }, 2000);
 };
 
@@ -1648,6 +1733,55 @@ function gameLoop(time) {
     // 1. Map player steering keys directly to ship propulsion accumulator
     if (renderer.isWarping) {
       player.clearControls();
+    } else if (autopilotActive && navRoute.length > 0) {
+      // AUTOPILOT STEERING TICK
+      const targetGate = getNextWarpGate(engine.entities);
+      if (targetGate) {
+        const dx = targetGate.position.x - player.position.x;
+        const dy = targetGate.position.y - player.position.y;
+        const targetAngle = Math.atan2(dy, dx);
+        let angleDiff = targetAngle - player.heading;
+        // Normalize to [-PI, PI]
+        while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
+        while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
+
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        // Steer towards target
+        const turnThreshold = 0.08;
+        const isAligned = Math.abs(angleDiff) < turnThreshold;
+
+        player.setControls({
+          isTurningLeft: angleDiff < -turnThreshold,
+          isTurningRight: angleDiff > turnThreshold,
+          isThrusting: isAligned || Math.abs(angleDiff) < 0.4,
+          isBraking: false,
+          isFiring: false,
+        });
+
+        // Auto-warp when in gate proximity and roughly aligned
+        if (dist <= 150 && Math.abs(angleDiff) < 0.5) {
+          autopilotActive = false;
+          updateNavigationHUD();
+          // Fire the warp jump
+          if (window.network && window.network.connected) {
+            window.network.send({ type: "warp_jump", gateId: targetGate.id });
+          }
+        }
+      } else {
+        // No gate found for route — disengage autopilot
+        autopilotActive = false;
+        updateNavigationHUD();
+        uiController.notify("Autopilot error: No stargate found for this route.", "error");
+      }
+
+      // Disengage autopilot if manual steering keys are physically pressed
+      if (inputHandler.keys["KeyA"] || inputHandler.keys["KeyD"] || inputHandler.keys["KeyS"]) {
+        autopilotActive = false;
+        updateNavigationHUD();
+        uiController.notify("Manual override detected. Autopilot disengaged.", "info");
+        inputHandler.applyInputToShip(player);
+      }
     } else {
       inputHandler.applyInputToShip(player);
     }
@@ -1732,7 +1866,14 @@ function gameLoop(time) {
     }
   }
 
-  // 4. Render stellar parallax, engine trails, ship vectors, target corner brackets, HUD pointer arrows
+  // 4. Update navigation arrow target for rendering
+  if (navTargetSector && navRoute.length > 0) {
+    renderer.navigationTarget = getNextWarpGate(engine.entities);
+  } else {
+    renderer.navigationTarget = null;
+  }
+
+  // 5. Render stellar parallax, engine trails, ship vectors, target corner brackets, HUD pointer arrows
   renderer.draw(
     dt,
     player,
@@ -1831,6 +1972,226 @@ window.addEventListener("keydown", (e) => {
     if (network && network.connected) {
       network.send({ type: "escort_command", command: "attack" });
     }
+  }
+});
+
+// ==========================================================================
+// ENDLESS SKY GALACTIC NAVIGATION SYSTEM & MAP ENGINE
+// ==========================================================================
+
+const MAP_SECTORS = {
+  core: {
+    name: "Core Sector",
+    x: 25,
+    y: 50,
+    description: "Sol System and Core Fleet staging area. Cradle of humanity.",
+    planets: ["Sol", "Valkyrie Depot"]
+  },
+  frontier: {
+    name: "Frontier Sector",
+    x: 50,
+    y: 30,
+    description: "Nebulae asteroid mines and advanced technology research systems.",
+    planets: ["New Polaris", "Sigma Draconis", "Aurelia Mining Hub"]
+  },
+  rim: {
+    name: "Outer Rim Sector",
+    x: 75,
+    y: 70,
+    description: "Agricultural worlds, agricultural logistics, and pirate holds.",
+    planets: ["Kaelis Colony", "Tenebris Prime", "Rogue's Hollow"]
+  }
+};
+
+const MAP_CONNECTIONS = [
+  ["core", "frontier"],
+  ["frontier", "rim"]
+];
+
+function renderGalaxyMap() {
+  const svg = document.getElementById("galaxy-map-svg");
+  const nodesContainer = document.getElementById("galaxy-map-nodes");
+  const infoBar = document.getElementById("galaxy-map-info");
+  if (!svg || !nodesContainer) return;
+
+  svg.innerHTML = "";
+  nodesContainer.innerHTML = "";
+
+  const rect = svg.getBoundingClientRect();
+  const width = rect.width || 700;
+  const height = rect.height || 450;
+
+  const currentSector = getSectorFromPosition(player.position);
+
+  // 1. Render connected hyperlanes (SVG paths)
+  MAP_CONNECTIONS.forEach(([from, to]) => {
+    const fromSector = MAP_SECTORS[from];
+    const toSector = MAP_SECTORS[to];
+
+    const x1 = (fromSector.x / 100) * width;
+    const y1 = (fromSector.y / 100) * height;
+    const x2 = (toSector.x / 100) * width;
+    const y2 = (toSector.y / 100) * height;
+
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", x1);
+    line.setAttribute("y1", y1);
+    line.setAttribute("x2", x2);
+    line.setAttribute("y2", y2);
+
+    let isActive = false;
+    if (navRoute.length > 0) {
+      const fullPath = [currentSector, ...navRoute];
+      for (let i = 0; i < fullPath.length - 1; i++) {
+        if ((fullPath[i] === from && fullPath[i+1] === to) || (fullPath[i] === to && fullPath[i+1] === from)) {
+          isActive = true;
+          break;
+        }
+      }
+    }
+
+    line.setAttribute("class", isActive ? "map-link map-link-active" : "map-link");
+    svg.appendChild(line);
+  });
+
+  // 2. Render HTML nodes representing systems
+  Object.entries(MAP_SECTORS).forEach(([id, sector]) => {
+    const node = document.createElement("div");
+    node.className = "map-node";
+    node.style.left = `${sector.x}%`;
+    node.style.top = `${sector.y}%`;
+
+    if (currentSector === id) {
+      node.classList.add("active-system");
+    } else if (navTargetSector === id) {
+      node.classList.add("targeted-system");
+    } else if (navRoute.includes(id)) {
+      node.classList.add("route-step");
+    }
+
+    node.innerHTML = `
+      <span class="map-node-label">${sector.name}</span>
+      <span class="map-node-subtitle">${sector.planets.length} Planets</span>
+    `;
+
+    node.addEventListener("click", (e) => {
+      e.stopPropagation();
+      
+      if (currentSector === id) {
+        navTargetSector = null;
+        navRoute = [];
+        autopilotActive = false;
+        uiController.notify("Navigation coordinates cleared.", "info");
+      } else {
+        navTargetSector = id;
+        navRoute = calculateShortestPath(currentSector, id);
+        uiController.notify(`Course plotted to ${sector.name}! ${navRoute.length} sector jump${navRoute.length > 1 ? 's' : ''} required.`, "success");
+      }
+      
+      updateNavigationHUD();
+      renderGalaxyMap();
+    });
+
+    node.addEventListener("mouseover", () => {
+      if (infoBar) infoBar.innerText = `${sector.name.toUpperCase()}: ${sector.description}`;
+    });
+
+    node.addEventListener("mouseout", () => {
+      if (infoBar) {
+        infoBar.innerText = navTargetSector 
+          ? `PLOTTED ROUTE: ${currentSector.toUpperCase()} ➜ ${navRoute.map(s => s.toUpperCase()).join(" ➜ ")} (${navRoute.length} JUMPS)`
+          : "SELECT A DESTINATION SYSTEM";
+      }
+    });
+
+    nodesContainer.appendChild(node);
+  });
+}
+
+function updateNavigationHUD() {
+  const hudNav = document.getElementById("hud-navigation");
+  const navTargetName = document.getElementById("nav-target-name");
+  const navRouteSteps = document.getElementById("nav-route-steps");
+  const autopilotInd = document.getElementById("autopilot-indicator");
+
+  if (!hudNav) return;
+
+  if (navTargetSector) {
+    hudNav.style.display = "block";
+    if (navTargetName) navTargetName.innerText = MAP_SECTORS[navTargetSector].name.toUpperCase();
+    
+    if (navRouteSteps) {
+      const currentSector = getSectorFromPosition(player.position);
+      const steps = [currentSector, ...navRoute].map(s => s.toUpperCase());
+      navRouteSteps.innerHTML = `
+        <div style="margin-top: 4px; display: flex; align-items: center; gap: 4px; overflow-x: auto; white-space: nowrap; padding-bottom: 2px;">
+          ${steps.map((step, idx) => `
+            <span style="color: ${idx === 0 ? 'var(--color-green)' : idx === steps.length - 1 ? 'var(--color-gold)' : 'var(--color-cyan)'}; font-weight: bold; font-size: 8px;">
+              ${step}
+            </span>
+            ${idx < steps.length - 1 ? '<span style="color: rgba(255,255,255,0.3); font-size: 8px;">➜</span>' : ''}
+          `).join('')}
+        </div>
+        <div style="font-size: 7px; color: #a0a5b5; margin-top: 4px; display: flex; justify-content: space-between; align-items: center;">
+          <span>DISTANCE: ${navRoute.length} Jump${navRoute.length > 1 ? 's' : ''}</span>
+          <span style="color: var(--color-cyan); font-weight: bold; cursor: pointer;" id="btn-nav-clear-text">[CLEAR NAV]</span>
+        </div>
+      `;
+      
+      document.getElementById("btn-nav-clear-text")?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        navTargetSector = null;
+        navRoute = [];
+        autopilotActive = false;
+        updateNavigationHUD();
+        renderGalaxyMap();
+        uiController.notify("Navigation target cleared.", "info");
+      });
+    }
+  } else {
+    hudNav.style.display = "none";
+  }
+
+  if (autopilotInd) {
+    autopilotInd.style.display = autopilotActive ? "block" : "none";
+  }
+}
+
+function toggleGalaxyMap() {
+  const overlay = document.getElementById("galaxy-map-overlay");
+  if (!overlay) return;
+
+  const isVisible = overlay.classList.contains("visible");
+  if (isVisible) {
+    overlay.classList.remove("visible");
+  } else {
+    if (isLanded) {
+      uiController.notify("Cannot open galactic nav charts while docked!", "error");
+      return;
+    }
+    overlay.classList.add("visible");
+    renderGalaxyMap();
+  }
+}
+
+// Bind Map triggers
+inputHandler.onMapPressed = toggleGalaxyMap;
+
+document.getElementById("btn-hud-map")?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  toggleGalaxyMap();
+});
+
+document.getElementById("btn-close-map")?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  toggleGalaxyMap();
+});
+
+// Re-render map on window resize so SVG lines line up
+window.addEventListener("resize", () => {
+  const overlay = document.getElementById("galaxy-map-overlay");
+  if (overlay && overlay.classList.contains("visible")) {
+    renderGalaxyMap();
   }
 });
 

@@ -407,8 +407,9 @@ export class SpaceportUI {
     const container = document.createElement("div");
     container.className = "pane-missions-container";
 
-    // Generate available missions dynamically if none exists for this planet yet
-    if (!this.missionManager.availableMissions[this.planet.name]) {
+    // Generate available missions dynamically if none exists for this planet yet (and we are offline)
+    const isOnline = window.network && window.network.connected;
+    if (!isOnline && !this.missionManager.availableMissions[this.planet.name]) {
       this.missionManager.generateMissionsForPlanet(
         this.planet.name,
         this.allPlanets,

@@ -1072,3 +1072,75 @@ describe("Endless Sky Systems Modernization Integration", () => {
   });
 });
 
+// ==========================================
+// Galactic Navigation System Tests
+// ==========================================
+describe("Galactic Navigation System", () => {
+  // Duplicate the helpers from main.js for unit testing
+  function getSectorFromPosition(pos) {
+    if (!pos) return "core";
+    if (pos.x > 10000 && pos.y > 10000) return "frontier";
+    if (pos.x < -10000 && pos.y < -10000) return "rim";
+    return "core";
+  }
+
+  function calculateShortestPath(from, to) {
+    if (!from || !to || from === to) return [];
+    if (from === "core") {
+      if (to === "frontier") return ["frontier"];
+      if (to === "rim") return ["frontier", "rim"];
+    }
+    if (from === "frontier") {
+      if (to === "core") return ["core"];
+      if (to === "rim") return ["rim"];
+    }
+    if (from === "rim") {
+      if (to === "frontier") return ["frontier"];
+      if (to === "core") return ["frontier", "core"];
+    }
+    return [];
+  }
+
+  test("getSectorFromPosition returns 'core' for positions near origin", () => {
+    expect(getSectorFromPosition(new Vector2D(0, 0))).toBe("core");
+    expect(getSectorFromPosition(new Vector2D(5000, 3000))).toBe("core");
+    expect(getSectorFromPosition(new Vector2D(-5000, 5000))).toBe("core");
+  });
+
+  test("getSectorFromPosition returns 'frontier' for positions in high positive quadrant", () => {
+    expect(getSectorFromPosition(new Vector2D(20000, 20000))).toBe("frontier");
+    expect(getSectorFromPosition(new Vector2D(15000, 11000))).toBe("frontier");
+  });
+
+  test("getSectorFromPosition returns 'rim' for positions in deep negative quadrant", () => {
+    expect(getSectorFromPosition(new Vector2D(-20000, -20000))).toBe("rim");
+    expect(getSectorFromPosition(new Vector2D(-15000, -12000))).toBe("rim");
+  });
+
+  test("calculateShortestPath returns empty for same-sector navigation", () => {
+    expect(calculateShortestPath("core", "core")).toEqual([]);
+    expect(calculateShortestPath("frontier", "frontier")).toEqual([]);
+  });
+
+  test("calculateShortestPath routes core to frontier in 1 jump", () => {
+    expect(calculateShortestPath("core", "frontier")).toEqual(["frontier"]);
+  });
+
+  test("calculateShortestPath routes core to rim in 2 jumps via frontier", () => {
+    expect(calculateShortestPath("core", "rim")).toEqual(["frontier", "rim"]);
+  });
+
+  test("calculateShortestPath routes rim to core in 2 jumps via frontier", () => {
+    expect(calculateShortestPath("rim", "core")).toEqual(["frontier", "core"]);
+  });
+
+  test("calculateShortestPath routes frontier to rim in 1 jump", () => {
+    expect(calculateShortestPath("frontier", "rim")).toEqual(["rim"]);
+  });
+
+  test("calculateShortestPath returns empty for null inputs", () => {
+    expect(calculateShortestPath(null, "core")).toEqual([]);
+    expect(calculateShortestPath("core", null)).toEqual([]);
+  });
+});
+

@@ -12,6 +12,7 @@ export class InputHandler {
     this.onHostilePressed = null;
     this.onBoardPressed = null;
     this.onWarpPressed = null;
+    this.onMapPressed = null;
 
     this.setupListeners();
   }
@@ -56,6 +57,9 @@ export class InputHandler {
       }
       if (e.code === "KeyJ" && this.onWarpPressed) {
         this.onWarpPressed();
+      }
+      if (e.code === "KeyM" && this.onMapPressed) {
+        this.onMapPressed();
       }
     });
 

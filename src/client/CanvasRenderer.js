@@ -25,6 +25,9 @@ export class CanvasRenderer {
     this.warpTimer = 0;
     this.warpTunnelStars = [];
 
+    // Navigation arrow target (set from main.js)
+    this.navigationTarget = null;
+
     // Visual Explosion/Spark Particles
     this.particles = [];
 
@@ -199,6 +202,11 @@ export class CanvasRenderer {
     // 6. Draw HUD pointer arrows for offscreen target/planets
     if (playerShip) {
       this.drawOffScreenPointers(playerShip, entities, targetEntity, localPlayerId, fleetMembers);
+    }
+
+    // 6b. Draw Hyperlane Navigation Guiding Arrow
+    if (playerShip && this.navigationTarget) {
+      this.drawNavigationArrow(playerShip, this.navigationTarget);
     }
 
     // 7. Draw holographic sweeping HUD radar overlay
@@ -1529,5 +1537,66 @@ export class CanvasRenderer {
       this.ctx.lineWidth = 5 + (1 - progress) * 10;
       this.ctx.stroke();
     }
+  }
+
+  /**
+   * Draws a pulsing neon navigation arrow at the edge of the screen pointing towards the
+   * targeted warp gate, with distance and gate name labels.
+   * @param {Ship} playerShip - The player entity.
+   * @param {Object} target - The target gate entity {position, name}.
+   */
+  drawNavigationArrow(playerShip, target) {
+    const screenX = target.position.x - this.camera.x;
+    const screenY = target.position.y - this.camera.y;
+    const margin = 60;
+
+    // Only draw if off-screen
+    if (screenX >= margin && screenX <= this.canvas.width - margin &&
+        screenY >= margin && screenY <= this.canvas.height - margin) {
+      return;
+    }
+
+    const centerX = this.canvas.width / 2;
+    const centerY = this.canvas.height / 2;
+    const angle = Math.atan2(screenY - centerY, screenX - centerX);
+
+    // Clamp arrow to canvas edge
+    const edgeX = Math.max(margin, Math.min(this.canvas.width - margin, centerX + Math.cos(angle) * (this.canvas.width / 2 - margin)));
+    const edgeY = Math.max(margin, Math.min(this.canvas.height - margin, centerY + Math.sin(angle) * (this.canvas.height / 2 - margin)));
+
+    // Pulsing alpha
+    const pulse = 0.6 + 0.4 * Math.sin(Date.now() * 0.005);
+
+    // Arrow triangle
+    const arrowSize = 14;
+    this.ctx.save();
+    this.ctx.translate(edgeX, edgeY);
+    this.ctx.rotate(angle);
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(arrowSize, 0);
+    this.ctx.lineTo(-arrowSize * 0.6, -arrowSize * 0.5);
+    this.ctx.lineTo(-arrowSize * 0.6, arrowSize * 0.5);
+    this.ctx.closePath();
+    this.ctx.fillStyle = `rgba(0, 255, 136, ${pulse})`;
+    this.ctx.fill();
+
+    this.ctx.restore();
+
+    // Distance text
+    const dist = Math.round(playerShip.position.distance(target.position));
+    const labelName = target.name || "STARGATE";
+    
+    // Position label offset from the arrow
+    const labelOffX = edgeX + Math.cos(angle + Math.PI) * 30;
+    const labelOffY = edgeY + Math.sin(angle + Math.PI) * 30;
+
+    this.ctx.font = "bold 9px 'Orbitron', sans-serif";
+    this.ctx.textAlign = "center";
+    this.ctx.fillStyle = `rgba(0, 255, 136, ${pulse * 0.9})`;
+    this.ctx.fillText(`${labelName.toUpperCase()}`, labelOffX, labelOffY - 6);
+    this.ctx.font = "8px 'Inter', sans-serif";
+    this.ctx.fillStyle = `rgba(0, 255, 136, ${pulse * 0.7})`;
+    this.ctx.fillText(`${dist} u`, labelOffX, labelOffY + 6);
   }
 }

@@ -1490,3 +1490,134 @@ h1, h2, h3, h4 {
   color: #ffcc00;
 }
 
+/* ==========================================================================
+   GALAXY NAVIGATION MAP OVERLAY (Endless Sky Style)
+   ========================================================================== */
+
+.galaxy-map-body {
+  box-shadow: inset 0 0 40px rgba(0, 242, 254, 0.05);
+}
+
+.map-node {
+  position: absolute;
+  width: 95px;
+  height: 95px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgba(10, 10, 25, 0.75);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  user-select: none;
+}
+
+.map-node:hover {
+  background: rgba(20, 20, 45, 0.9);
+  border-color: var(--color-cyan);
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.5), 0 4px 15px rgba(0,0,0,0.6);
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+.map-node-label {
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: 1px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.map-node-subtitle {
+  font-size: 7px;
+  color: #a0a5b5;
+  margin-top: 4px;
+  text-align: center;
+}
+
+/* Specific state classes for map nodes */
+.map-node.active-system {
+  border-color: var(--color-green) !important;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.3), inset 0 0 10px rgba(0, 255, 136, 0.15);
+}
+
+.map-node.active-system::after {
+  content: "YOU ARE HERE";
+  position: absolute;
+  bottom: -16px;
+  font-family: var(--font-display);
+  font-size: 7px;
+  font-weight: 700;
+  color: var(--color-green);
+  text-shadow: 0 0 4px var(--color-green-glow);
+  letter-spacing: 0.5px;
+}
+
+.map-node.targeted-system {
+  border-color: var(--color-gold) !important;
+  box-shadow: 0 0 20px rgba(255, 145, 0, 0.5), inset 0 0 10px rgba(255, 145, 0, 0.2);
+}
+
+.map-node.targeted-system::after {
+  content: "DESTINATION";
+  position: absolute;
+  bottom: -16px;
+  font-family: var(--font-display);
+  font-size: 7px;
+  font-weight: 700;
+  color: var(--color-gold);
+  text-shadow: 0 0 4px var(--color-gold-glow);
+  letter-spacing: 0.5px;
+}
+
+.map-node.route-step {
+  border-color: var(--color-cyan) !important;
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.4), inset 0 0 8px rgba(0, 242, 254, 0.15);
+}
+
+.map-node.route-step::after {
+  content: "NEXT JUMP";
+  position: absolute;
+  bottom: -16px;
+  font-family: var(--font-display);
+  font-size: 7px;
+  font-weight: 700;
+  color: var(--color-cyan);
+  text-shadow: 0 0 4px rgba(0, 242, 254, 0.4);
+  letter-spacing: 0.5px;
+}
+
+/* Hyperlane lines styles */
+.map-link {
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
+  transition: all 0.3s;
+}
+
+.map-link-active {
+  stroke: var(--color-cyan);
+  stroke-width: 3;
+  stroke-dasharray: none;
+  filter: drop-shadow(0 0 4px rgba(0, 242, 254, 0.6));
+  animation: hyperlane-pulse 1.5s infinite alternate;
+}
+
+@keyframes hyperlane-pulse {
+  from {
+    stroke-opacity: 0.6;
+    stroke-width: 3;
+  }
+  to {
+    stroke-opacity: 1;
+    stroke-width: 4;
+  }
+}
+
+

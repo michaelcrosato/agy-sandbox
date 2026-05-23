@@ -922,9 +922,16 @@ wss.on("connection", (ws) => {
           clientObj.ship.hyperFuel = clientObj.ship.maxHyperFuel;
           room.engine.removeEntity(clientObj.id);
 
+          // Generate available missions authoritatively on the server
+          if (!clientObj.missionManager.availableMissions[targetPlanet.name]) {
+            clientObj.missionManager.generateMissionsForPlanet(targetPlanet.name, room.planets);
+          }
+          const available = clientObj.missionManager.availableMissions[targetPlanet.name];
+
           clientObj.send({
             type: "landed",
             planetName: targetPlanet.name,
+            availableMissions: available,
           });
           clientObj.send({
             type: "notification",

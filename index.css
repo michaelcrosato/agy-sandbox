@@ -648,6 +648,130 @@ h1, h2, h3, h4 {
   margin-bottom: 8px;
 }
 
+/* Lobby Selection Overlay Grid */
+.lobby-card {
+  width: 560px;
+  padding: 24px;
+}
+
+.lobby-header-title {
+  font-size: 28px;
+  letter-spacing: 3px;
+  color: var(--color-cyan) !important;
+  text-shadow: 0 0 15px rgba(0, 242, 254, 0.5) !important;
+  margin-bottom: 5px;
+}
+
+.lobby-sub {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  margin-bottom: 20px;
+}
+
+.lobby-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.lobby-form-group label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--color-gold);
+}
+
+.lobby-input {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.lobby-input:focus {
+  border-color: var(--color-cyan);
+  box-shadow: 0 0 8px rgba(0, 242, 254, 0.25);
+}
+
+.lobby-section {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.lobby-section h3 {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--color-gold);
+  margin-bottom: 12px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 6px;
+}
+
+.lobby-table-wrapper {
+  max-height: 180px;
+  overflow-y: auto;
+  margin-bottom: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.lobby-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.lobby-table th, .lobby-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.lobby-table th {
+  font-family: var(--font-display);
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  letter-spacing: 1px;
+}
+
+.lobby-table tbody tr:hover {
+  background: rgba(0, 242, 254, 0.05);
+}
+
+.lobby-create-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.lobby-create-bar input {
+  flex: 1;
+}
+
+.badge-pilots {
+  background: rgba(0, 242, 254, 0.15);
+  border: 1px solid var(--color-cyan);
+  color: var(--color-cyan);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 10px;
+}
+
 .welcome-card p {
   color: var(--color-text-secondary);
   font-size: 13px;

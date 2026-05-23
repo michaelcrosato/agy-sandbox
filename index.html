@@ -223,25 +223,50 @@
       </div>
     </div>
 
-    <!-- Splash Instruction Overlay on Initial Load -->
+    <!-- Splash Instruction Overlay on Initial Load (Lobby Selection Hub) -->
     <div id="welcome-screen" class="glass-overlay visible">
-      <div class="welcome-card glass-panel text-center">
-        <h2>NEBULA SECTOR</h2>
-        <p>A top-down 2D Space Simulator sandbox inspired by Endless Sky & Escape Velocity.</p>
+      <div class="lobby-card welcome-card glass-panel text-center">
+        <h2 class="lobby-header-title">NEBULA LOBBY HUB</h2>
+        <p class="lobby-sub">A top-down co-op space multiplayer sandbox. Launch a private sector or join active trade channels.</p>
         
-        <div class="controls-guide">
-          <h3>PILOT COMMAND MANUAL</h3>
-          <div class="guide-row"><span class="key">W</span> / <span class="key">↑</span> : Main Forward Engines (Thrust)</div>
-          <div class="guide-row"><span class="key">S</span> / <span class="key">↓</span> : Retro-thruster Brakes (Decelerate)</div>
-          <div class="guide-row"><span class="key">A</span> / <span class="key">D</span> / <span class="key">←</span> / <span class="key">→</span> : Thruster Steering (Rotational Turn)</div>
-          <div class="guide-row"><span class="key">SPACE</span> : Engage Front Laser Battery</div>
-          <div class="guide-row"><span class="key">T</span> : Cycle Targeting Scanners</div>
-          <div class="guide-row"><span class="key">R</span> : Lock-on Closest Hostile (Pirates)</div>
-          <div class="guide-row"><span class="key">B</span> : Initialize Tactical Boarding Sequence</div>
-          <div class="guide-row"><span class="key">L</span> : Initiate Planetary Landing Sequence</div>
+        <!-- Callsign Input Form -->
+        <div class="lobby-form-group">
+          <label>PILOT CALLSIGN:</label>
+          <input type="text" id="pilot-callsign" class="lobby-input" value="Commander" placeholder="Enter pilot callsign..." maxlength="12">
         </div>
 
-        <button id="btn-start" class="btn-primary">ENTER SPACELANES</button>
+        <!-- Active Sectors Listing Area -->
+        <div class="lobby-section">
+          <h3>ACTIVE GALACTIC SECTORS</h3>
+          <div id="lobby-list" class="lobby-table-wrapper">
+            <table class="lobby-table">
+              <thead>
+                <tr>
+                  <th>Sector Room Name</th>
+                  <th>Online Pilots</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="lobby-rows">
+                <tr>
+                  <td colspan="3" class="text-center" style="color: var(--color-text-secondary); font-size: 11px;">Scanning spacelanes for active sectors...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Create Private Sector Form -->
+          <div class="lobby-create-bar">
+            <input type="text" id="new-sector-name" class="lobby-input" placeholder="New Sector Name (e.g. Orion Arm)" maxlength="20">
+            <button id="btn-create-sector" class="btn-primary btn-sm" style="padding: 9px 15px; border-radius: 6px;">CREATE SECTOR</button>
+          </div>
+        </div>
+
+        <div style="font-size: 9px; color: var(--color-text-secondary); margin-bottom: 20px; line-height: 1.4; text-align: left; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+          <strong style="color: var(--color-gold);">CONTROLS QUICK GUIDE:</strong> [W/S] Thrust/Brake | [A/D] Steer Turn | [SPACE] Laser Battery | [T] Cycle Target | [R] Target Hostile | [B] Board disabled Ship | [L] Land spaceport | [J] Stargate Warp Jump
+        </div>
+
+        <button id="btn-start" class="btn-primary" style="width: 100%; border-radius: 8px;">QUICK JOIN PUBLIC SECTOR</button>
       </div>
     </div>
 

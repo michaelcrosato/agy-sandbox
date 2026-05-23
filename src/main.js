@@ -779,14 +779,51 @@ inputHandler.onHostilePressed = () => {
 // Startup menu bindings
 const welcomeScreen = document.getElementById("welcome-screen");
 const btnStart = document.getElementById("btn-start");
-btnStart.addEventListener("click", () => {
-  welcomeScreen.classList.remove("visible");
-  uiController.notify("Welcome to Nebula Sector! Pilot cautiously.", "success");
+const btnCreateSector = document.getElementById("btn-create-sector");
+const newSectorNameInput = document.getElementById("new-sector-name");
 
-  // Kick off high precision animation loop
-  lastTime = 0;
-  requestAnimationFrame(gameLoop);
+// Load callsigns from local storage if existing
+const cachedCallsign = localStorage.getItem("nebula_callsign");
+if (cachedCallsign) {
+  const callsignInput = document.getElementById("pilot-callsign");
+  if (callsignInput) callsignInput.value = cachedCallsign;
+}
+
+btnStart.addEventListener("click", () => {
+  joinRoom("public");
 });
+
+btnCreateSector?.addEventListener("click", () => {
+  const sectorName = newSectorNameInput ? newSectorNameInput.value.trim() : "";
+  if (!sectorName) {
+    uiController.notify("Please enter a custom sector name first!", "error");
+    return;
+  }
+  
+  const pilotCallsignInput = document.getElementById("pilot-callsign");
+  const pilotCallsign = pilotCallsignInput ? pilotCallsignInput.value.trim() : "Commander";
+  localStorage.setItem("nebula_callsign", pilotCallsign);
+  network.nickname = pilotCallsign;
+
+  network.send({
+    type: "create_room",
+    name: sectorName,
+    nickname: pilotCallsign
+  });
+});
+
+function joinRoom(roomId) {
+  const pilotCallsignInput = document.getElementById("pilot-callsign");
+  const pilotCallsign = pilotCallsignInput ? pilotCallsignInput.value.trim() : "Commander";
+  localStorage.setItem("nebula_callsign", pilotCallsign);
+  network.nickname = pilotCallsign;
+
+  network.send({
+    type: "join_room",
+    roomId: roomId,
+    nickname: pilotCallsign
+  });
+}
 
 /**
  * Triggers a procedural dynamic event in local space.
@@ -1059,7 +1096,89 @@ function syncEntitiesFromServer(serverEntities) {
 network.onInit = (msg) => {
   player.id = msg.playerId;
   player.name = msg.nickname;
-  uiController.notify(`Connected to Nebula Server as ${msg.nickname}!`, "success");
+  
+  if (msg.roomId) {
+    welcomeScreen.classList.add("fade-out");
+    setTimeout(() => {
+      welcomeScreen.classList.remove("visible");
+      welcomeScreen.classList.remove("fade-out");
+    }, 500);
+    
+    uiController.notify(`Connected to sector [${msg.roomName.toUpperCase()}]! Systems nominal.`, "success");
+    
+    // Kick off high precision animation loop if not already started
+    if (lastTime === 0) {
+      lastTime = 0;
+      requestAnimationFrame(gameLoop);
+    }
+  } else {
+    uiController.notify(`Neural link established! Welcome back, Commander ${msg.nickname}.`, "success");
+  }
+};
+
+network.onLobbySync = (msg) => {
+  if (msg.rooms) {
+    const lobbyRows = document.getElementById("lobby-rows");
+    if (lobbyRows) {
+      if (msg.rooms.length === 0) {
+        lobbyRows.innerHTML = `<tr><td colspan="3" class="text-center" style="color: var(--color-text-secondary); font-size: 11px;">No custom sectors active. Type a name below to launch one!</td></tr>`;
+      } else {
+        lobbyRows.innerHTML = "";
+        for (const room of msg.rooms) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td style="font-weight: 600; color: #ffffff; text-align: left;">${room.name.toUpperCase()}</td>
+            <td style="text-align: left;"><span class="badge-pilots">${room.playersCount} online</span></td>
+            <td style="text-align: right;">
+              <button class="btn-primary btn-sm btn-join-room" data-room-id="${room.id}" style="padding: 4px 10px; border-radius: 4px; font-size: 10px;">JOIN SECTOR</button>
+            </td>
+          `;
+          lobbyRows.appendChild(tr);
+        }
+
+        // Wire join buttons
+        document.querySelectorAll(".btn-join-room").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const roomId = btn.getAttribute("data-room-id");
+            joinRoom(roomId);
+          });
+        });
+      }
+    }
+  }
+
+  if (msg.roster) {
+    const elCount = document.getElementById("net-pilots-count");
+    if (elCount) {
+      elCount.innerText = `${msg.count} PILOT${msg.count !== 1 ? "S" : ""}`;
+    }
+
+    const elList = document.getElementById("net-roster-list");
+    if (elList) {
+      elList.innerHTML = "";
+      msg.roster.forEach(pilot => {
+        const card = document.createElement("div");
+        card.className = "roster-card";
+        if (pilot.id === player.id) {
+          card.classList.add("self");
+        }
+        if (pilot.status === "standby") {
+          card.classList.add("standby");
+        }
+
+        const pilotNameText = pilot.fleetName ? `[${pilot.fleetName}] ${pilot.nickname}` : pilot.nickname;
+        
+        card.innerHTML = `
+          <div class="roster-pilot-info">
+            <div class="roster-pilot-name">${pilotNameText} ${pilot.id === player.id ? '<span style="color: var(--color-cyan); font-size: 8px;">(YOU)</span>' : ""}</div>
+            <div class="roster-pilot-credits">${pilot.credits.toLocaleString()} CR</div>
+          </div>
+          <span class="roster-pilot-status roster-status-${pilot.status}">${pilot.status}</span>
+        `;
+        elList.appendChild(card);
+      });
+    }
+  }
 };
 
 network.onStateReceived = (serverEntities) => {
@@ -1228,38 +1347,7 @@ network.onPingReceived = (pingMs) => {
   }
 };
 
-network.onLobbySync = (msg) => {
-  const elCount = document.getElementById("net-pilots-count");
-  if (elCount) {
-    elCount.innerText = `${msg.count} PILOT${msg.count !== 1 ? "S" : ""}`;
-  }
-
-  const elList = document.getElementById("net-roster-list");
-  if (elList) {
-    elList.innerHTML = "";
-    msg.roster.forEach(pilot => {
-      const card = document.createElement("div");
-      card.className = "roster-card";
-      if (pilot.id === player.id) {
-        card.classList.add("self");
-      }
-      if (pilot.status === "standby") {
-        card.classList.add("standby");
-      }
-
-      const pilotNameText = pilot.fleetName ? `[${pilot.fleetName}] ${pilot.nickname}` : pilot.nickname;
-      
-      card.innerHTML = `
-        <div class="roster-pilot-info">
-          <div class="roster-pilot-name">${pilotNameText} ${pilot.id === player.id ? '<span style="color: var(--color-cyan); font-size: 8px;">(YOU)</span>' : ""}</div>
-          <div class="roster-pilot-credits">${pilot.credits.toLocaleString()} CR</div>
-        </div>
-        <span class="roster-pilot-status roster-status-${pilot.status}">${pilot.status}</span>
-      `;
-      elList.appendChild(card);
-    });
-  }
-};
+// Roster updates are handled inside the unified onLobbySync handler
 
 network.onConnectionStatusChange = (status) => {
   const elIndicator = document.getElementById("net-indicator");

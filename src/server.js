@@ -570,9 +570,9 @@ function joinRoom(clientObj, roomId, nickname) {
     maxArmor: 100,
     credits: 5000,
     cargoCapacity: 20,
-    thrustPower: 28000,
-    brakePower: 15000,
-    maxSpeed: 950,
+    thrustPower: 90000,
+    brakePower: 50000,
+    maxSpeed: 1800,
     turnRate: 3.2,
   });
 

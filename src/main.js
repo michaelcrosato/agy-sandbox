@@ -146,9 +146,9 @@ const player = new Ship({
   maxArmor: 100,
   credits: 5000,
   cargoCapacity: 20,
-  thrustPower: 28000, // ~3.3x faster acceleration
-  brakePower: 15000, // proportional retro braking for fast stops
-  maxSpeed: 950, // ~3.1x faster maximum terminal velocity
+  thrustPower: 90000, // ~10.5x faster acceleration over base (3.2x over previous)
+  brakePower: 50000, // proportional retro braking for fast stops
+  maxSpeed: 1800, // ~6x faster terminal velocity over base (nearly 2x over previous)
   turnRate: 3.2, // snappier turning to complement high-speed steering
 });
 engine.addEntity(player);

@@ -33,3 +33,9 @@ Thumbs.db
 # Testing
 coverage/
 .nyc_output
+
+# Overnight headless coder runtime state (queue + logs are local-only)
+night-queue/
+
+# Local Claude Code state
+.claude/

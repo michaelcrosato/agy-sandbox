@@ -1493,6 +1493,10 @@ server.listen(PORT, async () => {
         }
       });
       
+      tunnel.on('error', (err) => {
+        console.error("⚠️ Localtunnel error encountered:", err.message);
+      });
+      
       tunnel.on('close', () => {
         console.log("Localtunnel connection closed.");
       });

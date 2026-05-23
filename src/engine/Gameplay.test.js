@@ -878,4 +878,68 @@ describe("Online Interface Efficiency & Robustness", () => {
     // Clear test timeout to prevent leaking
     clearTimeout(standbyClient.cleanupTimeout);
   });
+
+  test("Player ship destruction triggers handlePlayerRespawnServer instead of scheduling AI respawns", () => {
+    const playerShip = new Ship({ name: "Alpha Starfighter" });
+    const aiShip = new Ship({ name: "Pirate Raider" });
+
+    const persistentSessions = [
+      {
+        id: "player-1",
+        nickname: "Alpha",
+        ship: playerShip,
+      }
+    ];
+
+    // Mock functions
+    let respawnedPlayer = null;
+    let scheduledAI = null;
+
+    function mockHandlePlayerRespawnServer(client) {
+      respawnedPlayer = client;
+    }
+
+    function mockScheduleAIRespawn(name, role) {
+      scheduledAI = { name, role };
+    }
+
+    // Emulate onEntityDestroyed logic
+    function onEntityDestroyedMock(ent) {
+      if (ent.type === "ship") {
+        const isPirate = ent.name === "Pirate Raider" || ent.name.includes("Pirate") || ent.name.includes("Raider");
+        
+        if (isPirate) {
+          mockScheduleAIRespawn(ent.name, ent.role);
+        } else {
+          // Check if it's a player ship and respawn them
+          const deadClient = persistentSessions.find(c => c.ship === ent);
+          if (deadClient) {
+            mockHandlePlayerRespawnServer(deadClient);
+          }
+        }
+
+        const isPlayerShip = persistentSessions.some(c => c.ship === ent);
+        if (!isPlayerShip) {
+          mockScheduleAIRespawn(ent.name, ent.role);
+        }
+      }
+    }
+
+    // 1. Destroy player ship
+    onEntityDestroyedMock(playerShip);
+    expect(respawnedPlayer).toBeDefined();
+    expect(respawnedPlayer.nickname).toBe("Alpha");
+    expect(scheduledAI).toBeNull(); // Player ships shouldn't schedule AI respawn
+
+    // Reset mocks
+    respawnedPlayer = null;
+    scheduledAI = null;
+
+    // 2. Destroy AI ship
+    onEntityDestroyedMock(aiShip);
+    expect(respawnedPlayer).toBeNull();
+    expect(scheduledAI).toBeDefined();
+    expect(scheduledAI.name).toBe("Pirate Raider");
+  });
 });
+

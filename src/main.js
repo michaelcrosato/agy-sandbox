@@ -480,7 +480,7 @@ engine.onEntityDestroyed = (ent) => {
   renderer.spawnExplosion(ent.position.x, ent.position.y, color);
 
   // Award player on targets destruction (offline only)
-  if (!window.network || !window.network.connected) {
+  if (!window.network) {
     if (ent.type === "generic" || ent.type === "gem_asteroid") {
       if (ent.type === "gem_asteroid") {
         const added = player.addCargo("luxuries", 1);
@@ -559,7 +559,7 @@ engine.onEntityDestroyed = (ent) => {
   }
 
   // Handle Player Death Respawn sequence (offline only)
-  if (ent.id === "player" && (!window.network || !window.network.connected)) {
+  if (ent.id === "player" && !window.network) {
     handlePlayerRespawn();
   }
 };
@@ -598,8 +598,12 @@ function handlePlayerRespawn() {
 inputHandler.onLandPressed = () => {
   if (isLanded) return;
 
-  if (window.network && window.network.connected) {
-    window.network.requestLanding();
+  if (window.network) {
+    if (window.network.connected) {
+      window.network.requestLanding();
+    } else {
+      uiController.notify("Neural link offline! Cannot land right now.", "error");
+    }
     return;
   }
 
@@ -1313,8 +1317,8 @@ function gameLoop(time) {
 
   if (!isLanded) {
     // A. Handle active Solar EMP Flare effects
-    if (network && network.connected) {
-      if (activeSectorEvent && activeSectorEvent.type === "emp") {
+    if (network) {
+      if (network.connected && activeSectorEvent && activeSectorEvent.type === "emp") {
         const empPlanet = planets.find(p => p.name === activeSectorEvent.planetName);
         if (empPlanet && player.position.distance(empPlanet.position) <= 400) {
           player.shieldRegen = 0;
@@ -1324,22 +1328,25 @@ function gameLoop(time) {
       } else {
         player.shieldRegen = 10;
       }
-    } else if (empTimer > 0) {
-      empTimer -= dt;
-      player.shieldRegen = 0;
-      player.thrustPower = 9000; // nerf thrust power
-      if (empTimer <= 0) {
-        player.shieldRegen = 10;
-        player.thrustPower = 28000; // restore original thrust power
-        uiController.notify(
-          "Solar EMP Storm subsided. All ship systems restored.",
-          "success",
-        );
+    } else {
+      // Offline mode only
+      if (empTimer > 0) {
+        empTimer -= dt;
+        player.shieldRegen = 0;
+        player.thrustPower = 9000; // nerf thrust power
+        if (empTimer <= 0) {
+          player.shieldRegen = 10;
+          player.thrustPower = 28000; // restore original thrust power
+          uiController.notify(
+            "Solar EMP Storm subsided. All ship systems restored.",
+            "success",
+          );
+        }
       }
     }
 
     // B. Increment and trigger random flight space events periodically (offline only)
-    if (!network || !network.connected) {
+    if (!network) {
       eventCheckTimer += dt;
       if (eventCheckTimer >= 40) {
         eventCheckTimer = 0;
@@ -1356,7 +1363,7 @@ function gameLoop(time) {
     }
 
     // 2. Drive AI merchant itineraries dynamically between planetary hubs (offline only)
-    if (!network || !network.connected) {
+    if (!network) {
       for (const ai of ais) {
         if (ai.role === "merchant" && !ai.destination) {
           const potentialHubs = planets.filter(

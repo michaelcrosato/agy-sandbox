@@ -52,12 +52,16 @@ export class SpaceportUI {
     );
 
     this.btnLaunch?.addEventListener("click", () => {
-      if (window.network && window.network.connected) {
-        window.network.requestLaunch();
-      } else {
-        this.close();
-        if (this.onLaunch) this.onLaunch();
+      if (window.network) {
+        if (window.network.connected) {
+          window.network.requestLaunch();
+        } else {
+          this.ui.notify("Neural link offline! Cannot launch ship.", "error");
+        }
+        return;
       }
+      this.close();
+      if (this.onLaunch) this.onLaunch();
     });
   }
 
@@ -170,8 +174,12 @@ export class SpaceportUI {
 
       // Buy Trigger
       tr.querySelector(".btn-trade-buy").addEventListener("click", () => {
-        if (window.network && window.network.connected) {
-          window.network.requestTrade(item, "buy");
+        if (window.network) {
+          if (window.network.connected) {
+            window.network.requestTrade(item, "buy");
+          } else {
+            this.ui.notify("Neural link offline! Cannot perform transactions.", "error");
+          }
           return;
         }
 
@@ -194,8 +202,12 @@ export class SpaceportUI {
 
       // Sell Trigger
       tr.querySelector(".btn-trade-sell").addEventListener("click", () => {
-        if (window.network && window.network.connected) {
-          window.network.requestTrade(item, "sell");
+        if (window.network) {
+          if (window.network.connected) {
+            window.network.requestTrade(item, "sell");
+          } else {
+            this.ui.notify("Neural link offline! Cannot perform transactions.", "error");
+          }
           return;
         }
 
@@ -246,8 +258,12 @@ export class SpaceportUI {
       `;
 
       card.querySelector("button").addEventListener("click", () => {
-        if (window.network && window.network.connected) {
-          window.network.requestOutfitPurchase(outfit.name);
+        if (window.network) {
+          if (window.network.connected) {
+            window.network.requestOutfitPurchase(outfit.name);
+          } else {
+            this.ui.notify("Neural link offline! Cannot upgrade ship.", "error");
+          }
           return;
         }
 
@@ -319,8 +335,12 @@ export class SpaceportUI {
       `;
 
       card.querySelector("button").addEventListener("click", () => {
-        if (window.network && window.network.connected) {
-          window.network.requestShipPurchase(s.name);
+        if (window.network) {
+          if (window.network.connected) {
+            window.network.requestShipPurchase(s.name);
+          } else {
+            this.ui.notify("Neural link offline! Shipyard services unavailable.", "error");
+          }
           return;
         }
 
@@ -425,8 +445,12 @@ export class SpaceportUI {
         card
           .querySelector(".accept-mission-btn")
           .addEventListener("click", () => {
-            if (window.network && window.network.connected) {
-              window.network.requestMissionAccept(this.planet.name, m.id);
+            if (window.network) {
+              if (window.network.connected) {
+                window.network.requestMissionAccept(this.planet.name, m.id);
+              } else {
+                this.ui.notify("Neural link offline! Cannot accept contracts.", "error");
+              }
               return;
             }
 
@@ -486,8 +510,12 @@ export class SpaceportUI {
         card
           .querySelector(".abandon-mission-btn")
           .addEventListener("click", () => {
-            if (window.network && window.network.connected) {
-              window.network.requestMissionAbandon(m.id);
+            if (window.network) {
+              if (window.network.connected) {
+                window.network.requestMissionAbandon(m.id);
+              } else {
+                this.ui.notify("Neural link offline! Cannot abandon contracts.", "error");
+              }
               return;
             }
 

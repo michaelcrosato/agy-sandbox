@@ -1599,16 +1599,18 @@ engine.onEntityDestroyed = (ent) => {
         }
       }
       broadcastNotification(`${ent.name} has been destroyed in combat.`, "info");
+
+      // Check if it's a player ship and respawn them
+      const deadClient = Array.from(persistentSessions.values()).find(c => c.ship === ent);
+      if (deadClient) {
+        handlePlayerRespawnServer(deadClient);
+      }
     }
 
-    scheduleAIRespawn(ent.name, ent.role);
-  }
-
-  // --- Respawn dead player ship ---
-  else {
-    const deadClient = Array.from(persistentSessions.values()).find(c => c.ship === ent);
-    if (deadClient) {
-      handlePlayerRespawnServer(deadClient);
+    // Only schedule AI respawn if it is NOT a player ship
+    const isPlayerShip = Array.from(persistentSessions.values()).some(c => c.ship === ent);
+    if (!isPlayerShip) {
+      scheduleAIRespawn(ent.name, ent.role);
     }
   }
 };

@@ -13,6 +13,16 @@ import { MissionManager } from "./engine/MissionManager.js";
 import { NEBULAE } from "./engine/Nebulae.js";
 import { GameInstance, BASE_MARKETS } from "./engine/GameInstance.js";
 
+// Process-level uncaught error and promise rejection logging
+process.on("uncaughtException", (err) => {
+  console.error("🚨 CRITICAL UNCAUGHT EXCEPTION:", err.message);
+  console.error(err.stack);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("🚨 CRITICAL UNHANDLED REJECTION at:", promise, "reason:", reason);
+});
+
 // Paths for static file server
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

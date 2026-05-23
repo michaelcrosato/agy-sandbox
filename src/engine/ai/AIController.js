@@ -195,9 +195,9 @@ export class AIController {
     // If angular mismatch is large, steer left/right
     if (Math.abs(diff) > 0.05) {
       if (diff > 0) {
-        this.ship.controls.isTurningLeft = true;
-      } else {
         this.ship.controls.isTurningRight = true;
+      } else {
+        this.ship.controls.isTurningLeft = true;
       }
     }
   }
@@ -217,9 +217,9 @@ export class AIController {
     const diff = this.normalizeAngle(this.wanderAngle - this.ship.heading);
     if (Math.abs(diff) > 0.1) {
       if (diff > 0) {
-        this.ship.controls.isTurningLeft = true;
-      } else {
         this.ship.controls.isTurningRight = true;
+      } else {
+        this.ship.controls.isTurningLeft = true;
       }
     } else {
       // Gently cruise forward
@@ -325,8 +325,8 @@ export class AIController {
         // Gently match flagship heading
         const angleDiff = this.normalizeAngle(this.flagship.heading - this.ship.heading);
         if (Math.abs(angleDiff) > 0.08) {
-          if (angleDiff > 0) this.ship.controls.isTurningLeft = true;
-          else this.ship.controls.isTurningRight = true;
+          if (angleDiff > 0) this.ship.controls.isTurningRight = true;
+          else this.ship.controls.isTurningLeft = true;
         }
         // Match speed relative to target flagship
         if (this.ship.velocity.magnitude() < this.flagship.velocity.magnitude()) {

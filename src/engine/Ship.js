@@ -267,9 +267,9 @@ export class Ship extends SpaceEntity {
 
     // --- Rotational Control Integration ---
     if (this.controls.isTurningLeft && !this.controls.isTurningRight) {
-      this.angularVelocity = this.turnRate;
-    } else if (this.controls.isTurningRight && !this.controls.isTurningLeft) {
       this.angularVelocity = -this.turnRate;
+    } else if (this.controls.isTurningRight && !this.controls.isTurningLeft) {
+      this.angularVelocity = this.turnRate;
     } else {
       this.angularVelocity = 0;
     }

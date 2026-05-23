@@ -118,6 +118,7 @@ export class CanvasRenderer {
    */
   draw(dt, playerShip, entities, targetEntity, localPlayerId = null, fleetMembers = [], fleetName = null, activeSectorEvent = null) {
     this.activeSectorEvent = activeSectorEvent;
+    this.localPlayerId = localPlayerId;
     // 1. Update Camera to center on Player
     if (playerShip) {
       this.camera.x = playerShip.position.x - this.canvas.width / 2;
@@ -288,9 +289,9 @@ export class CanvasRenderer {
       if (finalY < 0) finalY += this.canvas.height;
 
       this.ctx.fillStyle = star.color;
-      this.ctx.beginPath();
-      this.ctx.arc(finalX, finalY, star.size, 0, Math.PI * 2);
-      this.ctx.fill();
+      // High-performance square pixels instead of slow curves/arc paths
+      const size = star.size * 2;
+      this.ctx.fillRect(finalX - star.size, finalY - star.size, size, size);
     }
   }
 
@@ -299,6 +300,8 @@ export class CanvasRenderer {
    */
   drawParticles(dt) {
     const activeParticles = [];
+    const cx = this.camera.x;
+    const cy = this.camera.y;
 
     for (const p of this.particles) {
       p.x += p.vx * dt;
@@ -306,26 +309,18 @@ export class CanvasRenderer {
       p.alpha -= p.decay * dt;
 
       if (p.alpha > 0) {
-        this.ctx.save();
         this.ctx.globalAlpha = p.alpha;
         this.ctx.fillStyle = p.color;
-        this.ctx.shadowBlur = 10;
-        this.ctx.shadowColor = p.color;
-        this.ctx.beginPath();
-        this.ctx.arc(
-          p.x - this.camera.x,
-          p.y - this.camera.y,
-          p.radius,
-          0,
-          Math.PI * 2,
-        );
-        this.ctx.fill();
-        this.ctx.restore();
+        
+        // High-performance fillRect instead of costly save/restore, path arcs, and CPU shadowBlur
+        const size = p.radius * 2;
+        this.ctx.fillRect(p.x - cx - p.radius, p.y - cy - p.radius, size, size);
 
         activeParticles.push(p);
       }
     }
 
+    this.ctx.globalAlpha = 1.0; // restore baseline opacity
     this.particles = activeParticles;
   }
 
@@ -687,16 +682,12 @@ export class CanvasRenderer {
    * Draws a glowing laser.
    */
   drawProjectile(proj) {
-    this.ctx.save();
-
-    // Pick different colors based on who fired
-    const isPlayer = proj.ownerId === "player";
-    const color = isPlayer ? "#00ffcc" : "#ff3333";
+    // Pick different colors based on who fired (friendly vs hostile)
+    const isFriendly = proj.ownerId === "player" || proj.ownerId === this.localPlayerId;
+    const color = isFriendly ? "#00ffcc" : "#ff3333";
 
     this.ctx.strokeStyle = color;
     this.ctx.lineWidth = 3;
-    this.ctx.shadowBlur = 10;
-    this.ctx.shadowColor = color;
 
     // Tail line
     const dir = new Vector2D(Math.cos(proj.heading), Math.sin(proj.heading));
@@ -706,8 +697,6 @@ export class CanvasRenderer {
     this.ctx.moveTo(proj.position.x, proj.position.y);
     this.ctx.lineTo(tail.x, tail.y);
     this.ctx.stroke();
-
-    this.ctx.restore();
   }
 
   /**
@@ -818,8 +807,6 @@ export class CanvasRenderer {
     this.ctx.strokeStyle = strokeColor;
     this.ctx.fillStyle = fillColor;
     this.ctx.lineWidth = 2.5;
-    this.ctx.shadowBlur = 10;
-    this.ctx.shadowColor = strokeColor;
 
     this.ctx.beginPath();
     // Sleek starfighter triangle coordinates

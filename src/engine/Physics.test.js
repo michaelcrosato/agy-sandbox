@@ -62,7 +62,7 @@ describe("Top-Down 2D Physics Engine Integration", () => {
     });
 
     // 1. Test rotation control
-    ship.setControls({ isTurningLeft: true });
+    ship.setControls({ isTurningRight: true });
     ship.update(1); // rotate 1 second => heading becomes 1 radian
     expect(ship.heading).toBeCloseTo(1);
     expect(ship.velocity.magnitude()).toBe(0); // didn't thrust

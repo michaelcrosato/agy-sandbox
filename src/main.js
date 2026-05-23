@@ -1014,8 +1014,19 @@ function syncEntitiesFromServer(serverEntities) {
         localEnt.isOverheated = ent.isOverheated;
         localEnt.isDisabled = ent.isDisabled;
       } else {
-        // Smoothly interpolate other entities positions to hide latency gaps
-        localEnt.position = localEnt.position.multiply(0.8).add(new Vector2D(ent.x, ent.y).multiply(0.2));
+        // Velocity-aware dead reckoning with adaptive correction
+        const serverPos = new Vector2D(ent.x, ent.y);
+        const errorDist = localEnt.position.distance(serverPos);
+        
+        if (errorDist > 200) {
+          // Hard snap for large desync (e.g., warp jumps, respawns)
+          localEnt.position = serverPos;
+        } else {
+          // Adaptive blend: correct more aggressively the farther off we are
+          const correctionStrength = Math.min(0.5, 0.1 + (errorDist / 500));
+          localEnt.position = localEnt.position.multiply(1 - correctionStrength).add(serverPos.multiply(correctionStrength));
+        }
+        
         localEnt.velocity = new Vector2D(ent.vx, ent.vy);
         localEnt.heading = ent.heading;
         localEnt.radius = ent.radius;
@@ -1388,8 +1399,31 @@ network.onCargoPickup = (msg) => {
 
 network.onPingReceived = (pingMs) => {
   const elPing = document.getElementById("net-ping");
+  const elQualityFill = document.getElementById("net-quality-fill");
+  
   if (elPing) {
     elPing.innerText = `${pingMs} ms`;
+    // Color-code the ping text
+    if (pingMs < 80) {
+      elPing.style.color = "var(--color-green)";
+    } else if (pingMs < 200) {
+      elPing.style.color = "#ffcc00";
+    } else {
+      elPing.style.color = "#ff3b30";
+    }
+  }
+  
+  if (elQualityFill) {
+    // Map latency to bar width (100% at 0ms, 10% at 500ms+)
+    const quality = Math.max(10, 100 - (pingMs / 5));
+    elQualityFill.style.width = `${quality}%`;
+    if (pingMs < 80) {
+      elQualityFill.style.background = "var(--color-green)";
+    } else if (pingMs < 200) {
+      elQualityFill.style.background = "#ffcc00";
+    } else {
+      elQualityFill.style.background = "#ff3b30";
+    }
   }
 };
 

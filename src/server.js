@@ -1417,6 +1417,36 @@ wss.on("connection", (ws) => {
   });
 });
 
+let activeTunnel = null;
+
+const shutdown = () => {
+  console.log("\n🔌 Shutting down server gracefully...");
+  if (activeTunnel) {
+    try {
+      activeTunnel.close();
+      console.log("🛑 Localtunnel closed.");
+    } catch (e) {
+      console.error("Error closing localtunnel:", e.message);
+    }
+  }
+  wss.close(() => {
+    console.log("🛑 WebSocket server closed.");
+    server.close(() => {
+      console.log("🛑 HTTP server closed.");
+      process.exit(0);
+    });
+  });
+
+  // Force close after 2 seconds
+  setTimeout(() => {
+    console.log("⚠️ Forcing shutdown after timeout...");
+    process.exit(1);
+  }, 2000);
+};
+
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
+
 // Start listening
 server.listen(PORT, async () => {
   console.log(`================================================================`);
@@ -1430,6 +1460,7 @@ server.listen(PORT, async () => {
     try {
       console.log(`📡 Spinning up programmatic localtunnel...`);
       const tunnel = await localtunnel({ port: PORT });
+      activeTunnel = tunnel;
       console.log(`🚀 Public Multiplayer URL: ${tunnel.url}`);
       
       exec(`echo ${tunnel.url} | clip`, (err) => {

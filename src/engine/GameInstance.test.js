@@ -73,4 +73,20 @@ describe("GameInstance Multi-Room Matchmaking & Isolation Mechanics", () => {
     expect(roomB.fleets.get("SQUAD").size).toBe(1);
     expect(roomA.fleets.get("SQUAD")).not.toBe(roomB.fleets.get("SQUAD"));
   });
+
+  test("Should remove AI controller when the AI ship is destroyed to prevent memory leaks", () => {
+    const room = new GameInstance("room-test", "Sector Test");
+    const initialAICount = room.ais.length;
+    expect(initialAICount).toBeGreaterThan(0);
+
+    const targetAI = room.ais[0];
+    const aiShip = targetAI.ship;
+
+    // Simulate ship destruction
+    aiShip.destroyedBy = "test-killer";
+    room.handleEntityDestroyed(aiShip);
+
+    expect(room.ais.length).toBe(initialAICount - 1);
+    expect(room.ais.includes(targetAI)).toBe(false);
+  });
 });

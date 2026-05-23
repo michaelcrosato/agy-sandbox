@@ -514,6 +514,12 @@ export class GameInstance {
 
     // --- Ships destroyed ---
     else if (ent.type === "ship") {
+      // Remove AI controller from room's active AIs list to optimize updates and avoid memory leaks
+      const aiIdx = this.ais.findIndex(a => a.ship === ent);
+      if (aiIdx !== -1) {
+        this.ais.splice(aiIdx, 1);
+      }
+
       const isPirate = ent.name === "Pirate Raider" || ent.name.includes("Pirate") || ent.name.includes("Raider");
       
       // Check bounties for connected and standby clients

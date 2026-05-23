@@ -775,6 +775,13 @@ wss.on("connection", (ws) => {
 
         const currentRoom = instances.get(sessionClient.roomId) || instances.get("public");
         sessionClient.roomId = currentRoom.id;
+
+        // Clean up any stale WebSocket mapping for this client in the room to prevent double broadcasts
+        for (const [oldWs, cl] of currentRoom.clients.entries()) {
+          if (cl === sessionClient && oldWs !== ws) {
+            currentRoom.clients.delete(oldWs);
+          }
+        }
         currentRoom.clients.set(ws, sessionClient);
 
         if (sessionClient.ship) {
@@ -1395,6 +1402,21 @@ wss.on("connection", (ws) => {
       if (currentRoom) {
         currentRoom.leaveCurrentFleet(activeClient);
         if (activeClient.ship) {
+          // Also clean up any escorts belonging to this client!
+          const escortsToRemove = [];
+          for (const ai of currentRoom.ais) {
+            if (ai.role === "escort" && ai.flagship === activeClient.ship) {
+              escortsToRemove.push(ai);
+            }
+          }
+          for (const ai of escortsToRemove) {
+            currentRoom.engine.removeEntity(ai.ship.id);
+            const idx = currentRoom.ais.indexOf(ai);
+            if (idx !== -1) {
+              currentRoom.ais.splice(idx, 1);
+            }
+          }
+
           currentRoom.engine.removeEntity(activeClient.id);
         }
         currentRoom.clients.delete(ws);

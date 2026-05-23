@@ -557,6 +557,48 @@ function sendLobbyList(clientObj) {
 }
 
 function joinRoom(clientObj, roomId, nickname) {
+  // 1. Clean up from previous room if switching
+  if (clientObj.roomId) {
+    const prevRoom = instances.get(clientObj.roomId);
+    if (prevRoom && prevRoom.id !== roomId) {
+      console.log(
+        `🧼 Cleaning up client [${clientObj.nickname}] (${clientObj.id}) from previous sector: [${prevRoom.name}]`,
+      );
+
+      // Leave fleet
+      prevRoom.leaveCurrentFleet(clientObj);
+
+      // Clean up escorts
+      if (clientObj.ship) {
+        const escortsToRemove = [];
+        for (const ai of prevRoom.ais) {
+          if (ai.role === "escort" && ai.flagship === clientObj.ship) {
+            escortsToRemove.push(ai);
+          }
+        }
+        for (const ai of escortsToRemove) {
+          prevRoom.engine.removeEntity(ai.ship.id);
+          const idx = prevRoom.ais.indexOf(ai);
+          if (idx !== -1) {
+            prevRoom.ais.splice(idx, 1);
+          }
+        }
+
+        // Remove ship from previous room engine
+        prevRoom.engine.removeEntity(clientObj.ship.id);
+      }
+
+      // Remove client mapping
+      prevRoom.clients.delete(clientObj.ws);
+
+      prevRoom.broadcastNotification(
+        `${clientObj.nickname} has left the sector.`,
+        "info",
+      );
+      prevRoom.broadcastRosterUpdate();
+    }
+  }
+
   const room = instances.get(roomId) || instances.get("public");
 
   clientObj.roomId = room.id;

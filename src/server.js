@@ -1449,11 +1449,11 @@ engine.onEntityDestroyed = (ent) => {
   if (ent.type === "projectile") return;
 
   const killerId = ent.destroyedBy;
-  const killerClient = killerId ? Array.from(clients.values()).find(c => c.id === killerId) : null;
+  const killerClient = killerId ? Array.from(persistentSessions.values()).find(c => c.id === killerId) : null;
   let killerFleetMembers = null;
 
   if (killerClient && killerClient.fleetName) {
-    killerFleetMembers = Array.from(clients.values()).filter(c => c.fleetName === killerClient.fleetName);
+    killerFleetMembers = Array.from(persistentSessions.values()).filter(c => c.fleetName === killerClient.fleetName);
   }
 
   // --- Asteroids destroyed ---
@@ -1481,8 +1481,8 @@ engine.onEntityDestroyed = (ent) => {
   else if (ent.type === "ship") {
     const isPirate = ent.name === "Pirate Raider" || ent.name.includes("Pirate") || ent.name.includes("Raider");
     
-    // Check bounties for connected clients
-    for (const client of clients.values()) {
+    // Check bounties for connected and standby clients
+    for (const client of persistentSessions.values()) {
       const completedBounty = client.missionManager.checkBountyCompletion(ent.name, client.ship);
       if (completedBounty) {
         if (client.fleetName) {
@@ -1606,7 +1606,7 @@ engine.onEntityDestroyed = (ent) => {
 
   // --- Respawn dead player ship ---
   else {
-    const deadClient = Array.from(clients.values()).find(c => c.ship === ent);
+    const deadClient = Array.from(persistentSessions.values()).find(c => c.ship === ent);
     if (deadClient) {
       handlePlayerRespawnServer(deadClient);
     }

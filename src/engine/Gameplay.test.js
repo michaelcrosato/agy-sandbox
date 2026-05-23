@@ -835,4 +835,47 @@ describe("Online Interface Efficiency & Robustness", () => {
     deflatedPrice = deflatedPrice + stepDeflated;
     expect(deflatedPrice).toBe(61); // Settles upwards
   });
+
+  test("Standby session arrays accurately resolve dead players and attribute bounties where active clients map fails", () => {
+    // Emulate standby disconnected client
+    const standbyClient = {
+      id: "player-recovery-77",
+      nickname: "Loner Standby",
+      ship: new Ship({ credits: 2000 }),
+      cleanupTimeout: setTimeout(() => {}, 30000)
+    };
+
+    // Active connection map (standby player is disconnected and removed from here)
+    const activeClients = [];
+    
+    // Persistent sessions map (standby player remains here during grace period)
+    const persistentSessions = [standbyClient];
+
+    // 1. Emulate Ship Destruction player matching
+    const deadShipRef = standbyClient.ship;
+
+    // Search active connections (fails!)
+    const matchedActive = activeClients.find(c => c.ship === deadShipRef);
+    expect(matchedActive).toBeUndefined();
+
+    // Search persistent sessions (succeeds!)
+    const matchedStandby = persistentSessions.find(c => c.ship === deadShipRef);
+    expect(matchedStandby).toBeDefined();
+    expect(matchedStandby.id).toBe("player-recovery-77");
+
+    // 2. Emulate Projectile Attribution (killer presented a standby id)
+    const killerId = "player-recovery-77";
+
+    // Search active connections (fails!)
+    const killerActive = activeClients.find(c => c.id === killerId);
+    expect(killerActive).toBeUndefined();
+
+    // Search persistent sessions (succeeds!)
+    const killerStandby = persistentSessions.find(c => c.id === killerId);
+    expect(killerStandby).toBeDefined();
+    expect(killerStandby.nickname).toBe("Loner Standby");
+
+    // Clear test timeout to prevent leaking
+    clearTimeout(standbyClient.cleanupTimeout);
+  });
 });

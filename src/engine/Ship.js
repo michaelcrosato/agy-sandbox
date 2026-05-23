@@ -50,7 +50,7 @@ export class Ship extends SpaceEntity {
     // Energy & Thermal Systems (Endless Sky Modernization)
     this.maxEnergy = 100;
     this.energy = 100;
-    this.energyRegen = 20; // units/sec
+    this.energyRegen = 50; // units/sec (increased from 20 for fluid firing & thrusting grid)
     this.maxHeat = 100;
     this.heat = 0;
     this.heatDissipation = 10; // units/sec

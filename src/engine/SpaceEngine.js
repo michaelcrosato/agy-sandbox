@@ -97,8 +97,8 @@ export class SpaceEngine {
   fireWeapon(ship) {
     if (ship.isDisabled || ship.isOverheated) return;
 
-    // Energy check (weapons consume 15 energy per burst)
-    const energyCost = 15;
+    // Energy check (weapons consume 6 energy per burst to ensure consistent high-rate firing)
+    const energyCost = 6;
     if (ship.energy !== undefined && ship.energy < energyCost) {
       return; // Weapon system lock - low power
     }

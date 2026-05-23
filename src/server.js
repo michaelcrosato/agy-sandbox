@@ -274,6 +274,11 @@ setInterval(() => {
   }
 }, 10000);
 
+// 6. Periodic Lobby Sync Refresh for clients still on the lobby screen (5 seconds)
+setInterval(() => {
+  broadcastLobbySync();
+}, 5000);
+
 // Dynamic Event Managers Helpers
 function runEconomyTickForRoom(room) {
   if (room.activeEconomicEvent) {

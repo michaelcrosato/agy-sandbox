@@ -781,17 +781,37 @@ const welcomeScreen = document.getElementById("welcome-screen");
 const btnStart = document.getElementById("btn-start");
 const btnCreateSector = document.getElementById("btn-create-sector");
 const newSectorNameInput = document.getElementById("new-sector-name");
+const pilotCallsignEl = document.getElementById("pilot-callsign");
 
 // Load callsigns from local storage if existing
 const cachedCallsign = localStorage.getItem("nebula_callsign");
-if (cachedCallsign) {
-  const callsignInput = document.getElementById("pilot-callsign");
-  if (callsignInput) callsignInput.value = cachedCallsign;
+if (cachedCallsign && pilotCallsignEl) {
+  pilotCallsignEl.value = cachedCallsign;
 }
 
 btnStart.addEventListener("click", () => {
   joinRoom("public");
 });
+
+// Enter key quick-join from callsign input field
+if (pilotCallsignEl) {
+  pilotCallsignEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      joinRoom("public");
+    }
+  });
+}
+
+// Enter key from sector name field creates room
+if (newSectorNameInput) {
+  newSectorNameInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      btnCreateSector?.click();
+    }
+  });
+}
 
 btnCreateSector?.addEventListener("click", () => {
   const sectorName = newSectorNameInput ? newSectorNameInput.value.trim() : "";
@@ -800,8 +820,7 @@ btnCreateSector?.addEventListener("click", () => {
     return;
   }
   
-  const pilotCallsignInput = document.getElementById("pilot-callsign");
-  const pilotCallsign = pilotCallsignInput ? pilotCallsignInput.value.trim() : "Commander";
+  const pilotCallsign = pilotCallsignEl ? pilotCallsignEl.value.trim() : "Commander";
   localStorage.setItem("nebula_callsign", pilotCallsign);
   network.nickname = pilotCallsign;
 
@@ -813,8 +832,7 @@ btnCreateSector?.addEventListener("click", () => {
 });
 
 function joinRoom(roomId) {
-  const pilotCallsignInput = document.getElementById("pilot-callsign");
-  const pilotCallsign = pilotCallsignInput ? pilotCallsignInput.value.trim() : "Commander";
+  const pilotCallsign = pilotCallsignEl ? pilotCallsignEl.value.trim() : "Commander";
   localStorage.setItem("nebula_callsign", pilotCallsign);
   network.nickname = pilotCallsign;
 
@@ -824,6 +842,11 @@ function joinRoom(roomId) {
     nickname: pilotCallsign
   });
 }
+
+// URL parameter direct room joining: ?room=roomId
+const urlParams = new URLSearchParams(window.location.search);
+const directRoomId = urlParams.get("room");
+let pendingDirectJoin = directRoomId || null;
 
 /**
  * Triggers a procedural dynamic event in local space.
@@ -1098,6 +1121,7 @@ network.onInit = (msg) => {
   player.name = msg.nickname;
   
   if (msg.roomId) {
+    // Dismiss lobby overlay with smooth fade-out animation
     welcomeScreen.classList.add("fade-out");
     setTimeout(() => {
       welcomeScreen.classList.remove("visible");
@@ -1112,7 +1136,13 @@ network.onInit = (msg) => {
       requestAnimationFrame(gameLoop);
     }
   } else {
-    uiController.notify(`Neural link established! Welcome back, Commander ${msg.nickname}.`, "success");
+    // No room assigned yet — we're in the lobby
+    // Check if there's a pending URL-based direct join
+    if (pendingDirectJoin) {
+      const targetRoom = pendingDirectJoin;
+      pendingDirectJoin = null;
+      joinRoom(targetRoom);
+    }
   }
 };
 
@@ -1126,10 +1156,12 @@ network.onLobbySync = (msg) => {
         lobbyRows.innerHTML = "";
         for (const room of msg.rooms) {
           const tr = document.createElement("tr");
+          const roomUrl = `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(room.id)}`;
           tr.innerHTML = `
             <td style="font-weight: 600; color: #ffffff; text-align: left;">${room.name.toUpperCase()}</td>
             <td style="text-align: left;"><span class="badge-pilots">${room.playersCount} online</span></td>
-            <td style="text-align: right;">
+            <td style="text-align: right; display: flex; gap: 5px; justify-content: flex-end;">
+              <button class="btn-copy-room-link btn-sm" data-room-url="${roomUrl}" title="Copy invite link" style="padding: 4px 8px; border-radius: 4px; font-size: 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: var(--color-text-secondary); cursor: pointer;">📋</button>
               <button class="btn-primary btn-sm btn-join-room" data-room-id="${room.id}" style="padding: 4px 10px; border-radius: 4px; font-size: 10px;">JOIN SECTOR</button>
             </td>
           `;
@@ -1141,6 +1173,20 @@ network.onLobbySync = (msg) => {
           btn.addEventListener("click", () => {
             const roomId = btn.getAttribute("data-room-id");
             joinRoom(roomId);
+          });
+        });
+
+        // Wire copy link buttons
+        document.querySelectorAll(".btn-copy-room-link").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const url = btn.getAttribute("data-room-url");
+            navigator.clipboard.writeText(url).then(() => {
+              btn.textContent = "✅";
+              setTimeout(() => { btn.textContent = "📋"; }, 1500);
+              uiController.notify("Invite link copied to clipboard!", "success");
+            }).catch(() => {
+              uiController.notify("Failed to copy link. Try manually.", "error");
+            });
           });
         });
       }
@@ -1484,6 +1530,26 @@ if (chatInput) {
         }
       }
     }
+  });
+}
+
+// Populate share URL bar for easy friend invites
+const shareUrlText = document.getElementById("share-url-text");
+const btnCopyServerUrl = document.getElementById("btn-copy-server-url");
+if (shareUrlText) {
+  // Strip query parameters to show the clean base URL
+  shareUrlText.textContent = `${window.location.origin}${window.location.pathname}`;
+}
+if (btnCopyServerUrl) {
+  btnCopyServerUrl.addEventListener("click", () => {
+    const url = `${window.location.origin}${window.location.pathname}`;
+    navigator.clipboard.writeText(url).then(() => {
+      btnCopyServerUrl.textContent = "COPIED ✅";
+      setTimeout(() => { btnCopyServerUrl.textContent = "COPY LINK"; }, 2000);
+      uiController.notify("Server invite link copied to clipboard!", "success");
+    }).catch(() => {
+      uiController.notify("Failed to copy. Select the URL manually.", "error");
+    });
   });
 }
 

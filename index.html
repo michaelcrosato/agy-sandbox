@@ -229,6 +229,13 @@
         <h2 class="lobby-header-title">NEBULA LOBBY HUB</h2>
         <p class="lobby-sub">A top-down co-op space multiplayer sandbox. Launch a private sector or join active trade channels.</p>
         
+        <!-- Shareable Server URL -->
+        <div id="share-url-bar" style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,255,200,0.15); border-radius: 6px; padding: 6px 10px; margin-bottom: 16px; font-size: 10px;">
+          <span style="color: var(--color-cyan); font-weight: 600; white-space: nowrap;">🔗 SERVER:</span>
+          <span id="share-url-text" style="color: var(--color-text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; font-family: monospace; font-size: 10px;"></span>
+          <button id="btn-copy-server-url" style="padding: 3px 8px; border-radius: 4px; font-size: 9px; background: rgba(0,255,200,0.12); border: 1px solid rgba(0,255,200,0.25); color: var(--color-cyan); cursor: pointer; white-space: nowrap;">COPY LINK</button>
+        </div>
+        
         <!-- Callsign Input Form -->
         <div class="lobby-form-group">
           <label>PILOT CALLSIGN:</label>

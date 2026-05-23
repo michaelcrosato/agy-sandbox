@@ -45,6 +45,10 @@ export class NetworkHandler {
 
     // Throttle input packets sending (only send when controls flags change)
     this.lastSentControls = null;
+
+    // Reconnect backoff parameters
+    this.reconnectAttempt = 0;
+    this.maxReconnectDelay = 15000; // cap at 15 seconds
   }
 
   /**
@@ -59,6 +63,7 @@ export class NetworkHandler {
  
     this.socket.onopen = () => {
       this.connected = true;
+      this.reconnectAttempt = 0; // Reset backoff on successful connection
       console.log("Connected to server! Sending joining logs...");
       this.send({
         type: "join",
@@ -180,8 +185,13 @@ export class NetworkHandler {
       if (this.onConnectionStatusChange) {
         this.onConnectionStatusChange("reconnecting");
       }
-      console.log("Disconnected from server. Retrying connection in 3 seconds...");
-      setTimeout(() => this.connect(), 3000);
+      // Exponential backoff with jitter: 1s, 2s, 4s, 8s... capped at 15s
+      this.reconnectAttempt++;
+      const baseDelay = Math.min(1000 * Math.pow(2, this.reconnectAttempt - 1), this.maxReconnectDelay);
+      const jitter = Math.floor(Math.random() * 500);
+      const delay = baseDelay + jitter;
+      console.log(`Disconnected from server. Reconnecting in ${(delay / 1000).toFixed(1)}s (attempt ${this.reconnectAttempt})...`);
+      setTimeout(() => this.connect(), delay);
     };
  
     this.socket.onerror = (err) => {

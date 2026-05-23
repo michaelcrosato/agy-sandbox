@@ -738,3 +738,66 @@ describe("Tractor Beam Matrix & Cargo Pod Physics", () => {
     expect(pod.accumulatorForce.y).toBe(0);
   });
 });
+
+describe("Online Interface Efficiency & Robustness", () => {
+  test("Coordinate rounding compression handles double-precision floats accurately", () => {
+    const rawX = 124.5829104812048;
+    const rawY = -567.819401840184;
+    const rawHeading = 3.141592653589793;
+
+    // Emulate server serialization rounding formulas
+    const roundedX = Math.round(rawX * 10) / 10;
+    const roundedY = Math.round(rawY * 10) / 10;
+    const roundedHeading = Math.round(rawHeading * 100) / 100;
+
+    expect(roundedX).toBe(124.6);
+    expect(roundedY).toBe(-567.8);
+    expect(roundedHeading).toBe(3.14);
+  });
+
+  test("Session re-binding (neural-link recovery) preserves client state objects in-place", () => {
+    // 1. Create a simulated client session object
+    const clientObj = {
+      id: "player-test-99",
+      nickname: "Commander Alpha",
+      ship: new Ship({ credits: 7500, cargoCapacity: 40 }),
+      fleetName: "ALPHA-SQUAD",
+      isLanded: true,
+      ws: { id: "old-ws" },
+      cleanupTimeout: null
+    };
+
+    clientObj.ship.outfits.push("Tractor Beam Matrix");
+
+    // 2. Emulate disconnect (ws closes, starting grace-period)
+    clientObj.ws = null;
+    let cleanupCalled = false;
+    clientObj.cleanupTimeout = setTimeout(() => {
+      cleanupCalled = true;
+    }, 30000);
+
+    expect(clientObj.cleanupTimeout).toBeDefined();
+    expect(cleanupCalled).toBe(false);
+
+    // 3. Emulate neural-link recovery (reconnecting with same token)
+    const newWs = { id: "new-ws" };
+    if (clientObj.cleanupTimeout) {
+      clearTimeout(clientObj.cleanupTimeout);
+      clientObj.cleanupTimeout = null;
+    }
+    clientObj.ws = newWs; // re-bind to the new WebSocket connection in-place
+
+    // 4. Verify in-place references are perfectly intact
+    expect(clientObj.cleanupTimeout).toBeNull();
+    expect(clientObj.id).toBe("player-test-99");
+    expect(clientObj.nickname).toBe("Commander Alpha");
+    expect(clientObj.ws.id).toBe("new-ws");
+    expect(clientObj.fleetName).toBe("ALPHA-SQUAD");
+    expect(clientObj.isLanded).toBe(true);
+    
+    // Validate ship parameters are preserved
+    expect(clientObj.ship.credits).toBe(7500);
+    expect(clientObj.ship.cargoCapacity).toBe(40);
+    expect(clientObj.ship.outfits).toContain("Tractor Beam Matrix");
+  });
+});

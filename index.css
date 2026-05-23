@@ -1151,3 +1151,153 @@ h1, h2, h3, h4 {
   color: var(--color-text-secondary);
 }
 
+/* ==========================================================================
+   NETWORK STATUS & ROSTER GLASS PANEL STYLING
+   ========================================================================== */
+
+#network-panel {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 250px;
+  height: 190px;
+  display: flex;
+  flex-direction: column;
+  z-index: 15;
+  pointer-events: auto;
+  padding: 12px;
+}
+
+.net-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.pulse-green {
+  background: var(--color-green);
+  box-shadow: 0 0 8px var(--color-green-glow);
+  animation: net-pulse-green 1.8s infinite ease-in-out;
+}
+
+.pulse-yellow {
+  background: #ffcc00;
+  box-shadow: 0 0 8px rgba(255, 204, 0, 0.6);
+  animation: net-pulse-yellow 1.2s infinite ease-in-out;
+}
+
+.pulse-red {
+  background: #ff3b30;
+  box-shadow: 0 0 8px rgba(255, 59, 48, 0.7);
+  animation: net-pulse-red 0.6s infinite ease-in-out;
+}
+
+@keyframes net-pulse-green {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.15); }
+}
+
+@keyframes net-pulse-yellow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(1.2); }
+}
+
+@keyframes net-pulse-red {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.25; transform: scale(1.25); }
+}
+
+#net-roster-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-right: 4px;
+}
+
+#net-roster-list::-webkit-scrollbar {
+  width: 3px;
+}
+#net-roster-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+#net-roster-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.roster-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-family: var(--font-body);
+  font-size: 10px;
+  transition: all 0.2s ease;
+}
+
+.roster-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.roster-card.self {
+  border-color: rgba(0, 242, 254, 0.25);
+  background: rgba(0, 242, 254, 0.04);
+}
+
+.roster-card.standby {
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.roster-pilot-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.roster-pilot-name {
+  font-weight: bold;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.roster-pilot-credits {
+  font-size: 8px;
+  color: #a0a5b5;
+}
+
+.roster-pilot-status {
+  font-family: var(--font-display);
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.roster-status-orbit {
+  background: rgba(0, 242, 254, 0.1);
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  color: var(--color-cyan);
+}
+
+.roster-status-docked {
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  color: var(--color-green);
+}
+
+.roster-status-standby {
+  background: rgba(255, 204, 0, 0.1);
+  border: 1px solid rgba(255, 204, 0, 0.3);
+  color: #ffcc00;
+}
+

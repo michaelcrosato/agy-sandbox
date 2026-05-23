@@ -1114,6 +1114,68 @@ network.onCargoPickup = (msg) => {
   renderer.addPickupText(`+${msg.amount} ${msg.resourceType.toUpperCase()}`, msg.x, msg.y, color);
 };
 
+network.onPingReceived = (pingMs) => {
+  const elPing = document.getElementById("net-ping");
+  if (elPing) {
+    elPing.innerText = `${pingMs} ms`;
+  }
+};
+
+network.onLobbySync = (msg) => {
+  const elCount = document.getElementById("net-pilots-count");
+  if (elCount) {
+    elCount.innerText = `${msg.count} PILOT${msg.count !== 1 ? "S" : ""}`;
+  }
+
+  const elList = document.getElementById("net-roster-list");
+  if (elList) {
+    elList.innerHTML = "";
+    msg.roster.forEach(pilot => {
+      const card = document.createElement("div");
+      card.className = "roster-card";
+      if (pilot.id === player.id) {
+        card.classList.add("self");
+      }
+      if (pilot.status === "standby") {
+        card.classList.add("standby");
+      }
+
+      const pilotNameText = pilot.fleetName ? `[${pilot.fleetName}] ${pilot.nickname}` : pilot.nickname;
+      
+      card.innerHTML = `
+        <div class="roster-pilot-info">
+          <div class="roster-pilot-name">${pilotNameText} ${pilot.id === player.id ? '<span style="color: var(--color-cyan); font-size: 8px;">(YOU)</span>' : ""}</div>
+          <div class="roster-pilot-credits">${pilot.credits.toLocaleString()} CR</div>
+        </div>
+        <span class="roster-pilot-status roster-status-${pilot.status}">${pilot.status}</span>
+      `;
+      elList.appendChild(card);
+    });
+  }
+};
+
+network.onConnectionStatusChange = (status) => {
+  const elIndicator = document.getElementById("net-indicator");
+  const elText = document.getElementById("net-status-text");
+
+  if (!elIndicator || !elText) return;
+
+  elIndicator.className = "net-dot";
+  if (status === "online") {
+    elIndicator.classList.add("pulse-green");
+    elText.innerText = "CONN: ONLINE";
+    elText.style.color = "var(--color-green)";
+  } else if (status === "reconnecting") {
+    elIndicator.classList.add("pulse-yellow");
+    elText.innerText = "RECONNECTING...";
+    elText.style.color = "#ffcc00";
+  } else {
+    elIndicator.classList.add("pulse-red");
+    elText.innerText = "CONN: OFFLINE";
+    elText.style.color = "#ff3b30";
+  }
+};
+
 // Bind Fleet HUD Control elements
 const btnFleetJoin = document.getElementById("btn-fleet-join");
 const btnFleetLeave = document.getElementById("btn-fleet-leave");

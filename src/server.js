@@ -539,6 +539,7 @@ function scheduleAIRespawn(name, role) {
 const wss = new WebSocketServer({ server });
 const clients = new Map(); // ws -> clientObj
 const fleets = new Map(); // fleetName -> Set<clientObj>
+const persistentSessions = new Map(); // sessionToken -> clientObj
 
 wss.on("connection", (ws) => {
   const clientId = "player-" + Math.random().toString(36).substring(2, 9);
@@ -671,63 +672,139 @@ wss.on("connection", (ws) => {
     }
 
     if (msg.type === "join") {
-      clientObj.nickname = (msg.name || "Pilot").trim().substring(0, 12);
-      
-      // Spawning player Starship in space
-      const spawnPos = new Vector2D((Math.random() - 0.5) * 150, -150 + (Math.random() - 0.5) * 50);
-      const ship = new Ship({
-        id: clientId,
-        name: clientObj.nickname,
-        position: spawnPos,
-        velocity: new Vector2D(0, 0),
-        heading: -Math.PI / 2,
-        maxShield: 200,
-        maxArmor: 100,
-        credits: 5000,
-        cargoCapacity: 20,
-        thrustPower: 28000,
-        brakePower: 15000,
-        maxSpeed: 950,
-        turnRate: 3.2,
-      });
+      const token = msg.sessionToken;
 
-      clientObj.ship = ship;
-      engine.addEntity(ship);
+      if (token && persistentSessions.has(token)) {
+        const sessionClient = persistentSessions.get(token);
+        
+        // Clear grace period timeout
+        if (sessionClient.cleanupTimeout) {
+          clearTimeout(sessionClient.cleanupTimeout);
+          sessionClient.cleanupTimeout = null;
+        }
 
-      // Respond with initial credentials
-      clientObj.send({
-        type: "init",
-        playerId: clientId,
-        nickname: clientObj.nickname
-      });
+        // Re-attach connection to existing session
+        sessionClient.ws = ws;
+        
+        // Update active clients mapping
+        clients.delete(ws);
+        clients.set(ws, sessionClient);
 
-      clientObj.send({
-        type: "notification",
-        message: `Welcome aboard Commander ${clientObj.nickname}! Systems nominal.`,
-        style: "success"
-      });
+        // Put the ship back in engine if it was removed
+        if (sessionClient.ship) {
+          const existing = engine.entities.find(e => e.id === sessionClient.id);
+          if (!existing) {
+            engine.addEntity(sessionClient.ship);
+          }
+        }
 
-      broadcastNotification(`${clientObj.nickname} has entered Nebula Sector!`, "info");
-      clientObj.sendStats();
+        // Send init confirmation
+        sessionClient.send({
+          type: "init",
+          playerId: sessionClient.id,
+          nickname: sessionClient.nickname,
+          sessionToken: token
+        });
 
-      // Send bulk markets of all planets to synchronize prices on load
-      const bulkMarkets = {};
-      for (const p of planets) {
-        bulkMarkets[p.name] = p.market;
+        sessionClient.send({
+          type: "notification",
+          message: `Neural link re-established! Welcome back, Commander ${sessionClient.nickname}.`,
+          style: "success"
+        });
+
+        broadcastNotification(`Commander ${sessionClient.nickname} has re-established neural link!`, "success");
+        sessionClient.sendStats();
+
+        // Send bulk markets of all planets to synchronize prices on load
+        const bulkMarkets = {};
+        for (const p of planets) {
+          bulkMarkets[p.name] = p.market;
+        }
+        sessionClient.send({
+          type: "market_bulk_sync",
+          markets: bulkMarkets
+        });
+
+        // Send active event
+        sessionClient.send({
+          type: "event_sync",
+          event: activeSectorEvent ? {
+            type: activeSectorEvent.type,
+            planetName: activeSectorEvent.planetName
+          } : null
+        });
+
+        broadcastRosterUpdate();
+        if (sessionClient.fleetName) {
+          broadcastFleetUpdate(sessionClient.fleetName);
+        }
+      } else {
+        // Normal New Join Flow
+        const sessionToken = clientObj.id; // use clientId as sessionToken
+        clientObj.nickname = (msg.name || "Pilot").trim().substring(0, 12);
+        
+        // Spawning player Starship in space
+        const spawnPos = new Vector2D((Math.random() - 0.5) * 150, -150 + (Math.random() - 0.5) * 50);
+        const ship = new Ship({
+          id: clientObj.id,
+          name: clientObj.nickname,
+          position: spawnPos,
+          velocity: new Vector2D(0, 0),
+          heading: -Math.PI / 2,
+          maxShield: 200,
+          maxArmor: 100,
+          credits: 5000,
+          cargoCapacity: 20,
+          thrustPower: 28000,
+          brakePower: 15000,
+          maxSpeed: 950,
+          turnRate: 3.2,
+        });
+
+        clientObj.ship = ship;
+        engine.addEntity(ship);
+
+        // Store session
+        persistentSessions.set(sessionToken, clientObj);
+
+        // Respond with initial credentials
+        clientObj.send({
+          type: "init",
+          playerId: clientObj.id,
+          nickname: clientObj.nickname,
+          sessionToken: sessionToken
+        });
+
+        clientObj.send({
+          type: "notification",
+          message: `Welcome aboard Commander ${clientObj.nickname}! Systems nominal.`,
+          style: "success"
+        });
+
+        broadcastNotification(`${clientObj.nickname} has entered Nebula Sector!`, "info");
+        clientObj.sendStats();
+
+        // Send bulk markets of all planets to synchronize prices on load
+        const bulkMarkets = {};
+        for (const p of planets) {
+          bulkMarkets[p.name] = p.market;
+        }
+        clientObj.send({
+          type: "market_bulk_sync",
+          markets: bulkMarkets
+        });
+
+        // Send active event on join
+        clientObj.send({
+          type: "event_sync",
+          event: activeSectorEvent ? {
+            type: activeSectorEvent.type,
+            planetName: activeSectorEvent.planetName
+          } : null
+        });
+
+        broadcastRosterUpdate();
       }
-      clientObj.send({
-        type: "market_bulk_sync",
-        markets: bulkMarkets
-      });
-
-      // Send active event on join
-      clientObj.send({
-        type: "event_sync",
-        event: activeSectorEvent ? {
-          type: activeSectorEvent.type,
-          planetName: activeSectorEvent.planetName
-        } : null
-      });
     }
 
     else if (msg.type === "controls") {
@@ -801,6 +878,7 @@ wss.on("connection", (ws) => {
             style: "success"
           });
           clientObj.sendStats();
+          broadcastRosterUpdate();
         } else {
           clientObj.send({
             type: "notification",
@@ -830,6 +908,7 @@ wss.on("connection", (ws) => {
           style: "success"
         });
         clientObj.sendStats();
+        broadcastRosterUpdate();
       }
     }
 
@@ -998,6 +1077,7 @@ wss.on("connection", (ws) => {
       });
 
       broadcastFleetUpdate(code);
+      broadcastRosterUpdate();
     }
 
     else if (msg.type === "fleet_leave") {
@@ -1009,6 +1089,7 @@ wss.on("connection", (ws) => {
           message: `Left fleet: ${oldCode}`,
           style: "info"
         });
+        broadcastRosterUpdate();
       }
     }
 
@@ -1052,15 +1133,33 @@ wss.on("connection", (ws) => {
         }
       }
     }
+
+    else if (msg.type === "ping") {
+      clientObj.send({
+        type: "pong",
+        time: msg.time
+      });
+    }
   });
 
   ws.on("close", () => {
-    leaveCurrentFleet(clientObj);
-    if (clientObj.ship) {
-      engine.removeEntity(clientId);
-    }
+    const activeClient = clients.get(ws) || clientObj;
+    
+    // Set a 30-second neural link grace period before purging
+    activeClient.cleanupTimeout = setTimeout(() => {
+      // Actually purge the player session
+      leaveCurrentFleet(activeClient);
+      if (activeClient.ship) {
+        engine.removeEntity(activeClient.id);
+      }
+      persistentSessions.delete(activeClient.id);
+      broadcastNotification(`${activeClient.nickname} has left the sector (neural link lost).`, "info");
+      broadcastRosterUpdate();
+    }, 30000); // 30 seconds
+
     clients.delete(ws);
-    broadcastNotification(`${clientObj.nickname} has left the sector.`, "info");
+    broadcastNotification(`${activeClient.nickname} neural link disconnected. Standby recovery mode active...`, "warning");
+    broadcastRosterUpdate();
   });
 });
 
@@ -1130,11 +1229,11 @@ function serializeEntities() {
       const base = {
         id: ent.id,
         type: ent.type,
-        x: ent.position.x,
-        y: ent.position.y,
-        vx: ent.velocity.x,
-        vy: ent.velocity.y,
-        heading: ent.heading,
+        x: Math.round(ent.position.x * 10) / 10,
+        y: Math.round(ent.position.y * 10) / 10,
+        vx: Math.round(ent.velocity.x * 10) / 10,
+        vy: Math.round(ent.velocity.y * 10) / 10,
+        heading: Math.round(ent.heading * 100) / 100,
         radius: ent.radius,
       };
 
@@ -1519,6 +1618,29 @@ function handlePlayerRespawnServer(client) {
     });
     client.sendStats();
   }, 3000);
+}
+
+function broadcastRosterUpdate() {
+  const roster = [];
+  for (const sessionClient of persistentSessions.values()) {
+    roster.push({
+      id: sessionClient.id,
+      nickname: sessionClient.nickname,
+      credits: sessionClient.ship ? sessionClient.ship.credits : 0,
+      fleetName: sessionClient.fleetName,
+      status: sessionClient.cleanupTimeout ? "standby" : (sessionClient.isLanded ? "docked" : "orbit")
+    });
+  }
+
+  const payload = {
+    type: "lobby_sync",
+    count: persistentSessions.size,
+    roster: roster
+  };
+
+  for (const client of clients.values()) {
+    client.send(payload);
+  }
 }
 
 // 6. Start listening

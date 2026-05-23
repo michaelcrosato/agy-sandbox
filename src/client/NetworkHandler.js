@@ -33,6 +33,15 @@ export class NetworkHandler {
     this.onMarketSync = null;
     this.onMarketBulkSync = null;
     this.onEventSync = null;
+    this.onPingReceived = null;
+    this.onLobbySync = null;
+    this.onConnectionStatusChange = null;
+
+    // Persisted session token for recovery
+    this.sessionToken = localStorage.getItem("nebula_session_token") || null;
+
+    // Ping heartbeat timer
+    this.pingInterval = null;
 
     // Throttle input packets sending (only send when controls flags change)
     this.lastSentControls = null;
@@ -47,16 +56,30 @@ export class NetworkHandler {
     
     console.log(`Connecting to Nebula Server: ${wsUrl}`);
     this.socket = new WebSocket(wsUrl);
-
+ 
     this.socket.onopen = () => {
       this.connected = true;
       console.log("Connected to server! Sending joining logs...");
       this.send({
         type: "join",
-        name: this.nickname
+        name: this.nickname,
+        sessionToken: this.sessionToken
       });
-    };
 
+      if (this.onConnectionStatusChange) {
+        this.onConnectionStatusChange("online");
+      }
+
+      // Start periodic heartbeat pings
+      if (this.pingInterval) clearInterval(this.pingInterval);
+      this.pingInterval = setInterval(() => {
+        this.send({
+          type: "ping",
+          time: Date.now()
+        });
+      }, 2500);
+    };
+ 
     this.socket.onmessage = (event) => {
       let msg;
       try {
@@ -64,7 +87,7 @@ export class NetworkHandler {
       } catch {
         return;
       }
-
+ 
       switch (msg.type) {
         case "init":
           this.playerId = msg.playerId;
@@ -72,71 +95,96 @@ export class NetworkHandler {
             this.nickname = msg.nickname;
             localStorage.setItem("nebula_callsign", msg.nickname);
           }
+          if (msg.sessionToken) {
+            this.sessionToken = msg.sessionToken;
+            localStorage.setItem("nebula_session_token", msg.sessionToken);
+          }
           if (this.onInit) this.onInit(msg);
           break;
-
+ 
         case "state":
           this.entitiesData = msg.entities;
           if (this.onStateReceived) this.onStateReceived(msg.entities);
           break;
-
+ 
         case "stats":
           if (this.onStatsReceived) this.onStatsReceived(msg);
           break;
-
+ 
         case "landed":
           if (this.onLanded) this.onLanded(msg);
           break;
-
+ 
         case "launched":
           if (this.onLaunched) this.onLaunched(msg);
           break;
-
+ 
         case "fleet_sync":
           this.fleet.name = msg.name;
           this.fleet.members = msg.members;
           if (this.onFleetSync) this.onFleetSync(msg);
           break;
-
+ 
         case "projectile_fired":
           if (this.onProjectileFired) this.onProjectileFired(msg);
           break;
-
+ 
         case "notification":
           if (this.onNotification) this.onNotification(msg);
           break;
-
+ 
         case "chat":
           if (this.onChatReceived) this.onChatReceived(msg);
           break;
-
+ 
         case "market_sync":
           if (this.onMarketSync) this.onMarketSync(msg);
           break;
-
+ 
         case "market_bulk_sync":
           if (this.onMarketBulkSync) this.onMarketBulkSync(msg);
           break;
-
+ 
         case "event_sync":
           this.activeSectorEvent = msg.event;
           if (this.onEventSync) this.onEventSync(msg);
           break;
-
+ 
         case "cargo_pickup":
           if (this.onCargoPickup) this.onCargoPickup(msg);
           break;
+
+        case "pong":
+          {
+            const latency = Date.now() - msg.time;
+            if (this.onPingReceived) this.onPingReceived(latency);
+          }
+          break;
+
+        case "lobby_sync":
+          if (this.onLobbySync) this.onLobbySync(msg);
+          break;
       }
     };
-
+ 
     this.socket.onclose = () => {
       this.connected = false;
+      if (this.pingInterval) {
+        clearInterval(this.pingInterval);
+        this.pingInterval = null;
+      }
+      if (this.onConnectionStatusChange) {
+        this.onConnectionStatusChange("reconnecting");
+      }
       console.log("Disconnected from server. Retrying connection in 3 seconds...");
       setTimeout(() => this.connect(), 3000);
     };
-
+ 
     this.socket.onerror = (err) => {
       console.error("WebSocket network error:", err);
+      if (this.onConnectionStatusChange) {
+        this.onConnectionStatusChange("offline");
+      }
     };
   }
 

@@ -141,6 +141,25 @@
         <div id="nebula-hud-details">DRAG: 2.2x | HAZARD: FRICTION</div>
       </div>
 
+      <!-- Network Connectivity & Sector Roster (Bottom Right Glass Panel) -->
+      <div id="network-panel" class="hud-panel glass-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-border); padding-bottom: 4px; margin-bottom: 6px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div id="net-indicator" class="net-dot pulse-green"></div>
+            <span id="net-status-text" style="font-family: var(--font-display); font-size: 10px; font-weight: 700; color: var(--color-green);">CONN: ONLINE</span>
+          </div>
+          <span id="net-ping" style="font-family: var(--font-display); font-size: 9px; font-weight: bold; color: var(--color-cyan);">-- ms</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 9px; color: #a0a5b5; margin-bottom: 6px; font-weight: bold;">
+          <span>ACTIVE SECTOR ROSTER</span>
+          <span id="net-pilots-count" style="color: var(--color-green);">0 PILOTS</span>
+        </div>
+        <!-- Roster scroll area -->
+        <div id="net-roster-list">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
     </div>
 
     <!-- Interactive Landing Proximity Trigger Prompts -->

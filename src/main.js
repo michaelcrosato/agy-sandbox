@@ -178,7 +178,7 @@ const polarisPlanet = new Planet({
   description:
     "An icy frontier industrial colony rich in raw mineral extractions. High food demand, cheap raw minerals.",
   color: "#e0f7fa",
-  position: new Vector2D(2000, -1200),
+  position: new Vector2D(22000, 18800),
   radius: 55,
   market: {
     food: 220,
@@ -197,7 +197,7 @@ const draconisPlanet = new Planet({
   description:
     "A high-tech research outpost specializing in advanced electronics production. Demands minerals, cheap electronics.",
   color: "#00f2fe",
-  position: new Vector2D(-2200, 1600),
+  position: new Vector2D(17800, 21600),
   radius: 60,
   market: {
     food: 120,
@@ -216,7 +216,7 @@ const kaelisPlanet = new Planet({
   description:
     "An agricultural breadbasket producing vast food supplies. Demands electronics, cheap food.",
   color: "#00e676",
-  position: new Vector2D(-1800, -1800),
+  position: new Vector2D(-21800, -21800),
   radius: 60,
   market: {
     food: 40,
@@ -235,7 +235,7 @@ const aureliaPlanet = new Planet({
   description:
     "Outer planetary asteroid refinery. Demands food, produces cheap raw metals and machinery.",
   color: "#ff9100",
-  position: new Vector2D(1800, 1800),
+  position: new Vector2D(21800, 21800),
   radius: 58,
   market: {
     food: 150,
@@ -254,7 +254,7 @@ const tenebrisPlanet = new Planet({
   description:
     "A mysterious colony inside a dark nebula. Produces top-tier scientific luxuries, demands electronics.",
   color: "#d500f9",
-  position: new Vector2D(-600, 2400),
+  position: new Vector2D(-20600, -17600),
   radius: 55,
   market: {
     food: 160,
@@ -273,7 +273,7 @@ const valkyriePlanet = new Planet({
   description:
     "Core fleet military staging area. Produces high-grade heavy machinery, demands electronics.",
   color: "#ff1744",
-  position: new Vector2D(2500, 300),
+  position: new Vector2D(2000, 500),
   radius: 62,
   market: {
     food: 110,
@@ -292,7 +292,7 @@ const roguesPlanet = new Planet({
   description:
     "A lawless pirate anchorage hidden deep inside a dense asteroid field. Smuggler contraband is cheap here.",
   color: "#e040fb",
-  position: new Vector2D(-2800, -500),
+  position: new Vector2D(-22800, -20500),
   radius: 52,
   market: {
     food: 250,

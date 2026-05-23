@@ -11,7 +11,7 @@ import { Ship } from "./engine/Ship.js";
 import { AIController } from "./engine/ai/AIController.js";
 import { MissionManager } from "./engine/MissionManager.js";
 import { NEBULAE } from "./engine/Nebulae.js";
-import { GameInstance, BASE_MARKETS } from "./engine/GameInstance.js";
+import { GameInstance } from "./engine/GameInstance.js";
 
 // Process-level uncaught error and promise rejection logging
 process.on("uncaughtException", (err) => {
@@ -20,7 +20,12 @@ process.on("uncaughtException", (err) => {
 });
 
 process.on("unhandledRejection", (reason, promise) => {
-  console.error("🚨 CRITICAL UNHANDLED REJECTION at:", promise, "reason:", reason);
+  console.error(
+    "🚨 CRITICAL UNHANDLED REJECTION at:",
+    promise,
+    "reason:",
+    reason,
+  );
 });
 
 // Paths for static file server
@@ -91,11 +96,14 @@ setInterval(() => {
     // A. Drive AI merchant itineraries and update active AIs
     for (const ai of room.ais) {
       if (ai.ship.isDestroyed) continue;
-      
+
       if (ai.role === "merchant" && !ai.destination) {
-        const potentialHubs = room.planets.filter((p) => p.position.distance(ai.ship.position) > 250);
+        const potentialHubs = room.planets.filter(
+          (p) => p.position.distance(ai.ship.position) > 250,
+        );
         if (potentialHubs.length > 0) {
-          const nextHub = potentialHubs[Math.floor(Math.random() * potentialHubs.length)];
+          const nextHub =
+            potentialHubs[Math.floor(Math.random() * potentialHubs.length)];
           ai.destination = nextHub.position.clone();
         }
       }
@@ -105,7 +113,9 @@ setInterval(() => {
     // B. Apply Solar EMP Events Shield Regen nerfing
     const originalRegens = new Map();
     if (room.activeSectorEvent && room.activeSectorEvent.type === "emp") {
-      const empPlanet = room.planets.find(p => p.name === room.activeSectorEvent.planetName);
+      const empPlanet = room.planets.find(
+        (p) => p.name === room.activeSectorEvent.planetName,
+      );
       if (empPlanet) {
         for (const ent of room.engine.entities) {
           if (ent.type === "ship" && !ent.isDestroyed) {
@@ -129,7 +139,9 @@ setInterval(() => {
               const dist = toShip.magnitude();
               if (dist > 1 && dist <= 250) {
                 const forceMag = 400000 / (dist * dist + 100);
-                const pullForce = toShip.normalize().multiply(forceMag * pod.mass);
+                const pullForce = toShip
+                  .normalize()
+                  .multiply(forceMag * pod.mass);
                 pod.applyForce(pullForce);
               }
             }
@@ -149,31 +161,40 @@ setInterval(() => {
               const success = ship.addCargo(pod.resourceType, pod.amount);
               if (success) {
                 podsToRemove.push(pod);
-                const client = Array.from(room.clients.values()).find(c => c.ship === ship);
+                const client = Array.from(room.clients.values()).find(
+                  (c) => c.ship === ship,
+                );
                 if (client) {
                   client.send({
                     type: "notification",
                     message: `+${pod.amount} ${pod.resourceType.toUpperCase()} collected!`,
-                    style: "success"
+                    style: "success",
                   });
                   client.send({
                     type: "cargo_pickup",
                     resourceType: pod.resourceType,
                     amount: pod.amount,
                     x: pod.position.x,
-                    y: pod.position.y
+                    y: pod.position.y,
                   });
                   client.sendStats();
                 }
                 break;
               } else {
-                const client = Array.from(room.clients.values()).find(c => c.ship === ship);
-                if (client && (!ship.lastCargoFullAlert || Date.now() - ship.lastCargoFullAlert > 2000)) {
+                const client = Array.from(room.clients.values()).find(
+                  (c) => c.ship === ship,
+                );
+                if (
+                  client &&
+                  (!ship.lastCargoFullAlert ||
+                    Date.now() - ship.lastCargoFullAlert > 2000)
+                ) {
                   ship.lastCargoFullAlert = Date.now();
                   client.send({
                     type: "notification",
-                    message: "Cargo bay is FULL! Upgrade cargo holds or sell commodities.",
-                    style: "error"
+                    message:
+                      "Cargo bay is FULL! Upgrade cargo holds or sell commodities.",
+                    style: "error",
                   });
                 }
               }
@@ -205,7 +226,7 @@ setInterval(() => {
           if (room.engine.globalDrag > 0 && ent.velocity.magnitude() > 0) {
             const extraDragCoef = activeNebula.dragMultiplier - 1.0;
             const extraDragForce = ent.velocity.multiply(
-              -extraDragCoef * room.engine.globalDrag * ent.mass
+              -extraDragCoef * room.engine.globalDrag * ent.mass,
             );
             ent.applyForce(extraDragForce);
           }
@@ -229,7 +250,9 @@ setInterval(() => {
     }
 
     // H. Replenish Asteroids
-    const activeAsteroids = room.engine.entities.filter(e => e.type === "generic" || e.type === "gem_asteroid");
+    const activeAsteroids = room.engine.entities.filter(
+      (e) => e.type === "generic" || e.type === "gem_asteroid",
+    );
     if (activeAsteroids.length < 35) {
       room.spawnNewAsteroid(false);
     }
@@ -277,7 +300,9 @@ setInterval(() => {
   for (const [id, room] of instances.entries()) {
     if (id === "public") continue;
     if (room.clients.size === 0 && now - room.lastActiveTime > 30000) {
-      console.log(`🧹 Garbage Collecting inactive sector: [${room.name}] (${id})`);
+      console.log(
+        `🧹 Garbage Collecting inactive sector: [${room.name}] (${id})`,
+      );
       instances.delete(id);
       broadcastLobbySync();
     }
@@ -291,53 +316,42 @@ setInterval(() => {
 
 // Dynamic Event Managers Helpers
 function runEconomyTickForRoom(room) {
-  if (room.activeEconomicEvent) {
-    const prevPlanet = room.planets.find(p => p.name === room.activeEconomicEvent.planetName);
-    if (prevPlanet && BASE_MARKETS[room.activeEconomicEvent.planetName]) {
-      const origPrice = BASE_MARKETS[room.activeEconomicEvent.planetName][room.activeEconomicEvent.commodity];
-      prevPlanet.market[room.activeEconomicEvent.commodity] = origPrice;
+  if (room.economyManager.activeEconomicEvent) {
+    const prevPlanetName = room.economyManager.activeEconomicEvent.planetName;
+    const prevPlanet = room.planets.find((p) => p.name === prevPlanetName);
+    room.economyManager.clearActiveEvent();
+    if (prevPlanet) {
       room.broadcast({
         type: "market_sync",
         planetName: prevPlanet.name,
-        market: prevPlanet.market
+        market: prevPlanet.market,
       });
     }
   }
 
-  const planet = room.planets[Math.floor(Math.random() * room.planets.length)];
-  if (!planet) return;
-  const commodities = Object.keys(BASE_MARKETS[planet.name]);
-  const commodity = commodities[Math.floor(Math.random() * commodities.length)];
-  const isShortage = Math.random() < 0.5;
-
-  const originalPrice = BASE_MARKETS[planet.name][commodity];
-  const multiplier = isShortage ? 1.8 : 0.5;
-  const newPrice = Math.round(originalPrice * multiplier);
-
-  planet.market[commodity] = newPrice;
-  room.activeEconomicEvent = {
-    planetName: planet.name,
-    commodity,
-    originalPrice
-  };
+  const event = room.economyManager.triggerRandomEvent();
+  if (!event) return;
 
   room.broadcast({
     type: "market_sync",
-    planetName: planet.name,
-    market: planet.market
+    planetName: event.planetName,
+    market: room.planets.find((p) => p.name === event.planetName).market,
   });
 
-  const formattedMsg = isShortage
-    ? `MARKET ALERT: ${planet.name} reports severe ${commodity.toUpperCase()} shortage! Prices soared to ${newPrice} CR!`
-    : `MARKET ALERT: ${planet.name} reports massive ${commodity.toUpperCase()} surplus! Prices dropped to ${newPrice} CR!`;
+  const formattedMsg = event.isShortage
+    ? `MARKET ALERT: ${event.planetName} reports severe ${event.commodity.toUpperCase()} shortage! Prices soared to ${event.newPrice} CR!`
+    : `MARKET ALERT: ${event.planetName} reports massive ${event.commodity.toUpperCase()} surplus! Prices dropped to ${event.newPrice} CR!`;
 
-  room.broadcastNotification(formattedMsg, isShortage ? "error" : "success");
+  room.broadcastNotification(
+    formattedMsg,
+    event.isShortage ? "error" : "success",
+  );
 
   const chatPayload = {
     type: "chat",
     channel: "global",
     sender: "SYSTEM-ECONOMY",
-    text: formattedMsg
+    text: formattedMsg,
   };
   for (const c of room.clients.values()) {
     c.send(chatPayload);
@@ -348,35 +362,35 @@ function runSectorEventTickForRoom(room) {
   if (room.activeSectorEvent) {
     if (room.activeSectorEvent.type === "siege") {
       for (const shipId of room.activeSectorEvent.spawnedShipIds) {
-        const ent = room.engine.entities.find(e => e.id === shipId);
+        const ent = room.engine.entities.find((e) => e.id === shipId);
         if (ent) {
           room.engine.removeEntity(ent);
         }
-        const aiIdx = room.ais.findIndex(a => a.ship.id === shipId);
+        const aiIdx = room.ais.findIndex((a) => a.ship.id === shipId);
         if (aiIdx !== -1) {
           room.ais.splice(aiIdx, 1);
         }
       }
-      
+
       const formattedMsg = `EVENT OVER: The Pirate Siege at ${room.activeSectorEvent.planetName} has been repelled!`;
       room.broadcastNotification(formattedMsg, "success");
-      
+
       const chatPayload = {
         type: "chat",
         channel: "global",
         sender: "SYSTEM-ALERTS",
-        text: formattedMsg
+        text: formattedMsg,
       };
       room.broadcast(chatPayload);
     } else if (room.activeSectorEvent.type === "emp") {
       const formattedMsg = `EVENT OVER: The Solar EMP Ion Storm at ${room.activeSectorEvent.planetName} has subsided.`;
       room.broadcastNotification(formattedMsg, "success");
-      
+
       const chatPayload = {
         type: "chat",
         channel: "global",
         sender: "SYSTEM-ALERTS",
-        text: formattedMsg
+        text: formattedMsg,
       };
       room.broadcast(chatPayload);
     }
@@ -388,10 +402,12 @@ function runSectorEventTickForRoom(room) {
 
   let targetPlanet;
   if (eventType === "emp") {
-    const nonSolPlanets = room.planets.filter(p => p.name !== "Sol");
-    targetPlanet = nonSolPlanets[Math.floor(Math.random() * nonSolPlanets.length)];
+    const nonSolPlanets = room.planets.filter((p) => p.name !== "Sol");
+    targetPlanet =
+      nonSolPlanets[Math.floor(Math.random() * nonSolPlanets.length)];
   } else {
-    targetPlanet = room.planets[Math.floor(Math.random() * room.planets.length)];
+    targetPlanet =
+      room.planets[Math.floor(Math.random() * room.planets.length)];
   }
 
   if (!targetPlanet) return;
@@ -399,18 +415,27 @@ function runSectorEventTickForRoom(room) {
   if (eventType === "siege") {
     const spawnedShipIds = [];
     const count = 2;
-    
+
     for (let i = 0; i < count; i++) {
       const spawnAngle = Math.random() * Math.PI * 2;
       const spawnDist = targetPlanet.landingRadius + 180 + Math.random() * 50;
-      const spawnPos = targetPlanet.position.add(new Vector2D(Math.cos(spawnAngle) * spawnDist, Math.sin(spawnAngle) * spawnDist));
-      const shipId = "siege-raider-" + Math.random().toString(36).substring(2, 9);
-      
+      const spawnPos = targetPlanet.position.add(
+        new Vector2D(
+          Math.cos(spawnAngle) * spawnDist,
+          Math.sin(spawnAngle) * spawnDist,
+        ),
+      );
+      const shipId =
+        "siege-raider-" + Math.random().toString(36).substring(2, 9);
+
       const raiderShip = new Ship({
         id: shipId,
         name: "Siege Raider",
         position: spawnPos,
-        velocity: new Vector2D((Math.random() - 0.5) * 30, (Math.random() - 0.5) * 30),
+        velocity: new Vector2D(
+          (Math.random() - 0.5) * 30,
+          (Math.random() - 0.5) * 30,
+        ),
         heading: Math.random() * Math.PI * 2,
         maxShield: 500,
         maxArmor: 350,
@@ -430,7 +455,7 @@ function runSectorEventTickForRoom(room) {
     room.activeSectorEvent = {
       type: "siege",
       planetName: targetPlanet.name,
-      spawnedShipIds: spawnedShipIds
+      spawnedShipIds: spawnedShipIds,
     };
 
     const formattedMsg = `RED ALERT: Pirate Siege detected at ${targetPlanet.name}! Heavy raiders are attacking the trade hub!`;
@@ -440,15 +465,14 @@ function runSectorEventTickForRoom(room) {
       type: "chat",
       channel: "global",
       sender: "SYSTEM-ALERTS",
-      text: formattedMsg
+      text: formattedMsg,
     };
     room.broadcast(chatPayload);
-
   } else if (eventType === "emp") {
     room.activeSectorEvent = {
       type: "emp",
       planetName: targetPlanet.name,
-      spawnedShipIds: []
+      spawnedShipIds: [],
     };
 
     const formattedMsg = `ENVIRONMENT ALERT: Solar EMP Ion Storm detected at ${targetPlanet.name}! Shield regeneration disabled within 400u!`;
@@ -458,7 +482,7 @@ function runSectorEventTickForRoom(room) {
       type: "chat",
       channel: "global",
       sender: "SYSTEM-ALERTS",
-      text: formattedMsg
+      text: formattedMsg,
     };
     room.broadcast(chatPayload);
   }
@@ -469,42 +493,24 @@ function runSectorEventTickForRoom(room) {
 function broadcastEventSyncForRoom(room) {
   const eventPayload = {
     type: "event_sync",
-    event: room.activeSectorEvent ? {
-      type: room.activeSectorEvent.type,
-      planetName: room.activeSectorEvent.planetName
-    } : null
+    event: room.activeSectorEvent
+      ? {
+          type: room.activeSectorEvent.type,
+          planetName: room.activeSectorEvent.planetName,
+        }
+      : null,
   };
   room.broadcast(eventPayload);
 }
 
 function runEconomyNormalizationForRoom(room) {
-  for (const p of room.planets) {
-    const base = BASE_MARKETS[p.name];
-    if (!base) continue;
-
-    let planetChanged = false;
-    for (const item of Object.keys(p.market)) {
-      if (room.activeEconomicEvent && room.activeEconomicEvent.planetName === p.name && room.activeEconomicEvent.commodity === item) {
-        continue;
-      }
-
-      const current = p.market[item];
-      const baseline = base[item];
-      if (current !== baseline) {
-        const diff = baseline - current;
-        const step = Math.sign(diff) * Math.max(1, Math.round(Math.abs(diff) * 0.005));
-        p.market[item] = current + step;
-        planetChanged = true;
-      }
-    }
-
-    if (planetChanged) {
-      room.broadcast({
-        type: "market_sync",
-        planetName: p.name,
-        market: p.market
-      });
-    }
+  const changedPlanets = room.economyManager.normalizePrices();
+  for (const p of changedPlanets) {
+    room.broadcast({
+      type: "market_sync",
+      planetName: p.name,
+      market: p.market,
+    });
   }
 }
 
@@ -515,13 +521,13 @@ function broadcastLobbySync() {
     roomsList.push({
       id: room.id,
       name: room.name,
-      playersCount: room.clients.size
+      playersCount: room.clients.size,
     });
   }
 
   const payload = {
     type: "lobby_sync",
-    rooms: roomsList
+    rooms: roomsList,
   };
 
   const str = JSON.stringify(payload);
@@ -540,26 +546,29 @@ function sendLobbyList(clientObj) {
     roomsList.push({
       id: room.id,
       name: room.name,
-      playersCount: room.clients.size
+      playersCount: room.clients.size,
     });
   }
 
   clientObj.send({
     type: "lobby_sync",
-    rooms: roomsList
+    rooms: roomsList,
   });
 }
 
 function joinRoom(clientObj, roomId, nickname) {
   const room = instances.get(roomId) || instances.get("public");
-  
+
   clientObj.roomId = room.id;
   clientObj.nickname = (nickname || "Pilot").trim().substring(0, 12);
-  
+
   room.clients.set(clientObj.ws, clientObj);
   room.lastActiveTime = Date.now();
 
-  const spawnPos = new Vector2D((Math.random() - 0.5) * 150, -150 + (Math.random() - 0.5) * 50);
+  const spawnPos = new Vector2D(
+    (Math.random() - 0.5) * 150,
+    -150 + (Math.random() - 0.5) * 50,
+  );
   const ship = new Ship({
     id: clientObj.id,
     name: clientObj.nickname,
@@ -589,13 +598,13 @@ function joinRoom(clientObj, roomId, nickname) {
     nickname: clientObj.nickname,
     sessionToken: sessionToken,
     roomId: room.id,
-    roomName: room.name
+    roomName: room.name,
   });
 
   clientObj.send({
     type: "notification",
     message: `Welcome aboard Commander ${clientObj.nickname}! Sector ${room.name.toUpperCase()} systems nominal.`,
-    style: "success"
+    style: "success",
   });
 
   room.broadcastNotification(`${clientObj.nickname} entered sector!`, "info");
@@ -607,15 +616,17 @@ function joinRoom(clientObj, roomId, nickname) {
   }
   clientObj.send({
     type: "market_bulk_sync",
-    markets: bulkMarkets
+    markets: bulkMarkets,
   });
 
   clientObj.send({
     type: "event_sync",
-    event: room.activeSectorEvent ? {
-      type: room.activeSectorEvent.type,
-      planetName: room.activeSectorEvent.planetName
-    } : null
+    event: room.activeSectorEvent
+      ? {
+          type: room.activeSectorEvent.type,
+          planetName: room.activeSectorEvent.planetName,
+        }
+      : null,
   });
 
   room.broadcastRosterUpdate();
@@ -626,7 +637,7 @@ const wss = new WebSocketServer({ server });
 
 wss.on("connection", (ws) => {
   const clientId = "player-" + Math.random().toString(36).substring(2, 9);
-  
+
   const clientObj = {
     ws,
     id: clientId,
@@ -668,7 +679,7 @@ wss.on("connection", (ws) => {
         isOverheated: this.ship.isOverheated,
         isDisabled: this.ship.isDisabled,
       });
-    }
+    },
   };
 
   clientObj.missionManager.onStorylineStageAdvanced = (mission) => {
@@ -680,7 +691,10 @@ wss.on("connection", (ws) => {
     const spawnAngle = Math.random() * Math.PI * 2;
     const spawnDist = destPlanet.landingRadius + 220;
     const spawnPos = destPlanet.position.add(
-      new Vector2D(Math.cos(spawnAngle) * spawnDist, Math.sin(spawnAngle) * spawnDist),
+      new Vector2D(
+        Math.cos(spawnAngle) * spawnDist,
+        Math.sin(spawnAngle) * spawnDist,
+      ),
     );
 
     let bossShip;
@@ -717,7 +731,7 @@ wss.on("connection", (ws) => {
     clientObj.send({
       type: "notification",
       message: `STORY ALERT: ${mission.targetName} spotted in orbit of ${destPlanet.name}!`,
-      style: "error"
+      style: "error",
     });
   };
 
@@ -730,7 +744,10 @@ wss.on("connection", (ws) => {
     const spawnAngle = Math.random() * Math.PI * 2;
     const spawnDist = destPlanet.landingRadius + 200;
     const spawnPos = destPlanet.position.add(
-      new Vector2D(Math.cos(spawnAngle) * spawnDist, Math.sin(spawnAngle) * spawnDist),
+      new Vector2D(
+        Math.cos(spawnAngle) * spawnDist,
+        Math.sin(spawnAngle) * spawnDist,
+      ),
     );
 
     const bossShip = new Ship({
@@ -752,7 +769,7 @@ wss.on("connection", (ws) => {
     clientObj.send({
       type: "notification",
       message: `ALERT: Wanted threat ${mission.targetName} spotted in orbit of ${destPlanet.name}!`,
-      style: "error"
+      style: "error",
     });
   };
 
@@ -773,7 +790,7 @@ wss.on("connection", (ws) => {
 
       if (token && persistentSessions.has(token)) {
         const sessionClient = persistentSessions.get(token);
-        
+
         if (sessionClient.cleanupTimeout) {
           clearTimeout(sessionClient.cleanupTimeout);
           sessionClient.cleanupTimeout = null;
@@ -783,7 +800,8 @@ wss.on("connection", (ws) => {
         clients.delete(ws);
         clients.set(ws, sessionClient);
 
-        const currentRoom = instances.get(sessionClient.roomId) || instances.get("public");
+        const currentRoom =
+          instances.get(sessionClient.roomId) || instances.get("public");
         sessionClient.roomId = currentRoom.id;
 
         // Clean up any stale WebSocket mapping for this client in the room to prevent double broadcasts
@@ -795,7 +813,9 @@ wss.on("connection", (ws) => {
         currentRoom.clients.set(ws, sessionClient);
 
         if (sessionClient.ship) {
-          const existing = currentRoom.engine.entities.find(e => e.id === sessionClient.id);
+          const existing = currentRoom.engine.entities.find(
+            (e) => e.id === sessionClient.id,
+          );
           if (!existing) {
             currentRoom.engine.addEntity(sessionClient.ship);
           }
@@ -807,16 +827,19 @@ wss.on("connection", (ws) => {
           nickname: sessionClient.nickname,
           sessionToken: token,
           roomId: currentRoom.id,
-          roomName: currentRoom.name
+          roomName: currentRoom.name,
         });
 
         sessionClient.send({
           type: "notification",
           message: `Neural link re-established! Welcome back, Commander ${sessionClient.nickname}.`,
-          style: "success"
+          style: "success",
         });
 
-        currentRoom.broadcastNotification(`Commander ${sessionClient.nickname} has re-established neural link!`, "success");
+        currentRoom.broadcastNotification(
+          `Commander ${sessionClient.nickname} has re-established neural link!`,
+          "success",
+        );
         sessionClient.sendStats();
 
         const bulkMarkets = {};
@@ -825,15 +848,17 @@ wss.on("connection", (ws) => {
         }
         sessionClient.send({
           type: "market_bulk_sync",
-          markets: bulkMarkets
+          markets: bulkMarkets,
         });
 
         sessionClient.send({
           type: "event_sync",
-          event: currentRoom.activeSectorEvent ? {
-            type: currentRoom.activeSectorEvent.type,
-            planetName: currentRoom.activeSectorEvent.planetName
-          } : null
+          event: currentRoom.activeSectorEvent
+            ? {
+                type: currentRoom.activeSectorEvent.type,
+                planetName: currentRoom.activeSectorEvent.planetName,
+              }
+            : null,
         });
 
         currentRoom.broadcastRosterUpdate();
@@ -843,12 +868,14 @@ wss.on("connection", (ws) => {
       } else {
         sendLobbyList(clientObj);
       }
-    }
-
-    else if (msg.type === "create_room") {
+    } else if (msg.type === "create_room") {
       const name = (msg.name || "").trim().substring(0, 20);
       if (!name) {
-        clientObj.send({ type: "notification", message: "Invalid Sector Name!", style: "error" });
+        clientObj.send({
+          type: "notification",
+          message: "Invalid Sector Name!",
+          style: "error",
+        });
         return;
       }
       const newRoomId = "room-" + Math.random().toString(36).substring(2, 9);
@@ -858,25 +885,33 @@ wss.on("connection", (ws) => {
 
       joinRoom(clientObj, newRoomId, msg.nickname);
       broadcastLobbySync();
-    }
-
-    else if (msg.type === "join_room") {
+    } else if (msg.type === "join_room") {
       joinRoom(clientObj, msg.roomId || "public", msg.nickname);
       broadcastLobbySync();
-    }
-
-    else if (msg.type === "controls") {
-      if (clientObj.ship && !clientObj.isLanded && !clientObj.ship.isDestroyed) {
+    } else if (msg.type === "controls") {
+      if (
+        clientObj.ship &&
+        !clientObj.isLanded &&
+        !clientObj.ship.isDestroyed
+      ) {
         clientObj.ship.setControls(msg.controls);
         clientObj.ship.heading = msg.heading;
       }
-    }
-
-    else if (msg.type === "land") {
-      if (clientObj.ship && !clientObj.isLanded && !clientObj.ship.isDestroyed && room) {
-        const targetPlanet = room.planets.find((p) => p.canLand(clientObj.ship));
+    } else if (msg.type === "land") {
+      if (
+        clientObj.ship &&
+        !clientObj.isLanded &&
+        !clientObj.ship.isDestroyed &&
+        room
+      ) {
+        const targetPlanet = room.planets.find((p) =>
+          p.canLand(clientObj.ship),
+        );
         if (targetPlanet) {
-          const completed = clientObj.missionManager.checkArrivalCompletions(targetPlanet.name, clientObj.ship);
+          const completed = clientObj.missionManager.checkArrivalCompletions(
+            targetPlanet.name,
+            clientObj.ship,
+          );
           for (const m of completed) {
             if (clientObj.fleetName) {
               const fleetSet = room.fleets.get(clientObj.fleetName);
@@ -889,7 +924,7 @@ wss.on("connection", (ws) => {
                     member.send({
                       type: "notification",
                       message: `Fleet Contract Completed: ${m.title} by ${clientObj.nickname}! Share: +${share.toLocaleString()} CR`,
-                      style: "success"
+                      style: "success",
                     });
                     member.sendStats();
                   }
@@ -901,17 +936,21 @@ wss.on("connection", (ws) => {
             clientObj.send({
               type: "notification",
               message: `Contract Completed: ${m.title}! Received +${m.reward.toLocaleString()} CR`,
-              style: "success"
+              style: "success",
             });
           }
 
-          if (targetPlanet.name !== "Rogue's Hollow" && clientObj.ship.cargo.contraband > 0) {
+          if (
+            targetPlanet.name !== "Rogue's Hollow" &&
+            clientObj.ship.cargo.contraband > 0
+          ) {
             clientObj.ship.cargo.contraband = 0;
             clientObj.ship.credits = Math.max(0, clientObj.ship.credits - 1500);
             clientObj.send({
               type: "notification",
-              message: "Security Scan: Contraband detected! Confiscated and fined 1,500 CR.",
-              style: "error"
+              message:
+                "Security Scan: Contraband detected! Confiscated and fined 1,500 CR.",
+              style: "error",
             });
           }
 
@@ -924,9 +963,13 @@ wss.on("connection", (ws) => {
 
           // Generate available missions authoritatively on the server
           if (!clientObj.missionManager.availableMissions[targetPlanet.name]) {
-            clientObj.missionManager.generateMissionsForPlanet(targetPlanet.name, room.planets);
+            clientObj.missionManager.generateMissionsForPlanet(
+              targetPlanet.name,
+              room.planets,
+            );
           }
-          const available = clientObj.missionManager.availableMissions[targetPlanet.name];
+          const available =
+            clientObj.missionManager.availableMissions[targetPlanet.name];
 
           clientObj.send({
             type: "landed",
@@ -936,27 +979,28 @@ wss.on("connection", (ws) => {
           clientObj.send({
             type: "notification",
             message: `Landed safely on ${targetPlanet.name}. Ship systems secured.`,
-            style: "success"
+            style: "success",
           });
           clientObj.sendStats();
           room.broadcastRosterUpdate();
         } else {
           clientObj.send({
             type: "notification",
-            message: "Cannot land here. Travel within trigger radius at low speed (< 80 u/s).",
-            style: "error"
+            message:
+              "Cannot land here. Travel within trigger radius at low speed (< 80 u/s).",
+            style: "error",
           });
         }
       }
-    }
-
-    else if (msg.type === "launch") {
+    } else if (msg.type === "launch") {
       if (clientObj.ship && clientObj.isLanded && room) {
         const p = clientObj.planetLandedOn;
         clientObj.isLanded = false;
         clientObj.planetLandedOn = null;
 
-        clientObj.ship.position = p.position.add(new Vector2D(0, p.landingRadius + 40));
+        clientObj.ship.position = p.position.add(
+          new Vector2D(0, p.landingRadius + 40),
+        );
         clientObj.ship.velocity = new Vector2D(0, 0);
         clientObj.ship.clearControls();
         room.engine.addEntity(clientObj.ship);
@@ -965,82 +1009,99 @@ wss.on("connection", (ws) => {
         clientObj.send({
           type: "notification",
           message: "Launch sequence completed! Thrusters online.",
-          style: "success"
+          style: "success",
         });
         clientObj.sendStats();
         room.broadcastRosterUpdate();
       }
-    }
-
-    else if (msg.type === "trade") {
-      if (clientObj.ship && clientObj.isLanded && clientObj.planetLandedOn && room) {
+    } else if (msg.type === "trade") {
+      if (
+        clientObj.ship &&
+        clientObj.isLanded &&
+        clientObj.planetLandedOn &&
+        room
+      ) {
         const p = clientObj.planetLandedOn;
         const price = p.market[msg.item];
-        if (!price) return;
+        if (price === undefined) return;
 
         if (msg.action === "buy") {
           if (clientObj.ship.credits < price) {
-            clientObj.send({ type: "notification", message: "Insufficient credits!", style: "error" });
+            clientObj.send({
+              type: "notification",
+              message: "Insufficient credits!",
+              style: "error",
+            });
             return;
           }
           if (clientObj.ship.addCargo(msg.item, 1)) {
             clientObj.ship.credits -= price;
-            const basePrice = (BASE_MARKETS[p.name] && BASE_MARKETS[p.name][msg.item]) || 150;
-            const currentPrice = p.market[msg.item];
-            p.market[msg.item] = Math.min(Math.round(basePrice * 2.5), Math.round(currentPrice * 1.022));
+            room.economyManager.registerBuy(p.name, msg.item);
 
             clientObj.send({
               type: "notification",
               message: `Purchased 1 ton of ${msg.item} for ${price} CR`,
-              style: "success"
+              style: "success",
             });
             clientObj.sendStats();
             room.broadcast({
               type: "market_sync",
               planetName: p.name,
-              market: p.market
+              market: p.market,
             });
           } else {
-            clientObj.send({ type: "notification", message: "Cargo hold is full!", style: "error" });
+            clientObj.send({
+              type: "notification",
+              message: "Cargo hold is full!",
+              style: "error",
+            });
           }
         } else if (msg.action === "sell") {
           if (clientObj.ship.removeCargo(msg.item, 1)) {
             clientObj.ship.credits += price;
-            const basePrice = (BASE_MARKETS[p.name] && BASE_MARKETS[p.name][msg.item]) || 150;
-            const currentPrice = p.market[msg.item];
-            p.market[msg.item] = Math.max(Math.round(basePrice * 0.4), Math.round(currentPrice * 0.982));
+            room.economyManager.registerSell(p.name, msg.item);
 
             clientObj.send({
               type: "notification",
               message: `Sold 1 ton of ${msg.item} for ${price} CR`,
-              style: "success"
+              style: "success",
             });
             clientObj.sendStats();
             room.broadcast({
               type: "market_sync",
               planetName: p.name,
-              market: p.market
+              market: p.market,
             });
           } else {
-            clientObj.send({ type: "notification", message: `No ${msg.item} in cargo bay!`, style: "error" });
+            clientObj.send({
+              type: "notification",
+              message: `No ${msg.item} in cargo bay!`,
+              style: "error",
+            });
           }
         }
       }
-    }
-
-    else if (msg.type === "outfit_buy") {
+    } else if (msg.type === "outfit_buy") {
       if (clientObj.ship && clientObj.isLanded && clientObj.planetLandedOn) {
         const p = clientObj.planetLandedOn;
         const outfit = p.outfitter.find((o) => o.name === msg.outfitName);
         if (!outfit) return;
 
         if (clientObj.ship.outfits.includes(outfit.name)) {
-          clientObj.send({ type: "notification", message: "Upgrade already equipped!", style: "error" });
+          clientObj.send({
+            type: "notification",
+            message: "Upgrade already equipped!",
+            style: "error",
+          });
           return;
         }
 
         if (clientObj.ship.credits < outfit.cost) {
-          clientObj.send({ type: "notification", message: "Insufficient credits for upgrade!", style: "error" });
+          clientObj.send({
+            type: "notification",
+            message: "Insufficient credits for upgrade!",
+            style: "error",
+          });
           return;
         }
 
@@ -1069,20 +1130,22 @@ wss.on("connection", (ws) => {
         clientObj.send({
           type: "notification",
           message: `Equipped: ${outfit.name}!`,
-          style: "success"
+          style: "success",
         });
         clientObj.sendStats();
       }
-    }
-
-    else if (msg.type === "ship_buy") {
+    } else if (msg.type === "ship_buy") {
       if (clientObj.ship && clientObj.isLanded && clientObj.planetLandedOn) {
         const p = clientObj.planetLandedOn;
         const s = p.shipyard.find((sh) => sh.name === msg.shipName);
         if (!s) return;
 
         if (clientObj.ship.credits < s.cost) {
-          clientObj.send({ type: "notification", message: "Insufficient credits for ship purchase!", style: "error" });
+          clientObj.send({
+            type: "notification",
+            message: "Insufficient credits for ship purchase!",
+            style: "error",
+          });
           return;
         }
 
@@ -1097,48 +1160,82 @@ wss.on("connection", (ws) => {
         clientObj.ship.thrustPower = s.thrustPower;
         clientObj.ship.turnRate = s.turnRate;
 
-        clientObj.ship.cargo = { food: 0, electronics: 0, minerals: 0, luxuries: 0, contraband: 0, machinery: 0 };
+        clientObj.ship.cargo = {
+          food: 0,
+          electronics: 0,
+          minerals: 0,
+          luxuries: 0,
+          contraband: 0,
+          machinery: 0,
+        };
 
         clientObj.send({
           type: "notification",
           message: `Acquired new ship: ${s.name}!`,
-          style: "success"
+          style: "success",
         });
         clientObj.sendStats();
       }
-    }
-
-    else if (msg.type === "mission_accept") {
-      if (clientObj.ship && clientObj.isLanded && clientObj.planetLandedOn && room) {
+    } else if (msg.type === "mission_accept") {
+      if (
+        clientObj.ship &&
+        clientObj.isLanded &&
+        clientObj.planetLandedOn &&
+        room
+      ) {
         if (!clientObj.missionManager.availableMissions[msg.planetName]) {
-          clientObj.missionManager.generateMissionsForPlanet(msg.planetName, room.planets);
+          clientObj.missionManager.generateMissionsForPlanet(
+            msg.planetName,
+            room.planets,
+          );
         }
 
-        const res = clientObj.missionManager.acceptMission(msg.planetName, msg.missionId, clientObj.ship);
+        const res = clientObj.missionManager.acceptMission(
+          msg.planetName,
+          msg.missionId,
+          clientObj.ship,
+        );
         if (res.success) {
-          clientObj.send({ type: "notification", message: res.message, style: "success" });
+          clientObj.send({
+            type: "notification",
+            message: res.message,
+            style: "success",
+          });
           clientObj.sendStats();
         } else {
-          clientObj.send({ type: "notification", message: res.message, style: "error" });
+          clientObj.send({
+            type: "notification",
+            message: res.message,
+            style: "error",
+          });
         }
       }
-    }
-
-    else if (msg.type === "mission_abandon") {
+    } else if (msg.type === "mission_abandon") {
       if (clientObj.ship) {
-        const activeM = clientObj.missionManager.activeMissions.find(m => m.id === msg.missionId);
+        const activeM = clientObj.missionManager.activeMissions.find(
+          (m) => m.id === msg.missionId,
+        );
         if (activeM) {
-          clientObj.missionManager.abandonMission(msg.missionId, clientObj.ship);
-          clientObj.send({ type: "notification", message: `Abandoned contract: ${activeM.title}`, style: "info" });
+          clientObj.missionManager.abandonMission(
+            msg.missionId,
+            clientObj.ship,
+          );
+          clientObj.send({
+            type: "notification",
+            message: `Abandoned contract: ${activeM.title}`,
+            style: "info",
+          });
           clientObj.sendStats();
         }
       }
-    }
-
-    else if (msg.type === "fleet_create" || msg.type === "fleet_join") {
+    } else if (msg.type === "fleet_create" || msg.type === "fleet_join") {
       const code = (msg.fleetName || "").toUpperCase().trim().substring(0, 10);
       if (!code) {
-        clientObj.send({ type: "notification", message: "Invalid Fleet Code!", style: "error" });
+        clientObj.send({
+          type: "notification",
+          message: "Invalid Fleet Code!",
+          style: "error",
+        });
         return;
       }
 
@@ -1153,28 +1250,24 @@ wss.on("connection", (ws) => {
         clientObj.send({
           type: "notification",
           message: `Joined fleet: ${code}`,
-          style: "success"
+          style: "success",
         });
 
         room.broadcastFleetUpdate(code);
         room.broadcastRosterUpdate();
       }
-    }
-
-    else if (msg.type === "fleet_leave") {
+    } else if (msg.type === "fleet_leave") {
       if (clientObj.fleetName && room) {
         const oldCode = clientObj.fleetName;
         room.leaveCurrentFleet(clientObj);
         clientObj.send({
           type: "notification",
           message: `Left fleet: ${oldCode}`,
-          style: "info"
+          style: "info",
         });
         room.broadcastRosterUpdate();
       }
-    }
-
-    else if (msg.type === "chat") {
+    } else if (msg.type === "chat") {
       const channel = msg.channel || "global";
       const text = (msg.text || "").trim().substring(0, 100);
       if (!text) return;
@@ -1184,7 +1277,7 @@ wss.on("connection", (ws) => {
           clientObj.send({
             type: "notification",
             message: "You are not in a fleet! Join a fleet to use Fleet comms.",
-            style: "error"
+            style: "error",
           });
           return;
         }
@@ -1195,7 +1288,7 @@ wss.on("connection", (ws) => {
             type: "chat",
             channel: "fleet",
             sender: clientObj.nickname,
-            text: text
+            text: text,
           };
           for (const member of fleetSet) {
             member.send(chatPayload);
@@ -1206,28 +1299,40 @@ wss.on("connection", (ws) => {
           type: "chat",
           channel: "global",
           sender: clientObj.nickname,
-          text: text
+          text: text,
         };
         for (const c of room.clients.values()) {
           c.send(chatPayload);
         }
       }
-    }
-
-    else if (msg.type === "warp_jump") {
+    } else if (msg.type === "warp_jump") {
       if (room) {
         const gate = room.engine.getEntity(msg.gateId);
         if (!gate || gate.type !== "warp_gate") {
-          clientObj.send({ type: "notification", message: "Warp Gate invalid or not found!", style: "error" });
+          clientObj.send({
+            type: "notification",
+            message: "Warp Gate invalid or not found!",
+            style: "error",
+          });
           return;
         }
         const dist = clientObj.ship.position.distance(gate.position);
         if (dist > 150) {
-          clientObj.send({ type: "notification", message: "Too far from stargate to initiate warp jump! Move within 150u.", style: "error" });
+          clientObj.send({
+            type: "notification",
+            message:
+              "Too far from stargate to initiate warp jump! Move within 150u.",
+            style: "error",
+          });
           return;
         }
         if (clientObj.ship.hyperFuel < 20) {
-          clientObj.send({ type: "notification", message: "Insufficient Hyper-Fuel! Requires 20 units. Land on a planet to refuel.", style: "error" });
+          clientObj.send({
+            type: "notification",
+            message:
+              "Insufficient Hyper-Fuel! Requires 20 units. Land on a planet to refuel.",
+            style: "error",
+          });
           return;
         }
 
@@ -1239,19 +1344,24 @@ wss.on("connection", (ws) => {
           type: "warp_success",
           targetSector: gate.targetSector,
           position: { x: gate.targetPosition.x, y: gate.targetPosition.y },
-          hyperFuel: clientObj.ship.hyperFuel
+          hyperFuel: clientObj.ship.hyperFuel,
         });
 
         clientObj.send({
           type: "notification",
           message: `Hyperspace drive engaged! Warp transition to ${gate.targetSector.toUpperCase()} Sector completed.`,
-          style: "success"
+          style: "success",
         });
 
         let escortCount = 0;
         for (const ai of room.ais) {
           if (ai.role === "escort" && ai.flagship === clientObj.ship) {
-            ai.ship.position = gate.targetPosition.add(new Vector2D((Math.random() - 0.5) * 100, (Math.random() - 0.5) * 100));
+            ai.ship.position = gate.targetPosition.add(
+              new Vector2D(
+                (Math.random() - 0.5) * 100,
+                (Math.random() - 0.5) * 100,
+              ),
+            );
             ai.ship.velocity.set(0, 0);
             escortCount++;
           }
@@ -1260,25 +1370,31 @@ wss.on("connection", (ws) => {
           clientObj.send({
             type: "notification",
             message: `${escortCount} AI escorts made the hyperspace jump with you.`,
-            style: "info"
+            style: "info",
           });
         }
 
         clientObj.sendStats();
         room.broadcastRosterUpdate();
       }
-    }
-
-    else if (msg.type === "boarding_action") {
+    } else if (msg.type === "boarding_action") {
       if (room) {
         const target = room.engine.getEntity(msg.targetId);
         if (!target || target.type !== "ship" || !target.isDisabled) {
-          clientObj.send({ type: "notification", message: "Target invalid or not disabled!", style: "error" });
+          clientObj.send({
+            type: "notification",
+            message: "Target invalid or not disabled!",
+            style: "error",
+          });
           return;
         }
         const dist = clientObj.ship.position.distance(target.position);
         if (dist > 250) {
-          clientObj.send({ type: "notification", message: "Target too far for boarding! Move within 250u.", style: "error" });
+          clientObj.send({
+            type: "notification",
+            message: "Target too far for boarding! Move within 250u.",
+            style: "error",
+          });
           return;
         }
 
@@ -1297,34 +1413,94 @@ wss.on("connection", (ws) => {
             }
           }
           if (plunderedCount > 0) {
-            clientObj.send({ type: "notification", message: `Success! Plundered ${plunderedCount} tons of commodities.`, style: "success" });
+            clientObj.send({
+              type: "notification",
+              message: `Success! Plundered ${plunderedCount} tons of commodities.`,
+              style: "success",
+            });
             clientObj.sendStats();
           } else {
-            clientObj.send({ type: "notification", message: "Plunder complete: target hold was empty or your cargo bay is full.", style: "info" });
+            clientObj.send({
+              type: "notification",
+              message:
+                "Plunder complete: target hold was empty or your cargo bay is full.",
+              style: "info",
+            });
           }
-        }
-
-        else if (msg.action === "salvage") {
-          const salvagable = target.outfits ? target.outfits.filter(o => !clientObj.ship.outfits.includes(o)) : [];
+        } else if (msg.action === "salvage") {
+          const salvagable = target.outfits
+            ? target.outfits.filter((o) => !clientObj.ship.outfits.includes(o))
+            : [];
           if (salvagable.length > 0) {
-            const chosen = salvagable[Math.floor(Math.random() * salvagable.length)];
+            const chosen =
+              salvagable[Math.floor(Math.random() * salvagable.length)];
             clientObj.ship.outfits.push(chosen);
-            
+
             const defaultCatalog = [
               { name: "Heavy Shields", cost: 1200, type: "shield", value: 350 },
-              { name: "Aegis Shield Matrix", cost: 4500, type: "shield", value: 800 },
-              { name: "Overcharged Engines", cost: 1500, type: "engine", value: 12000 },
-              { name: "Hyper-Drive Thrusters", cost: 3800, type: "engine", value: 25000 },
+              {
+                name: "Aegis Shield Matrix",
+                cost: 4500,
+                type: "shield",
+                value: 800,
+              },
+              {
+                name: "Overcharged Engines",
+                cost: 1500,
+                type: "engine",
+                value: 12000,
+              },
+              {
+                name: "Hyper-Drive Thrusters",
+                cost: 3800,
+                type: "engine",
+                value: 25000,
+              },
               { name: "Plasma Cannon", cost: 1800, type: "weapon", value: 25 },
-              { name: "Neutron Blaster", cost: 4200, type: "weapon", value: 55 },
-              { name: "Expanded Cargo Holds", cost: 1000, type: "cargo", value: 15 },
-              { name: "Sub-space Cargo Compressor", cost: 2800, type: "cargo", value: 45 },
-              { name: "Tractor Beam Matrix", cost: 2500, type: "tractor", value: 250 },
-              { name: "Cold-Fusion Reactor", cost: 3000, type: "reactor", value: 30 },
-              { name: "Cryo-Cooling Radiator", cost: 2200, type: "radiator", value: 15 },
-              { name: "Supercapacitor Cells", cost: 1600, type: "capacitor", value: 100 }
+              {
+                name: "Neutron Blaster",
+                cost: 4200,
+                type: "weapon",
+                value: 55,
+              },
+              {
+                name: "Expanded Cargo Holds",
+                cost: 1000,
+                type: "cargo",
+                value: 15,
+              },
+              {
+                name: "Sub-space Cargo Compressor",
+                cost: 2800,
+                type: "cargo",
+                value: 45,
+              },
+              {
+                name: "Tractor Beam Matrix",
+                cost: 2500,
+                type: "tractor",
+                value: 250,
+              },
+              {
+                name: "Cold-Fusion Reactor",
+                cost: 3000,
+                type: "reactor",
+                value: 30,
+              },
+              {
+                name: "Cryo-Cooling Radiator",
+                cost: 2200,
+                type: "radiator",
+                value: 15,
+              },
+              {
+                name: "Supercapacitor Cells",
+                cost: 1600,
+                type: "capacitor",
+                value: 100,
+              },
             ];
-            const match = defaultCatalog.find(o => o.name === chosen);
+            const match = defaultCatalog.find((o) => o.name === chosen);
             if (match) {
               if (match.type === "shield") {
                 clientObj.ship.maxShield += match.value;
@@ -1346,19 +1522,29 @@ wss.on("connection", (ws) => {
               }
             }
 
-            clientObj.send({ type: "notification", message: `Hull Component Salvaged! Equipped: ${chosen}`, style: "success" });
+            clientObj.send({
+              type: "notification",
+              message: `Hull Component Salvaged! Equipped: ${chosen}`,
+              style: "success",
+            });
             clientObj.sendStats();
           } else {
             clientObj.ship.credits += 800;
-            clientObj.send({ type: "notification", message: "No new modules found. Salvaged scrap for +800 CR.", style: "info" });
+            clientObj.send({
+              type: "notification",
+              message: "No new modules found. Salvaged scrap for +800 CR.",
+              style: "info",
+            });
             clientObj.sendStats();
           }
-        }
-
-        else if (msg.action === "capture") {
+        } else if (msg.action === "capture") {
           const fee = 1500;
           if (clientObj.ship.credits < fee) {
-            clientObj.send({ type: "notification", message: "Insufficient credits for crew (1,500 CR)!", style: "error" });
+            clientObj.send({
+              type: "notification",
+              message: "Insufficient credits for crew (1,500 CR)!",
+              style: "error",
+            });
             return;
           }
           clientObj.ship.credits -= fee;
@@ -1372,24 +1558,30 @@ wss.on("connection", (ws) => {
           controller.flagship = clientObj.ship;
           room.ais.push(controller);
 
-          clientObj.send({ type: "notification", message: `Neural Command Link Established! Escort active.`, style: "success" });
+          clientObj.send({
+            type: "notification",
+            message: `Neural Command Link Established! Escort active.`,
+            style: "success",
+          });
           clientObj.sendStats();
-        }
-
-        else if (msg.action === "scuttle") {
-          const scrapReward = Math.floor(target.maxArmor * 4 + Math.random() * 200);
+        } else if (msg.action === "scuttle") {
+          const scrapReward = Math.floor(
+            target.maxArmor * 4 + Math.random() * 200,
+          );
           clientObj.ship.credits += scrapReward;
           room.engine.removeEntity(target.id);
 
-          clientObj.send({ type: "notification", message: `Hull scuttled. Salvaged scrap for +${scrapReward} CR`, style: "success" });
+          clientObj.send({
+            type: "notification",
+            message: `Hull scuttled. Salvaged scrap for +${scrapReward} CR`,
+            style: "success",
+          });
           clientObj.sendStats();
         }
 
         room.broadcastRosterUpdate();
       }
-    }
-
-    else if (msg.type === "escort_command") {
+    } else if (msg.type === "escort_command") {
       if (room) {
         const cmd = msg.command;
         let count = 0;
@@ -1399,21 +1591,23 @@ wss.on("connection", (ws) => {
             count++;
           }
         }
-        clientObj.send({ type: "notification", message: `Transmitted [${cmd.toUpperCase()}] commands to ${count} AI wingmen.`, style: "success" });
+        clientObj.send({
+          type: "notification",
+          message: `Transmitted [${cmd.toUpperCase()}] commands to ${count} AI wingmen.`,
+          style: "success",
+        });
       }
-    }
-
-    else if (msg.type === "ping") {
+    } else if (msg.type === "ping") {
       clientObj.send({
         type: "pong",
-        time: msg.time
+        time: msg.time,
       });
     }
   });
 
   ws.on("close", () => {
     const activeClient = clients.get(ws) || clientObj;
-    
+
     activeClient.cleanupTimeout = setTimeout(() => {
       const currentRoom = instances.get(activeClient.roomId);
       if (currentRoom) {
@@ -1441,7 +1635,10 @@ wss.on("connection", (ws) => {
       clients.delete(ws);
       persistentSessions.delete(activeClient.id);
       if (currentRoom) {
-        currentRoom.broadcastNotification(`${activeClient.nickname} has left the sector (neural link lost).`, "info");
+        currentRoom.broadcastNotification(
+          `${activeClient.nickname} has left the sector (neural link lost).`,
+          "info",
+        );
         currentRoom.broadcastRosterUpdate();
       }
       broadcastLobbySync();
@@ -1450,7 +1647,10 @@ wss.on("connection", (ws) => {
     clients.delete(ws);
     const currentRoom = instances.get(activeClient.roomId);
     if (currentRoom) {
-      currentRoom.broadcastNotification(`${activeClient.nickname} neural link disconnected. Standby recovery active...`, "warning");
+      currentRoom.broadcastNotification(
+        `${activeClient.nickname} neural link disconnected. Standby recovery active...`,
+        "warning",
+      );
       currentRoom.broadcastRosterUpdate();
     }
   });
@@ -1488,33 +1688,48 @@ process.on("SIGTERM", shutdown);
 
 // Start listening
 server.listen(PORT, async () => {
-  console.log(`================================================================`);
-  console.log(`    NEBULA SECTOR AUTHORITATIVE MULTIPLAYER SERVER LISTENING    `);
-  console.log(`    PORT: ${PORT} | Mode: Authoritative multi-instance rooms    `);
-  console.log(`    URL: http://localhost:${PORT}                              `);
-  console.log(`================================================================`);
+  console.log(
+    `================================================================`,
+  );
+  console.log(
+    `    NEBULA SECTOR AUTHORITATIVE MULTIPLAYER SERVER LISTENING    `,
+  );
+  console.log(
+    `    PORT: ${PORT} | Mode: Authoritative multi-instance rooms    `,
+  );
+  console.log(
+    `    URL: http://localhost:${PORT}                              `,
+  );
+  console.log(
+    `================================================================`,
+  );
 
   // Programmatic localtunnel startup
-  if (process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test") {
+  if (
+    process.env.NODE_ENV !== "production" &&
+    process.env.NODE_ENV !== "test"
+  ) {
     try {
       console.log(`📡 Spinning up programmatic localtunnel...`);
       const tunnel = await localtunnel({ port: PORT });
       activeTunnel = tunnel;
       console.log(`🚀 Public Multiplayer URL: ${tunnel.url}`);
-      
+
       exec(`echo ${tunnel.url} | clip`, (err) => {
         if (!err) {
-          console.log("📋 Public URL successfully copied to clipboard! Share it (Ctrl+V) with friends.");
+          console.log(
+            "📋 Public URL successfully copied to clipboard! Share it (Ctrl+V) with friends.",
+          );
         } else {
           console.log("Could not copy URL to clipboard automatically.");
         }
       });
-      
-      tunnel.on('error', (err) => {
+
+      tunnel.on("error", (err) => {
         console.error("⚠️ Localtunnel error encountered:", err.message);
       });
-      
-      tunnel.on('close', () => {
+
+      tunnel.on("close", () => {
         console.log("Localtunnel connection closed.");
       });
     } catch (e) {

@@ -74,25 +74,38 @@ describe("Planet landing radius", () => {
 });
 
 describe("Planet.canLand", () => {
-  const planet = () => new Planet({ name: "X", position: new Vector2D(0, 0), radius: 60 }); // landingRadius 100
+  const planet = () =>
+    new Planet({ name: "X", position: new Vector2D(0, 0), radius: 60 }); // landingRadius 100
 
   test("permits a close, slow ship", () => {
-    const ship = new Ship({ position: new Vector2D(50, 0), velocity: new Vector2D(0, 0) });
+    const ship = new Ship({
+      position: new Vector2D(50, 0),
+      velocity: new Vector2D(0, 0),
+    });
     expect(planet().canLand(ship)).toBe(true);
   });
 
   test("rejects a ship outside the landing radius", () => {
-    const ship = new Ship({ position: new Vector2D(200, 0), velocity: new Vector2D(0, 0) });
+    const ship = new Ship({
+      position: new Vector2D(200, 0),
+      velocity: new Vector2D(0, 0),
+    });
     expect(planet().canLand(ship)).toBe(false);
   });
 
   test("rejects a ship that is close but moving too fast", () => {
-    const ship = new Ship({ position: new Vector2D(50, 0), velocity: new Vector2D(100, 0) });
+    const ship = new Ship({
+      position: new Vector2D(50, 0),
+      velocity: new Vector2D(100, 0),
+    });
     expect(planet().canLand(ship)).toBe(false);
   });
 
   test("permits a ship exactly at the radius and speed limits", () => {
-    const ship = new Ship({ position: new Vector2D(100, 0), velocity: new Vector2D(80, 0) });
+    const ship = new Ship({
+      position: new Vector2D(100, 0),
+      velocity: new Vector2D(80, 0),
+    });
     expect(planet().canLand(ship)).toBe(true); // both bounds are inclusive
   });
 });

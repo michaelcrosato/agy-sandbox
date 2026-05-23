@@ -7,7 +7,11 @@ import { Vector2D } from "../physics/Vector2D.js";
 function planet(name, x, y) {
   return { name, position: new Vector2D(x, y) };
 }
-const THREE = [planet("Sol", 0, 0), planet("New Polaris", 2000, -1200), planet("Sigma Draconis", -2200, 1600)];
+const THREE = [
+  planet("Sol", 0, 0),
+  planet("New Polaris", 2000, -1200),
+  planet("Sigma Draconis", -2200, 1600),
+];
 
 function newPlayer() {
   return new Ship({ credits: 5000, cargoCapacity: 20 });
@@ -52,7 +56,10 @@ describe("MissionManager.generateMissionsForPlanet edge cases", () => {
 
   test("skips the storyline when fewer than two destinations exist", () => {
     const mm = new MissionManager();
-    mm.generateMissionsForPlanet("Sol", [planet("Sol", 0, 0), planet("New Polaris", 1000, 0)]);
+    mm.generateMissionsForPlanet("Sol", [
+      planet("Sol", 0, 0),
+      planet("New Polaris", 1000, 0),
+    ]);
     const list = mm.availableMissions["Sol"];
     expect(list.length).toBe(3); // storyline needs 2 distinct destinations
     expect(list.some((m) => m.type === "storyline")).toBe(false);
@@ -74,7 +81,14 @@ describe("MissionManager.acceptMission", () => {
     let hooked = null;
     mm.onBountyAccepted = (m) => (hooked = m);
     mm.availableMissions["Sol"] = [
-      { id: "b1", type: "bounty", title: "Wanted: Karr 50", reward: 3000, destination: "New Polaris", targetName: "Karr 50" },
+      {
+        id: "b1",
+        type: "bounty",
+        title: "Wanted: Karr 50",
+        reward: 3000,
+        destination: "New Polaris",
+        targetName: "Karr 50",
+      },
     ];
 
     const res = mm.acceptMission("Sol", "b1", player);
@@ -89,7 +103,14 @@ describe("MissionManager.acceptMission", () => {
     const mm = new MissionManager();
     const player = newPlayer();
     mm.availableMissions["Sol"] = [
-      { id: "b1", type: "bounty", title: "Wanted", reward: 3000, destination: "New Polaris", targetName: "X 1" },
+      {
+        id: "b1",
+        type: "bounty",
+        title: "Wanted",
+        reward: 3000,
+        destination: "New Polaris",
+        targetName: "X 1",
+      },
     ];
     expect(mm.acceptMission("Sol", "b1", player).success).toBe(true);
     const again = mm.acceptMission("Sol", "b1", player);
@@ -102,7 +123,15 @@ describe("MissionManager.acceptMission", () => {
     const mm = new MissionManager();
     const player = new Ship({ cargoCapacity: 5 });
     mm.availableMissions["Sol"] = [
-      { id: "c1", type: "courier", title: "Big load", reward: 1000, destination: "New Polaris", cargoItem: "food", cargoAmount: 10 },
+      {
+        id: "c1",
+        type: "courier",
+        title: "Big load",
+        reward: 1000,
+        destination: "New Polaris",
+        cargoItem: "food",
+        cargoAmount: 10,
+      },
     ];
     const res = mm.acceptMission("Sol", "c1", player);
     expect(res.success).toBe(false);
@@ -118,7 +147,14 @@ describe("MissionManager.checkArrivalCompletions", () => {
     const player = newPlayer();
     player.addCargo("food", 3);
     mm.activeMissions = [
-      { id: "c1", type: "courier", destination: "Sigma Draconis", reward: 1000, cargoItem: "food", cargoAmount: 3 },
+      {
+        id: "c1",
+        type: "courier",
+        destination: "Sigma Draconis",
+        reward: 1000,
+        cargoItem: "food",
+        cargoAmount: 3,
+      },
     ];
     const completed = mm.checkArrivalCompletions("New Polaris", player);
     expect(completed.length).toBe(0);
@@ -132,7 +168,14 @@ describe("MissionManager.checkArrivalCompletions", () => {
     const player = newPlayer();
     player.addCargo("contraband", 4);
     mm.activeMissions = [
-      { id: "s1", type: "smuggle", destination: "Rogue's Hollow", reward: 2000, cargoItem: "contraband", cargoAmount: 4 },
+      {
+        id: "s1",
+        type: "smuggle",
+        destination: "Rogue's Hollow",
+        reward: 2000,
+        cargoItem: "contraband",
+        cargoAmount: 4,
+      },
     ];
     const completed = mm.checkArrivalCompletions("Rogue's Hollow", player);
     expect(completed.length).toBe(1);
@@ -147,8 +190,22 @@ describe("MissionManager.checkArrivalCompletions", () => {
     const player = newPlayer();
     player.addCargo("food", 2);
     mm.activeMissions = [
-      { id: "a", type: "courier", destination: "Alpha", reward: 100, cargoItem: "food", cargoAmount: 1 },
-      { id: "b", type: "courier", destination: "Beta", reward: 200, cargoItem: "food", cargoAmount: 1 },
+      {
+        id: "a",
+        type: "courier",
+        destination: "Alpha",
+        reward: 100,
+        cargoItem: "food",
+        cargoAmount: 1,
+      },
+      {
+        id: "b",
+        type: "courier",
+        destination: "Beta",
+        reward: 200,
+        cargoItem: "food",
+        cargoAmount: 1,
+      },
     ];
     const completed = mm.checkArrivalCompletions("Alpha", player);
     expect(completed.map((m) => m.id)).toEqual(["a"]);
@@ -161,7 +218,9 @@ describe("MissionManager.checkBountyCompletion", () => {
   test("returns null and changes nothing for an unmatched target", () => {
     const mm = new MissionManager();
     const player = newPlayer();
-    mm.activeMissions = [{ id: "bnt", type: "bounty", targetName: "Real Target 7", reward: 4000 }];
+    mm.activeMissions = [
+      { id: "bnt", type: "bounty", targetName: "Real Target 7", reward: 4000 },
+    ];
     const res = mm.checkBountyCompletion("Some Random Pirate", player);
     expect(res).toBeNull();
     expect(player.credits).toBe(5000);
@@ -200,7 +259,9 @@ describe("MissionManager.abandonMission", () => {
     const mm = new MissionManager();
     const player = newPlayer();
     player.addCargo("food", 3);
-    mm.activeMissions = [{ id: "c1", type: "courier", cargoItem: "food", cargoAmount: 3 }];
+    mm.activeMissions = [
+      { id: "c1", type: "courier", cargoItem: "food", cargoAmount: 3 },
+    ];
     mm.abandonMission("c1", player);
     expect(mm.activeMissions.length).toBe(0);
     expect(player.cargo.food).toBe(0);

@@ -59,7 +59,10 @@ function advanceNavRouteAfterWarp() {
   if (currentSector === navTargetSector) {
     navTargetSector = null;
     navRoute = [];
-    uiController.notify("DESTINATION REACHED! Navigation coordinates cleared.", "success");
+    uiController.notify(
+      "DESTINATION REACHED! Navigation coordinates cleared.",
+      "success",
+    );
   } else {
     navRoute = calculateShortestPath(currentSector, navTargetSector);
   }
@@ -71,11 +74,14 @@ function getNextWarpGate(entities) {
   if (!navRoute || navRoute.length === 0) return null;
   const currentSector = getSectorFromPosition(player.position);
   const nextSector = navRoute[0];
-  return entities.find(ent =>
-    ent.type === "warp_gate" &&
-    ent.sector === currentSector &&
-    ent.targetSector === nextSector
-  ) || null;
+  return (
+    entities.find(
+      (ent) =>
+        ent.type === "warp_gate" &&
+        ent.sector === currentSector &&
+        ent.targetSector === nextSector,
+    ) || null
+  );
 }
 
 const uiController = new UIController();
@@ -599,7 +605,10 @@ engine.onEntityDestroyed = (ent) => {
           "success",
         );
       } else {
-        uiController.notify(`${ent.name} has been destroyed in combat.`, "info");
+        uiController.notify(
+          `${ent.name} has been destroyed in combat.`,
+          "info",
+        );
       }
 
       // Clean from active target scanner
@@ -656,7 +665,10 @@ inputHandler.onWarpPressed = () => {
   if (renderer.isWarping) return;
 
   // Search if currently in suitable proximity of any warp gate
-  const gate = engine.entities.find(ent => ent.type === "warp_gate" && player.position.distance(ent.position) <= 150);
+  const gate = engine.entities.find(
+    (ent) =>
+      ent.type === "warp_gate" && player.position.distance(ent.position) <= 150,
+  );
   if (gate) {
     // Disengage autopilot on manual warp entry
     autopilotActive = false;
@@ -666,17 +678,23 @@ inputHandler.onWarpPressed = () => {
       if (window.network.connected) {
         window.network.send({
           type: "warp_jump",
-          gateId: gate.id
+          gateId: gate.id,
         });
       } else {
-        uiController.notify("Neural link offline! Cannot engage hyperspace warp.", "error");
+        uiController.notify(
+          "Neural link offline! Cannot engage hyperspace warp.",
+          "error",
+        );
       }
       return;
     }
 
     // Offline / single-player fallback jump logic
     if (player.hyperFuel < 20) {
-      uiController.notify("Insufficient Hyper-Fuel! Requires 20 units. Land on a planet to refuel.", "error");
+      uiController.notify(
+        "Insufficient Hyper-Fuel! Requires 20 units. Land on a planet to refuel.",
+        "error",
+      );
       return;
     }
 
@@ -687,29 +705,43 @@ inputHandler.onWarpPressed = () => {
     renderer.warpTunnelStars = [];
     player.clearControls();
 
-    uiController.notify(`Entering Hyperlane Warp Drive to ${gate.targetSector.toUpperCase()} Sector!`, "success");
+    uiController.notify(
+      `Entering Hyperlane Warp Drive to ${gate.targetSector.toUpperCase()} Sector!`,
+      "success",
+    );
 
     setTimeout(() => {
       renderer.isWarping = false;
       player.position = gate.targetPosition.clone();
       player.velocity = new Vector2D(0, 0);
-      uiController.notify("Warp drive disengaged. Sector transition complete.", "info");
+      uiController.notify(
+        "Warp drive disengaged. Sector transition complete.",
+        "info",
+      );
 
       // Advance navigation route after successful warp jump
       advanceNavRouteAfterWarp();
     }, 2000);
-
   } else if (navTargetSector && navRoute.length > 0) {
     // No gate in range but navigation target exists — toggle autopilot
     autopilotActive = !autopilotActive;
     if (autopilotActive) {
-      uiController.notify("Hyperspace autopilot ENGAGED. Press [J] again or steer manually to disengage.", "success");
+      uiController.notify(
+        "Hyperspace autopilot ENGAGED. Press [J] again or steer manually to disengage.",
+        "success",
+      );
     } else {
-      uiController.notify("Hyperspace autopilot disengaged. Manual control restored.", "info");
+      uiController.notify(
+        "Hyperspace autopilot disengaged. Manual control restored.",
+        "info",
+      );
     }
     updateNavigationHUD();
   } else {
-    uiController.notify("No hyperlane stargate portal within range! Open the Galaxy Map [M] to plot a course.", "error");
+    uiController.notify(
+      "No hyperlane stargate portal within range! Open the Galaxy Map [M] to plot a course.",
+      "error",
+    );
   }
 };
 
@@ -721,7 +753,10 @@ inputHandler.onLandPressed = () => {
     if (window.network.connected) {
       window.network.requestLanding();
     } else {
-      uiController.notify("Neural link offline! Cannot land right now.", "error");
+      uiController.notify(
+        "Neural link offline! Cannot land right now.",
+        "error",
+      );
     }
     return;
   }
@@ -891,27 +926,31 @@ btnCreateSector?.addEventListener("click", () => {
     uiController.notify("Please enter a custom sector name first!", "error");
     return;
   }
-  
-  const pilotCallsign = pilotCallsignEl ? pilotCallsignEl.value.trim() : "Commander";
+
+  const pilotCallsign = pilotCallsignEl
+    ? pilotCallsignEl.value.trim()
+    : "Commander";
   localStorage.setItem("nebula_callsign", pilotCallsign);
   network.nickname = pilotCallsign;
 
   network.send({
     type: "create_room",
     name: sectorName,
-    nickname: pilotCallsign
+    nickname: pilotCallsign,
   });
 });
 
 function joinRoom(roomId) {
-  const pilotCallsign = pilotCallsignEl ? pilotCallsignEl.value.trim() : "Commander";
+  const pilotCallsign = pilotCallsignEl
+    ? pilotCallsignEl.value.trim()
+    : "Commander";
   localStorage.setItem("nebula_callsign", pilotCallsign);
   network.nickname = pilotCallsign;
 
   network.send({
     type: "join_room",
     roomId: roomId,
-    nickname: pilotCallsign
+    nickname: pilotCallsign,
   });
 }
 
@@ -1036,24 +1075,28 @@ window.network = network;
 // Keep client physics entities completely in sync with authoritative server coordinates
 function syncEntitiesFromServer(serverEntities) {
   const localId = (network && network.playerId) || "player";
-  
+
   // Track IDs from server update
-  const serverIds = new Set(serverEntities.map(e => e.id));
-  
+  const serverIds = new Set(serverEntities.map((e) => e.id));
+
   // 1. Clean up local entities (except planets and local player ship) that are destroyed or left
   const toRemove = [];
   for (const ent of engine.entities) {
     if (ent.type === "planet") continue;
     if (ent.id === localId) continue;
-    
+
     if (!serverIds.has(ent.id)) {
       toRemove.push(ent);
     }
   }
-  
+
   for (const ent of toRemove) {
     engine.removeEntity(ent);
-    if (ent.type === "ship" || ent.type === "generic" || ent.type === "gem_asteroid") {
+    if (
+      ent.type === "ship" ||
+      ent.type === "generic" ||
+      ent.type === "gem_asteroid"
+    ) {
       if (typeof engine.onEntityDestroyed === "function") {
         engine.onEntityDestroyed(ent);
       }
@@ -1062,8 +1105,8 @@ function syncEntitiesFromServer(serverEntities) {
 
   // 2. Synchronize current properties or instantiate brand new ones
   for (const ent of serverEntities) {
-    let localEnt = engine.entities.find(e => e.id === ent.id);
-    
+    let localEnt = engine.entities.find((e) => e.id === ent.id);
+
     if (localEnt) {
       if (ent.id === localId) {
         // Client-side prediction reconciliation for local player coordinates
@@ -1072,7 +1115,9 @@ function syncEntitiesFromServer(serverEntities) {
         if (dist > 150) {
           localEnt.position = serverPos; // hard correction
         } else {
-          localEnt.position = localEnt.position.multiply(0.85).add(serverPos.multiply(0.15)); // soft blend
+          localEnt.position = localEnt.position
+            .multiply(0.85)
+            .add(serverPos.multiply(0.15)); // soft blend
         }
         localEnt.velocity = new Vector2D(ent.vx, ent.vy);
         localEnt.shield = ent.shield;
@@ -1089,20 +1134,22 @@ function syncEntitiesFromServer(serverEntities) {
         // Velocity-aware dead reckoning with adaptive correction
         const serverPos = new Vector2D(ent.x, ent.y);
         const errorDist = localEnt.position.distance(serverPos);
-        
+
         if (errorDist > 200) {
           // Hard snap for large desync (e.g., warp jumps, respawns)
           localEnt.position = serverPos;
         } else {
           // Adaptive blend: correct more aggressively the farther off we are
-          const correctionStrength = Math.min(0.5, 0.1 + (errorDist / 500));
-          localEnt.position = localEnt.position.multiply(1 - correctionStrength).add(serverPos.multiply(correctionStrength));
+          const correctionStrength = Math.min(0.5, 0.1 + errorDist / 500);
+          localEnt.position = localEnt.position
+            .multiply(1 - correctionStrength)
+            .add(serverPos.multiply(correctionStrength));
         }
-        
+
         localEnt.velocity = new Vector2D(ent.vx, ent.vy);
         localEnt.heading = ent.heading;
         localEnt.radius = ent.radius;
-        
+
         if (localEnt.type === "ship") {
           localEnt.name = ent.name;
           localEnt.shield = ent.shield;
@@ -1148,7 +1195,7 @@ function syncEntitiesFromServer(serverEntities) {
           heading: ent.heading,
           radius: ent.radius,
           maxShield: ent.maxShield,
-          maxArmor: ent.maxArmor
+          maxArmor: ent.maxArmor,
         });
         newShip.shield = ent.shield;
         newShip.armor = ent.armor;
@@ -1158,7 +1205,11 @@ function syncEntitiesFromServer(serverEntities) {
         newShip.maxHeat = ent.maxHeat;
         newShip.isOverheated = ent.isOverheated;
         newShip.isDisabled = ent.isDisabled;
-        newShip.controls = ent.controls || { isThrusting: false, isBraking: false, isFiring: false };
+        newShip.controls = ent.controls || {
+          isThrusting: false,
+          isBraking: false,
+          isFiring: false,
+        };
         engine.addEntity(newShip);
       } else if (ent.type === "projectile") {
         const newProj = new SpaceEntity({
@@ -1167,7 +1218,7 @@ function syncEntitiesFromServer(serverEntities) {
           position: new Vector2D(ent.x, ent.y),
           velocity: new Vector2D(ent.vx, ent.vy),
           radius: ent.radius,
-          heading: ent.heading
+          heading: ent.heading,
         });
         newProj.ownerId = ent.ownerId;
         engine.addEntity(newProj);
@@ -1178,7 +1229,7 @@ function syncEntitiesFromServer(serverEntities) {
           position: new Vector2D(ent.x, ent.y),
           velocity: new Vector2D(ent.vx, ent.vy),
           radius: ent.radius,
-          heading: ent.heading
+          heading: ent.heading,
         });
         newPod.resourceType = ent.resourceType;
         newPod.amount = ent.amount;
@@ -1190,7 +1241,7 @@ function syncEntitiesFromServer(serverEntities) {
           position: new Vector2D(ent.x, ent.y),
           velocity: new Vector2D(ent.vx, ent.vy),
           radius: ent.radius,
-          heading: ent.heading
+          heading: ent.heading,
         });
         engine.addEntity(newAsteroid);
       }
@@ -1202,7 +1253,7 @@ function syncEntitiesFromServer(serverEntities) {
 network.onInit = (msg) => {
   player.id = msg.playerId;
   player.name = msg.nickname;
-  
+
   if (msg.roomId) {
     // Dismiss lobby overlay with smooth fade-out animation
     welcomeScreen.classList.add("fade-out");
@@ -1210,9 +1261,12 @@ network.onInit = (msg) => {
       welcomeScreen.classList.remove("visible");
       welcomeScreen.classList.remove("fade-out");
     }, 500);
-    
-    uiController.notify(`Connected to sector [${msg.roomName.toUpperCase()}]! Systems nominal.`, "success");
-    
+
+    uiController.notify(
+      `Connected to sector [${msg.roomName.toUpperCase()}]! Systems nominal.`,
+      "success",
+    );
+
     // Kick off high precision animation loop if not already started
     if (lastTime === 0) {
       lastTime = 0;
@@ -1252,7 +1306,7 @@ network.onLobbySync = (msg) => {
         }
 
         // Wire join buttons
-        document.querySelectorAll(".btn-join-room").forEach(btn => {
+        document.querySelectorAll(".btn-join-room").forEach((btn) => {
           btn.addEventListener("click", () => {
             const roomId = btn.getAttribute("data-room-id");
             joinRoom(roomId);
@@ -1260,16 +1314,27 @@ network.onLobbySync = (msg) => {
         });
 
         // Wire copy link buttons
-        document.querySelectorAll(".btn-copy-room-link").forEach(btn => {
+        document.querySelectorAll(".btn-copy-room-link").forEach((btn) => {
           btn.addEventListener("click", () => {
             const url = btn.getAttribute("data-room-url");
-            navigator.clipboard.writeText(url).then(() => {
-              btn.textContent = "✅";
-              setTimeout(() => { btn.textContent = "📋"; }, 1500);
-              uiController.notify("Invite link copied to clipboard!", "success");
-            }).catch(() => {
-              uiController.notify("Failed to copy link. Try manually.", "error");
-            });
+            navigator.clipboard
+              .writeText(url)
+              .then(() => {
+                btn.textContent = "✅";
+                setTimeout(() => {
+                  btn.textContent = "📋";
+                }, 1500);
+                uiController.notify(
+                  "Invite link copied to clipboard!",
+                  "success",
+                );
+              })
+              .catch(() => {
+                uiController.notify(
+                  "Failed to copy link. Try manually.",
+                  "error",
+                );
+              });
           });
         });
       }
@@ -1285,7 +1350,7 @@ network.onLobbySync = (msg) => {
     const elList = document.getElementById("net-roster-list");
     if (elList) {
       elList.innerHTML = "";
-      msg.roster.forEach(pilot => {
+      msg.roster.forEach((pilot) => {
         const card = document.createElement("div");
         card.className = "roster-card";
         if (pilot.id === player.id) {
@@ -1295,8 +1360,10 @@ network.onLobbySync = (msg) => {
           card.classList.add("standby");
         }
 
-        const pilotNameText = pilot.fleetName ? `[${pilot.fleetName}] ${pilot.nickname}` : pilot.nickname;
-        
+        const pilotNameText = pilot.fleetName
+          ? `[${pilot.fleetName}] ${pilot.nickname}`
+          : pilot.nickname;
+
         card.innerHTML = `
           <div class="roster-pilot-info">
             <div class="roster-pilot-name">${pilotNameText} ${pilot.id === player.id ? '<span style="color: var(--color-cyan); font-size: 8px;">(YOU)</span>' : ""}</div>
@@ -1328,7 +1395,7 @@ network.onStatsReceived = (msg) => {
   player.thrustPower = msg.thrustPower;
   player.maxSpeed = msg.maxSpeed;
   player.name = msg.nickname;
-  
+
   // Endless Sky variables mapping
   player.energy = msg.energy;
   player.maxEnergy = msg.maxEnergy;
@@ -1338,12 +1405,12 @@ network.onStatsReceived = (msg) => {
   player.maxHyperFuel = msg.maxHyperFuel;
   player.isOverheated = msg.isOverheated;
   player.isDisabled = msg.isDisabled;
-  
+
   if (msg.activeMissions) {
     missionManager.activeMissions = msg.activeMissions;
     uiController.updateActiveMissionsHUD(missionManager.activeMissions);
   }
-  
+
   uiController.update(player, playerTarget, planets);
   spaceportUI.refreshActiveTab();
 };
@@ -1352,29 +1419,37 @@ network.onLanded = (msg) => {
   isLanded = true;
   player.velocity = new Vector2D(0, 0);
   player.clearControls();
-  
+
   if (msg.availableMissions) {
     missionManager.availableMissions[msg.planetName] = msg.availableMissions;
   }
-  
-  const targetPlanet = planets.find(p => p.name === msg.planetName);
+
+  const targetPlanet = planets.find((p) => p.name === msg.planetName);
   if (targetPlanet) {
     spaceportUI.open(player, targetPlanet, planets);
-    uiController.notify(`Landed safely on ${targetPlanet.name}. Ship systems secured.`, "success");
+    uiController.notify(
+      `Landed safely on ${targetPlanet.name}. Ship systems secured.`,
+      "success",
+    );
   }
 };
 
 network.onLaunched = () => {
   isLanded = false;
   spaceportUI.close();
-  
+
   const targetPlanet = spaceportUI.planet;
   if (targetPlanet) {
-    player.position = targetPlanet.position.add(new Vector2D(0, targetPlanet.landingRadius + 30));
+    player.position = targetPlanet.position.add(
+      new Vector2D(0, targetPlanet.landingRadius + 30),
+    );
   }
   player.velocity = new Vector2D(0, 0);
   player.clearControls();
-  uiController.notify("Launch sequence completed! Thrusters online.", "success");
+  uiController.notify(
+    "Launch sequence completed! Thrusters online.",
+    "success",
+  );
 };
 
 network.onWarpSuccess = (msg) => {
@@ -1382,13 +1457,16 @@ network.onWarpSuccess = (msg) => {
   renderer.isWarping = true;
   renderer.warpTimer = 0;
   renderer.warpTunnelStars = [];
-  
+
   // Disable user input and autopilot
   player.clearControls();
   autopilotActive = false;
-  
+
   // Display visual transition notification
-  uiController.notify(`Entering Hyperlane Warp Drive to ${msg.targetSector.toUpperCase()} Sector!`, "success");
+  uiController.notify(
+    `Entering Hyperlane Warp Drive to ${msg.targetSector.toUpperCase()} Sector!`,
+    "success",
+  );
 
   // After 2.0 seconds of stunning warp star effects, set coordinates and restore controls
   setTimeout(() => {
@@ -1396,7 +1474,10 @@ network.onWarpSuccess = (msg) => {
     player.position = new Vector2D(msg.position.x, msg.position.y);
     player.velocity = new Vector2D(0, 0);
     player.hyperFuel = msg.hyperFuel;
-    uiController.notify("Warp drive disengaged. Sector transition complete.", "info");
+    uiController.notify(
+      "Warp drive disengaged. Sector transition complete.",
+      "info",
+    );
 
     // Advance navigation route after successful warp jump
     advanceNavRouteAfterWarp();
@@ -1413,18 +1494,24 @@ network.onFleetSync = (msg) => {
     if (setupEl) setupEl.style.display = "none";
     if (rosterEl) rosterEl.style.display = "block";
     if (nameEl) nameEl.innerText = `FLEET: ${msg.name}`;
-    
+
     if (listEl) {
       listEl.innerHTML = "";
       for (const member of msg.members) {
         const memberCard = document.createElement("div");
         memberCard.className = "fleet-member-card";
-        
+
         const isSelf = member.id === network.playerId;
         const memberColor = isSelf ? "#00ff88" : "#c080ff";
-        const shieldRatio = Math.max(0, Math.min(100, (member.shield / member.maxShield) * 100));
-        const armorRatio = Math.max(0, Math.min(100, (member.armor / member.maxArmor) * 100));
-        
+        const shieldRatio = Math.max(
+          0,
+          Math.min(100, (member.shield / member.maxShield) * 100),
+        );
+        const armorRatio = Math.max(
+          0,
+          Math.min(100, (member.armor / member.maxArmor) * 100),
+        );
+
         memberCard.innerHTML = `
           <div class="fleet-member-header">
             <span class="fleet-member-name" style="color: ${memberColor};">${member.nickname}</span>
@@ -1456,7 +1543,7 @@ network.onFleetSync = (msg) => {
 };
 
 network.onProjectileFired = (msg) => {
-  const shooter = engine.entities.find(e => e.id === msg.ownerId);
+  const shooter = engine.entities.find((e) => e.id === msg.ownerId);
   if (shooter) {
     const dir = new Vector2D(Math.cos(msg.heading), Math.sin(msg.heading));
     const muzzleX = msg.x + dir.x * (shooter.radius + 2);
@@ -1472,20 +1559,37 @@ network.onNotification = (msg) => {
 network.onCargoPickup = (msg) => {
   let color = "#ffffff";
   switch (msg.resourceType) {
-    case "luxuries": color = "#ffd700"; break;
-    case "minerals": color = "#cd7f32"; break;
-    case "food": color = "#39ff14"; break;
-    case "electronics": color = "#00f0ff"; break;
-    case "contraband": color = "#d03ffc"; break;
-    case "machinery": color = "#b0b0b0"; break;
+    case "luxuries":
+      color = "#ffd700";
+      break;
+    case "minerals":
+      color = "#cd7f32";
+      break;
+    case "food":
+      color = "#39ff14";
+      break;
+    case "electronics":
+      color = "#00f0ff";
+      break;
+    case "contraband":
+      color = "#d03ffc";
+      break;
+    case "machinery":
+      color = "#b0b0b0";
+      break;
   }
-  renderer.addPickupText(`+${msg.amount} ${msg.resourceType.toUpperCase()}`, msg.x, msg.y, color);
+  renderer.addPickupText(
+    `+${msg.amount} ${msg.resourceType.toUpperCase()}`,
+    msg.x,
+    msg.y,
+    color,
+  );
 };
 
 network.onPingReceived = (pingMs) => {
   const elPing = document.getElementById("net-ping");
   const elQualityFill = document.getElementById("net-quality-fill");
-  
+
   if (elPing) {
     elPing.innerText = `${pingMs} ms`;
     // Color-code the ping text
@@ -1497,10 +1601,10 @@ network.onPingReceived = (pingMs) => {
       elPing.style.color = "#ff3b30";
     }
   }
-  
+
   if (elQualityFill) {
     // Map latency to bar width (100% at 0ms, 10% at 500ms+)
-    const quality = Math.max(10, 100 - (pingMs / 5));
+    const quality = Math.max(10, 100 - pingMs / 5);
     elQualityFill.style.width = `${quality}%`;
     if (pingMs < 80) {
       elQualityFill.style.background = "var(--color-green)";
@@ -1549,12 +1653,12 @@ if (inputFleetNick) {
 btnFleetJoin?.addEventListener("click", () => {
   const nick = inputFleetNick ? inputFleetNick.value.trim() : "Commander";
   const code = inputFleetCode ? inputFleetCode.value.toUpperCase().trim() : "";
-  
+
   if (!code) {
     uiController.notify("Please enter a Fleet Code!", "error");
     return;
   }
-  
+
   network.requestFleetJoin(nick, code);
 });
 
@@ -1582,10 +1686,14 @@ network.onChatReceived = (msg) => {
 
 // Handle live economic market shifts from server
 network.onMarketSync = (msg) => {
-  const targetPlanet = planets.find(p => p.name === msg.planetName);
+  const targetPlanet = planets.find((p) => p.name === msg.planetName);
   if (targetPlanet) {
     targetPlanet.market = msg.market;
-    if (isLanded && spaceportUI.planet && spaceportUI.planet.name === targetPlanet.name) {
+    if (
+      isLanded &&
+      spaceportUI.planet &&
+      spaceportUI.planet.name === targetPlanet.name
+    ) {
       spaceportUI.refreshActiveTab();
     }
   }
@@ -1594,7 +1702,7 @@ network.onMarketSync = (msg) => {
 network.onMarketBulkSync = (msg) => {
   if (msg.markets) {
     for (const [pName, market] of Object.entries(msg.markets)) {
-      const targetPlanet = planets.find(p => p.name === pName);
+      const targetPlanet = planets.find((p) => p.name === pName);
       if (targetPlanet) {
         targetPlanet.market = market;
       }
@@ -1608,7 +1716,6 @@ network.onMarketBulkSync = (msg) => {
 network.onEventSync = (msg) => {
   activeSectorEvent = msg.event;
 };
-
 
 // Safe sanitization for comms messages
 function escapeHTML(str) {
@@ -1641,9 +1748,17 @@ if (chatInput) {
     if (e.key === "Enter") {
       if (document.activeElement !== chatInput) {
         // Only trigger focus if not currently typing in callsign input
-        const activeTag = document.activeElement ? document.activeElement.tagName : "";
-        const activeId = document.activeElement ? document.activeElement.id : "";
-        if (activeTag !== "INPUT" && activeId !== "fleet-nick-input" && activeId !== "fleet-code-input") {
+        const activeTag = document.activeElement
+          ? document.activeElement.tagName
+          : "";
+        const activeId = document.activeElement
+          ? document.activeElement.id
+          : "";
+        if (
+          activeTag !== "INPUT" &&
+          activeId !== "fleet-nick-input" &&
+          activeId !== "fleet-code-input"
+        ) {
           e.preventDefault();
           chatInput.focus();
         }
@@ -1662,13 +1777,24 @@ if (shareUrlText) {
 if (btnCopyServerUrl) {
   btnCopyServerUrl.addEventListener("click", () => {
     const url = `${window.location.origin}${window.location.pathname}`;
-    navigator.clipboard.writeText(url).then(() => {
-      btnCopyServerUrl.textContent = "COPIED ✅";
-      setTimeout(() => { btnCopyServerUrl.textContent = "COPY LINK"; }, 2000);
-      uiController.notify("Server invite link copied to clipboard!", "success");
-    }).catch(() => {
-      uiController.notify("Failed to copy. Select the URL manually.", "error");
-    });
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        btnCopyServerUrl.textContent = "COPIED ✅";
+        setTimeout(() => {
+          btnCopyServerUrl.textContent = "COPY LINK";
+        }, 2000);
+        uiController.notify(
+          "Server invite link copied to clipboard!",
+          "success",
+        );
+      })
+      .catch(() => {
+        uiController.notify(
+          "Failed to copy. Select the URL manually.",
+          "error",
+        );
+      });
   });
 }
 
@@ -1694,8 +1820,14 @@ function gameLoop(time) {
   if (!isLanded) {
     // A. Handle active Solar EMP Flare effects
     if (network) {
-      if (network.connected && activeSectorEvent && activeSectorEvent.type === "emp") {
-        const empPlanet = planets.find(p => p.name === activeSectorEvent.planetName);
+      if (
+        network.connected &&
+        activeSectorEvent &&
+        activeSectorEvent.type === "emp"
+      ) {
+        const empPlanet = planets.find(
+          (p) => p.name === activeSectorEvent.planetName,
+        );
         if (empPlanet && player.position.distance(empPlanet.position) <= 400) {
           player.shieldRegen = 0;
         } else {
@@ -1772,14 +1904,24 @@ function gameLoop(time) {
         // No gate found for route — disengage autopilot
         autopilotActive = false;
         updateNavigationHUD();
-        uiController.notify("Autopilot error: No stargate found for this route.", "error");
+        uiController.notify(
+          "Autopilot error: No stargate found for this route.",
+          "error",
+        );
       }
 
       // Disengage autopilot if manual steering keys are physically pressed
-      if (inputHandler.keys["KeyA"] || inputHandler.keys["KeyD"] || inputHandler.keys["KeyS"]) {
+      if (
+        inputHandler.keys["KeyA"] ||
+        inputHandler.keys["KeyD"] ||
+        inputHandler.keys["KeyS"]
+      ) {
         autopilotActive = false;
         updateNavigationHUD();
-        uiController.notify("Manual override detected. Autopilot disengaged.", "info");
+        uiController.notify(
+          "Manual override detected. Autopilot disengaged.",
+          "info",
+        );
         inputHandler.applyInputToShip(player);
       }
     } else {
@@ -1811,7 +1953,9 @@ function gameLoop(time) {
     // 3. Advance Newtonian kinematics, elastic rebounds, and laser damage
     const originalRegens = new Map();
     if (activeSectorEvent && activeSectorEvent.type === "emp") {
-      const empPlanet = planets.find(p => p.name === activeSectorEvent.planetName);
+      const empPlanet = planets.find(
+        (p) => p.name === activeSectorEvent.planetName,
+      );
       if (empPlanet) {
         for (const ent of engine.entities) {
           if (ent.type === "ship" && !ent.isDestroyed) {
@@ -1843,7 +1987,7 @@ function gameLoop(time) {
           if (engine.globalDrag > 0 && ent.velocity.magnitude() > 0) {
             const extraDragCoef = activeNebula.dragMultiplier - 1.0;
             const extraDragForce = ent.velocity.multiply(
-              -extraDragCoef * engine.globalDrag * ent.mass
+              -extraDragCoef * engine.globalDrag * ent.mass,
             );
             ent.applyForce(extraDragForce);
           }
@@ -1882,7 +2026,7 @@ function gameLoop(time) {
     network ? network.playerId : null,
     network && network.fleet ? network.fleet.members : [],
     network && network.fleet ? network.fleet.name : null,
-    activeSectorEvent
+    activeSectorEvent,
   );
 
   // 5. Synchronize dynamic health bars and targeting dials with overlay DOM dashboard
@@ -1900,13 +2044,19 @@ const boardingShipInfo = document.getElementById("boarding-ship-info");
 
 inputHandler.onBoardPressed = () => {
   if (!playerTarget || playerTarget.isDestroyed || !playerTarget.isDisabled) {
-    uiController.notify("Boarding unavailable: scanners must lock a disabled ship.", "error");
+    uiController.notify(
+      "Boarding unavailable: scanners must lock a disabled ship.",
+      "error",
+    );
     return;
   }
 
   const dist = player.position.distance(playerTarget.position);
   if (dist > 250) {
-    uiController.notify("Target too distant! Move within 250u proximity.", "error");
+    uiController.notify(
+      "Target too distant! Move within 250u proximity.",
+      "error",
+    );
     return;
   }
 
@@ -1916,7 +2066,10 @@ inputHandler.onBoardPressed = () => {
       if (boardingShipInfo) {
         boardingShipInfo.innerText = `TARGET: ${playerTarget.name.toUpperCase()} (DISABLED HULL)`;
       }
-      uiController.notify("Boarding tethers locked. Ready to infiltrate ship reactor cores.", "success");
+      uiController.notify(
+        "Boarding tethers locked. Ready to infiltrate ship reactor cores.",
+        "success",
+      );
     } else {
       boardingPanel.style.display = "none";
     }
@@ -1933,18 +2086,29 @@ function sendBoardingAction(action) {
     network.send({
       type: "boarding_action",
       targetId: playerTarget.id,
-      action: action
+      action: action,
     });
   } else {
-    uiController.notify("Neural link offline! Cannot transmit boarding commands.", "error");
+    uiController.notify(
+      "Neural link offline! Cannot transmit boarding commands.",
+      "error",
+    );
   }
   if (boardingPanel) boardingPanel.style.display = "none";
 }
 
-document.getElementById("btn-board-plunder")?.addEventListener("click", () => sendBoardingAction("plunder"));
-document.getElementById("btn-board-salvage")?.addEventListener("click", () => sendBoardingAction("salvage"));
-document.getElementById("btn-board-capture")?.addEventListener("click", () => sendBoardingAction("capture"));
-document.getElementById("btn-board-scuttle")?.addEventListener("click", () => sendBoardingAction("scuttle"));
+document
+  .getElementById("btn-board-plunder")
+  ?.addEventListener("click", () => sendBoardingAction("plunder"));
+document
+  .getElementById("btn-board-salvage")
+  ?.addEventListener("click", () => sendBoardingAction("salvage"));
+document
+  .getElementById("btn-board-capture")
+  ?.addEventListener("click", () => sendBoardingAction("capture"));
+document
+  .getElementById("btn-board-scuttle")
+  ?.addEventListener("click", () => sendBoardingAction("scuttle"));
 
 // Escort Wingman Command Hotkeys Listener (H, F, G)
 window.addEventListener("keydown", (e) => {
@@ -1985,27 +2149,29 @@ const MAP_SECTORS = {
     x: 25,
     y: 50,
     description: "Sol System and Core Fleet staging area. Cradle of humanity.",
-    planets: ["Sol", "Valkyrie Depot"]
+    planets: ["Sol", "Valkyrie Depot"],
   },
   frontier: {
     name: "Frontier Sector",
     x: 50,
     y: 30,
-    description: "Nebulae asteroid mines and advanced technology research systems.",
-    planets: ["New Polaris", "Sigma Draconis", "Aurelia Mining Hub"]
+    description:
+      "Nebulae asteroid mines and advanced technology research systems.",
+    planets: ["New Polaris", "Sigma Draconis", "Aurelia Mining Hub"],
   },
   rim: {
     name: "Outer Rim Sector",
     x: 75,
     y: 70,
-    description: "Agricultural worlds, agricultural logistics, and pirate holds.",
-    planets: ["Kaelis Colony", "Tenebris Prime", "Rogue's Hollow"]
-  }
+    description:
+      "Agricultural worlds, agricultural logistics, and pirate holds.",
+    planets: ["Kaelis Colony", "Tenebris Prime", "Rogue's Hollow"],
+  },
 };
 
 const MAP_CONNECTIONS = [
   ["core", "frontier"],
-  ["frontier", "rim"]
+  ["frontier", "rim"],
 ];
 
 function renderGalaxyMap() {
@@ -2043,14 +2209,20 @@ function renderGalaxyMap() {
     if (navRoute.length > 0) {
       const fullPath = [currentSector, ...navRoute];
       for (let i = 0; i < fullPath.length - 1; i++) {
-        if ((fullPath[i] === from && fullPath[i+1] === to) || (fullPath[i] === to && fullPath[i+1] === from)) {
+        if (
+          (fullPath[i] === from && fullPath[i + 1] === to) ||
+          (fullPath[i] === to && fullPath[i + 1] === from)
+        ) {
           isActive = true;
           break;
         }
       }
     }
 
-    line.setAttribute("class", isActive ? "map-link map-link-active" : "map-link");
+    line.setAttribute(
+      "class",
+      isActive ? "map-link map-link-active" : "map-link",
+    );
     svg.appendChild(line);
   });
 
@@ -2076,7 +2248,7 @@ function renderGalaxyMap() {
 
     node.addEventListener("click", (e) => {
       e.stopPropagation();
-      
+
       if (currentSector === id) {
         navTargetSector = null;
         navRoute = [];
@@ -2085,21 +2257,25 @@ function renderGalaxyMap() {
       } else {
         navTargetSector = id;
         navRoute = calculateShortestPath(currentSector, id);
-        uiController.notify(`Course plotted to ${sector.name}! ${navRoute.length} sector jump${navRoute.length > 1 ? 's' : ''} required.`, "success");
+        uiController.notify(
+          `Course plotted to ${sector.name}! ${navRoute.length} sector jump${navRoute.length > 1 ? "s" : ""} required.`,
+          "success",
+        );
       }
-      
+
       updateNavigationHUD();
       renderGalaxyMap();
     });
 
     node.addEventListener("mouseover", () => {
-      if (infoBar) infoBar.innerText = `${sector.name.toUpperCase()}: ${sector.description}`;
+      if (infoBar)
+        infoBar.innerText = `${sector.name.toUpperCase()}: ${sector.description}`;
     });
 
     node.addEventListener("mouseout", () => {
       if (infoBar) {
-        infoBar.innerText = navTargetSector 
-          ? `PLOTTED ROUTE: ${currentSector.toUpperCase()} ➜ ${navRoute.map(s => s.toUpperCase()).join(" ➜ ")} (${navRoute.length} JUMPS)`
+        infoBar.innerText = navTargetSector
+          ? `PLOTTED ROUTE: ${currentSector.toUpperCase()} ➜ ${navRoute.map((s) => s.toUpperCase()).join(" ➜ ")} (${navRoute.length} JUMPS)`
           : "SELECT A DESTINATION SYSTEM";
       }
     });
@@ -2118,35 +2294,42 @@ function updateNavigationHUD() {
 
   if (navTargetSector) {
     hudNav.style.display = "block";
-    if (navTargetName) navTargetName.innerText = MAP_SECTORS[navTargetSector].name.toUpperCase();
-    
+    if (navTargetName)
+      navTargetName.innerText = MAP_SECTORS[navTargetSector].name.toUpperCase();
+
     if (navRouteSteps) {
       const currentSector = getSectorFromPosition(player.position);
-      const steps = [currentSector, ...navRoute].map(s => s.toUpperCase());
+      const steps = [currentSector, ...navRoute].map((s) => s.toUpperCase());
       navRouteSteps.innerHTML = `
         <div style="margin-top: 4px; display: flex; align-items: center; gap: 4px; overflow-x: auto; white-space: nowrap; padding-bottom: 2px;">
-          ${steps.map((step, idx) => `
-            <span style="color: ${idx === 0 ? 'var(--color-green)' : idx === steps.length - 1 ? 'var(--color-gold)' : 'var(--color-cyan)'}; font-weight: bold; font-size: 8px;">
+          ${steps
+            .map(
+              (step, idx) => `
+            <span style="color: ${idx === 0 ? "var(--color-green)" : idx === steps.length - 1 ? "var(--color-gold)" : "var(--color-cyan)"}; font-weight: bold; font-size: 8px;">
               ${step}
             </span>
-            ${idx < steps.length - 1 ? '<span style="color: rgba(255,255,255,0.3); font-size: 8px;">➜</span>' : ''}
-          `).join('')}
+            ${idx < steps.length - 1 ? '<span style="color: rgba(255,255,255,0.3); font-size: 8px;">➜</span>' : ""}
+          `,
+            )
+            .join("")}
         </div>
         <div style="font-size: 7px; color: #a0a5b5; margin-top: 4px; display: flex; justify-content: space-between; align-items: center;">
-          <span>DISTANCE: ${navRoute.length} Jump${navRoute.length > 1 ? 's' : ''}</span>
+          <span>DISTANCE: ${navRoute.length} Jump${navRoute.length > 1 ? "s" : ""}</span>
           <span style="color: var(--color-cyan); font-weight: bold; cursor: pointer;" id="btn-nav-clear-text">[CLEAR NAV]</span>
         </div>
       `;
-      
-      document.getElementById("btn-nav-clear-text")?.addEventListener("click", (e) => {
-        e.stopPropagation();
-        navTargetSector = null;
-        navRoute = [];
-        autopilotActive = false;
-        updateNavigationHUD();
-        renderGalaxyMap();
-        uiController.notify("Navigation target cleared.", "info");
-      });
+
+      document
+        .getElementById("btn-nav-clear-text")
+        ?.addEventListener("click", (e) => {
+          e.stopPropagation();
+          navTargetSector = null;
+          navRoute = [];
+          autopilotActive = false;
+          updateNavigationHUD();
+          renderGalaxyMap();
+          uiController.notify("Navigation target cleared.", "info");
+        });
     }
   } else {
     hudNav.style.display = "none";
@@ -2166,7 +2349,10 @@ function toggleGalaxyMap() {
     overlay.classList.remove("visible");
   } else {
     if (isLanded) {
-      uiController.notify("Cannot open galactic nav charts while docked!", "error");
+      uiController.notify(
+        "Cannot open galactic nav charts while docked!",
+        "error",
+      );
       return;
     }
     overlay.classList.add("visible");
@@ -2194,4 +2380,3 @@ window.addEventListener("resize", () => {
     renderGalaxyMap();
   }
 });
-

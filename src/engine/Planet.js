@@ -90,29 +90,33 @@ export class Planet extends SpaceEntity {
               cost: 2500,
               type: "tractor",
               value: 250,
-              description: "Emits a high-frequency gravimetric tether that automatically pulls floating cargo pods within 250u towards the ship's bay."
+              description:
+                "Emits a high-frequency gravimetric tether that automatically pulls floating cargo pods within 250u towards the ship's bay.",
             },
             {
               name: "Cold-Fusion Reactor",
               cost: 3000,
               type: "reactor",
               value: 30,
-              description: "Deep-space cold-fusion energy generator. Restores ship energy by +30 units/sec."
+              description:
+                "Deep-space cold-fusion energy generator. Restores ship energy by +30 units/sec.",
             },
             {
               name: "Cryo-Cooling Radiator",
               cost: 2200,
               type: "radiator",
               value: 15,
-              description: "Super-conductive helium radiator. Boosts heat dissipation by +15 units/sec."
+              description:
+                "Super-conductive helium radiator. Boosts heat dissipation by +15 units/sec.",
             },
             {
               name: "Supercapacitor Cells",
               cost: 1600,
               type: "capacitor",
               value: 100,
-              description: "Nanotech storage bank cells. Increases max energy capacity by +100 units."
-            }
+              description:
+                "Nanotech storage bank cells. Increases max energy capacity by +100 units.",
+            },
           ];
 
     // Store Shipyard Catalog

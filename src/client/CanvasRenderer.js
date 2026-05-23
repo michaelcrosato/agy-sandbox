@@ -50,7 +50,7 @@ export class CanvasRenderer {
           alpha: 0.12 + Math.random() * 0.14,
           color: neb.particleColor,
           pulseSpeed: 0.2 + Math.random() * 0.3,
-          pulsePhase: Math.random() * Math.PI * 2
+          pulsePhase: Math.random() * Math.PI * 2,
         });
       }
     }
@@ -119,7 +119,16 @@ export class CanvasRenderer {
    * @param {string} [fleetName] - Name/Code of the current fleet.
    * @param {Object} [activeSectorEvent] - Active threat event.
    */
-  draw(dt, playerShip, entities, targetEntity, localPlayerId = null, fleetMembers = [], fleetName = null, activeSectorEvent = null) {
+  draw(
+    dt,
+    playerShip,
+    entities,
+    targetEntity,
+    localPlayerId = null,
+    fleetMembers = [],
+    fleetName = null,
+    activeSectorEvent = null,
+  ) {
     this.activeSectorEvent = activeSectorEvent;
     this.localPlayerId = localPlayerId;
     // 1. Update Camera to center on Player
@@ -173,22 +182,41 @@ export class CanvasRenderer {
     }
 
     // Draw active Tractor Beam lightning tethers if player ship has the outfitter module equipped
-    if (playerShip && playerShip.outfits && playerShip.outfits.includes("Tractor Beam Matrix")) {
+    if (
+      playerShip &&
+      playerShip.outfits &&
+      playerShip.outfits.includes("Tractor Beam Matrix")
+    ) {
       for (const ent of entities) {
         if (ent.type === "cargo_pod") {
           const dist = playerShip.position.distance(ent.position);
           if (dist > 1 && dist <= 250) {
-            this.drawTractorBeam(playerShip.position.x, playerShip.position.y, ent.position.x, ent.position.y);
+            this.drawTractorBeam(
+              playerShip.position.x,
+              playerShip.position.y,
+              ent.position.x,
+              ent.position.y,
+            );
           }
         }
       }
     }
 
     // Draw active Boarding Gravimetric tether if player has a disabled ship locked in close range
-    if (playerShip && targetEntity && !targetEntity.isDestroyed && targetEntity.isDisabled) {
+    if (
+      playerShip &&
+      targetEntity &&
+      !targetEntity.isDestroyed &&
+      targetEntity.isDisabled
+    ) {
       const dist = playerShip.position.distance(targetEntity.position);
       if (dist <= 250) {
-        this.drawBoardingTether(playerShip.position.x, playerShip.position.y, targetEntity.position.x, targetEntity.position.y);
+        this.drawBoardingTether(
+          playerShip.position.x,
+          playerShip.position.y,
+          targetEntity.position.x,
+          targetEntity.position.y,
+        );
       }
     }
 
@@ -201,7 +229,13 @@ export class CanvasRenderer {
 
     // 6. Draw HUD pointer arrows for offscreen target/planets
     if (playerShip) {
-      this.drawOffScreenPointers(playerShip, entities, targetEntity, localPlayerId, fleetMembers);
+      this.drawOffScreenPointers(
+        playerShip,
+        entities,
+        targetEntity,
+        localPlayerId,
+        fleetMembers,
+      );
     }
 
     // 6b. Draw Hyperlane Navigation Guiding Arrow
@@ -227,13 +261,17 @@ export class CanvasRenderer {
     for (const neb of NEBULAE) {
       this.ctx.save();
       const grad = this.ctx.createRadialGradient(
-        neb.position.x, neb.position.y, 0,
-        neb.position.x, neb.position.y, neb.radius
+        neb.position.x,
+        neb.position.y,
+        0,
+        neb.position.x,
+        neb.position.y,
+        neb.radius,
       );
       grad.addColorStop(0, neb.color);
       grad.addColorStop(0.5, neb.color.replace(/[\d.]+\)$/, "0.08)"));
       grad.addColorStop(1, "rgba(0, 0, 0, 0)");
-      
+
       this.ctx.fillStyle = grad;
       this.ctx.beginPath();
       this.ctx.arc(neb.position.x, neb.position.y, neb.radius, 0, Math.PI * 2);
@@ -248,13 +286,14 @@ export class CanvasRenderer {
       p.y += p.vy * dt;
 
       // Keep particles bounded within the nebula's radius (rebound gently)
-      const neb = NEBULAE.find(n => n.id === p.nebulaId);
+      const neb = NEBULAE.find((n) => n.id === p.nebulaId);
       if (neb) {
         const dx = p.x - neb.position.x;
         const dy = p.y - neb.position.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist > neb.radius) {
-          const angle = Math.atan2(dy, dx) + Math.PI + (Math.random() - 0.5) * 0.5;
+          const angle =
+            Math.atan2(dy, dx) + Math.PI + (Math.random() - 0.5) * 0.5;
           p.vx = Math.cos(angle) * (6 + Math.random() * 8);
           p.vy = Math.sin(angle) * (6 + Math.random() * 8);
           p.x = neb.position.x + Math.cos(angle) * (neb.radius - 15);
@@ -268,9 +307,19 @@ export class CanvasRenderer {
 
       // Draw soft fuzzy vapor puff
       this.ctx.save();
-      const grad = this.ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
+      const grad = this.ctx.createRadialGradient(
+        p.x,
+        p.y,
+        0,
+        p.x,
+        p.y,
+        p.radius,
+      );
       grad.addColorStop(0, p.color.replace(/[\d.]+\)$/, `${currentAlpha})`));
-      grad.addColorStop(0.5, p.color.replace(/[\d.]+\)$/, `${currentAlpha * 0.4})`));
+      grad.addColorStop(
+        0.5,
+        p.color.replace(/[\d.]+\)$/, `${currentAlpha * 0.4})`),
+      );
       grad.addColorStop(1, "rgba(0, 0, 0, 0)");
 
       this.ctx.fillStyle = grad;
@@ -319,7 +368,7 @@ export class CanvasRenderer {
       if (p.alpha > 0) {
         this.ctx.globalAlpha = p.alpha;
         this.ctx.fillStyle = p.color;
-        
+
         // High-performance fillRect instead of costly save/restore, path arcs, and CPU shadowBlur
         const size = p.radius * 2;
         this.ctx.fillRect(p.x - cx - p.radius, p.y - cy - p.radius, size, size);
@@ -342,7 +391,7 @@ export class CanvasRenderer {
       y: y,
       alpha: 1.0,
       color: color,
-      vy: -45
+      vy: -45,
     });
   }
 
@@ -470,7 +519,10 @@ export class CanvasRenderer {
     );
 
     // Active Sector Event planetary indicators
-    if (this.activeSectorEvent && this.activeSectorEvent.planetName === planet.name) {
+    if (
+      this.activeSectorEvent &&
+      this.activeSectorEvent.planetName === planet.name
+    ) {
       if (this.activeSectorEvent.type === "siege") {
         // Red flashing outer warning field at 400u
         const flashAlpha = 0.3 + Math.sin(Date.now() / 200) * 0.15;
@@ -484,11 +536,18 @@ export class CanvasRenderer {
 
         // Danger zone shade
         const dangerGrad = this.ctx.createRadialGradient(
-          planet.position.x, planet.position.y, planet.radius * 1.3,
-          planet.position.x, planet.position.y, 400
+          planet.position.x,
+          planet.position.y,
+          planet.radius * 1.3,
+          planet.position.x,
+          planet.position.y,
+          400,
         );
         dangerGrad.addColorStop(0, "rgba(255, 59, 48, 0)");
-        dangerGrad.addColorStop(1, `rgba(255, 59, 48, ${0.05 * (0.5 + Math.sin(Date.now() / 300) * 0.5)})`);
+        dangerGrad.addColorStop(
+          1,
+          `rgba(255, 59, 48, ${0.05 * (0.5 + Math.sin(Date.now() / 300) * 0.5)})`,
+        );
         this.ctx.fillStyle = dangerGrad;
         this.ctx.beginPath();
         this.ctx.arc(planet.position.x, planet.position.y, 400, 0, Math.PI * 2);
@@ -502,7 +561,7 @@ export class CanvasRenderer {
         this.ctx.fillText(
           "⚠️ UNDER SIEGE - DEFEND PORT",
           planet.position.x,
-          planet.position.y - planet.radius - 30
+          planet.position.y - planet.radius - 30,
         );
         this.ctx.shadowBlur = 0;
       } else if (this.activeSectorEvent.type === "emp") {
@@ -518,8 +577,12 @@ export class CanvasRenderer {
 
         // Electric blue atmosphere shade
         const empGrad = this.ctx.createRadialGradient(
-          planet.position.x, planet.position.y, planet.radius * 1.3,
-          planet.position.x, planet.position.y, 400
+          planet.position.x,
+          planet.position.y,
+          planet.radius * 1.3,
+          planet.position.x,
+          planet.position.y,
+          400,
         );
         empGrad.addColorStop(0, "rgba(0, 242, 254, 0)");
         empGrad.addColorStop(1, "rgba(0, 242, 254, 0.05)");
@@ -539,7 +602,7 @@ export class CanvasRenderer {
           let currX = planet.position.x + Math.cos(startAngle) * planet.radius;
           let currY = planet.position.y + Math.sin(startAngle) * planet.radius;
           this.ctx.moveTo(currX, currY);
-          
+
           const steps = 4;
           const stepDist = (400 - planet.radius) / steps;
           for (let j = 0; j < steps; j++) {
@@ -560,7 +623,7 @@ export class CanvasRenderer {
         this.ctx.fillText(
           "⚡ ION EMP STORM - NO SHIELDS",
           planet.position.x,
-          planet.position.y - planet.radius - 30
+          planet.position.y - planet.radius - 30,
         );
         this.ctx.shadowBlur = 0;
       }
@@ -659,10 +722,10 @@ export class CanvasRenderer {
     const dx = x2 - x1;
     const dy = y2 - y1;
     const dist = Math.sqrt(dx * dx + dy * dy);
-    
+
     // Determine number of segments based on distance
     const segments = Math.max(4, Math.floor(dist / 25));
-    
+
     this.ctx.beginPath();
     this.ctx.moveTo(x1, y1);
 
@@ -679,7 +742,7 @@ export class CanvasRenderer {
       const py = ly + normalY * offset;
       this.ctx.lineTo(px, py);
     }
-    
+
     this.ctx.lineTo(x2, y2);
     this.ctx.stroke();
 
@@ -691,7 +754,8 @@ export class CanvasRenderer {
    */
   drawProjectile(proj) {
     // Pick different colors based on who fired (friendly vs hostile)
-    const isFriendly = proj.ownerId === "player" || proj.ownerId === this.localPlayerId;
+    const isFriendly =
+      proj.ownerId === "player" || proj.ownerId === this.localPlayerId;
     const color = isFriendly ? "#00ffcc" : "#ff3333";
 
     this.ctx.strokeStyle = color;
@@ -711,10 +775,19 @@ export class CanvasRenderer {
    * Draws a ship with dynamic engines exhausts.
    */
   drawShip(ship, localPlayerId = null, fleetMembers = [], fleetName = null) {
-    const isLocalPlayer = (localPlayerId && ship.id === localPlayerId) || ship.id === "player";
-    const teammate = fleetMembers && fleetMembers.find(m => m.id === ship.id && m.id !== localPlayerId);
+    const isLocalPlayer =
+      (localPlayerId && ship.id === localPlayerId) || ship.id === "player";
+    const teammate =
+      fleetMembers &&
+      fleetMembers.find((m) => m.id === ship.id && m.id !== localPlayerId);
     const isTeammate = !!teammate;
-    const isOtherPlayer = localPlayerId && !isLocalPlayer && !isTeammate && (ship.id !== "player" && !ship.name.includes("Pirate") && !ship.name.includes("Guard"));
+    const isOtherPlayer =
+      localPlayerId &&
+      !isLocalPlayer &&
+      !isTeammate &&
+      ship.id !== "player" &&
+      !ship.name.includes("Pirate") &&
+      !ship.name.includes("Guard");
 
     // Check if ship is inside a nebula cloud
     let activeNeb = null;
@@ -800,7 +873,7 @@ export class CanvasRenderer {
       fillColor = "#0b1c12";
     } else if (isTeammate) {
       strokeColor = "#a040fb"; // Neon purple teammate
-      fillColor = "#180822";  // Deep purple theme
+      fillColor = "#180822"; // Deep purple theme
     } else if (ship.name === "Pirate Raider") {
       strokeColor = "#ff3b30"; // Crimson pirate
       fillColor = "#22080a";
@@ -875,10 +948,15 @@ export class CanvasRenderer {
         const sy = Math.sin(angle) * (ship.radius * 0.4);
         this.ctx.moveTo(sx, sy);
         // Draw jagged electric bolt
-        const midX = sx + Math.cos(angle + (Math.random() - 0.5) * 0.5) * (len * 0.5);
-        const midY = sy + Math.sin(angle + (Math.random() - 0.5) * 0.5) * (len * 0.5);
+        const midX =
+          sx + Math.cos(angle + (Math.random() - 0.5) * 0.5) * (len * 0.5);
+        const midY =
+          sy + Math.sin(angle + (Math.random() - 0.5) * 0.5) * (len * 0.5);
         this.ctx.lineTo(midX, midY);
-        this.ctx.lineTo(midX + Math.cos(angle) * (len * 0.5), midY + Math.sin(angle) * (len * 0.5));
+        this.ctx.lineTo(
+          midX + Math.cos(angle) * (len * 0.5),
+          midY + Math.sin(angle) * (len * 0.5),
+        );
       }
       this.ctx.stroke();
       this.ctx.restore();
@@ -1012,7 +1090,13 @@ export class CanvasRenderer {
   /**
    * Draws direction HUD arrows pointing toward targeted ships or planets when offscreen.
    */
-  drawOffScreenPointers(player, entities, activeTarget, localPlayerId = null, fleetMembers = []) {
+  drawOffScreenPointers(
+    player,
+    entities,
+    activeTarget,
+    localPlayerId = null,
+    fleetMembers = [],
+  ) {
     const screenPadding = 20;
     const targets = [];
 
@@ -1032,7 +1116,11 @@ export class CanvasRenderer {
         }
 
         if (insideNebula) {
-          const isTeammate = fleetMembers && fleetMembers.some(m => m.id === activeTarget.id && m.id !== localPlayerId);
+          const isTeammate =
+            fleetMembers &&
+            fleetMembers.some(
+              (m) => m.id === activeTarget.id && m.id !== localPlayerId,
+            );
           const dist = player.position.distance(activeTarget.position);
           if (!isTeammate && dist > 250) {
             isVisible = false;
@@ -1044,7 +1132,7 @@ export class CanvasRenderer {
         targets.push({
           position: activeTarget.position,
           name: activeTarget.name || "Target",
-          color: "#ffb300"
+          color: "#ffb300",
         });
       }
     }
@@ -1054,7 +1142,7 @@ export class CanvasRenderer {
         targets.push({
           position: ent.position,
           name: ent.name,
-          color: "rgba(100, 180, 255, 0.8)"
+          color: "rgba(100, 180, 255, 0.8)",
         });
       }
     }
@@ -1064,14 +1152,16 @@ export class CanvasRenderer {
       for (const member of fleetMembers) {
         if (member.id === localPlayerId) continue;
         // Don't draw pointer if teammate is in the local system and is close enough
-        const teammateShip = entities.find(e => e.type === "ship" && e.id === member.id);
+        const teammateShip = entities.find(
+          (e) => e.type === "ship" && e.id === member.id,
+        );
         if (teammateShip) {
           // It will be drawn by standard entities, only draw pointer if offscreen
           targets.push({
             position: teammateShip.position,
             name: member.nickname,
             color: "#a040fb",
-            isTeammate: true
+            isTeammate: true,
           });
         } else {
           // Teammate is offscreen or in other area/landed
@@ -1079,7 +1169,7 @@ export class CanvasRenderer {
             position: new Vector2D(member.x, member.y),
             name: member.nickname,
             color: "#a040fb",
-            isTeammate: true
+            isTeammate: true,
           });
         }
       }
@@ -1148,7 +1238,7 @@ export class CanvasRenderer {
         this.ctx.fillStyle = t.color;
         this.ctx.font = "8px Orbitron, sans-serif";
         this.ctx.textAlign = "center";
-        
+
         let label = `${Math.round(distance)}u`;
         if (t.isTeammate) {
           label = `${t.name} (${Math.round(distance)}u)`;
@@ -1216,7 +1306,14 @@ export class CanvasRenderer {
     // Draw sector arc trailing behind the sweep angle by 0.55 radians
     this.ctx.arc(cx, cy, radarRadius, sweepAngle - 0.55, sweepAngle);
     this.ctx.closePath();
-    const trailGrad = this.ctx.createRadialGradient(cx, cy, 0, cx, cy, radarRadius);
+    const trailGrad = this.ctx.createRadialGradient(
+      cx,
+      cy,
+      0,
+      cx,
+      cy,
+      radarRadius,
+    );
     trailGrad.addColorStop(0, "rgba(0, 242, 254, 0.2)");
     trailGrad.addColorStop(0.8, "rgba(0, 242, 254, 0.06)");
     trailGrad.addColorStop(1, "rgba(0, 242, 254, 0)");
@@ -1230,14 +1327,22 @@ export class CanvasRenderer {
     this.ctx.lineWidth = 1.5;
     this.ctx.beginPath();
     this.ctx.moveTo(cx, cy);
-    this.ctx.lineTo(cx + Math.cos(sweepAngle) * radarRadius, cy + Math.sin(sweepAngle) * radarRadius);
+    this.ctx.lineTo(
+      cx + Math.cos(sweepAngle) * radarRadius,
+      cy + Math.sin(sweepAngle) * radarRadius,
+    );
     this.ctx.stroke();
     this.ctx.shadowBlur = 0; // reset shadow
 
     // 6. Plot Surrounding Scanned Entities within range
     const MAX_RANGE = 3000;
     for (const ent of entities) {
-      if (ent.id === "player" || ent.id === localPlayerId || ent.type === "projectile") continue;
+      if (
+        ent.id === "player" ||
+        ent.id === localPlayerId ||
+        ent.type === "projectile"
+      )
+        continue;
 
       const dx = ent.position.x - player.position.x;
       const dy = ent.position.y - player.position.y;
@@ -1259,7 +1364,9 @@ export class CanvasRenderer {
         }
 
         if (insideNebula) {
-          const isTeammate = fleetMembers && fleetMembers.some(m => m.id === ent.id && m.id !== localPlayerId);
+          const isTeammate =
+            fleetMembers &&
+            fleetMembers.some((m) => m.id === ent.id && m.id !== localPlayerId);
           // Hidden from radar scans unless teammate or close combat lock (<250u)
           if (!isTeammate && dist > 250) {
             continue;
@@ -1289,10 +1396,34 @@ export class CanvasRenderer {
         color = `rgba(0, 242, 254, ${alpha})`; // Holographic blue planet
         dotSize = 3.5;
       } else if (ent.type === "ship") {
-        const isTeammate = fleetMembers && fleetMembers.some(m => m.id === ent.id && m.id !== localPlayerId);
-        const isPirate = ent.name && (ent.name.includes("Pirate") || ent.name.includes("Raider") || ent.name.includes("Marauder") || ent.name.includes("Boss") || ent.name.includes("Viper"));
-        const isGuard = ent.name && (ent.name.includes("Guard") || ent.name.includes("Police") || ent.name.includes("Navy") || ent.name.includes("Aegis") || ent.name.includes("Sentinel") || ent.name.includes("Patrol"));
-        const isMerchant = ent.name && (ent.name.includes("freighter") || ent.name.includes("Cargo") || ent.name.includes("Hauler") || ent.name.includes("Behemoth") || ent.name.includes("Voyager") || ent.name.includes("Galleon") || ent.name.includes("Atlas") || ent.name.includes("Hermes"));
+        const isTeammate =
+          fleetMembers &&
+          fleetMembers.some((m) => m.id === ent.id && m.id !== localPlayerId);
+        const isPirate =
+          ent.name &&
+          (ent.name.includes("Pirate") ||
+            ent.name.includes("Raider") ||
+            ent.name.includes("Marauder") ||
+            ent.name.includes("Boss") ||
+            ent.name.includes("Viper"));
+        const isGuard =
+          ent.name &&
+          (ent.name.includes("Guard") ||
+            ent.name.includes("Police") ||
+            ent.name.includes("Navy") ||
+            ent.name.includes("Aegis") ||
+            ent.name.includes("Sentinel") ||
+            ent.name.includes("Patrol"));
+        const isMerchant =
+          ent.name &&
+          (ent.name.includes("freighter") ||
+            ent.name.includes("Cargo") ||
+            ent.name.includes("Hauler") ||
+            ent.name.includes("Behemoth") ||
+            ent.name.includes("Voyager") ||
+            ent.name.includes("Galleon") ||
+            ent.name.includes("Atlas") ||
+            ent.name.includes("Hermes"));
 
         if (isTeammate) {
           color = `rgba(160, 64, 251, ${alpha})`; // Neon purple teammate
@@ -1365,7 +1496,7 @@ export class CanvasRenderer {
     this.ctx.shadowColor = "#ffe600";
     this.ctx.setLineDash([5, 8]);
     this.ctx.lineDashOffset = -Math.floor(Date.now() * 0.02) % 13;
-    
+
     this.ctx.beginPath();
     this.ctx.moveTo(x1, y1);
     this.ctx.lineTo(x2, y2);
@@ -1398,7 +1529,7 @@ export class CanvasRenderer {
       gate.radius * 0.5,
       gate.position.x,
       gate.position.y,
-      gate.radius * 1.8
+      gate.radius * 1.8,
     );
     glowGrad.addColorStop(0, "rgba(224, 64, 251, 0.5)");
     glowGrad.addColorStop(0.5, "rgba(172, 59, 255, 0.25)");
@@ -1406,7 +1537,13 @@ export class CanvasRenderer {
 
     this.ctx.fillStyle = glowGrad;
     this.ctx.beginPath();
-    this.ctx.arc(gate.position.x, gate.position.y, gate.radius * 1.8, 0, Math.PI * 2);
+    this.ctx.arc(
+      gate.position.x,
+      gate.position.y,
+      gate.radius * 1.8,
+      0,
+      Math.PI * 2,
+    );
     this.ctx.fill();
 
     // 2. Concentric swirling rings (rotating with global time or custom angle)
@@ -1426,7 +1563,7 @@ export class CanvasRenderer {
         ringRadius * 0.65,
         rotation,
         0,
-        Math.PI * 2
+        Math.PI * 2,
       );
       this.ctx.strokeStyle = r % 2 === 0 ? "#e040fb" : "#00f2fe";
       this.ctx.lineWidth = 2.0;
@@ -1440,7 +1577,7 @@ export class CanvasRenderer {
       0,
       gate.position.x,
       gate.position.y,
-      gate.radius * 0.45
+      gate.radius * 0.45,
     );
     singularityGrad.addColorStop(0, "#ffffff");
     singularityGrad.addColorStop(0.3, "#e040fb");
@@ -1448,7 +1585,13 @@ export class CanvasRenderer {
 
     this.ctx.fillStyle = singularityGrad;
     this.ctx.beginPath();
-    this.ctx.arc(gate.position.x, gate.position.y, gate.radius * 0.45, 0, Math.PI * 2);
+    this.ctx.arc(
+      gate.position.x,
+      gate.position.y,
+      gate.radius * 0.45,
+      0,
+      Math.PI * 2,
+    );
     this.ctx.fill();
 
     // 4. Stargate text label
@@ -1456,12 +1599,20 @@ export class CanvasRenderer {
     this.ctx.fillStyle = "#e040fb";
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
-    this.ctx.fillText((gate.name || "WARP GATE").toUpperCase(), gate.position.x, gate.position.y - gate.radius - 18);
+    this.ctx.fillText(
+      (gate.name || "WARP GATE").toUpperCase(),
+      gate.position.x,
+      gate.position.y - gate.radius - 18,
+    );
 
     if (gate.targetSector) {
       this.ctx.font = "8px 'Orbitron', 'Inter', sans-serif";
       this.ctx.fillStyle = "#00f2fe";
-      this.ctx.fillText(`TO ${gate.targetSector.toUpperCase()}`, gate.position.x, gate.position.y - gate.radius - 6);
+      this.ctx.fillText(
+        `TO ${gate.targetSector.toUpperCase()}`,
+        gate.position.x,
+        gate.position.y - gate.radius - 6,
+      );
     }
 
     this.ctx.restore();
@@ -1485,7 +1636,7 @@ export class CanvasRenderer {
           distance: Math.random() * (this.canvas.width / 2),
           speed: 600 + Math.random() * 1200,
           length: 30 + Math.random() * 70,
-          color: `hsla(${260 + Math.random() * 80}, 100%, 80%, ${0.6 + Math.random() * 0.4})`
+          color: `hsla(${260 + Math.random() * 80}, 100%, 80%, ${0.6 + Math.random() * 0.4})`,
         });
       }
     }
@@ -1508,8 +1659,10 @@ export class CanvasRenderer {
       // Calculate screen positions
       const startX = centerX + Math.cos(star.angle) * star.distance;
       const startY = centerY + Math.sin(star.angle) * star.distance;
-      const endX = centerX + Math.cos(star.angle) * (star.distance + star.length);
-      const endY = centerY + Math.sin(star.angle) * (star.distance + star.length);
+      const endX =
+        centerX + Math.cos(star.angle) * (star.distance + star.length);
+      const endY =
+        centerY + Math.sin(star.angle) * (star.distance + star.length);
 
       // Render glowing streak
       this.ctx.beginPath();
@@ -1551,8 +1704,12 @@ export class CanvasRenderer {
     const margin = 60;
 
     // Only draw if off-screen
-    if (screenX >= margin && screenX <= this.canvas.width - margin &&
-        screenY >= margin && screenY <= this.canvas.height - margin) {
+    if (
+      screenX >= margin &&
+      screenX <= this.canvas.width - margin &&
+      screenY >= margin &&
+      screenY <= this.canvas.height - margin
+    ) {
       return;
     }
 
@@ -1561,8 +1718,20 @@ export class CanvasRenderer {
     const angle = Math.atan2(screenY - centerY, screenX - centerX);
 
     // Clamp arrow to canvas edge
-    const edgeX = Math.max(margin, Math.min(this.canvas.width - margin, centerX + Math.cos(angle) * (this.canvas.width / 2 - margin)));
-    const edgeY = Math.max(margin, Math.min(this.canvas.height - margin, centerY + Math.sin(angle) * (this.canvas.height / 2 - margin)));
+    const edgeX = Math.max(
+      margin,
+      Math.min(
+        this.canvas.width - margin,
+        centerX + Math.cos(angle) * (this.canvas.width / 2 - margin),
+      ),
+    );
+    const edgeY = Math.max(
+      margin,
+      Math.min(
+        this.canvas.height - margin,
+        centerY + Math.sin(angle) * (this.canvas.height / 2 - margin),
+      ),
+    );
 
     // Pulsing alpha
     const pulse = 0.6 + 0.4 * Math.sin(Date.now() * 0.005);
@@ -1586,7 +1755,7 @@ export class CanvasRenderer {
     // Distance text
     const dist = Math.round(playerShip.position.distance(target.position));
     const labelName = target.name || "STARGATE";
-    
+
     // Position label offset from the arrow
     const labelOffX = edgeX + Math.cos(angle + Math.PI) * 30;
     const labelOffY = edgeY + Math.sin(angle + Math.PI) * 30;

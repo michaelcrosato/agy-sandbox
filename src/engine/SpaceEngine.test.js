@@ -41,7 +41,11 @@ describe("SpaceEngine.update guards and drag", () => {
 
   test("applies global drag to a moving ship", () => {
     const engine = new SpaceEngine({ globalDrag: 0.1 });
-    const ship = new Ship({ id: "s", mass: 1000, velocity: new Vector2D(100, 0) });
+    const ship = new Ship({
+      id: "s",
+      mass: 1000,
+      velocity: new Vector2D(100, 0),
+    });
     engine.addEntity(ship);
     engine.update(1);
     // drag force = -0.1 * mass * v => a = -10 => v: 100 - 10 = 90
@@ -50,7 +54,11 @@ describe("SpaceEngine.update guards and drag", () => {
 
   test("does not apply drag to non-ship entities", () => {
     const engine = new SpaceEngine({ globalDrag: 0.1 });
-    const rock = new SpaceEntity({ id: "r", type: "generic", velocity: new Vector2D(100, 0) });
+    const rock = new SpaceEntity({
+      id: "r",
+      type: "generic",
+      velocity: new Vector2D(100, 0),
+    });
     engine.addEntity(rock);
     engine.update(1);
     expect(rock.velocity.x).toBe(100); // unchanged, drifts freely
@@ -207,7 +215,12 @@ describe("SpaceEngine projectile collisions", () => {
 
   test("ignores planets entirely", () => {
     const engine = new SpaceEngine();
-    const planet = new SpaceEntity({ id: "p", type: "planet", radius: 65, position: new Vector2D(0, 0) });
+    const planet = new SpaceEntity({
+      id: "p",
+      type: "planet",
+      radius: 65,
+      position: new Vector2D(0, 0),
+    });
     const proj = new Projectile({
       ownerId: "attacker",
       damage: 40,
@@ -223,7 +236,12 @@ describe("SpaceEngine projectile collisions", () => {
 
   test("marks a struck asteroid for deletion", () => {
     const engine = new SpaceEngine();
-    const rock = new SpaceEntity({ id: "rock", type: "generic", radius: 20, position: new Vector2D(0, 0) });
+    const rock = new SpaceEntity({
+      id: "rock",
+      type: "generic",
+      radius: 20,
+      position: new Vector2D(0, 0),
+    });
     const proj = new Projectile({
       ownerId: "attacker",
       damage: 40,
@@ -243,8 +261,16 @@ describe("SpaceEngine projectile collisions", () => {
 describe("SpaceEngine physical collisions", () => {
   test("two equal-mass ships rebound off each other", () => {
     const engine = new SpaceEngine({ restitution: 0.4 });
-    const a = new Ship({ id: "A", position: new Vector2D(0, 0), velocity: new Vector2D(10, 0) });
-    const b = new Ship({ id: "B", position: new Vector2D(20, 0), velocity: new Vector2D(-10, 0) });
+    const a = new Ship({
+      id: "A",
+      position: new Vector2D(0, 0),
+      velocity: new Vector2D(10, 0),
+    });
+    const b = new Ship({
+      id: "B",
+      position: new Vector2D(20, 0),
+      velocity: new Vector2D(-10, 0),
+    });
     engine.addEntity(a);
     engine.addEntity(b);
 
@@ -267,7 +293,12 @@ describe("SpaceEngine physical collisions", () => {
       mass: 1000000,
       position: new Vector2D(0, 0),
     });
-    const ship = new Ship({ id: "ship", radius: 15, position: new Vector2D(70, 0), velocity: new Vector2D(-10, 0) });
+    const ship = new Ship({
+      id: "ship",
+      radius: 15,
+      position: new Vector2D(70, 0),
+      velocity: new Vector2D(-10, 0),
+    });
     engine.addEntity(planet);
     engine.addEntity(ship);
 
@@ -281,8 +312,16 @@ describe("SpaceEngine physical collisions", () => {
 
   test("does not impart impulse when entities are separating", () => {
     const engine = new SpaceEngine({ restitution: 0.4 });
-    const a = new Ship({ id: "A", position: new Vector2D(0, 0), velocity: new Vector2D(-10, 0) });
-    const b = new Ship({ id: "B", position: new Vector2D(20, 0), velocity: new Vector2D(10, 0) });
+    const a = new Ship({
+      id: "A",
+      position: new Vector2D(0, 0),
+      velocity: new Vector2D(-10, 0),
+    });
+    const b = new Ship({
+      id: "B",
+      position: new Vector2D(20, 0),
+      velocity: new Vector2D(10, 0),
+    });
     engine.addEntity(a);
     engine.addEntity(b);
 

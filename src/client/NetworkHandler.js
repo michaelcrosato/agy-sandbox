@@ -1,4 +1,3 @@
-
 /**
  * Manages WebSocket networking, input transmission, state synchronization,
  * and cooperative party/fleet systems.
@@ -7,13 +6,13 @@ export class NetworkHandler {
   constructor() {
     this.socket = null;
     this.connected = false;
-    
+
     // Core parameters received from server
     this.playerId = null;
     this.nickname = localStorage.getItem("nebula_callsign") || "Commander";
     this.fleet = {
       name: null,
-      members: []
+      members: [],
     };
 
     // Client entities cache synced from server states
@@ -57,10 +56,10 @@ export class NetworkHandler {
   connect() {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}`;
-    
+
     console.log(`Connecting to Nebula Server: ${wsUrl}`);
     this.socket = new WebSocket(wsUrl);
- 
+
     this.socket.onopen = () => {
       this.connected = true;
       this.reconnectAttempt = 0; // Reset backoff on successful connection
@@ -68,7 +67,7 @@ export class NetworkHandler {
       this.send({
         type: "join",
         name: this.nickname,
-        sessionToken: this.sessionToken
+        sessionToken: this.sessionToken,
       });
 
       if (this.onConnectionStatusChange) {
@@ -80,11 +79,11 @@ export class NetworkHandler {
       this.pingInterval = setInterval(() => {
         this.send({
           type: "ping",
-          time: Date.now()
+          time: Date.now(),
         });
       }, 2500);
     };
- 
+
     this.socket.onmessage = (event) => {
       let msg;
       try {
@@ -92,7 +91,7 @@ export class NetworkHandler {
       } catch {
         return;
       }
- 
+
       switch (msg.type) {
         case "init":
           this.playerId = msg.playerId;
@@ -106,55 +105,55 @@ export class NetworkHandler {
           }
           if (this.onInit) this.onInit(msg);
           break;
- 
+
         case "state":
           this.entitiesData = msg.entities;
           if (this.onStateReceived) this.onStateReceived(msg.entities);
           break;
- 
+
         case "stats":
           if (this.onStatsReceived) this.onStatsReceived(msg);
           break;
- 
+
         case "landed":
           if (this.onLanded) this.onLanded(msg);
           break;
- 
+
         case "launched":
           if (this.onLaunched) this.onLaunched(msg);
           break;
- 
+
         case "fleet_sync":
           this.fleet.name = msg.name;
           this.fleet.members = msg.members;
           if (this.onFleetSync) this.onFleetSync(msg);
           break;
- 
+
         case "projectile_fired":
           if (this.onProjectileFired) this.onProjectileFired(msg);
           break;
- 
+
         case "notification":
           if (this.onNotification) this.onNotification(msg);
           break;
- 
+
         case "chat":
           if (this.onChatReceived) this.onChatReceived(msg);
           break;
- 
+
         case "market_sync":
           if (this.onMarketSync) this.onMarketSync(msg);
           break;
- 
+
         case "market_bulk_sync":
           if (this.onMarketBulkSync) this.onMarketBulkSync(msg);
           break;
- 
+
         case "event_sync":
           this.activeSectorEvent = msg.event;
           if (this.onEventSync) this.onEventSync(msg);
           break;
- 
+
         case "cargo_pickup":
           if (this.onCargoPickup) this.onCargoPickup(msg);
           break;
@@ -175,7 +174,7 @@ export class NetworkHandler {
           break;
       }
     };
- 
+
     this.socket.onclose = () => {
       this.connected = false;
       if (this.pingInterval) {
@@ -187,13 +186,18 @@ export class NetworkHandler {
       }
       // Exponential backoff with jitter: 1s, 2s, 4s, 8s... capped at 15s
       this.reconnectAttempt++;
-      const baseDelay = Math.min(1000 * Math.pow(2, this.reconnectAttempt - 1), this.maxReconnectDelay);
+      const baseDelay = Math.min(
+        1000 * Math.pow(2, this.reconnectAttempt - 1),
+        this.maxReconnectDelay,
+      );
       const jitter = Math.floor(Math.random() * 500);
       const delay = baseDelay + jitter;
-      console.log(`Disconnected from server. Reconnecting in ${(delay / 1000).toFixed(1)}s (attempt ${this.reconnectAttempt})...`);
+      console.log(
+        `Disconnected from server. Reconnecting in ${(delay / 1000).toFixed(1)}s (attempt ${this.reconnectAttempt})...`,
+      );
       setTimeout(() => this.connect(), delay);
     };
- 
+
     this.socket.onerror = (err) => {
       console.error("WebSocket network error:", err);
       if (this.onConnectionStatusChange) {
@@ -228,7 +232,7 @@ export class NetworkHandler {
     this.send({
       type: "controls",
       controls,
-      heading
+      heading,
     });
   }
 
@@ -255,7 +259,7 @@ export class NetworkHandler {
     this.send({
       type: "trade",
       item,
-      action
+      action,
     });
   }
 
@@ -266,7 +270,7 @@ export class NetworkHandler {
   requestOutfitPurchase(outfitName) {
     this.send({
       type: "outfit_buy",
-      outfitName
+      outfitName,
     });
   }
 
@@ -277,7 +281,7 @@ export class NetworkHandler {
   requestShipPurchase(shipName) {
     this.send({
       type: "ship_buy",
-      shipName
+      shipName,
     });
   }
 
@@ -290,7 +294,7 @@ export class NetworkHandler {
     this.send({
       type: "mission_accept",
       planetName,
-      missionId
+      missionId,
     });
   }
 
@@ -301,7 +305,7 @@ export class NetworkHandler {
   requestMissionAbandon(missionId) {
     this.send({
       type: "mission_abandon",
-      missionId
+      missionId,
     });
   }
 
@@ -317,7 +321,7 @@ export class NetworkHandler {
     this.send({
       type: "fleet_create", // creation and joining share a backend lobby handler
       fleetName: fleetCode,
-      name: this.nickname
+      name: this.nickname,
     });
   }
 
@@ -337,7 +341,7 @@ export class NetworkHandler {
     this.send({
       type: "chat",
       channel,
-      text
+      text,
     });
   }
 }

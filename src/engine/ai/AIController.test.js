@@ -42,7 +42,10 @@ describe("AIController.steerTowards", () => {
 
 describe("AIController.scanSensors", () => {
   test("pirate targets the nearest non-pirate ship, skipping fellow pirates", () => {
-    const ctrl = new AIController(shipAt("Pirate Raider", 0, 0, "self"), "pirate");
+    const ctrl = new AIController(
+      shipAt("Pirate Raider", 0, 0, "self"),
+      "pirate",
+    );
     const otherPirate = shipAt("Pirate Raider", 50, 0, "p2");
     const merchant = shipAt("Atlas Hauler", 100, 0, "m");
     ctrl.scanSensors([ctrl.ship, otherPirate, merchant]);
@@ -50,14 +53,20 @@ describe("AIController.scanSensors", () => {
   });
 
   test("pirate finds nothing when all candidates are out of sensor range", () => {
-    const ctrl = new AIController(shipAt("Pirate Raider", 0, 0, "self"), "pirate");
+    const ctrl = new AIController(
+      shipAt("Pirate Raider", 0, 0, "self"),
+      "pirate",
+    );
     const merchant = shipAt("Atlas Hauler", 600, 0, "m");
     ctrl.scanSensors([ctrl.ship, merchant]);
     expect(ctrl.target).toBeNull();
   });
 
   test("guard targets the nearest pirate and ignores civilians", () => {
-    const ctrl = new AIController(shipAt("System Guard", 0, 0, "self"), "guard");
+    const ctrl = new AIController(
+      shipAt("System Guard", 0, 0, "self"),
+      "guard",
+    );
     const merchant = shipAt("Atlas Hauler", 50, 0, "m");
     const pirate = shipAt("Pirate Raider", 100, 0, "p");
     ctrl.scanSensors([ctrl.ship, merchant, pirate]);
@@ -65,8 +74,15 @@ describe("AIController.scanSensors", () => {
   });
 
   test("ignores non-ship entities entirely", () => {
-    const ctrl = new AIController(shipAt("System Guard", 0, 0, "self"), "guard");
-    const rock = new SpaceEntity({ id: "rock", type: "generic", position: new Vector2D(30, 0) });
+    const ctrl = new AIController(
+      shipAt("System Guard", 0, 0, "self"),
+      "guard",
+    );
+    const rock = new SpaceEntity({
+      id: "rock",
+      type: "generic",
+      position: new Vector2D(30, 0),
+    });
     ctrl.scanSensors([ctrl.ship, rock]);
     expect(ctrl.target).toBeNull();
   });
@@ -155,7 +171,11 @@ describe("AIController escort behaviour", () => {
     ctrl.flagship = shipAt("Flagship", 0, 0);
     ctrl.escortMode = "attack";
     ctrl.target = null;
-    const projectile = new SpaceEntity({ id: "proj", type: "projectile", position: new Vector2D(40, 0) });
+    const projectile = new SpaceEntity({
+      id: "proj",
+      type: "projectile",
+      position: new Vector2D(40, 0),
+    });
     const pirate = shipAt("Pirate Raider", 100, 0);
     const entities = [ctrl.ship, ctrl.flagship, projectile, pirate];
 

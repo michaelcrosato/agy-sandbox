@@ -5,16 +5,73 @@ import { SpaceEngine } from "./SpaceEngine.js";
 import { SpaceEntity } from "./SpaceEntity.js";
 import { AIController } from "./ai/AIController.js";
 import { CargoPod } from "./CargoPod.js";
+import { EconomyManager } from "./EconomyManager.js";
 
 export const BASE_MARKETS = {
-  "Sol": { food: 100, electronics: 300, minerals: 150, luxuries: 600, contraband: 250, machinery: 100 },
-  "New Polaris": { food: 220, electronics: 320, minerals: 50, luxuries: 650, contraband: 300, machinery: 220 },
-  "Sigma Draconis": { food: 120, electronics: 120, minerals: 250, luxuries: 500, contraband: 200, machinery: 160 },
-  "Kaelis Colony": { food: 40, electronics: 420, minerals: 180, luxuries: 550, contraband: 280, machinery: 190 },
-  "Aurelia Mining Hub": { food: 150, electronics: 290, minerals: 70, luxuries: 580, contraband: 260, machinery: 150 },
-  "Tenebris Prime": { food: 160, electronics: 450, minerals: 200, luxuries: 220, contraband: 400, machinery: 240 },
-  "Valkyrie Depot": { food: 110, electronics: 380, minerals: 190, luxuries: 520, contraband: 220, machinery: 80 },
-  "Rogue's Hollow": { food: 250, electronics: 220, minerals: 160, luxuries: 450, contraband: 60, machinery: 180 }
+  Sol: {
+    food: 100,
+    electronics: 300,
+    minerals: 150,
+    luxuries: 600,
+    contraband: 250,
+    machinery: 100,
+  },
+  "New Polaris": {
+    food: 220,
+    electronics: 320,
+    minerals: 50,
+    luxuries: 650,
+    contraband: 300,
+    machinery: 220,
+  },
+  "Sigma Draconis": {
+    food: 120,
+    electronics: 120,
+    minerals: 250,
+    luxuries: 500,
+    contraband: 200,
+    machinery: 160,
+  },
+  "Kaelis Colony": {
+    food: 40,
+    electronics: 420,
+    minerals: 180,
+    luxuries: 550,
+    contraband: 280,
+    machinery: 190,
+  },
+  "Aurelia Mining Hub": {
+    food: 150,
+    electronics: 290,
+    minerals: 70,
+    luxuries: 580,
+    contraband: 260,
+    machinery: 150,
+  },
+  "Tenebris Prime": {
+    food: 160,
+    electronics: 450,
+    minerals: 200,
+    luxuries: 220,
+    contraband: 400,
+    machinery: 240,
+  },
+  "Valkyrie Depot": {
+    food: 110,
+    electronics: 380,
+    minerals: 190,
+    luxuries: 520,
+    contraband: 220,
+    machinery: 80,
+  },
+  "Rogue's Hollow": {
+    food: 250,
+    electronics: 220,
+    minerals: 160,
+    luxuries: 450,
+    contraband: 60,
+    machinery: 180,
+  },
 };
 
 export class GameInstance {
@@ -38,7 +95,7 @@ export class GameInstance {
         y: ship.position.y,
         heading: ship.heading,
         radius: ship.radius,
-        ownerId: ship.id
+        ownerId: ship.id,
       });
     };
 
@@ -49,30 +106,35 @@ export class GameInstance {
 
     // Seed initial entities
     this.seedGalaxy();
+
+    // Initialize the dynamic economy manager
+    this.economyManager = new EconomyManager(this.planets);
   }
 
   seedGalaxy() {
     // 1. Core Sector
     const solPlanet = new Planet({
       name: "Sol",
-      description: "The historic cradle of humanity and bustling trade center of the inner systems. High luxury demand, cheap machinery.",
+      description:
+        "The historic cradle of humanity and bustling trade center of the inner systems. High luxury demand, cheap machinery.",
       color: "#4d6fff",
       position: new Vector2D(0, 0),
       radius: 65,
       market: { ...BASE_MARKETS["Sol"] },
-      sector: "core"
+      sector: "core",
     });
     this.planets.push(solPlanet);
     this.engine.addEntity(solPlanet);
 
     const valkyriePlanet = new Planet({
       name: "Valkyrie Depot",
-      description: "Core fleet military staging area. Produces high-grade heavy machinery, demands electronics.",
+      description:
+        "Core fleet military staging area. Produces high-grade heavy machinery, demands electronics.",
       color: "#ff1744",
       position: new Vector2D(2000, 500),
       radius: 62,
       market: { ...BASE_MARKETS["Valkyrie Depot"] },
-      sector: "core"
+      sector: "core",
     });
     this.planets.push(valkyriePlanet);
     this.engine.addEntity(valkyriePlanet);
@@ -80,36 +142,39 @@ export class GameInstance {
     // 2. Frontier Systems Sector (Offset X:+20000, Y:+20000)
     const polarisPlanet = new Planet({
       name: "New Polaris",
-      description: "An icy frontier industrial colony rich in raw mineral extractions. High food demand, cheap raw minerals.",
+      description:
+        "An icy frontier industrial colony rich in raw mineral extractions. High food demand, cheap raw minerals.",
       color: "#e0f7fa",
       position: new Vector2D(22000, 18800),
       radius: 55,
       market: { ...BASE_MARKETS["New Polaris"] },
-      sector: "frontier"
+      sector: "frontier",
     });
     this.planets.push(polarisPlanet);
     this.engine.addEntity(polarisPlanet);
 
     const draconisPlanet = new Planet({
       name: "Sigma Draconis",
-      description: "A high-tech research outpost specializing in advanced electronics production. Demands minerals, cheap electronics.",
+      description:
+        "A high-tech research outpost specializing in advanced electronics production. Demands minerals, cheap electronics.",
       color: "#00f2fe",
       position: new Vector2D(17800, 21600),
       radius: 60,
       market: { ...BASE_MARKETS["Sigma Draconis"] },
-      sector: "frontier"
+      sector: "frontier",
     });
     this.planets.push(draconisPlanet);
     this.engine.addEntity(draconisPlanet);
 
     const aureliaPlanet = new Planet({
       name: "Aurelia Mining Hub",
-      description: "Outer planetary asteroid refinery. Demands food, produces cheap raw metals and machinery.",
+      description:
+        "Outer planetary asteroid refinery. Demands food, produces cheap raw metals and machinery.",
       color: "#ff9100",
       position: new Vector2D(21800, 21800),
       radius: 58,
       market: { ...BASE_MARKETS["Aurelia Mining Hub"] },
-      sector: "frontier"
+      sector: "frontier",
     });
     this.planets.push(aureliaPlanet);
     this.engine.addEntity(aureliaPlanet);
@@ -117,36 +182,39 @@ export class GameInstance {
     // 3. Outer Lawless Rim Sector (Offset X:-20000, Y:-20000)
     const kaelisPlanet = new Planet({
       name: "Kaelis Colony",
-      description: "An agricultural breadbasket producing vast food supplies. Demands electronics, cheap food.",
+      description:
+        "An agricultural breadbasket producing vast food supplies. Demands electronics, cheap food.",
       color: "#00e676",
       position: new Vector2D(-21800, -21800),
       radius: 60,
       market: { ...BASE_MARKETS["Kaelis Colony"] },
-      sector: "rim"
+      sector: "rim",
     });
     this.planets.push(kaelisPlanet);
     this.engine.addEntity(kaelisPlanet);
 
     const tenebrisPlanet = new Planet({
       name: "Tenebris Prime",
-      description: "A mysterious colony inside a dark nebula. Produces top-tier scientific luxuries, demands electronics.",
+      description:
+        "A mysterious colony inside a dark nebula. Produces top-tier scientific luxuries, demands electronics.",
       color: "#d500f9",
       position: new Vector2D(-20600, -17600),
       radius: 55,
       market: { ...BASE_MARKETS["Tenebris Prime"] },
-      sector: "rim"
+      sector: "rim",
     });
     this.planets.push(tenebrisPlanet);
     this.engine.addEntity(tenebrisPlanet);
 
     const roguesPlanet = new Planet({
       name: "Rogue's Hollow",
-      description: "A lawless pirate anchorage hidden deep inside a dense asteroid field. Smuggler contraband is cheap here.",
+      description:
+        "A lawless pirate anchorage hidden deep inside a dense asteroid field. Smuggler contraband is cheap here.",
       color: "#e040fb",
       position: new Vector2D(-22800, -20500),
       radius: 52,
       market: { ...BASE_MARKETS["Rogue's Hollow"] },
-      sector: "rim"
+      sector: "rim",
     });
     this.planets.push(roguesPlanet);
     this.engine.addEntity(roguesPlanet);
@@ -211,16 +279,28 @@ export class GameInstance {
     }
 
     // 6. Generate NPC merchant freighters
-    const merchantNames = ["Atlas Hauler", "Hermes Cargo", "Heavy Freighter", "Behemoth", "Voyager Hauler", "Galleon"];
+    const merchantNames = [
+      "Atlas Hauler",
+      "Hermes Cargo",
+      "Heavy Freighter",
+      "Behemoth",
+      "Voyager Hauler",
+      "Galleon",
+    ];
     for (let i = 0; i < 8; i++) {
       const spawnPlanet = this.planets[i % this.planets.length];
-      const spawnPos = spawnPlanet.position.add(new Vector2D((Math.random() - 0.5) * 400, (Math.random() - 0.5) * 400));
+      const spawnPos = spawnPlanet.position.add(
+        new Vector2D((Math.random() - 0.5) * 400, (Math.random() - 0.5) * 400),
+      );
       const isHeavy = i % 2 === 0;
 
       const mShip = new Ship({
         name: merchantNames[i % merchantNames.length],
         position: spawnPos,
-        velocity: new Vector2D((Math.random() - 0.5) * 15, (Math.random() - 0.5) * 15),
+        velocity: new Vector2D(
+          (Math.random() - 0.5) * 15,
+          (Math.random() - 0.5) * 15,
+        ),
         maxShield: isHeavy ? 500 : 300,
         maxArmor: isHeavy ? 350 : 200,
         cargoCapacity: isHeavy ? 200 : 80,
@@ -240,16 +320,28 @@ export class GameInstance {
     }
 
     // 8. Generate NPC guards
-    const guardNames = ["System Guard", "Sector Police", "Navy Destroyer", "Aegis Cruiser", "Defense Sentinel", "Patrol Frigate"];
+    const guardNames = [
+      "System Guard",
+      "Sector Police",
+      "Navy Destroyer",
+      "Aegis Cruiser",
+      "Defense Sentinel",
+      "Patrol Frigate",
+    ];
     for (let i = 0; i < 6; i++) {
       const spawnPlanet = this.planets[i % this.planets.length];
-      const spawnPos = spawnPlanet.position.add(new Vector2D((Math.random() - 0.5) * 200, (Math.random() - 0.5) * 200));
+      const spawnPos = spawnPlanet.position.add(
+        new Vector2D((Math.random() - 0.5) * 200, (Math.random() - 0.5) * 200),
+      );
       const isDestroyer = i % 2 === 0;
 
       const gShip = new Ship({
         name: guardNames[i % guardNames.length],
         position: spawnPos,
-        velocity: new Vector2D((Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10),
+        velocity: new Vector2D(
+          (Math.random() - 0.5) * 10,
+          (Math.random() - 0.5) * 10,
+        ),
         maxShield: isDestroyer ? 900 : 400,
         maxArmor: isDestroyer ? 600 : 250,
         thrustPower: isDestroyer ? 26000 : 18000,
@@ -266,7 +358,9 @@ export class GameInstance {
 
   spawnNewAsteroid(initial = false) {
     const angle = Math.random() * Math.PI * 2;
-    const dist = initial ? 500 + Math.random() * 3200 : 800 + Math.random() * 2500;
+    const dist = initial
+      ? 500 + Math.random() * 3200
+      : 800 + Math.random() * 2500;
     const x = Math.cos(angle) * dist;
     const y = Math.sin(angle) * dist;
 
@@ -291,16 +385,30 @@ export class GameInstance {
   }
 
   spawnNPCPirate(i) {
-    const pirateNames = ["Pirate Raider", "Viper Scout", "Marauder", "Corsair Star", "Gallows Destroyer"];
+    const pirateNames = [
+      "Pirate Raider",
+      "Viper Scout",
+      "Marauder",
+      "Corsair Star",
+      "Gallows Destroyer",
+    ];
     const angle = Math.random() * Math.PI * 2;
     const dist = 1000 + Math.random() * 2000;
-    const spawnPos = new Vector2D(Math.cos(angle) * dist, Math.sin(angle) * dist);
+    const spawnPos = new Vector2D(
+      Math.cos(angle) * dist,
+      Math.sin(angle) * dist,
+    );
     const isHeavy = i === 6;
 
     const pShip = new Ship({
-      name: isHeavy ? "Pirate Boss Gallows" : pirateNames[i % pirateNames.length],
+      name: isHeavy
+        ? "Pirate Boss Gallows"
+        : pirateNames[i % pirateNames.length],
       position: spawnPos,
-      velocity: new Vector2D((Math.random() - 0.5) * 50, (Math.random() - 0.5) * 50),
+      velocity: new Vector2D(
+        (Math.random() - 0.5) * 50,
+        (Math.random() - 0.5) * 50,
+      ),
       maxShield: isHeavy ? 600 : 250,
       maxArmor: isHeavy ? 400 : 150,
       thrustPower: isHeavy ? 20000 : 14000,
@@ -318,11 +426,23 @@ export class GameInstance {
     if (name === "Siege Raider") return;
     setTimeout(() => {
       if (role === "pirate") {
-        const pirateNames = ["Pirate Raider", "Viper Scout", "Marauder", "Corsair Star", "Gallows Destroyer"];
+        const pirateNames = [
+          "Pirate Raider",
+          "Viper Scout",
+          "Marauder",
+          "Corsair Star",
+          "Gallows Destroyer",
+        ];
         this.spawnNPCPirate(Math.floor(Math.random() * pirateNames.length));
       } else if (role === "guard") {
-        const spawnPlanet = this.planets[Math.floor(Math.random() * this.planets.length)];
-        const spawnPos = spawnPlanet.position.add(new Vector2D((Math.random() - 0.5) * 200, (Math.random() - 0.5) * 200));
+        const spawnPlanet =
+          this.planets[Math.floor(Math.random() * this.planets.length)];
+        const spawnPos = spawnPlanet.position.add(
+          new Vector2D(
+            (Math.random() - 0.5) * 200,
+            (Math.random() - 0.5) * 200,
+          ),
+        );
         const gShip = new Ship({
           name: name,
           position: spawnPos,
@@ -332,14 +452,20 @@ export class GameInstance {
           thrustPower: 18000,
           turnRate: 2.5,
           weaponDamage: 25,
-          weaponCooldown: 0.25
+          weaponCooldown: 0.25,
         });
         const controller = new AIController(gShip, "guard");
         this.engine.addEntity(gShip);
         this.ais.push(controller);
       } else if (role === "merchant") {
-        const spawnPlanet = this.planets[Math.floor(Math.random() * this.planets.length)];
-        const spawnPos = spawnPlanet.position.add(new Vector2D((Math.random() - 0.5) * 400, (Math.random() - 0.5) * 400));
+        const spawnPlanet =
+          this.planets[Math.floor(Math.random() * this.planets.length)];
+        const spawnPos = spawnPlanet.position.add(
+          new Vector2D(
+            (Math.random() - 0.5) * 400,
+            (Math.random() - 0.5) * 400,
+          ),
+        );
         const mShip = new Ship({
           name: name,
           position: spawnPos,
@@ -348,7 +474,7 @@ export class GameInstance {
           maxArmor: 200,
           cargoCapacity: 80,
           thrustPower: 11000,
-          turnRate: 1.5
+          turnRate: 1.5,
         });
         const controller = new AIController(mShip, "merchant");
         this.engine.addEntity(mShip);
@@ -377,7 +503,7 @@ export class GameInstance {
     const set = this.fleets.get(fleetCode);
     if (!set) return;
 
-    const membersArray = Array.from(set).map(m => ({
+    const membersArray = Array.from(set).map((m) => ({
       id: m.id,
       nickname: m.nickname,
       shield: m.ship ? m.ship.shield : 0,
@@ -387,14 +513,14 @@ export class GameInstance {
       x: m.ship ? Math.round(m.ship.position.x) : 0,
       y: m.ship ? Math.round(m.ship.position.y) : 0,
       isLanded: m.isLanded,
-      landedOn: m.planetLandedOn ? m.planetLandedOn.name : null
+      landedOn: m.planetLandedOn ? m.planetLandedOn.name : null,
     }));
 
     for (const m of set) {
       m.send({
         type: "fleet_sync",
         name: fleetCode,
-        members: membersArray
+        members: membersArray,
       });
     }
   }
@@ -412,7 +538,7 @@ export class GameInstance {
     this.broadcast({
       type: "notification",
       message,
-      style
+      style,
     });
   }
 
@@ -424,14 +550,18 @@ export class GameInstance {
         nickname: client.nickname,
         credits: client.ship ? client.ship.credits : 0,
         fleetName: client.fleetName,
-        status: client.cleanupTimeout ? "standby" : (client.isLanded ? "docked" : "orbit")
+        status: client.cleanupTimeout
+          ? "standby"
+          : client.isLanded
+            ? "docked"
+            : "orbit",
       });
     }
 
     const payload = {
       type: "lobby_sync",
       count: this.clients.size,
-      roster: roster
+      roster: roster,
     };
 
     for (const client of this.clients.values()) {
@@ -441,8 +571,8 @@ export class GameInstance {
 
   serializeEntities() {
     return this.engine.entities
-      .filter(ent => ent.type !== "planet")
-      .map(ent => {
+      .filter((ent) => ent.type !== "planet")
+      .map((ent) => {
         const base = {
           id: ent.id,
           type: ent.type,
@@ -474,7 +604,9 @@ export class GameInstance {
           base.name = ent.name;
           base.sector = ent.sector;
           base.targetSector = ent.targetSector;
-          base.targetPosition = ent.targetPosition ? { x: ent.targetPosition.x, y: ent.targetPosition.y } : null;
+          base.targetPosition = ent.targetPosition
+            ? { x: ent.targetPosition.x, y: ent.targetPosition.y }
+            : null;
         }
         return base;
       });
@@ -484,29 +616,38 @@ export class GameInstance {
     if (ent.type === "projectile") return;
 
     const killerId = ent.destroyedBy;
-    const killerClient = killerId ? Array.from(this.clients.values()).find(c => c.id === killerId) : null;
+    const killerClient = killerId
+      ? Array.from(this.clients.values()).find((c) => c.id === killerId)
+      : null;
     let killerFleetMembers = null;
 
     if (killerClient && killerClient.fleetName) {
-      killerFleetMembers = Array.from(this.clients.values()).filter(c => c.fleetName === killerClient.fleetName);
+      killerFleetMembers = Array.from(this.clients.values()).filter(
+        (c) => c.fleetName === killerClient.fleetName,
+      );
     }
 
     // --- Asteroids destroyed ---
     if (ent.type === "generic" || ent.type === "gem_asteroid") {
       const isGem = ent.type === "gem_asteroid";
-      const count = isGem ? (Math.floor(Math.random() * 2) + 2) : (Math.floor(Math.random() * 2) + 1);
+      const count = isGem
+        ? Math.floor(Math.random() * 2) + 2
+        : Math.floor(Math.random() * 2) + 1;
       const resource = isGem ? "luxuries" : "minerals";
 
       for (let i = 0; i < count; i++) {
         const angle = Math.random() * Math.PI * 2;
         const speed = 40 + Math.random() * 50;
-        const podVel = new Vector2D(Math.cos(angle) * speed, Math.sin(angle) * speed).add(ent.velocity);
-        
+        const podVel = new Vector2D(
+          Math.cos(angle) * speed,
+          Math.sin(angle) * speed,
+        ).add(ent.velocity);
+
         const pod = new CargoPod({
           resourceType: resource,
           amount: 1,
           position: ent.position.clone(),
-          velocity: podVel
+          velocity: podVel,
         });
         this.engine.addEntity(pod);
       }
@@ -515,16 +656,22 @@ export class GameInstance {
     // --- Ships destroyed ---
     else if (ent.type === "ship") {
       // Remove AI controller from room's active AIs list to optimize updates and avoid memory leaks
-      const aiIdx = this.ais.findIndex(a => a.ship === ent);
+      const aiIdx = this.ais.findIndex((a) => a.ship === ent);
       if (aiIdx !== -1) {
         this.ais.splice(aiIdx, 1);
       }
 
-      const isPirate = ent.name === "Pirate Raider" || ent.name.includes("Pirate") || ent.name.includes("Raider");
-      
+      const isPirate =
+        ent.name === "Pirate Raider" ||
+        ent.name.includes("Pirate") ||
+        ent.name.includes("Raider");
+
       // Check bounties for connected and standby clients
       for (const client of this.clients.values()) {
-        const completedBounty = client.missionManager.checkBountyCompletion(ent.name, client.ship);
+        const completedBounty = client.missionManager.checkBountyCompletion(
+          ent.name,
+          client.ship,
+        );
         if (completedBounty) {
           if (client.fleetName) {
             const fleetSet = this.fleets.get(client.fleetName);
@@ -540,19 +687,19 @@ export class GameInstance {
                     member.send({
                       type: "notification",
                       message: `Fleet Campaign Complete: ${completedBounty.title}! Share: +${share.toLocaleString()} CR`,
-                      style: "success"
+                      style: "success",
                     });
                   } else if (completedBounty.stageAdvanced) {
                     member.send({
                       type: "notification",
                       message: `Fleet Story Stage Completed: ${completedBounty.title}! Share: +${share.toLocaleString()} CR`,
-                      style: "success"
+                      style: "success",
                     });
                   } else {
                     member.send({
                       type: "notification",
                       message: `Fleet Bounty Claimed: ${completedBounty.title} by ${client.nickname}! Share: +${share.toLocaleString()} CR`,
-                      style: "success"
+                      style: "success",
                     });
                   }
                   member.sendStats();
@@ -564,14 +711,22 @@ export class GameInstance {
 
           // Solo pilot fallback
           if (completedBounty.campaignCompleted) {
-            client.send({ type: "notification", message: completedBounty.message, style: "success" });
+            client.send({
+              type: "notification",
+              message: completedBounty.message,
+              style: "success",
+            });
           } else if (completedBounty.stageAdvanced) {
-            client.send({ type: "notification", message: completedBounty.message, style: "success" });
+            client.send({
+              type: "notification",
+              message: completedBounty.message,
+              style: "success",
+            });
           } else {
             client.send({
               type: "notification",
               message: `Contract Completed: Bounty for ${completedBounty.targetName} claimed! +${completedBounty.reward.toLocaleString()} CR`,
-              style: "success"
+              style: "success",
             });
           }
           client.sendStats();
@@ -585,14 +740,18 @@ export class GameInstance {
         for (let i = 0; i < lootCount; i++) {
           const angle = Math.random() * Math.PI * 2;
           const speed = 40 + Math.random() * 60;
-          const podVel = new Vector2D(Math.cos(angle) * speed, Math.sin(angle) * speed).add(ent.velocity);
-          const resource = lootTypes[Math.floor(Math.random() * lootTypes.length)];
-          
+          const podVel = new Vector2D(
+            Math.cos(angle) * speed,
+            Math.sin(angle) * speed,
+          ).add(ent.velocity);
+          const resource =
+            lootTypes[Math.floor(Math.random() * lootTypes.length)];
+
           const pod = new CargoPod({
             resourceType: resource,
             amount: 1,
             position: ent.position.clone(),
-            velocity: podVel
+            velocity: podVel,
           });
           this.engine.addEntity(pod);
         }
@@ -606,7 +765,7 @@ export class GameInstance {
               member.send({
                 type: "notification",
                 message: `Pirate eliminated by ${killerClient.nickname}! Fleet share bounty: +${share} CR`,
-                style: "success"
+                style: "success",
               });
               member.sendStats();
             }
@@ -615,7 +774,7 @@ export class GameInstance {
             killerClient.send({
               type: "notification",
               message: `${ent.name} neutralized! Bounty claimed +1,000 CR`,
-              style: "success"
+              style: "success",
             });
             killerClient.sendStats();
           }
@@ -627,29 +786,39 @@ export class GameInstance {
             for (let i = 0; i < count; i++) {
               const angle = Math.random() * Math.PI * 2;
               const speed = 30 + Math.random() * 50;
-              const podVel = new Vector2D(Math.cos(angle) * speed, Math.sin(angle) * speed).add(ent.velocity);
-              
+              const podVel = new Vector2D(
+                Math.cos(angle) * speed,
+                Math.sin(angle) * speed,
+              ).add(ent.velocity);
+
               const pod = new CargoPod({
                 resourceType: resource,
                 amount: 1,
                 position: ent.position.clone(),
-                velocity: podVel
+                velocity: podVel,
               });
               this.engine.addEntity(pod);
             }
           }
         }
-        this.broadcastNotification(`${ent.name} has been destroyed in combat.`, "info");
+        this.broadcastNotification(
+          `${ent.name} has been destroyed in combat.`,
+          "info",
+        );
 
         // Check if it's a player ship and respawn them
-        const deadClient = Array.from(this.clients.values()).find(c => c.ship === ent);
+        const deadClient = Array.from(this.clients.values()).find(
+          (c) => c.ship === ent,
+        );
         if (deadClient) {
           this.handlePlayerRespawnServer(deadClient);
         }
       }
 
       // Only schedule AI respawn if it is NOT a player ship
-      const isPlayerShip = Array.from(this.clients.values()).some(c => c.ship === ent);
+      const isPlayerShip = Array.from(this.clients.values()).some(
+        (c) => c.ship === ent,
+      );
       if (!isPlayerShip) {
         this.scheduleAIRespawn(ent.name, ent.role);
       }
@@ -660,7 +829,7 @@ export class GameInstance {
     client.send({
       type: "notification",
       message: "CRITICAL ERROR: Reactor core compromised! Ejecting capsule...",
-      style: "error"
+      style: "error",
     });
 
     setTimeout(() => {
@@ -679,7 +848,7 @@ export class GameInstance {
       client.send({
         type: "notification",
         message: `Cloned replacement hull activated at Sol. Insurance fee: ${fee.toLocaleString()} CR.`,
-        style: "info"
+        style: "info",
       });
       client.sendStats();
     }, 3000);

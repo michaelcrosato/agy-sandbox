@@ -157,14 +157,95 @@ export class SpaceportUI {
 
     const tbody = table.querySelector("tbody");
 
+    // Client baseline market index for comparison and neon HUD highlights
+    const baseMarkets = {
+      Sol: {
+        food: 100,
+        electronics: 300,
+        minerals: 150,
+        luxuries: 600,
+        contraband: 250,
+        machinery: 100,
+      },
+      "New Polaris": {
+        food: 220,
+        electronics: 320,
+        minerals: 50,
+        luxuries: 650,
+        contraband: 300,
+        machinery: 220,
+      },
+      "Sigma Draconis": {
+        food: 120,
+        electronics: 120,
+        minerals: 250,
+        luxuries: 500,
+        contraband: 200,
+        machinery: 160,
+      },
+      "Kaelis Colony": {
+        food: 40,
+        electronics: 420,
+        minerals: 180,
+        luxuries: 550,
+        contraband: 280,
+        machinery: 190,
+      },
+      "Aurelia Mining Hub": {
+        food: 150,
+        electronics: 290,
+        minerals: 70,
+        luxuries: 580,
+        contraband: 260,
+        machinery: 150,
+      },
+      "Tenebris Prime": {
+        food: 160,
+        electronics: 450,
+        minerals: 200,
+        luxuries: 220,
+        contraband: 400,
+        machinery: 240,
+      },
+      "Valkyrie Depot": {
+        food: 110,
+        electronics: 380,
+        minerals: 190,
+        luxuries: 520,
+        contraband: 220,
+        machinery: 80,
+      },
+      "Rogue's Hollow": {
+        food: 250,
+        electronics: 220,
+        minerals: 160,
+        luxuries: 450,
+        contraband: 60,
+        machinery: 180,
+      },
+    };
+
     for (const item of commodities) {
       const price = this.planet.market[item];
       const playerQty = this.player.cargo[item] || 0;
 
+      const basePrices = baseMarkets[this.planet.name] || {};
+      const baseline = basePrices[item] || 150;
+
+      let priceClass = "";
+      let trendIcon = "";
+      if (price > baseline) {
+        priceClass = "trade-price-high";
+        trendIcon = ' <span class="trend-high">▲</span>';
+      } else if (price < baseline) {
+        priceClass = "trade-price-low";
+        trendIcon = ' <span class="trend-low">▼</span>';
+      }
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td class="capitalize">${item}</td>
-        <td>${price} CR</td>
+        <td class="${priceClass}">${price} CR${trendIcon}</td>
         <td id="qty-${item}">${playerQty} t</td>
         <td>
           <button class="btn-sm btn-trade-buy" data-item="${item}">BUY</button>
@@ -178,7 +259,10 @@ export class SpaceportUI {
           if (window.network.connected) {
             window.network.requestTrade(item, "buy");
           } else {
-            this.ui.notify("Neural link offline! Cannot perform transactions.", "error");
+            this.ui.notify(
+              "Neural link offline! Cannot perform transactions.",
+              "error",
+            );
           }
           return;
         }
@@ -206,7 +290,10 @@ export class SpaceportUI {
           if (window.network.connected) {
             window.network.requestTrade(item, "sell");
           } else {
-            this.ui.notify("Neural link offline! Cannot perform transactions.", "error");
+            this.ui.notify(
+              "Neural link offline! Cannot perform transactions.",
+              "error",
+            );
           }
           return;
         }
@@ -262,7 +349,10 @@ export class SpaceportUI {
           if (window.network.connected) {
             window.network.requestOutfitPurchase(outfit.name);
           } else {
-            this.ui.notify("Neural link offline! Cannot upgrade ship.", "error");
+            this.ui.notify(
+              "Neural link offline! Cannot upgrade ship.",
+              "error",
+            );
           }
           return;
         }
@@ -346,7 +436,10 @@ export class SpaceportUI {
           if (window.network.connected) {
             window.network.requestShipPurchase(s.name);
           } else {
-            this.ui.notify("Neural link offline! Shipyard services unavailable.", "error");
+            this.ui.notify(
+              "Neural link offline! Shipyard services unavailable.",
+              "error",
+            );
           }
           return;
         }
@@ -457,7 +550,10 @@ export class SpaceportUI {
               if (window.network.connected) {
                 window.network.requestMissionAccept(this.planet.name, m.id);
               } else {
-                this.ui.notify("Neural link offline! Cannot accept contracts.", "error");
+                this.ui.notify(
+                  "Neural link offline! Cannot accept contracts.",
+                  "error",
+                );
               }
               return;
             }
@@ -522,7 +618,10 @@ export class SpaceportUI {
               if (window.network.connected) {
                 window.network.requestMissionAbandon(m.id);
               } else {
-                this.ui.notify("Neural link offline! Cannot abandon contracts.", "error");
+                this.ui.notify(
+                  "Neural link offline! Cannot abandon contracts.",
+                  "error",
+                );
               }
               return;
             }
@@ -559,8 +658,11 @@ export class SpaceportUI {
   refreshActiveTab() {
     if (!this.overlay || !this.overlay.classList.contains("visible")) return;
     if (this.tabTrade?.classList.contains("active")) this.renderTrade();
-    else if (this.tabOutfitter?.classList.contains("active")) this.renderOutfitter();
-    else if (this.tabShipyard?.classList.contains("active")) this.renderShipyard();
-    else if (this.tabMissions?.classList.contains("active")) this.renderMissions();
+    else if (this.tabOutfitter?.classList.contains("active"))
+      this.renderOutfitter();
+    else if (this.tabShipyard?.classList.contains("active"))
+      this.renderShipyard();
+    else if (this.tabMissions?.classList.contains("active"))
+      this.renderMissions();
   }
 }

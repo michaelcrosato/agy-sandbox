@@ -351,7 +351,11 @@ describe("Procedural Mission & Event Generation Engine Support", () => {
       expect(["courier", "smuggle", "bounty", "storyline"]).toContain(m.type);
       expect(m.destination).not.toBe("Sol");
       expect(m.reward).toBeGreaterThan(0);
-      if (m.type === "courier" || m.type === "smuggle" || m.type === "storyline") {
+      if (
+        m.type === "courier" ||
+        m.type === "smuggle" ||
+        m.type === "storyline"
+      ) {
         expect(m.cargoAmount).toBeGreaterThan(0);
         expect(m.cargoItem).toBeDefined();
       } else {
@@ -555,7 +559,7 @@ describe("Tactical Nebula Spatial Hazards and Drag Physics", () => {
       position: { x: 1000, y: 300 },
       radius: 450,
       dragMultiplier: 2.2,
-      hazardType: "friction"
+      hazardType: "friction",
     },
     {
       id: "nebula_azure",
@@ -563,8 +567,8 @@ describe("Tactical Nebula Spatial Hazards and Drag Physics", () => {
       position: { x: -1000, y: -800 },
       radius: 500,
       dragMultiplier: 2.6,
-      hazardType: "shield_dampen"
-    }
+      hazardType: "shield_dampen",
+    },
   ];
 
   beforeEach(() => {
@@ -597,7 +601,7 @@ describe("Tactical Nebula Spatial Hazards and Drag Physics", () => {
     const globalDrag = 0.1;
     const extraDragCoef = activeNeb.dragMultiplier - 1.0; // 1.2
     const extraDragForce = player.velocity.multiply(
-      -extraDragCoef * globalDrag * player.mass
+      -extraDragCoef * globalDrag * player.mass,
     );
 
     // The normal drag force inside SpaceEngine: -globalDrag * velocity * mass = -10000
@@ -638,7 +642,7 @@ describe("Tractor Beam Matrix & Cargo Pod Physics", () => {
     const pod = new CargoPod({
       resourceType: "electronics",
       amount: 3,
-      position: new Vector2D(100, 150)
+      position: new Vector2D(100, 150),
     });
 
     expect(pod.type).toBe("cargo_pod");
@@ -654,7 +658,7 @@ describe("Tractor Beam Matrix & Cargo Pod Physics", () => {
 
   test("Ship.addCargo checks capacities and correctly ingests cargo pods", () => {
     const ship = new Ship({
-      cargoCapacity: 5
+      cargoCapacity: 5,
     });
 
     // Ingest some food
@@ -684,7 +688,7 @@ describe("Tractor Beam Matrix & Cargo Pod Physics", () => {
     const pod = new CargoPod({
       resourceType: "minerals",
       amount: 1,
-      position: new Vector2D(100, 0) // Distance is exactly 100 units
+      position: new Vector2D(100, 0), // Distance is exactly 100 units
     });
 
     // Reset pod forces
@@ -693,7 +697,7 @@ describe("Tractor Beam Matrix & Cargo Pod Physics", () => {
     // Replicate server tractor physics logic
     const toShip = ship.position.subtract(pod.position);
     const dist = toShip.magnitude();
-    
+
     expect(dist).toBe(100);
     expect(ship.outfits).toContain("Tractor Beam Matrix");
 
@@ -718,7 +722,7 @@ describe("Tractor Beam Matrix & Cargo Pod Physics", () => {
     const pod = new CargoPod({
       resourceType: "minerals",
       amount: 1,
-      position: new Vector2D(300, 0) // Distance is exactly 300 units (> 250)
+      position: new Vector2D(300, 0), // Distance is exactly 300 units (> 250)
     });
 
     pod.accumulatorForce = new Vector2D(0, 0);
@@ -764,7 +768,7 @@ describe("Online Interface Efficiency & Robustness", () => {
       fleetName: "ALPHA-SQUAD",
       isLanded: true,
       ws: { id: "old-ws" },
-      cleanupTimeout: null
+      cleanupTimeout: null,
     };
 
     clientObj.ship.outfits.push("Tractor Beam Matrix");
@@ -794,7 +798,7 @@ describe("Online Interface Efficiency & Robustness", () => {
     expect(clientObj.ws.id).toBe("new-ws");
     expect(clientObj.fleetName).toBe("ALPHA-SQUAD");
     expect(clientObj.isLanded).toBe(true);
-    
+
     // Validate ship parameters are preserved
     expect(clientObj.ship.credits).toBe(7500);
     expect(clientObj.ship.cargoCapacity).toBe(40);
@@ -806,32 +810,45 @@ describe("Online Interface Efficiency & Robustness", () => {
     let currentPrice = 100;
 
     // Emulate purchase (price goes up by 2.2%)
-    currentPrice = Math.min(Math.round(basePrice * 2.5), Math.round(currentPrice * 1.022));
+    currentPrice = Math.min(
+      Math.round(basePrice * 2.5),
+      Math.round(currentPrice * 1.022),
+    );
     expect(currentPrice).toBe(102);
 
     // Emulate another purchase
-    currentPrice = Math.min(Math.round(basePrice * 2.5), Math.round(currentPrice * 1.022));
+    currentPrice = Math.min(
+      Math.round(basePrice * 2.5),
+      Math.round(currentPrice * 1.022),
+    );
     expect(currentPrice).toBe(104);
 
     // Emulate sale (price goes down by 1.8%)
-    currentPrice = Math.max(Math.round(basePrice * 0.4), Math.round(currentPrice * 0.982));
+    currentPrice = Math.max(
+      Math.round(basePrice * 0.4),
+      Math.round(currentPrice * 0.982),
+    );
     expect(currentPrice).toBe(102);
   });
 
   test("Economic self-normalization ticker pushes inflated or deflated prices back to baseline", () => {
     const baseline = 100;
-    
+
     // Test Inflated Price normalization
     let inflatedPrice = 150;
     const diffInflated = baseline - inflatedPrice; // -50
-    const stepInflated = Math.sign(diffInflated) * Math.max(1, Math.round(Math.abs(diffInflated) * 0.005)); // -1 * Math.max(1, 0) = -1
+    const stepInflated =
+      Math.sign(diffInflated) *
+      Math.max(1, Math.round(Math.abs(diffInflated) * 0.005)); // -1 * Math.max(1, 0) = -1
     inflatedPrice = inflatedPrice + stepInflated;
     expect(inflatedPrice).toBe(149); // Settles downwards
 
     // Test Deflated Price normalization
     let deflatedPrice = 60;
     const diffDeflated = baseline - deflatedPrice; // +40
-    const stepDeflated = Math.sign(diffDeflated) * Math.max(1, Math.round(Math.abs(diffDeflated) * 0.005)); // +1 * Math.max(1, 0) = +1
+    const stepDeflated =
+      Math.sign(diffDeflated) *
+      Math.max(1, Math.round(Math.abs(diffDeflated) * 0.005)); // +1 * Math.max(1, 0) = +1
     deflatedPrice = deflatedPrice + stepDeflated;
     expect(deflatedPrice).toBe(61); // Settles upwards
   });
@@ -842,12 +859,12 @@ describe("Online Interface Efficiency & Robustness", () => {
       id: "player-recovery-77",
       nickname: "Loner Standby",
       ship: new Ship({ credits: 2000 }),
-      cleanupTimeout: setTimeout(() => {}, 30000)
+      cleanupTimeout: setTimeout(() => {}, 30000),
     };
 
     // Active connection map (standby player is disconnected and removed from here)
     const activeClients = [];
-    
+
     // Persistent sessions map (standby player remains here during grace period)
     const persistentSessions = [standbyClient];
 
@@ -855,11 +872,13 @@ describe("Online Interface Efficiency & Robustness", () => {
     const deadShipRef = standbyClient.ship;
 
     // Search active connections (fails!)
-    const matchedActive = activeClients.find(c => c.ship === deadShipRef);
+    const matchedActive = activeClients.find((c) => c.ship === deadShipRef);
     expect(matchedActive).toBeUndefined();
 
     // Search persistent sessions (succeeds!)
-    const matchedStandby = persistentSessions.find(c => c.ship === deadShipRef);
+    const matchedStandby = persistentSessions.find(
+      (c) => c.ship === deadShipRef,
+    );
     expect(matchedStandby).toBeDefined();
     expect(matchedStandby.id).toBe("player-recovery-77");
 
@@ -867,11 +886,11 @@ describe("Online Interface Efficiency & Robustness", () => {
     const killerId = "player-recovery-77";
 
     // Search active connections (fails!)
-    const killerActive = activeClients.find(c => c.id === killerId);
+    const killerActive = activeClients.find((c) => c.id === killerId);
     expect(killerActive).toBeUndefined();
 
     // Search persistent sessions (succeeds!)
-    const killerStandby = persistentSessions.find(c => c.id === killerId);
+    const killerStandby = persistentSessions.find((c) => c.id === killerId);
     expect(killerStandby).toBeDefined();
     expect(killerStandby.nickname).toBe("Loner Standby");
 
@@ -888,7 +907,7 @@ describe("Online Interface Efficiency & Robustness", () => {
         id: "player-1",
         nickname: "Alpha",
         ship: playerShip,
-      }
+      },
     ];
 
     // Mock functions
@@ -906,19 +925,22 @@ describe("Online Interface Efficiency & Robustness", () => {
     // Emulate onEntityDestroyed logic
     function onEntityDestroyedMock(ent) {
       if (ent.type === "ship") {
-        const isPirate = ent.name === "Pirate Raider" || ent.name.includes("Pirate") || ent.name.includes("Raider");
-        
+        const isPirate =
+          ent.name === "Pirate Raider" ||
+          ent.name.includes("Pirate") ||
+          ent.name.includes("Raider");
+
         if (isPirate) {
           mockScheduleAIRespawn(ent.name, ent.role);
         } else {
           // Check if it's a player ship and respawn them
-          const deadClient = persistentSessions.find(c => c.ship === ent);
+          const deadClient = persistentSessions.find((c) => c.ship === ent);
           if (deadClient) {
             mockHandlePlayerRespawnServer(deadClient);
           }
         }
 
-        const isPlayerShip = persistentSessions.some(c => c.ship === ent);
+        const isPlayerShip = persistentSessions.some((c) => c.ship === ent);
         if (!isPlayerShip) {
           mockScheduleAIRespawn(ent.name, ent.role);
         }
@@ -949,7 +971,7 @@ describe("Endless Sky Systems Modernization Integration", () => {
       maxEnergy: 100,
       maxHeat: 100,
       thrustPower: 10000,
-      mass: 1000
+      mass: 1000,
     });
 
     ship.energy = 100;
@@ -986,7 +1008,7 @@ describe("Endless Sky Systems Modernization Integration", () => {
   test("Reactor Thermal Meltdown nerfs maximum speed and decays structural armor", () => {
     const ship = new Ship({
       maxSpeed: 400,
-      maxArmor: 100
+      maxArmor: 100,
     });
 
     ship.armor = 100;
@@ -1017,7 +1039,7 @@ describe("Endless Sky Systems Modernization Integration", () => {
 
   test("Defeated ship enters disabled drifting state at 0 armor instead of exploding", () => {
     const ship = new Ship({
-      maxArmor: 100
+      maxArmor: 100,
     });
 
     ship.shield = 0; // Deactivate shields to test pure armor failure
@@ -1051,7 +1073,7 @@ describe("Endless Sky Systems Modernization Integration", () => {
       type: "warp_gate",
       position: { x: 50, y: 0 },
       targetSector: "frontier",
-      targetPosition: { x: 20000, y: 20000 }
+      targetPosition: { x: 20000, y: 20000 },
     };
 
     // 1. Proximity check (gate is at 50, player at 0, dist is 50 <= 150)
@@ -1063,7 +1085,10 @@ describe("Endless Sky Systems Modernization Integration", () => {
 
     // 3. Perform Warp jump
     playerShip.hyperFuel -= 20;
-    playerShip.position = new Vector2D(gate.targetPosition.x, gate.targetPosition.y);
+    playerShip.position = new Vector2D(
+      gate.targetPosition.x,
+      gate.targetPosition.y,
+    );
     playerShip.velocity = new Vector2D(0, 0);
 
     expect(playerShip.hyperFuel).toBe(80);
@@ -1143,4 +1168,3 @@ describe("Galactic Navigation System", () => {
     expect(calculateShortestPath("core", null)).toEqual([]);
   });
 });
-

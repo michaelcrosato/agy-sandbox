@@ -507,6 +507,30 @@ h1, h2, h3, h4 {
   border-bottom: 1px solid var(--color-border);
 }
 
+.trade-price-high {
+  color: var(--color-green);
+  text-shadow: 0 0 8px var(--color-green-glow);
+  font-weight: 600;
+}
+
+.trade-price-low {
+  color: var(--color-shield);
+  text-shadow: 0 0 8px var(--color-shield-glow);
+  font-weight: 600;
+}
+
+.trend-high {
+  color: var(--color-green);
+  font-size: 10px;
+  vertical-align: middle;
+}
+
+.trend-low {
+  color: var(--color-shield);
+  font-size: 10px;
+  vertical-align: middle;
+}
+
 /* Tab Cards grids */
 .outfitter-grid, .shipyard-grid {
   display: grid;

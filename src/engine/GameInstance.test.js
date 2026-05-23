@@ -12,8 +12,8 @@ describe("GameInstance Multi-Room Matchmaking & Isolation Mechanics", () => {
     expect(roomB.planets.length).toBe(8);
 
     // Verify Sol planet colors and structures are seeded independently
-    const solA = roomA.planets.find(p => p.name === "Sol");
-    const solB = roomB.planets.find(p => p.name === "Sol");
+    const solA = roomA.planets.find((p) => p.name === "Sol");
+    const solB = roomB.planets.find((p) => p.name === "Sol");
     expect(solA).toBeDefined();
     expect(solB).toBeDefined();
     expect(solA).not.toBe(solB); // separate instances!
@@ -32,7 +32,7 @@ describe("GameInstance Multi-Room Matchmaking & Isolation Mechanics", () => {
       id: "player-a",
       name: "Alpha Starfighter",
       position: new Vector2D(50000, 0),
-      velocity: new Vector2D(100, 0)
+      velocity: new Vector2D(100, 0),
     });
     roomA.engine.addEntity(shipA);
 
@@ -41,7 +41,7 @@ describe("GameInstance Multi-Room Matchmaking & Isolation Mechanics", () => {
       id: "player-b",
       name: "Beta Interceptor",
       position: new Vector2D(60000, 0),
-      velocity: new Vector2D(0, 200)
+      velocity: new Vector2D(0, 200),
     });
     roomB.engine.addEntity(shipB);
 

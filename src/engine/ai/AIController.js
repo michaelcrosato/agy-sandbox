@@ -67,20 +67,22 @@ export class AIController {
       if (dist < closestDist) {
         if (this.role === "pirate") {
           // Pirates target any player or non-pirate ship
-          const isAnotherPirate = ent.name === "Pirate Raider" || 
-                                  ent.name === "Siege Raider" || 
-                                  ent.name.includes("Pirate") || 
-                                  ent.name.includes("Raider");
+          const isAnotherPirate =
+            ent.name === "Pirate Raider" ||
+            ent.name === "Siege Raider" ||
+            ent.name.includes("Pirate") ||
+            ent.name.includes("Raider");
           if (!isAnotherPirate) {
             closestTarget = ent;
             closestDist = dist;
           }
         } else if (this.role === "guard") {
           // Guards target pirate ships
-          const isThreat = ent.name === "Pirate Raider" || 
-                           ent.name === "Siege Raider" || 
-                           ent.name.includes("Pirate") || 
-                           ent.name.includes("Raider");
+          const isThreat =
+            ent.name === "Pirate Raider" ||
+            ent.name === "Siege Raider" ||
+            ent.name.includes("Pirate") ||
+            ent.name.includes("Raider");
           if (isThreat) {
             closestTarget = ent;
             closestDist = dist;
@@ -253,9 +255,12 @@ export class AIController {
 
       if (!currentTarget || currentTarget.isDestroyed) {
         // scan for closest active pirate raider threat
-        const hostiles = entities.filter(ent =>
-          ent.type === "ship" && !ent.isDestroyed &&
-          (ent.name === "Pirate Raider" || ent.name.includes("Pirate")));
+        const hostiles = entities.filter(
+          (ent) =>
+            ent.type === "ship" &&
+            !ent.isDestroyed &&
+            (ent.name === "Pirate Raider" || ent.name.includes("Pirate")),
+        );
         let closestDist = 600;
         for (const pirate of hostiles) {
           const dist = this.ship.position.distance(pirate.position);
@@ -271,8 +276,13 @@ export class AIController {
         const dist = this.ship.position.distance(currentTarget.position);
         if (dist < 400) {
           this.ship.controls.isThrusting = dist > 140;
-          const angle = Math.atan2(currentTarget.position.y - this.ship.position.y, currentTarget.position.x - this.ship.position.x);
-          const headingDiff = Math.abs(this.normalizeAngle(angle - this.ship.heading));
+          const angle = Math.atan2(
+            currentTarget.position.y - this.ship.position.y,
+            currentTarget.position.x - this.ship.position.x,
+          );
+          const headingDiff = Math.abs(
+            this.normalizeAngle(angle - this.ship.heading),
+          );
           if (headingDiff < 0.25) {
             this.ship.controls.isFiring = true;
           }
@@ -291,7 +301,10 @@ export class AIController {
     let closestThreatDist = 400;
     for (const ent of entities) {
       if (ent.isDestroyed || ent.type !== "ship") continue;
-      const isPirate = ent.name === "Pirate Raider" || ent.name.includes("Pirate") || ent.name.includes("Raider");
+      const isPirate =
+        ent.name === "Pirate Raider" ||
+        ent.name.includes("Pirate") ||
+        ent.name.includes("Raider");
       if (isPirate) {
         const distToFlagship = ent.position.distance(this.flagship.position);
         if (distToFlagship < closestThreatDist) {
@@ -307,8 +320,13 @@ export class AIController {
       const dist = this.ship.position.distance(threat.position);
       if (dist < 350) {
         this.ship.controls.isThrusting = dist > 120;
-        const angle = Math.atan2(threat.position.y - this.ship.position.y, threat.position.x - this.ship.position.x);
-        const headingDiff = Math.abs(this.normalizeAngle(angle - this.ship.heading));
+        const angle = Math.atan2(
+          threat.position.y - this.ship.position.y,
+          threat.position.x - this.ship.position.x,
+        );
+        const headingDiff = Math.abs(
+          this.normalizeAngle(angle - this.ship.heading),
+        );
         if (headingDiff < 0.3) {
           this.ship.controls.isFiring = true;
         }
@@ -325,13 +343,17 @@ export class AIController {
         this.ship.controls.isBraking = true;
       } else {
         // Gently match flagship heading
-        const angleDiff = this.normalizeAngle(this.flagship.heading - this.ship.heading);
+        const angleDiff = this.normalizeAngle(
+          this.flagship.heading - this.ship.heading,
+        );
         if (Math.abs(angleDiff) > 0.08) {
           if (angleDiff > 0) this.ship.controls.isTurningRight = true;
           else this.ship.controls.isTurningLeft = true;
         }
         // Match speed relative to target flagship
-        if (this.ship.velocity.magnitude() < this.flagship.velocity.magnitude()) {
+        if (
+          this.ship.velocity.magnitude() < this.flagship.velocity.magnitude()
+        ) {
           this.ship.controls.isThrusting = true;
         }
       }

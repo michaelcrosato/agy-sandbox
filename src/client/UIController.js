@@ -81,8 +81,14 @@ export class UIController {
     // 1. Update Shields, Armor, Energy & Heat bars
     const shieldPct = Math.max(0, (player.shield / player.maxShield) * 100);
     const armorPct = Math.max(0, (player.armor / player.maxArmor) * 100);
-    const energyPct = Math.max(0, ((player.energy || 0) / (player.maxEnergy || 100)) * 100);
-    const heatPct = Math.max(0, ((player.heat || 0) / (player.maxHeat || 100)) * 100);
+    const energyPct = Math.max(
+      0,
+      ((player.energy || 0) / (player.maxEnergy || 100)) * 100,
+    );
+    const heatPct = Math.max(
+      0,
+      ((player.heat || 0) / (player.maxHeat || 100)) * 100,
+    );
 
     if (this.shieldBar) this.shieldBar.style.width = `${shieldPct}%`;
     if (this.armorBar) this.armorBar.style.width = `${armorPct}%`;
@@ -95,8 +101,7 @@ export class UIController {
       this.armorVal.innerText = `${Math.floor(player.armor)} / ${player.maxArmor}`;
     if (this.energyVal)
       this.energyVal.innerText = `${Math.floor(player.energy || 0)} / ${player.maxEnergy || 100}`;
-    if (this.heatVal)
-      this.heatVal.innerText = `${Math.floor(heatPct)}%`;
+    if (this.heatVal) this.heatVal.innerText = `${Math.floor(heatPct)}%`;
 
     if (this.overheatAlert) {
       this.overheatAlert.style.display = player.isOverheated ? "block" : "none";
@@ -161,7 +166,9 @@ export class UIController {
     }
 
     if (nearWarpGate && this.warpPrompt) {
-      const dest = nearWarpGate.targetSector ? nearWarpGate.targetSector.toUpperCase() : "UNKNOWN";
+      const dest = nearWarpGate.targetSector
+        ? nearWarpGate.targetSector.toUpperCase()
+        : "UNKNOWN";
       this.warpPrompt.innerHTML = `LOCKED ON HYPERLANE TO <strong>${dest} SECTOR</strong><br><small>PRESS [J] TO ENGAGE WARP DRIVE (20 HYPER-FUEL)</small>`;
       this.warpPrompt.classList.add("visible");
     } else if (this.warpPrompt) {
@@ -184,8 +191,9 @@ export class UIController {
 
     if (currentNebula && this.nebulaPanel) {
       this.nebulaPanel.classList.add("visible");
-      if (this.nebulaName) this.nebulaName.innerText = currentNebula.name.toUpperCase();
-      
+      if (this.nebulaName)
+        this.nebulaName.innerText = currentNebula.name.toUpperCase();
+
       let title = "NEBULA STEALTH ACTIVE";
       let details = `DRAG: ${currentNebula.dragMultiplier}x | `;
       let color = "rgba(192, 128, 255, 0.7)"; // violet
@@ -211,7 +219,7 @@ export class UIController {
         this.nebulaTitle.style.color = color;
       }
       if (this.nebulaDetails) this.nebulaDetails.innerText = details;
-      
+
       this.nebulaPanel.style.borderColor = color;
       this.nebulaPanel.style.boxShadow = `0 0 15px ${glow}`;
     } else if (this.nebulaPanel) {

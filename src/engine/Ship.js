@@ -164,16 +164,22 @@ export class Ship extends SpaceEntity {
       const shieldDeficit = this.maxShield - this.shield;
       const regenAttempt = Math.min(shieldDeficit, this.shieldRegen * dt);
       const energyCost = regenAttempt * 1.2; // 1.2 energy per 1 shield unit
-      
+
       if (this.energy >= energyCost) {
         this.energy -= energyCost;
-        this.heat = Math.min(this.maxHeat * 1.5, this.heat + regenAttempt * 0.4);
+        this.heat = Math.min(
+          this.maxHeat * 1.5,
+          this.heat + regenAttempt * 0.4,
+        );
         this.shield += regenAttempt;
       } else {
         // partial regen if energy is constrained
-        const partialRegen = (this.energy / 1.2);
+        const partialRegen = this.energy / 1.2;
         this.energy = 0;
-        this.heat = Math.min(this.maxHeat * 1.5, this.heat + partialRegen * 0.4);
+        this.heat = Math.min(
+          this.maxHeat * 1.5,
+          this.heat + partialRegen * 0.4,
+        );
         this.shield += partialRegen;
       }
     }

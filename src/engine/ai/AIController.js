@@ -253,7 +253,9 @@ export class AIController {
 
       if (!currentTarget || currentTarget.isDestroyed) {
         // scan for closest active pirate raider threat
-        const hostiles = entities.filter(ent => (ent.name === "Pirate Raider" || ent.name.includes("Pirate")) && !ent.isDestroyed);
+        const hostiles = entities.filter(ent =>
+          ent.type === "ship" && !ent.isDestroyed &&
+          (ent.name === "Pirate Raider" || ent.name.includes("Pirate")));
         let closestDist = 600;
         for (const pirate of hostiles) {
           const dist = this.ship.position.distance(pirate.position);

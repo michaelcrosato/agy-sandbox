@@ -30,6 +30,10 @@ export class Ship extends SpaceEntity {
     credits = 5000,
     cargoCapacity = 20,
     name = "Starfarer",
+    weaponDamage = 15,
+    weaponRange = 600,
+    weaponSpeed = 500,
+    weaponCooldown = 0.25,
     ...parentParams
   } = {}) {
     super({ type: "ship", mass: 2000, radius: 15, ...parentParams });
@@ -75,10 +79,10 @@ export class Ship extends SpaceEntity {
 
     // Weapon & Outfit Loadouts
     this.outfits = ["Basic Laser"];
-    this.weaponDamage = 15;
-    this.weaponRange = 600; // in pixels/units
-    this.weaponSpeed = 500; // projectile velocity
-    this.weaponCooldown = 0.25; // seconds between fires
+    this.weaponDamage = weaponDamage;
+    this.weaponRange = weaponRange;
+    this.weaponSpeed = weaponSpeed;
+    this.weaponCooldown = weaponCooldown;
     this.activeWeaponCooldown = 0; // current active countdown
 
     // Controls state map

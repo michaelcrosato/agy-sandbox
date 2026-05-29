@@ -29,6 +29,7 @@ export class Ship extends SpaceEntity {
     shieldRegen = 10,
     credits = 5000,
     cargoCapacity = 20,
+    passengerCapacity = 4,
     name = "Starfarer",
     faction = null,
     weaponDamage = 15,
@@ -86,6 +87,8 @@ export class Ship extends SpaceEntity {
     // Trading & Economy Systems
     this.credits = credits;
     this.cargoCapacity = cargoCapacity;
+    // Passenger berths (EW4) — passenger-charter missions occupy these, not cargo.
+    this.passengerCapacity = passengerCapacity;
     this.cargo = {
       food: 0,
       electronics: 0,

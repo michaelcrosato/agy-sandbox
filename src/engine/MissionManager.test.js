@@ -275,3 +275,66 @@ describe("MissionManager.abandonMission", () => {
     expect(mm.activeMissions.length).toBe(1);
   });
 });
+
+describe("MissionManager passenger charters (EW4)", () => {
+  function passengerMission(id, dest, bunks, reward = 1000) {
+    return {
+      id,
+      type: "passenger",
+      title: `Charter to ${dest}`,
+      reward,
+      origin: "Sol",
+      destination: dest,
+      bunks,
+    };
+  }
+
+  test("accepting a charter reserves bunks and adds no cargo", () => {
+    const mm = new MissionManager();
+    const player = new Ship({ passengerCapacity: 4 });
+    mm.availableMissions["Sol"] = [passengerMission("p1", "New Polaris", 3)];
+    const res = mm.acceptMission("Sol", "p1", player);
+    expect(res.success).toBe(true);
+    expect(player.getCargoWeight()).toBe(0);
+    expect(mm.activeMissions.length).toBe(1);
+  });
+
+  test("refuses a charter that exceeds free bunks", () => {
+    const mm = new MissionManager();
+    const player = new Ship({ passengerCapacity: 4 });
+    mm.availableMissions["Sol"] = [
+      passengerMission("p1", "New Polaris", 3),
+      passengerMission("p2", "Sigma Draconis", 2),
+    ];
+    expect(mm.acceptMission("Sol", "p1", player).success).toBe(true); // 3 bunks
+    const res = mm.acceptMission("Sol", "p2", player); // +2 > 4
+    expect(res.success).toBe(false);
+    expect(res.message).toContain("berth");
+    expect(mm.activeMissions.length).toBe(1);
+  });
+
+  test("arrival pays the reward, carries no cargo, and frees the bunks", () => {
+    const mm = new MissionManager();
+    const player = new Ship({ credits: 5000, passengerCapacity: 4 });
+    mm.availableMissions["Sol"] = [
+      passengerMission("p1", "New Polaris", 3, 1500),
+    ];
+    mm.acceptMission("Sol", "p1", player);
+
+    // Wrong destination: stays active.
+    expect(mm.checkArrivalCompletions("Sigma Draconis", player).length).toBe(0);
+    expect(mm.activeMissions.length).toBe(1);
+
+    // Correct destination: completes + pays, no cargo touched.
+    const done = mm.checkArrivalCompletions("New Polaris", player);
+    expect(done.length).toBe(1);
+    expect(done[0].isCompleted).toBe(true);
+    expect(player.credits).toBe(6500);
+    expect(player.getCargoWeight()).toBe(0);
+    expect(mm.activeMissions.length).toBe(0);
+
+    // Bunks freed: a fresh 4-bunk charter now fits.
+    mm.availableMissions["Sol"] = [passengerMission("p2", "Sigma Draconis", 4)];
+    expect(mm.acceptMission("Sol", "p2", player).success).toBe(true);
+  });
+});

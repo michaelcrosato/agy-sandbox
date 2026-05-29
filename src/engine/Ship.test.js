@@ -18,6 +18,7 @@ describe("Ship construction", () => {
     expect(s.armor).toBe(100);
     expect(s.credits).toBe(5000);
     expect(s.cargoCapacity).toBe(20);
+    expect(s.passengerCapacity).toBe(4);
     expect(s.energy).toBe(100);
     expect(s.heat).toBe(0);
     expect(s.hyperFuel).toBe(100);

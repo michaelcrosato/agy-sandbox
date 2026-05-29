@@ -50,6 +50,7 @@ const PLAYER_HULL_FIELDS = Object.freeze([
   "weaponSpeed",
   "weaponCooldown",
   "cargoCapacity",
+  "passengerCapacity",
   "hullMass",
   "outfitMass",
   "kills",

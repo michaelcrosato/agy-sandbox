@@ -55,7 +55,7 @@ export class MissionManager {
           Math.floor(Math.random() * destinationPlanets.length)
         ];
 
-      if (typeRand < 0.35) {
+      if (typeRand < 0.3) {
         // 1. Courier Delivery Mission
         const commodity =
           this.courierCommodities[
@@ -80,7 +80,7 @@ export class MissionManager {
           isAccepted: false,
           isCompleted: false,
         });
-      } else if (typeRand < 0.7) {
+      } else if (typeRand < 0.55) {
         // 2. High-Risk Smuggling Mission
         const amount = 3 + Math.floor(Math.random() * 4); // 3 to 6 tons of contraband
         const distance = destPlanet.position.distance(
@@ -101,7 +101,7 @@ export class MissionManager {
           isAccepted: false,
           isCompleted: false,
         });
-      } else {
+      } else if (typeRand < 0.8) {
         // 3. Combat Bounty Hunt
         const targetName =
           this.bountyNames[
@@ -123,6 +123,26 @@ export class MissionManager {
           origin: planetName,
           destination: destPlanet.name,
           targetName: targetName,
+          isAccepted: false,
+          isCompleted: false,
+        });
+      } else {
+        // 4. Passenger Charter
+        const bunks = 1 + Math.floor(Math.random() * 3); // 1-3 berths
+        const distance = destPlanet.position.distance(
+          allPlanets.find((p) => p.name === planetName).position,
+        );
+        const reward = Math.round(600 + distance * 0.5 + bunks * 220);
+
+        missions.push({
+          id: `passenger-${planetName}-${Date.now()}-${i}`,
+          type: "passenger",
+          title: `Passenger Charter to ${destPlanet.name}`,
+          description: `Ferry ${bunks} passenger(s) to ${destPlanet.name}. They pay on safe arrival.`,
+          reward: reward,
+          origin: planetName,
+          destination: destPlanet.name,
+          bunks: bunks,
           isAccepted: false,
           isCompleted: false,
         });
@@ -191,6 +211,23 @@ export class MissionManager {
       return { success: false, message: "Mission not found.", mission: null };
     }
 
+    // Passenger charters occupy bunks rather than cargo tonnage.
+    if (mission.type === "passenger") {
+      const capacity = Number.isFinite(player.passengerCapacity)
+        ? player.passengerCapacity
+        : 0;
+      const usedBunks = this.activeMissions
+        .filter((m) => m.type === "passenger")
+        .reduce((sum, m) => sum + (m.bunks || 0), 0);
+      if (usedBunks + (mission.bunks || 0) > capacity) {
+        return {
+          success: false,
+          message: `Not enough passenger berths! Needs ${mission.bunks} free berth(s).`,
+          mission: null,
+        };
+      }
+    }
+
     // 1. Cargo Space check
     if (mission.cargoAmount && mission.cargoItem) {
       if (
@@ -246,6 +283,15 @@ export class MissionManager {
         // Remove cargo
         player.removeCargo(mission.cargoItem, mission.cargoAmount);
 
+        completed.push(mission);
+      } else if (
+        mission.type === "passenger" &&
+        mission.destination === destinationName
+      ) {
+        // Passengers disembark and pay on arrival; they carry no cargo, and
+        // leaving activeMissions frees the bunks they occupied.
+        mission.isCompleted = true;
+        player.credits += mission.reward;
         completed.push(mission);
       } else if (
         mission.type === "storyline" &&

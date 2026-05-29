@@ -28,6 +28,9 @@ import { selectDeadSockets, DEFAULT_HEARTBEAT_MS } from "./net/heartbeat.js";
 import { sendDecision } from "./net/backpressure.js";
 import { createRegistry } from "./net/metrics.js";
 import { createLogger } from "./net/logger.js";
+import { applyOutfitStats } from "./engine/Outfitting.js";
+import { buildStatsPayload } from "./net/statsPayload.js";
+import { shouldGcRoom, sanitizeNickname } from "./server/roomLifecycle.js";
 
 const JUMP_FUEL_COST = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost;
 
@@ -410,8 +413,7 @@ setInterval(() => {
 setInterval(() => {
   const now = Date.now();
   for (const [id, room] of instances.entries()) {
-    if (id === "public") continue;
-    if (room.clients.size === 0 && now - room.lastActiveTime > 30000) {
+    if (shouldGcRoom(room, { now })) {
       console.log(
         `🧹 Garbage Collecting inactive sector: [${room.name}] (${id})`,
       );
@@ -715,7 +717,7 @@ function joinRoom(clientObj, roomId, nickname) {
   const room = instances.get(roomId) || instances.get("public");
 
   clientObj.roomId = room.id;
-  clientObj.nickname = (nickname || "Pilot").trim().substring(0, 12);
+  clientObj.nickname = sanitizeNickname(nickname);
 
   room.clients.set(clientObj.ws, clientObj);
   room.lastActiveTime = Date.now();
@@ -855,33 +857,8 @@ wss.on("connection", (ws) => {
       }
     },
     sendStats() {
-      if (!this.ship) return;
-      this.send({
-        type: "stats",
-        credits: this.ship.credits,
-        cargo: this.ship.cargo,
-        shield: this.ship.shield,
-        maxShield: this.ship.maxShield,
-        armor: this.ship.armor,
-        maxArmor: this.ship.maxArmor,
-        name: this.ship.name,
-        outfits: this.ship.outfits,
-        cargoCapacity: this.ship.cargoCapacity,
-        thrustPower: this.ship.thrustPower,
-        turnRate: this.ship.turnRate,
-        weaponDamage: this.ship.weaponDamage,
-        activeMissions: this.missionManager.activeMissions,
-        energy: this.ship.energy,
-        maxEnergy: this.ship.maxEnergy,
-        heat: this.ship.heat,
-        maxHeat: this.ship.maxHeat,
-        hyperFuel: this.ship.hyperFuel,
-        maxHyperFuel: this.ship.maxHyperFuel,
-        isOverheated: this.ship.isOverheated,
-        isDisabled: this.ship.isDisabled,
-        kills: this.ship.kills,
-        combatRating: this.ship.combatRating,
-      });
+      const payload = buildStatsPayload(this);
+      if (payload) this.send(payload);
     },
   };
 
@@ -1416,44 +1393,7 @@ wss.on("connection", (ws) => {
         clientObj.ship.credits -= outfit.cost;
         clientObj.ship.outfits.push(outfit.name);
 
-        if (outfit.type === "shield") {
-          clientObj.ship.maxShield += outfit.value;
-          clientObj.ship.shield = clientObj.ship.maxShield;
-        } else if (outfit.type === "engine") {
-          clientObj.ship.thrustPower += outfit.value;
-          clientObj.ship.maxSpeed += 50;
-        } else if (outfit.type === "weapon") {
-          clientObj.ship.weaponDamage += outfit.value;
-        } else if (outfit.type === "pierce") {
-          clientObj.ship.weaponShieldPierce = Math.min(
-            1,
-            (clientObj.ship.weaponShieldPierce || 0) + outfit.value,
-          );
-        } else if (outfit.type === "cargo") {
-          clientObj.ship.cargoCapacity += outfit.value;
-        } else if (outfit.type === "reactor") {
-          clientObj.ship.energyRegen += outfit.value;
-        } else if (outfit.type === "radiator") {
-          clientObj.ship.heatDissipation += outfit.value;
-        } else if (outfit.type === "capacitor") {
-          clientObj.ship.maxEnergy += outfit.value;
-          clientObj.ship.energy = clientObj.ship.maxEnergy;
-        } else if (outfit.type === "ramscoop") {
-          clientObj.ship.ramscoopRate =
-            (clientObj.ship.ramscoopRate || 0) + outfit.value;
-        } else if (outfit.type === "fuel") {
-          clientObj.ship.maxHyperFuel += outfit.value;
-          clientObj.ship.hyperFuel = clientObj.ship.maxHyperFuel;
-        } else if (outfit.type === "miner") {
-          clientObj.ship.miningYieldMultiplier =
-            (clientObj.ship.miningYieldMultiplier || 1) + outfit.value;
-        }
-
-        // Bolt the outfit's physical mass onto the hull so handling is the
-        // tradeoff for the stat gains: heavier ships accelerate and turn slower.
-        if (outfit.mass) {
-          clientObj.ship.addOutfitMass(outfit.mass);
-        }
+        applyOutfitStats(clientObj.ship, outfit);
 
         clientObj.send({
           type: "notification",

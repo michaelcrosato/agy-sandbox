@@ -1,6 +1,6 @@
 # TICKET005 — Extract testable units from src/server.js
 
-- **Status:** TODO
+- **Status:** DONE (2026-05-29) — completed via `plan/specs/007`
 - **Priority:** P3 (do after higher-leverage product slices)
 
 ## Goal

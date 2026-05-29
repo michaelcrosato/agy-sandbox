@@ -16,7 +16,7 @@ _Baseline at blueprint generation (2026-05-28): 569 tests / 33 suites green; ESL
 - [x] `006` Economy NaN self-heal + heartbeat diffusion guard — **done** (files: `src/engine/EconomyManager.js` self-heals non-finite price→baseline; `src/engine/GalaxyHeartbeat.js` skips/guards non-finite operands; +3 tests. Closes TICKET003 follow-up)
 
 ## Phase 1 — Core Upgrades
-- [ ] `007` Modularize server.js (extract tested units) — _blocked by: none (eased by 002–004)_
+- [x] `007` Modularize server.js (extract tested units) — **done** (files: new `src/engine/Outfitting.js` (applyOutfitStats), `src/net/statsPayload.js` (buildStatsPayload), `src/server/roomLifecycle.js` (shouldGcRoom + sanitizeNickname) + tests; `src/server.js` routes through them, behavior-identical, boots. Supersedes TICKET005)
 - [x] `008` Persistence kill→restart→rejoin integration test — **done** (file: new `src/persistence/restart.integration.test.js` — real JsonFileStore round-trip, fresh manager/instance, asserts markets+pulses+full player ledger. Supersedes TICKET004)
 - [x] `009` Decouple threat detection from ship names; wire seeded names — **done** (files: `AIController.isPirateShip` role-precedence + null-safe; `GameInstance` loot branch routes through it; `spawnNPCPirate` sets `role="pirate"` + procedural `NameGenerator` names; +3 tests)
 - [x] `010` Observability: structured logging + runtime metrics — **done** (files: new `src/net/metrics.js` + `src/net/logger.js` + tests; `src/server.js` `/metrics` route + clients/rooms gauges, tick_ms, broadcast_bytes, slow_client_drops, heartbeat_reaps, connections_total)

@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-29T00:34 · iter-0035 · GREEN · spec-007-modularize-server
+
+- **Baseline:** `2c6e6a0`-pre; 600 tests / 39 suites green. `src/server.js` carried untested inline logic. Executing `plan/specs/007` (supersedes TICKET005).
+- **Move:** Extract self-contained pure logic out of the socket monolith into tested modules, behavior-identical.
+- **Changed:** Three new pure modules + tests — `src/engine/Outfitting.js` `applyOutfitStats(ship, outfit)` (the `outfit_buy` type→stat switch + mass), `src/net/statsPayload.js` `buildStatsPayload(clientObj)` (the `stats` message shape), `src/server/roomLifecycle.js` `shouldGcRoom(room,{now,idleMs})` + `sanitizeNickname(raw)` (idle-room GC predicate + nickname cap). `src/server.js` now imports and delegates: `outfit_buy` (and the salvage path unchanged), `sendStats`, the room-GC interval, and the join handler. +14 deterministic tests.
+- **Decisions:** Kept each extraction byte-identical (e.g. `engine` outfit still hard-codes `maxSpeed += 50`; nickname keeps the exact `(raw||"Pilot").trim().substring(0,12)`); verified by booting. The extractions removed ~62 lines of inline logic from `server.js`; the file's absolute size still reflects the heartbeat/backpressure/origin/metrics hardening added in specs 002–004/010, so net LOC is roughly flat — the win is testable seams, not raw line count.
+- **Validation:** `npm run agent:check` → green (614 tests / 42 suites, prettier clean). Boot smoke + `curl /metrics` → server serves and reports live. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 007 done; TICKET005 closed.
+- **Next:** `plan/specs/013` (Google GenAI SDK migration), then the toolchain majors (011/012) and Phase 2 features.
+
 ## 2026-05-29T00:20 · iter-0034 · GREEN · spec-010-observability-metrics
 
 - **Baseline:** `27fd6da`-pre; 592 tests / 37 suites green. The server had only ad-hoc `console.*` and no runtime metrics. Executing `plan/specs/010`.

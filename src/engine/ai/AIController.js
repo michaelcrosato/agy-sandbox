@@ -6,10 +6,17 @@ export class AIController {
    * Creates an AIController for a ship.
    * @param {Ship} ship - The ship being controlled.
    * @param {string} [role] - AI role ("pirate", "merchant", "guard").
+   * @param {Object} [options] - Optional configuration.
+   * @param {Object} [options.factionPolicy] - Pairwise faction relation view
+   *   exposing `isHostile(a, b)` and `isAllied(a, b)`. When set AND both the
+   *   self ship and a candidate target carry a `faction` tag, target
+   *   selection uses faction relations; otherwise the legacy name-based
+   *   classifier (`isPirateShip`) is used unchanged.
    */
-  constructor(ship, role = "merchant") {
+  constructor(ship, role = "merchant", { factionPolicy = null } = {}) {
     this.ship = ship;
     this.role = role;
+    this.factionPolicy = factionPolicy;
 
     // AI target tracking
     this.target = null;
@@ -63,6 +70,47 @@ export class AIController {
   }
 
   /**
+   * Decides whether `ent` is a valid target for this controller's role.
+   *
+   * Faction-aware path (used only when this ship, the candidate, AND the
+   * controller's factionPolicy are all present):
+   *   - guard: engages factions hostile to its own.
+   *   - pirate: engages anything not allied with and not of its own faction.
+   *
+   * Fallback (no factions configured or policy unset): preserves the legacy
+   * name-based behaviour exactly, so existing fleets and tests are
+   * unaffected.
+   *
+   * @param {SpaceEntity} ent - Candidate target.
+   * @returns {boolean} True if the role wants to engage this entity.
+   */
+  shouldTarget(ent) {
+    const selfFaction = this.ship.faction;
+    const targetFaction = ent.faction;
+    const factionPathAvailable =
+      this.factionPolicy && selfFaction && targetFaction;
+
+    if (this.role === "pirate") {
+      if (factionPathAvailable) {
+        if (selfFaction === targetFaction) return false;
+        if (this.factionPolicy.isAllied(selfFaction, targetFaction))
+          return false;
+        return true;
+      }
+      return !AIController.isPirateShip(ent);
+    }
+
+    if (this.role === "guard") {
+      if (factionPathAvailable) {
+        return this.factionPolicy.isHostile(selfFaction, targetFaction);
+      }
+      return AIController.isPirateShip(ent);
+    }
+
+    return false;
+  }
+
+  /**
    * Searches for suitable nearby targets depending on role.
    * @param {Array<SpaceEntity>} entities - All entities.
    */
@@ -77,20 +125,9 @@ export class AIController {
       }
 
       const dist = this.ship.position.distance(ent.position);
-      if (dist < closestDist) {
-        if (this.role === "pirate") {
-          // Pirates target any player or non-pirate ship
-          if (!AIController.isPirateShip(ent)) {
-            closestTarget = ent;
-            closestDist = dist;
-          }
-        } else if (this.role === "guard") {
-          // Guards target pirate ships
-          if (AIController.isPirateShip(ent)) {
-            closestTarget = ent;
-            closestDist = dist;
-          }
-        }
+      if (dist < closestDist && this.shouldTarget(ent)) {
+        closestTarget = ent;
+        closestDist = dist;
       }
     }
 

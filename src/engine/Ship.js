@@ -30,6 +30,7 @@ export class Ship extends SpaceEntity {
     credits = 5000,
     cargoCapacity = 20,
     name = "Starfarer",
+    faction = null,
     weaponDamage = 15,
     weaponRange = 600,
     weaponSpeed = 500,
@@ -39,6 +40,11 @@ export class Ship extends SpaceEntity {
     super({ type: "ship", mass: 2000, radius: 15, ...parentParams });
 
     this.name = name;
+    // Optional faction tag (e.g. "Federation", "Pirates"). When set, the AI
+    // can resolve disposition against other faction-tagged ships via a
+    // pairwise faction policy; absent or null defaults to legacy name-based
+    // behaviour so existing fleets remain unaffected.
+    this.faction = faction;
     this.thrustPower = thrustPower;
     this.brakePower = brakePower;
     this.turnRate = turnRate;

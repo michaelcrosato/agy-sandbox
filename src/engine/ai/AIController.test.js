@@ -2,9 +2,19 @@ import { AIController } from "./AIController.js";
 import { Ship } from "../Ship.js";
 import { SpaceEntity } from "../SpaceEntity.js";
 import { Vector2D } from "../../physics/Vector2D.js";
+import { FactionRegistry } from "../FactionRegistry.js";
 
 function shipAt(name, x, y, id) {
   return new Ship({ id: id ?? name, name, position: new Vector2D(x, y) });
+}
+
+function factionShipAt(name, faction, x, y, id) {
+  return new Ship({
+    id: id ?? name,
+    name,
+    faction,
+    position: new Vector2D(x, y),
+  });
 }
 
 describe("AIController.normalizeAngle", () => {
@@ -173,6 +183,134 @@ describe("AIController.executeMerchantAI", () => {
     ctrl.executeMerchantAI(0.1);
     expect(ctrl.ship.controls.isBraking).toBe(true);
     expect(ctrl.destination).not.toBeNull();
+  });
+});
+
+describe("AIController faction-aware target selection (P3)", () => {
+  const policy = new FactionRegistry().factionPolicy();
+
+  test("guard with a faction engages a hostile-faction ship whose NAME is not a pirate", () => {
+    // No legacy pirate-name signal — only the faction relation can justify
+    // engagement here.
+    const guard = factionShipAt("Federation Patrol", "Federation", 0, 0, "g");
+    const ctrl = new AIController(guard, "guard", { factionPolicy: policy });
+    const enemyShip = factionShipAt("Smuggler", "Pirates", 100, 0, "s");
+    ctrl.scanSensors([ctrl.ship, enemyShip]);
+    expect(ctrl.target).toBe(enemyShip);
+  });
+
+  test("guard with a faction ignores an ally-faction ship even at close range", () => {
+    const guard = factionShipAt("Federation Patrol", "Federation", 0, 0, "g");
+    const ctrl = new AIController(guard, "guard", { factionPolicy: policy });
+    const ally = factionShipAt(
+      "Independent Trader",
+      "Independents",
+      50,
+      0,
+      "a",
+    );
+    ctrl.scanSensors([ctrl.ship, ally]);
+    expect(ctrl.target).toBeNull();
+  });
+
+  test("guard with a faction ignores a neutral-faction ship", () => {
+    const guard = factionShipAt("Federation Patrol", "Federation", 0, 0, "g");
+    const ctrl = new AIController(guard, "guard", { factionPolicy: policy });
+    const neutral = factionShipAt(
+      "League Courier",
+      "Frontier League",
+      80,
+      0,
+      "n",
+    );
+    ctrl.scanSensors([ctrl.ship, neutral]);
+    expect(ctrl.target).toBeNull();
+  });
+
+  test("guard picks the nearer hostile when multiple hostile-faction ships are in range", () => {
+    const guard = factionShipAt("Federation Patrol", "Federation", 0, 0, "g");
+    const ctrl = new AIController(guard, "guard", { factionPolicy: policy });
+    const far = factionShipAt("Raider A", "Pirates", 300, 0, "f");
+    const near = factionShipAt("Raider B", "Pirates", 100, 0, "n");
+    ctrl.scanSensors([ctrl.ship, far, near]);
+    expect(ctrl.target).toBe(near);
+  });
+
+  test("pirate with a faction skips allied- and own-faction ships, targets the rest", () => {
+    const pirate = factionShipAt(
+      "Pirate Captain",
+      "Pirates",
+      0,
+      0,
+      "pirate-self",
+    );
+    const ctrl = new AIController(pirate, "pirate", { factionPolicy: policy });
+    const fellowPirate = factionShipAt(
+      "Wealthy Looking Ship",
+      "Pirates",
+      40,
+      0,
+      "fellow",
+    );
+    const enemyTrader = factionShipAt(
+      "Federation Hauler",
+      "Federation",
+      100,
+      0,
+      "victim",
+    );
+    ctrl.scanSensors([ctrl.ship, fellowPirate, enemyTrader]);
+    expect(ctrl.target).toBe(enemyTrader);
+  });
+
+  test("legacy name-based behaviour is preserved when no faction is set on the self ship", () => {
+    // Self has no faction → factionPathAvailable is false → falls back to
+    // isPirateShip(name) classifier, even though a policy is configured.
+    const guard = shipAt("System Guard", 0, 0, "self"); // no faction
+    const ctrl = new AIController(guard, "guard", { factionPolicy: policy });
+    const civilian = factionShipAt("Atlas Hauler", "Federation", 50, 0, "civ");
+    const pirate = shipAt("Pirate Raider", 100, 0, "p");
+    ctrl.scanSensors([ctrl.ship, civilian, pirate]);
+    expect(ctrl.target).toBe(pirate);
+  });
+
+  test("legacy name-based behaviour is preserved when the target lacks a faction", () => {
+    const guard = factionShipAt(
+      "Federation Patrol",
+      "Federation",
+      0,
+      0,
+      "self",
+    );
+    const ctrl = new AIController(guard, "guard", { factionPolicy: policy });
+    // Hostile-named candidate, no faction → legacy classifier picks it up.
+    const namelessRaider = shipAt("Pirate Raider", 80, 0, "p");
+    ctrl.scanSensors([ctrl.ship, namelessRaider]);
+    expect(ctrl.target).toBe(namelessRaider);
+  });
+
+  test("with no factionPolicy configured, faction tags are ignored entirely", () => {
+    const guard = factionShipAt(
+      "Federation Patrol",
+      "Federation",
+      0,
+      0,
+      "self",
+    );
+    const ctrl = new AIController(guard, "guard"); // no policy
+    const enemyShip = factionShipAt("Smuggler", "Pirates", 100, 0, "s");
+    ctrl.scanSensors([ctrl.ship, enemyShip]);
+    // Without a policy, falls back to name-based — "Smuggler" is not pirate-named.
+    expect(ctrl.target).toBeNull();
+  });
+
+  test("shouldTarget returns false for merchants and escorts regardless of faction", () => {
+    const merchant = factionShipAt("Atlas Hauler", "Federation", 0, 0, "self");
+    const ctrl = new AIController(merchant, "merchant", {
+      factionPolicy: policy,
+    });
+    const enemy = factionShipAt("Smuggler", "Pirates", 100, 0, "s");
+    expect(ctrl.shouldTarget(enemy)).toBe(false);
   });
 });
 

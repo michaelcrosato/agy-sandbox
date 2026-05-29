@@ -67,6 +67,12 @@ export const DEFAULT_OPTIONS = Object.freeze({
   allyPropagation: 0.5,
   enemyPropagation: 0.5,
   decayRate: 0.01,
+  // Maximum fractional swing applied to market prices at the extremes of the
+  // standing band. At `standing === maxStanding`, BUY prices are multiplied
+  // by `1 - maxPriceSwing` (friendly discount) and SELL prices by
+  // `1 + maxPriceSwing` (friendly premium). The relationship is linear in
+  // standing and inverts sign for hostile standings.
+  maxPriceSwing: 0.2,
 });
 
 /**
@@ -95,6 +101,54 @@ function clampStanding(value, options) {
   if (value < options.minStanding) return options.minStanding;
   if (value > options.maxStanding) return options.maxStanding;
   return value;
+}
+
+/**
+ * Maps a numeric standing to a market-price multiplier.
+ *
+ * Friendlier standings produce *better* prices for the player:
+ *   - In `'buy'` mode, the returned multiplier scales a base purchase price
+ *     down toward `1 - maxPriceSwing` as standing approaches `maxStanding`,
+ *     and up toward `1 + maxPriceSwing` as it approaches `minStanding`.
+ *   - In `'sell'` mode, the relationship inverts — friendly factions pay
+ *     a premium for the player's goods, hostile factions low-ball them.
+ *
+ * The mapping is linear in standing and saturates outside `[minStanding,
+ * maxStanding]`. A standing of zero always returns `1.0` regardless of mode.
+ *
+ * @param {number} standing - Standing value.
+ * @param {Object} [options=DEFAULT_OPTIONS] - Threshold + swing source.
+ * @param {'buy'|'sell'} [mode='buy'] - Which side of the trade to score.
+ * @returns {number} The multiplier to apply to a base price.
+ */
+export function priceModifier(
+  standing,
+  options = DEFAULT_OPTIONS,
+  mode = "buy",
+) {
+  const swing = options.maxPriceSwing;
+  let t;
+  if (standing >= 0) {
+    t = options.maxStanding > 0 ? standing / options.maxStanding : 0;
+  } else {
+    t = options.minStanding < 0 ? standing / -options.minStanding : 0;
+  }
+  if (t > 1) t = 1;
+  if (t < -1) t = -1;
+  return mode === "sell" ? 1 + t * swing : 1 - t * swing;
+}
+
+/**
+ * Decides whether a player at the given standing may legally dock with a
+ * faction's station. Hostile standings are refused; neutral and friendly
+ * standings are permitted.
+ *
+ * @param {number} standing - Standing value.
+ * @param {Object} [options=DEFAULT_OPTIONS] - Threshold source.
+ * @returns {boolean} True if docking is allowed.
+ */
+export function dockingPermitted(standing, options = DEFAULT_OPTIONS) {
+  return classifyStanding(standing, options) !== "hostile";
 }
 
 /**
@@ -252,6 +306,73 @@ export class FactionRegistry {
       this.getStanding(playerId, faction),
       this.options,
     );
+  }
+
+  /**
+   * Convenience: returns the disposition (alias of `classify`) toward a
+   * faction so callers can speak in terms of "disposition" without paying
+   * attention to the underlying classifier.
+   *
+   * @param {string} playerId
+   * @param {string} faction
+   * @returns {'hostile'|'neutral'|'friendly'}
+   */
+  disposition(playerId, faction) {
+    return this.classify(playerId, faction);
+  }
+
+  /**
+   * Returns whether a player is allowed to dock at a faction's station given
+   * their current standing.
+   *
+   * @param {string} playerId
+   * @param {string} faction
+   * @returns {boolean}
+   */
+  dockingPermitted(playerId, faction) {
+    return dockingPermitted(this.getStanding(playerId, faction), this.options);
+  }
+
+  /**
+   * Returns the market price multiplier for a player trading with the given
+   * faction. See module-level `priceModifier` for the formula.
+   *
+   * @param {string} playerId
+   * @param {string} faction
+   * @param {'buy'|'sell'} [mode='buy']
+   * @returns {number}
+   */
+  priceModifier(playerId, faction, mode = "buy") {
+    return priceModifier(
+      this.getStanding(playerId, faction),
+      this.options,
+      mode,
+    );
+  }
+
+  /**
+   * Returns a small, headless policy object describing pairwise faction
+   * relations. AI controllers consume this to decide whether to engage a
+   * target without coupling to the full registry surface. The returned
+   * object closes over `this.relations` only — it does not retain a
+   * reference to player standings.
+   *
+   * Shape:
+   *   {
+   *     getRelation(a, b) -> 'ally' | 'enemy' | 'neutral',
+   *     isHostile(a, b)   -> boolean,
+   *     isAllied(a, b)    -> boolean,
+   *   }
+   *
+   * @returns {Object} Frozen policy view.
+   */
+  factionPolicy() {
+    const getRelation = (a, b) => this.getRelation(a, b);
+    return Object.freeze({
+      getRelation,
+      isHostile: (a, b) => getRelation(a, b) === "enemy",
+      isAllied: (a, b) => getRelation(a, b) === "ally",
+    });
   }
 
   /**

@@ -4,6 +4,8 @@ import {
   DEFAULT_RELATIONS,
   DEFAULT_OPTIONS,
   classifyStanding,
+  dockingPermitted,
+  priceModifier,
 } from "./FactionRegistry.js";
 
 describe("classifyStanding", () => {
@@ -329,6 +331,147 @@ describe("FactionRegistry.decay direction", () => {
     const all = reg.decayAll(0.1);
     expect(all.p1.Federation).toBeCloseTo(36, 10);
     expect(all.p2.Pirates).toBeCloseTo(-36, 10);
+  });
+});
+
+describe("dockingPermitted", () => {
+  test("hostile standings are refused docking", () => {
+    expect(dockingPermitted(-100)).toBe(false);
+    expect(dockingPermitted(-30)).toBe(false); // inclusive hostile threshold
+  });
+
+  test("neutral and friendly standings are permitted", () => {
+    expect(dockingPermitted(0)).toBe(true);
+    expect(dockingPermitted(-29)).toBe(true);
+    expect(dockingPermitted(30)).toBe(true);
+    expect(dockingPermitted(100)).toBe(true);
+  });
+
+  test("respects custom threshold overrides", () => {
+    const opts = { ...DEFAULT_OPTIONS, hostileThreshold: -10 };
+    expect(dockingPermitted(-15, opts)).toBe(false);
+    expect(dockingPermitted(-9, opts)).toBe(true);
+  });
+});
+
+describe("priceModifier", () => {
+  test("returns 1.0 at zero standing in either mode", () => {
+    expect(priceModifier(0)).toBe(1);
+    expect(priceModifier(0, DEFAULT_OPTIONS, "sell")).toBe(1);
+  });
+
+  test("buy multiplier decreases as standing rises (friendlier = cheaper)", () => {
+    const high = priceModifier(50);
+    const max = priceModifier(DEFAULT_OPTIONS.maxStanding);
+    expect(high).toBeLessThan(1);
+    expect(max).toBeLessThan(high);
+    expect(max).toBeCloseTo(1 - DEFAULT_OPTIONS.maxPriceSwing, 10);
+  });
+
+  test("buy multiplier increases as standing falls (hostile = price gouge)", () => {
+    const low = priceModifier(-50);
+    const min = priceModifier(DEFAULT_OPTIONS.minStanding);
+    expect(low).toBeGreaterThan(1);
+    expect(min).toBeGreaterThan(low);
+    expect(min).toBeCloseTo(1 + DEFAULT_OPTIONS.maxPriceSwing, 10);
+  });
+
+  test("sell multiplier inverts the buy direction (friendly = higher payouts)", () => {
+    const friendlyBuy = priceModifier(
+      DEFAULT_OPTIONS.maxStanding,
+      DEFAULT_OPTIONS,
+      "buy",
+    );
+    const friendlySell = priceModifier(
+      DEFAULT_OPTIONS.maxStanding,
+      DEFAULT_OPTIONS,
+      "sell",
+    );
+    expect(friendlySell).toBeGreaterThan(1);
+    expect(friendlySell).toBeCloseTo(2 - friendlyBuy, 10);
+    const hostileSell = priceModifier(
+      DEFAULT_OPTIONS.minStanding,
+      DEFAULT_OPTIONS,
+      "sell",
+    );
+    expect(hostileSell).toBeCloseTo(1 - DEFAULT_OPTIONS.maxPriceSwing, 10);
+  });
+
+  test("clamps standings beyond the configured band so callers cannot weaponize overflow", () => {
+    const beyondMax = priceModifier(999_999);
+    const atMax = priceModifier(DEFAULT_OPTIONS.maxStanding);
+    expect(beyondMax).toBe(atMax);
+    const beyondMin = priceModifier(-999_999);
+    const atMin = priceModifier(DEFAULT_OPTIONS.minStanding);
+    expect(beyondMin).toBe(atMin);
+  });
+
+  test("swing magnitude is tunable via maxPriceSwing", () => {
+    const opts = { ...DEFAULT_OPTIONS, maxPriceSwing: 0.5 };
+    expect(priceModifier(opts.maxStanding, opts, "buy")).toBeCloseTo(0.5, 10);
+    expect(priceModifier(opts.maxStanding, opts, "sell")).toBeCloseTo(1.5, 10);
+  });
+});
+
+describe("FactionRegistry disposition / docking / price wiring", () => {
+  test("disposition is an alias for classify", () => {
+    const reg = new FactionRegistry();
+    reg.setStanding("p1", "Federation", 40);
+    expect(reg.disposition("p1", "Federation")).toBe("friendly");
+    reg.setStanding("p1", "Pirates", -50);
+    expect(reg.disposition("p1", "Pirates")).toBe("hostile");
+  });
+
+  test("dockingPermitted reflects standing through the helper", () => {
+    const reg = new FactionRegistry();
+    expect(reg.dockingPermitted("p1", "Federation")).toBe(true); // neutral default
+    reg.setStanding("p1", "Pirates", -60);
+    expect(reg.dockingPermitted("p1", "Pirates")).toBe(false);
+    reg.setStanding("p1", "Pirates", 50);
+    expect(reg.dockingPermitted("p1", "Pirates")).toBe(true);
+  });
+
+  test("priceModifier on the registry honors stored standings and mode", () => {
+    const reg = new FactionRegistry();
+    reg.setStanding("p1", "Federation", reg.options.maxStanding);
+    const buy = reg.priceModifier("p1", "Federation", "buy");
+    const sell = reg.priceModifier("p1", "Federation", "sell");
+    expect(buy).toBeCloseTo(1 - reg.options.maxPriceSwing, 10);
+    expect(sell).toBeCloseTo(1 + reg.options.maxPriceSwing, 10);
+  });
+
+  test("price modifier defaults to buy mode", () => {
+    const reg = new FactionRegistry();
+    reg.setStanding("p1", "Federation", reg.options.maxStanding);
+    expect(reg.priceModifier("p1", "Federation")).toBe(
+      reg.priceModifier("p1", "Federation", "buy"),
+    );
+  });
+});
+
+describe("FactionRegistry.factionPolicy view", () => {
+  test("exposes pairwise relation queries derived from the relations table", () => {
+    const reg = new FactionRegistry();
+    const policy = reg.factionPolicy();
+    expect(policy.getRelation("Federation", "Pirates")).toBe("enemy");
+    expect(policy.isHostile("Federation", "Pirates")).toBe(true);
+    expect(policy.isAllied("Federation", "Independents")).toBe(true);
+    expect(policy.isHostile("Federation", "Independents")).toBe(false);
+    expect(policy.isHostile("Federation", "Frontier League")).toBe(false);
+  });
+
+  test("self-vs-self is neutral, never hostile or allied", () => {
+    const reg = new FactionRegistry();
+    const policy = reg.factionPolicy();
+    expect(policy.getRelation("Federation", "Federation")).toBe("neutral");
+    expect(policy.isHostile("Federation", "Federation")).toBe(false);
+    expect(policy.isAllied("Federation", "Federation")).toBe(false);
+  });
+
+  test("policy view is frozen so AI can rely on its shape", () => {
+    const reg = new FactionRegistry();
+    const policy = reg.factionPolicy();
+    expect(Object.isFrozen(policy)).toBe(true);
   });
 });
 

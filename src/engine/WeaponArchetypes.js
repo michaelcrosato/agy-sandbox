@@ -14,7 +14,7 @@
  * `weaponCooldown` / `weaponShieldPierce` off the ship, so applying an
  * archetype simply rewrites those fields in place.
  *
- * The four archetypes:
+ * The five archetypes:
  *  - KINETIC: cheap, fast, low damage, no shield pierce, snappy cooldown.
  *  - ENERGY:  balanced baseline, modest shield pierce, standard heat.
  *  - BEAM:    near-instant short-range hits, high damage per shot, but
@@ -22,6 +22,8 @@
  *             short-lived projectile so no client lifecycle changes.
  *  - MISSILE: slow, long-range, heavy damage, strong shield pierce,
  *             long cooldown, expensive in energy.
+ *  - FLAK:    rapid-fire, very short range, low damage, no pierce — a
+ *             cheap point-defense / swarm weapon. Cheapest heat per shot.
  */
 
 /**
@@ -34,6 +36,7 @@ export const WeaponArchetype = Object.freeze({
   ENERGY: "ENERGY",
   BEAM: "BEAM",
   MISSILE: "MISSILE",
+  FLAK: "FLAK",
 });
 
 /**
@@ -46,6 +49,7 @@ export const WEAPON_ARCHETYPE_ORDER = Object.freeze([
   WeaponArchetype.ENERGY,
   WeaponArchetype.BEAM,
   WeaponArchetype.MISSILE,
+  WeaponArchetype.FLAK,
 ]);
 
 /**
@@ -112,6 +116,17 @@ export const WEAPON_ARCHETYPE_PROFILES = Object.freeze({
     shieldPierce: 0.4,
     energyCost: 12,
     heatCost: 10,
+  }),
+  [WeaponArchetype.FLAK]: Object.freeze({
+    // Rapid-fire point defense: many cheap, low-damage, very short-range
+    // bursts. No shield pierce, lowest heat per shot, snappiest cooldown.
+    damageScale: 0.5,
+    speedScale: 1.4,
+    rangeScale: 0.5,
+    cooldownScale: 0.4,
+    shieldPierce: 0,
+    energyCost: 4,
+    heatCost: 4,
   }),
 });
 

@@ -224,6 +224,15 @@ export class Planet extends SpaceEntity {
               maxArmor: 600,
               cargoCapacity: 30,
             },
+            {
+              name: "Interceptor",
+              cost: 22000,
+              thrustPower: 20000,
+              turnRate: 3.6,
+              maxShield: 280,
+              maxArmor: 150,
+              cargoCapacity: 6,
+            },
           ];
 
     this.landingRadius = landingRadius || this.radius + 40;

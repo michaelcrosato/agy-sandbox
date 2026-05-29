@@ -78,8 +78,9 @@ describe("Planet catalogues", () => {
 
   test("ships with a default shipyard catalogue", () => {
     const p = new Planet({ name: "X" });
-    expect(p.shipyard.length).toBe(6);
+    expect(p.shipyard.length).toBe(7);
     expect(p.shipyard.find((s) => s.name === "Cargo Hauler")).toBeDefined();
+    expect(p.shipyard.find((s) => s.name === "Interceptor")).toBeDefined();
   });
 
   test("uses a provided shipyard catalogue verbatim", () => {

@@ -28,6 +28,7 @@ describe("WeaponArchetype identifiers", () => {
       "ENERGY",
       "BEAM",
       "MISSILE",
+      "FLAK",
     ]);
     expect(Object.isFrozen(WEAPON_ARCHETYPE_ORDER)).toBe(true);
   });
@@ -121,6 +122,27 @@ describe("WEAPON_ARCHETYPE_PROFILES table", () => {
     expect(m.speedScale).toBeLessThan(1.0);
     // Long cooldown
     expect(m.cooldownScale).toBeGreaterThan(1.0);
+  });
+
+  test("FLAK is a rapid, short-range, low-damage point-defense weapon", () => {
+    const f = WEAPON_ARCHETYPE_PROFILES.FLAK;
+    expect(f.shieldPierce).toBe(0);
+    expect(f.rangeScale).toBeLessThan(1.0); // short range
+    // Rapid fire and low damage relative to the ENERGY baseline.
+    expect(f.cooldownScale).toBeLessThan(
+      WEAPON_ARCHETYPE_PROFILES.ENERGY.cooldownScale,
+    );
+    expect(f.damageScale).toBeLessThan(
+      WEAPON_ARCHETYPE_PROFILES.ENERGY.damageScale,
+    );
+    // Stays under the table superlatives (MISSILE damage/pierce, BEAM heat).
+    expect(f.damageScale).toBeLessThan(
+      WEAPON_ARCHETYPE_PROFILES.MISSILE.damageScale,
+    );
+    expect(f.shieldPierce).toBeLessThan(
+      WEAPON_ARCHETYPE_PROFILES.MISSILE.shieldPierce,
+    );
+    expect(f.heatCost).toBeLessThan(WEAPON_ARCHETYPE_PROFILES.BEAM.heatCost);
   });
 });
 

@@ -41,6 +41,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T22:29 · iter-0022 · GREEN · ew3-hyperdrive-fuel-economy
+
+- **Baseline:** `2a669cc` on branch `overnight/bugfix-and-coverage`; 540 tests / 30 suites green. EW3 from `docs/ai/FEATURE_PLAN.md`.
+- **Move:** Deepen the hyperdrive-fuel loop. The `warp_jump` handler already spent a hardcoded 20 fuel inline; extract that to a tested helper, and add the genuinely-new passive Ramscoop regen (so a fuel-less pilot far from a port isn't permanently stranded) plus a fuel-capacity outfit.
+- **Changed:**
+  - New pure `src/engine/Hyperdrive.js`: `canJump(ship,cost)`, `consumeJump(ship,cost)` (spend + clamp ≥0), `refuel(ship,units)` and `ramscoopRegen(ship,dt,rate)` (add fuel + clamp to `maxHyperFuel`, no-op on bad input). Frozen `DEFAULT_HYPERDRIVE_OPTIONS { jumpCost: 20, ramscoopRate: 0 }`.
+  - `Ship`: new `ramscoopRate` (default 0, persisted via `PLAYER_HULL_FIELDS`); `update()` now calls `ramscoopRegen(this, dt, this.ramscoopRate)` each tick (no-op without a Ramscoop).
+  - `server.js`: `warp_jump` replaced its inline fuel check/deduct with `canJump`/`consumeJump` (cost unchanged at 20, sourced from `DEFAULT_HYPERDRIVE_OPTIONS`); `outfit_buy` now handles `ramscoop` (raises `ship.ramscoopRate`) and `fuel` (raises `maxHyperFuel` + tops off) outfit types.
+  - `Planet`: two new outfits — `Ramscoop Collector` (type `ramscoop`, +4 fuel/s) and `Auxiliary Fuel Cells` (type `fuel`, +50 max fuel) — the EW7-deferred fuel outfits, landed with their consuming feature.
+  - +12 deterministic tests (`Hyperdrive.test.js` for all four helpers incl. clamping/insufficient/no-op; `Ship.test.js` ramscoop regen over update ticks + rate-0 no-change + default).
+- **Decisions:** `Ship` imports `ramscoopRegen` from `Hyperdrive` (no cycle — `Hyperdrive` imports nothing) so the regen math has a single source. Kept jump cost at 20 so the refactor is behavior-preserving. Paid full-tank refuel already exists (EW5 `applyRefuel`); `Hyperdrive.refuel` is the low-level add-units primitive used by ramscoop/fuel items.
+- **Validation:** `npm run agent:check` → green (prettier + eslint + 552 tests / 31 suites). `PORT=18196 NODE_ENV=test node src/server.js` → boots and listens. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge — local on the feature branch. TICKET012 closed.
+- **Next:** EW2 (boarding & plunder of disabled ships — uses EW1 ship value), then EW9 (mining depth).
+
 ## 2026-05-28T22:24 · iter-0021 · GREEN · ew7-flak-archetype-and-interceptor-hull
 
 - **Baseline:** `60c71e4` on branch `overnight/bugfix-and-coverage`; 539 tests / 30 suites green. EW7 content slice from `docs/ai/FEATURE_PLAN.md` (the lowest-ripple, self-contained additions).

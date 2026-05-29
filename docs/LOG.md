@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-29T00:08 · iter-0033 · GREEN · spec-009-decouple-threat-detection
+
+- **Baseline:** `4df2a60`-pre; 590 tests / 37 suites green. Threat/loot classification keyed on ship-name substrings (fragile; a nameless ship once crashed the tick; blocked procedural NPC names). Executing `plan/specs/009`.
+- **Move:** Make pirate/threat classification role-based and name-independent, then give NPC pirates procedural names.
+- **Changed:** `AIController.isPirateShip(ent)` now returns true for `ent.role === "pirate"`, false for any other explicit role (decoupled from name), and only falls back to the `"Pirate"/"Raider"` name heuristic for un-roled entities; fully null-safe. `GameInstance.handleEntityDestroyed` pirate-loot branch routes through `isPirateShip` (kills the `ent.name.includes` crash class). `spawnNPCPirate` now tags `pShip.role = "pirate"` (which also repairs role-based respawn) and names regular pirates via `NameGenerator.shipName` (heavy boss keeps "Pirate Boss Gallows"). +3 AIController tests (role precedence, roled-non-pirate decoupling, null-safety).
+- **Decisions:** Left **faction** out of `isPirateShip` — an existing P3 test asserts faction tags are ignored without a `factionPolicy`, and faction *disposition* belongs to the policy layer, not this classifier. Role is the single decoupling mechanism and is set on spawns. Kept the boss's recognizable name for flavor/mini-boss legibility.
+- **Validation:** `npm run agent:check` → green (592 tests / 37 suites, prettier clean). Boot smoke (exercises the pirate spawn path at room construction) → listens, no crash. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 009 done.
+- **Next:** `plan/specs/010` — observability (structured logging + runtime metrics).
+
 ## 2026-05-28T23:56 · iter-0032 · GREEN · spec-008-persistence-restart-integration
 
 - **Baseline:** `e71db3f`-pre; 589 tests / 36 suites green. Phase 1 begins. Executing `plan/specs/008` (supersedes TICKET004).

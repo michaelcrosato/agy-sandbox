@@ -41,6 +41,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T22:37 · iter-0024 · GREEN · ew9-mining-depth-seeded-yields
+
+- **Baseline:** `14647cc` on branch `overnight/bugfix-and-coverage`; 561 tests / 32 suites green. EW9 — the final item of the `docs/ai/FEATURE_PLAN.md` easy-win backlog.
+- **Move:** Make the existing asteroid-mining loop testable and a touch deeper — extract the `Math.random`-driven yield into a pure seeded helper and add a Mining Laser that boosts it.
+- **Changed:**
+  - New pure `src/engine/Mining.js`: `mineYield(asteroidType, rng, { yieldMultiplier })` → `{ resource, count }` — gem→luxuries 2–3, generic→minerals 1–2, deterministic given the injected rng (clamps the draw; no `Math.random`), `count = max(1, round(base * multiplier))`. Frozen `DEFAULT_MINING_OPTIONS`.
+  - `GameInstance.handleEntityDestroyed`: the asteroid branch now calls `mineYield(ent.type, Math.random, { yieldMultiplier })` using the `destroyedBy`-attributed miner's `miningYieldMultiplier` (behavior-preserving at multiplier 1; the cosmetic pod scatter still uses `Math.random`).
+  - `Ship.miningYieldMultiplier` (default 1, persisted); `Planet` Mining Laser outfit (type `miner`, +1.0 → double yield); `server.js` `outfit_buy` handles the `miner` type.
+  - +8 deterministic tests (`Mining.test.js` seed determinism, gem/generic ranges, fixed-rng endpoints, multiplier scaling, bad-multiplier guard; `GameInstance.test.js` gem-asteroid→luxuries-pods wiring).
+- **Decisions:** Extracted only the yield decision (resource + count) into the pure module; left the pod-scatter velocity as `Math.random` in the instance since it's cosmetic and not asserted. The miner's multiplier is sourced from the same `destroyedBy` attribution EW1 introduced, so the pilot who shatters the rock gets the bonus. An `ore` raw-commodity refining chain is deferred (it needs a new commodity, a separate slice).
+- **Validation:** `npm run agent:check` → green (prettier + eslint + 569 tests / 33 suites). `PORT=18198 NODE_ENV=test node src/server.js` → boots and listens. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge — local on the feature branch. TICKET014 closed. **All nine EW backlog items (EW1–EW9) are now landed.**
+- **Next:** Deferred follow-ups — a new `ore`/`medicine` commodity (ripples across all markets); decouple pirate detection from ship names so EW8 names can drive NPC spawns; ship capture (board → join fleet); pay-what-you-can port/refuel; surface combat rating + bounty on the HUD.
+
 ## 2026-05-28T22:33 · iter-0023 · GREEN · ew2-boarding-plunder-repair
 
 - **Baseline:** `c10176e` on branch `overnight/bugfix-and-coverage`; 552 tests / 31 suites green. EW2 from `docs/ai/FEATURE_PLAN.md` — the payoff for disable-before-destroy (uses EW1's value framing).

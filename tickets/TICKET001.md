@@ -1,6 +1,6 @@
 # TICKET001 — Bootstrap & dependency hygiene
 
-- **Status:** TODO
+- **Status:** DONE (2026-05-28) — completed via `plan/specs/005`
 - **Priority:** P2 (medium)
 
 ## Goal

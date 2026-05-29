@@ -12,7 +12,7 @@ _Baseline at blueprint generation (2026-05-28): 569 tests / 33 suites green; ESL
 - [x] `002` Harden ws inbound (maxPayload + Origin verifyClient) — **done** (files: new `src/net/originPolicy.js` + `.test.js`; `src/server.js` WSS sets `maxPayload: 256KB` + `verifyClient` same-origin/allowlist check)
 - [x] `003` ws connection heartbeat / dead-socket reaper — **done** (files: new `src/net/heartbeat.js` + `.test.js`; `src/server.js` 30s ping/terminate sweep, per-connection `isAlive`+pong, cleared on shutdown)
 - [x] `004` ws outbound backpressure handling — **done** (files: new `src/net/backpressure.js` + `.test.js`; `src/server.js` broadcast loop checks `ws.bufferedAmount` → skip deltas / drop hopeless clients)
-- [ ] `005` Dependency hygiene (ws 8.21, http-server, engines, .nvmrc) — _blocked by: none_
+- [x] `005` Dependency hygiene (ws 8.21, http-server, engines, .nvmrc) — **done** (files: `package.json` ws@^8.21.0 + http-server devDep + `engines.node>=20` + `dev` uses local binary; `.nvmrc`; lockfile. Supersedes TICKET001)
 - [ ] `006` Economy NaN self-heal + heartbeat diffusion guard — _blocked by: none_
 
 ## Phase 1 — Core Upgrades

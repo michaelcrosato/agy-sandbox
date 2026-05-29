@@ -52,6 +52,9 @@ const PLAYER_HULL_FIELDS = Object.freeze([
   "cargoCapacity",
   "hullMass",
   "outfitMass",
+  "kills",
+  "combatValue",
+  "combatRating",
 ]);
 
 /**

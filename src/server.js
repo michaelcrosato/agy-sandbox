@@ -786,6 +786,8 @@ wss.on("connection", (ws) => {
         maxHyperFuel: this.ship.maxHyperFuel,
         isOverheated: this.ship.isOverheated,
         isDisabled: this.ship.isDisabled,
+        kills: this.ship.kills,
+        combatRating: this.ship.combatRating,
       });
     },
   };

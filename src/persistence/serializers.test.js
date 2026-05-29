@@ -349,4 +349,18 @@ describe("serializePlayer / applyPlayer", () => {
     applyPlayer(b, snap);
     expect(b.missionManager.activeMissions[0].title).toBe("Live");
   });
+
+  test("combat ledger (kills/combatValue/combatRating) round-trips (EW1)", () => {
+    const a = makeClient();
+    a.ship.kills = 7;
+    a.ship.combatValue = 4200;
+    a.ship.combatRating = 99;
+
+    const b = makeClient();
+    applyPlayer(b, serializePlayer(a));
+
+    expect(b.ship.kills).toBe(7);
+    expect(b.ship.combatValue).toBe(4200);
+    expect(b.ship.combatRating).toBe(99);
+  });
 });

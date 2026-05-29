@@ -1,6 +1,7 @@
 import { GameInstance } from "./GameInstance.js";
 import { Ship } from "./Ship.js";
 import { Vector2D } from "../physics/Vector2D.js";
+import { shipBountyValue, combatRating } from "./CombatRating.js";
 
 describe("GameInstance Multi-Room Matchmaking & Isolation Mechanics", () => {
   test("Should initialize separate authorative space engines, planets, and AIs", () => {
@@ -122,5 +123,43 @@ describe("GameInstance Multi-Room Matchmaking & Isolation Mechanics", () => {
 
     room.destroy();
     expect(room.pendingTimers.size).toBe(0);
+  });
+
+  test("records a kill on the attributed killer's ship ledger (EW1)", () => {
+    const room = new GameInstance("room-kill", "Sector Kill");
+
+    const killerShip = new Ship({ id: "killer-1", name: "Avenger" });
+    const fakeWs = { send: () => {} };
+    const killerClient = {
+      id: "killer-1",
+      nickname: "Tester",
+      fleetName: null,
+      ship: killerShip,
+      ws: fakeWs,
+      send: () => {},
+      sendStats: () => {},
+      missionManager: { checkBountyCompletion: () => null },
+    };
+    room.clients.set(fakeWs, killerClient);
+
+    const victim = new Ship({
+      id: "victim-1",
+      name: "Test Drone", // non-pirate name -> takes the generic-kill branch
+      maxShield: 200,
+      maxArmor: 100,
+      weaponDamage: 15,
+    });
+    victim.role = "pirate"; // valid role for respawn scheduling
+    victim.destroyedBy = "killer-1";
+
+    room.handleEntityDestroyed(victim);
+
+    const expectedValue = shipBountyValue(victim); // 875 from these stats
+    expect(killerShip.kills).toBe(1);
+    expect(killerShip.combatValue).toBe(expectedValue);
+    expect(killerShip.combatRating).toBe(combatRating(expectedValue));
+    expect(killerShip.combatRating).toBeGreaterThan(0);
+
+    room.destroy();
   });
 });

@@ -8,6 +8,7 @@ import { CargoPod } from "./CargoPod.js";
 import { EconomyManager } from "./EconomyManager.js";
 import { GalaxyHeartbeat } from "./GalaxyHeartbeat.js";
 import { PLANET_PROFILES } from "./ProductionModel.js";
+import { recordKill, shipBountyValue } from "./CombatRating.js";
 
 // Which sectors share trade routes (warp-gate connected) for economic diffusion.
 export const SECTOR_ADJACENCY = {
@@ -706,6 +707,11 @@ export class GameInstance {
       const aiIdx = this.ais.findIndex((a) => a.ship === ent);
       if (aiIdx !== -1) {
         this.ais.splice(aiIdx, 1);
+      }
+
+      // EW1: credit the attributed killer with the victim's worth + a kill.
+      if (killerClient && killerClient.ship) {
+        recordKill(killerClient.ship, shipBountyValue(ent));
       }
 
       const isPirate =

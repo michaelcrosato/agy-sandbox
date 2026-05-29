@@ -35,6 +35,7 @@ export class Ship extends SpaceEntity {
     weaponRange = 600,
     weaponSpeed = 500,
     weaponCooldown = 0.25,
+    bountyValue = null,
     ...parentParams
   } = {}) {
     super({ type: "ship", mass: 2000, radius: 15, ...parentParams });
@@ -101,6 +102,16 @@ export class Ship extends SpaceEntity {
     this.weaponSpeed = weaponSpeed;
     this.weaponCooldown = weaponCooldown;
     this.activeWeaponCooldown = 0; // current active countdown
+
+    // Combat record (EW1). `bountyValue`: explicit credit-worth as a target;
+    // null means derive from stats via CombatRating.shipBountyValue. The ledger
+    // (kills/combatValue/combatRating) accrues when THIS ship destroys others —
+    // the server attributes the kill via entity.destroyedBy and calls
+    // CombatRating.recordKill.
+    this.bountyValue = bountyValue;
+    this.kills = 0;
+    this.combatValue = 0;
+    this.combatRating = 0;
 
     // Afterburner: while boosting, thrust and top speed scale up at a steep
     // energy/heat cost.

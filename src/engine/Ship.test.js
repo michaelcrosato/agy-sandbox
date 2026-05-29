@@ -27,6 +27,16 @@ describe("Ship construction", () => {
     expect(s.getCargoWeight()).toBe(0);
     expect(s.hullMass).toBe(2000);
     expect(s.outfitMass).toBe(0);
+    // Combat record (EW1) defaults
+    expect(s.bountyValue).toBeNull();
+    expect(s.kills).toBe(0);
+    expect(s.combatValue).toBe(0);
+    expect(s.combatRating).toBe(0);
+  });
+
+  test("accepts an explicit bountyValue override", () => {
+    const s = new Ship({ bountyValue: 2500 });
+    expect(s.bountyValue).toBe(2500);
   });
 
   test("shield and armor initialise to their maxima even when only the max is given", () => {

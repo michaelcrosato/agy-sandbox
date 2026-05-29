@@ -143,6 +143,14 @@ export class EconomyManager {
         // the price and then spreads across trade lanes via GalaxyHeartbeat's
         // diffusion. Skip such keys instead of corrupting the galaxy.
         if (!Number.isFinite(baseline)) continue;
+        // Self-heal: if a price ever became non-finite (a corrupt restore or an
+        // upstream bug), snap it straight back to the finite baseline rather than
+        // leaving NaN to linger and spread.
+        if (!Number.isFinite(current)) {
+          p.market[item] = baseline;
+          planetChanged = true;
+          continue;
+        }
         if (current !== baseline) {
           const diff = baseline - current;
           const step =

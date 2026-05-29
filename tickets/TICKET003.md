@@ -1,6 +1,6 @@
 # TICKET003 — Fix NaN price-poisoning; harden market self-heal
 
-- **Status:** PARTIALLY DONE — root-cause fixed (2026-05-28); self-heal follow-up TODO
+- **Status:** DONE (2026-05-28) — root cause fixed iter-0014; self-heal + heartbeat guard via `plan/specs/006` (iter-0031)
 - **Priority:** P1 (high)
 
 ## Goal
@@ -33,8 +33,8 @@ prices along trade lanes, spreading the `NaN` to neighboring systems over pulses
 ## Acceptance criteria
 - [x] `normalizePrices` never writes `NaN`; unbaselined keys are left as-is.
 - [x] Regression test proves the fix (suite green: 496 tests).
-- [ ] A non-finite market value self-heals to baseline on the next normalize pulse (follow-up).
-- [ ] `GalaxyHeartbeat` diffusion cannot propagate a non-finite value (follow-up).
+- [x] A non-finite market value self-heals to baseline on the next normalize pulse (follow-up).
+- [x] `GalaxyHeartbeat` diffusion cannot propagate a non-finite value (follow-up).
 
 ## Commands
 ```bash

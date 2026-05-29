@@ -90,6 +90,9 @@ export class GalaxyHeartbeat {
 
       for (const commodity of Object.keys(planet.market)) {
         const current = planet.market[commodity];
+        // Never diffuse from a non-finite price — leave it for EconomyManager's
+        // self-heal rather than averaging NaN into healthy neighbours.
+        if (!Number.isFinite(current)) continue;
         let target = current;
 
         // 1. Trade-lane diffusion toward the average price among connected systems.
@@ -97,7 +100,9 @@ export class GalaxyHeartbeat {
           let sum = 0;
           let count = 0;
           for (const nb of neighbors) {
-            if (nb.market[commodity] !== undefined) {
+            // Only finite neighbour prices contribute (a NaN neighbour must not
+            // poison the average and spread across the lane).
+            if (Number.isFinite(nb.market[commodity])) {
               sum += nb.market[commodity];
               count += 1;
             }
@@ -109,12 +114,12 @@ export class GalaxyHeartbeat {
         }
 
         // 2. Gentle equilibrium pull back toward the system's baseline price.
-        if (base && base[commodity] !== undefined) {
+        if (base && Number.isFinite(base[commodity])) {
           target += this.equilibriumRate * (base[commodity] - current);
         }
 
         const next = Math.round(target);
-        if (next !== current) {
+        if (Number.isFinite(next) && next !== current) {
           updates.push({ planet, commodity, value: next });
         }
       }

@@ -157,4 +157,15 @@ describe("EconomyManager", () => {
     expect(sol.market.food).toBeLessThan(200);
     expect(Number.isFinite(sol.market.food)).toBe(true);
   });
+
+  test("self-heals a non-finite price back to its baseline (spec 006)", () => {
+    const sol = planets.find((p) => p.name === "Sol");
+    const baseFood = BASE_MARKETS["Sol"].food;
+    sol.market.food = NaN;
+
+    manager.normalizePrices();
+
+    expect(sol.market.food).toBe(baseFood);
+    expect(Number.isFinite(sol.market.food)).toBe(true);
+  });
 });

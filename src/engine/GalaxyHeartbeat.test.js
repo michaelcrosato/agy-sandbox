@@ -138,3 +138,41 @@ describe("GalaxyHeartbeat.buildLanesBySector", () => {
     expect(lanes["Polaris"].sort()).toEqual(["Rim1", "Sol", "Valkyrie"]);
   });
 });
+
+describe("GalaxyHeartbeat NaN hygiene (spec 006)", () => {
+  test("a non-finite neighbour price cannot poison diffusion", () => {
+    const a = planet("A", { food: NaN });
+    const b = planet("B", { food: 100 });
+    const hb = new GalaxyHeartbeat({
+      planets: [a, b],
+      lanes: { A: ["B"], B: ["A"] },
+      diffusionRate: 0.2,
+      equilibriumRate: 0,
+    });
+
+    hb.pulse();
+
+    // B must stay finite — A's NaN cannot be averaged into it.
+    expect(Number.isFinite(b.market.food)).toBe(true);
+    // A's own NaN is left untouched by the heartbeat (EconomyManager self-heals it).
+    expect(Number.isFinite(a.market.food)).toBe(false);
+  });
+
+  test("healthy systems still diffuse when an unrelated commodity is non-finite", () => {
+    const a = planet("A", { food: 300, minerals: NaN });
+    const b = planet("B", { food: 100, minerals: 50 });
+    const hb = new GalaxyHeartbeat({
+      planets: [a, b],
+      lanes: { A: ["B"], B: ["A"] },
+      diffusionRate: 0.2,
+      equilibriumRate: 0,
+    });
+
+    hb.pulse();
+
+    // food still diffuses normally despite minerals being NaN on A.
+    expect(a.market.food).toBeLessThan(300);
+    expect(b.market.food).toBeGreaterThan(100);
+    expect(Number.isFinite(b.market.minerals)).toBe(true);
+  });
+});

@@ -13,7 +13,7 @@ _Baseline at blueprint generation (2026-05-28): 569 tests / 33 suites green; ESL
 - [x] `003` ws connection heartbeat / dead-socket reaper — **done** (files: new `src/net/heartbeat.js` + `.test.js`; `src/server.js` 30s ping/terminate sweep, per-connection `isAlive`+pong, cleared on shutdown)
 - [x] `004` ws outbound backpressure handling — **done** (files: new `src/net/backpressure.js` + `.test.js`; `src/server.js` broadcast loop checks `ws.bufferedAmount` → skip deltas / drop hopeless clients)
 - [x] `005` Dependency hygiene (ws 8.21, http-server, engines, .nvmrc) — **done** (files: `package.json` ws@^8.21.0 + http-server devDep + `engines.node>=20` + `dev` uses local binary; `.nvmrc`; lockfile. Supersedes TICKET001)
-- [ ] `006` Economy NaN self-heal + heartbeat diffusion guard — _blocked by: none_
+- [x] `006` Economy NaN self-heal + heartbeat diffusion guard — **done** (files: `src/engine/EconomyManager.js` self-heals non-finite price→baseline; `src/engine/GalaxyHeartbeat.js` skips/guards non-finite operands; +3 tests. Closes TICKET003 follow-up)
 
 ## Phase 1 — Core Upgrades
 - [ ] `007` Modularize server.js (extract tested units) — _blocked by: none (eased by 002–004)_

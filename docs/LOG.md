@@ -41,6 +41,18 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T19:45 · iter-0002 · GREEN · p7-state-codec
+
+- **Baseline:** `c04ca91` on branch `overnight/bugfix-and-coverage`; 236 tests / 17 suites green.
+- **Move:** Land Pillar P7's foundation — a pure, headless snapshot/delta codec the server can later use to replace full-state broadcasts with deltas.
+- **Changed:**
+  - New `src/net/StateCodec.js` exporting `encodeSnapshot(entities)`, `diff(prev, next)`, and `applyDelta(snapshot, delta)`. Snapshots index entities by id; diffs carry `{ added, updated:{id:{changedFieldsOnly}}, removed:[ids] }`; applyDelta is non-mutating and deep-clones outputs. Field-level granularity (nested objects replaced whole); `undefined` in updated[id] signals a field removal so round-trip handles disappearing fields.
+  - New `src/net/StateCodec.test.js` — 23 deterministic Jest cases (hand-built entities, zero `Math.random`) proving the contract: empty/identity deltas, adds/removes/partials, nested-object replacement, field removal, world clear+populate, combined churn, and a chained sequential-delta scenario. The core invariant `applyDelta(prev, diff(prev,next))` deep-equals `next` is asserted across every shape.
+- **Decisions:** Did **not** wire the codec into `src/server.js` — the task scoped it as the headless foundation, and that broadcast change deserves its own slice with reconnection/keyframe-cadence design.
+- **Validation:** `npm test` → 259 passed (18 suites); `npm run lint` → clean; `npx prettier --check src/net/*.js` → clean.
+- **Notes:** Substrate untouched. No push/merge — local on the feature branch for human review.
+- **Next:** Wire StateCodec into `GameInstance` broadcast (per-client last-snapshot, keyframe cadence, reconnect handshake); add an interest-management filter (per-room then per-viewport); benchmark bandwidth vs. full-state in a 50-entity room.
+
 ## 2026-05-28T19:16 · iter-0001 · GREEN · combat-heartbeat-and-docs
 
 - **Baseline:** `81c8b88` on branch `overnight/bugfix-and-coverage` (descends from `679ebe3`); 236 tests / 17 suites green prior to docs pass.

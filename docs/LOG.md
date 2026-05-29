@@ -41,6 +41,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T20:30 · iter-0003 · GREEN · p2-production-model
+
+- **Baseline:** `86b6c6b` on branch `overnight/bugfix-and-coverage`; 259 tests / 18 suites green.
+- **Move:** Land Pillar P2's first slice — turn the heartbeat from pure diffusion into a real producer/consumer economy whose planets actually make and use goods.
+- **Changed:**
+  - New `src/engine/ProductionModel.js` exporting `PLANET_PROFILES` (data table mapping each seeded planet to a producer/consumer mix — agri worlds produce food, mining hubs produce minerals, industrial colonies produce machinery/electronics, pirate anchorage produces contraband, etc.), `computeCommodityPressure` (pure, bounded next-price function: `current + baseline * (consume*rate - produce*rate)` clamped to `[minFactor, maxFactor] * baseline`), and `applyProductionPulse` (mutates one planet's market for one pulse, rounded, returning changed-commodity list).
+  - `GalaxyHeartbeat.pulse()` now applies the production step first, before lane diffusion and equilibrium drift. New `profiles` and `productionOptions` constructor fields default to `{}` / `DEFAULT_PRODUCTION_OPTIONS`, so existing heartbeat tests/call sites continue to behave identically when no profiles are configured.
+  - `GameInstance` imports and passes `PLANET_PROFILES` into its `GalaxyHeartbeat`, wiring the real economy in for live game rooms.
+  - New `src/engine/ProductionModel.test.js` — 19 deterministic Jest cases covering pressure direction, bounds clamping at floor and ceiling, no-op when profile is empty or commodity is missing, profile-table coverage of every seeded planet, single- and multi-pulse heartbeat integration, propagation of production pressure through lane diffusion to a neighbor, and backwards-compatibility (heartbeat with no profiles behaves like before).
+- **Decisions:** Production runs sequentially before diffusion within a pulse rather than being folded into a single simultaneous update — the task spec explicitly required "before lane diffusion," and since each planet's production depends only on its own market the order remains irrelevant within the production step. Kept profile strengths conservative (mostly 1.0) and rates gentle (2% of baseline per pulse) so diffusion and equilibrium still matter at the showcase scale.
+- **Validation:** `npm test` → 278 passed (19 suites); `npm run lint` → clean.
+- **Notes:** Substrate untouched. No push/merge — local on the feature branch for human review.
+- **Next:** Add a propagation showcase test (a producer's surplus measurably depresses neighbor prices over N pulses against a baseline); model raw → refined → manufactured production chains so mining hubs feed industrial colonies; let player bulk trades feed the same pressure model so a cornered commodity ripples like a shock.
+
 ## 2026-05-28T19:45 · iter-0002 · GREEN · p7-state-codec
 
 - **Baseline:** `c04ca91` on branch `overnight/bugfix-and-coverage`; 236 tests / 17 suites green.

@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T23:30 · iter-0029 · GREEN · spec-004-ws-outbound-backpressure
+
+- **Baseline:** `cc2c889`-pre; 580 tests / 35 suites green. The 30Hz broadcast fanned out with no regard for per-socket buffer depth — a slow client could grow `ws.bufferedAmount` until OOM. Executing `plan/specs/004`.
+- **Move:** Bound per-client outbound buffering so one slow client can't take down the room/server.
+- **Changed:** New pure `src/net/backpressure.js` — `sendDecision(bufferedAmount, { isKeyframe, softLimit, hardLimit })` → `send|skip|drop` (soft 1 MB: skip deltas, still send keyframes; hard 4 MB: drop). `src/server.js` broadcast loop now consults `client.ws.bufferedAmount` + `frame.isKeyframe`: `drop` → `terminate()`, `skip` → omit this delta (client self-heals on the next scheduled room keyframe), `send` otherwise. The single per-tick `JSON.stringify` is preserved. +6 deterministic tests.
+- **Decisions:** Skipping deltas (rather than per-client keyframe forcing) keeps the "serialize once, fan out" perf invariant intact and leans on the existing ~1s keyframe self-heal; only a hopelessly backed-up client (≥ hard limit) is dropped. Thresholds are options so they're tunable/testable.
+- **Validation:** `npm run agent:check` → green (586 tests / 36 suites, prettier clean). Boot smoke → listens. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 004 done. Phase 0 ws-hardening (002–004) complete.
+- **Next:** `plan/specs/005` — dependency hygiene (ws 8.21, http-server, engines, .nvmrc).
+
 ## 2026-05-28T23:20 · iter-0028 · GREEN · spec-003-ws-heartbeat-reaper
 
 - **Baseline:** `7914242`-pre; 576 tests / 34 suites green. No transport-level liveness check existed (the `type:"pong"` handler is a game message, not a ws heartbeat). Executing `plan/specs/003`.

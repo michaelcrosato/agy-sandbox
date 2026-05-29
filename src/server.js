@@ -16,6 +16,7 @@ import { nextFrame } from "./net/BroadcastFramer.js";
 import { JsonFileStore } from "./persistence/Store.js";
 import { PersistenceManager } from "./persistence/PersistenceManager.js";
 import { applyGalaxy, applyPlayer } from "./persistence/serializers.js";
+import { applyRepair, applyRefuel } from "./engine/PortServices.js";
 
 // Process-level uncaught error and promise rejection logging
 process.on("uncaughtException", (err) => {
@@ -1238,6 +1239,40 @@ wss.on("connection", (ws) => {
               style: "error",
             });
           }
+        }
+      }
+    } else if (msg.type === "port_service") {
+      if (
+        clientObj.ship &&
+        clientObj.isLanded &&
+        clientObj.planetLandedOn &&
+        room
+      ) {
+        const services = clientObj.planetLandedOn.services || {};
+        if (msg.service === "repair" && services.repair) {
+          const r = applyRepair(clientObj.ship);
+          clientObj.send({
+            type: "notification",
+            message: r.ok
+              ? `Hull repaired (+${r.repaired} armor) for ${r.cost} CR.`
+              : r.cost > 0
+                ? "Insufficient credits to repair hull."
+                : "Hull is already at full integrity.",
+            style: r.ok ? "success" : "error",
+          });
+          if (r.ok) clientObj.sendStats();
+        } else if (msg.service === "refuel" && services.refuel) {
+          const r = applyRefuel(clientObj.ship);
+          clientObj.send({
+            type: "notification",
+            message: r.ok
+              ? `Hyperdrive refueled (+${r.refueled}) for ${r.cost} CR.`
+              : r.cost > 0
+                ? "Insufficient credits to refuel."
+                : "Hyperdrive fuel is already full.",
+            style: r.ok ? "success" : "error",
+          });
+          if (r.ok) clientObj.sendStats();
         }
       }
     } else if (msg.type === "jettison") {

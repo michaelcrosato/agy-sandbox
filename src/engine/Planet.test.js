@@ -14,6 +14,11 @@ describe("Planet construction", () => {
     expect(p.landingRadius).toBe(100); // radius + 40
   });
 
+  test("offers repair and refuel port services by default (EW5)", () => {
+    const p = new Planet({ name: "Sol" });
+    expect(p.services).toEqual({ repair: true, refuel: true });
+  });
+
   test("fills the full six-commodity market with defaults", () => {
     const p = new Planet({ name: "X" });
     expect(p.market).toEqual({

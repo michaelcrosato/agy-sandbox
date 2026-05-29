@@ -24,6 +24,7 @@ export class Planet extends SpaceEntity {
     shipyard = [],
     landingRadius,
     sector = null,
+    services = { repair: true, refuel: true },
     ...parentParams
   }) {
     // Planets are static, high-radius, high-mass entities
@@ -38,6 +39,8 @@ export class Planet extends SpaceEntity {
     this.description = description;
     this.color = color;
     this.sector = sector;
+    // Port services offered here (EW5): hull repair and hyperdrive refuel.
+    this.services = services;
 
     // Commodity Market Values (prices fluctuate per planet!)
     this.market = {

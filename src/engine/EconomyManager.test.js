@@ -137,4 +137,24 @@ describe("EconomyManager", () => {
     expect(status2.type).toBe("event_ended");
     expect(manager.activeEconomicEvent).toBeNull();
   });
+
+  test("should not poison prices with NaN when a commodity has no baseline", () => {
+    const sol = planets.find((p) => p.name === "Sol");
+    // A market key that BASE_MARKETS["Sol"] does not define — the kind of
+    // mismatch a cross-version persistence restore can introduce.
+    expect(BASE_MARKETS["Sol"].exotic_matter).toBeUndefined();
+    sol.market.exotic_matter = 500;
+
+    manager.normalizePrices();
+
+    // The unbaselined price is left exactly as-is, never drifted to NaN.
+    expect(sol.market.exotic_matter).toBe(500);
+    expect(Number.isFinite(sol.market.exotic_matter)).toBe(true);
+
+    // A normal, baselined commodity on the same planet still drifts as before.
+    sol.market.food = 200;
+    manager.normalizePrices();
+    expect(sol.market.food).toBeLessThan(200);
+    expect(Number.isFinite(sol.market.food)).toBe(true);
+  });
 });

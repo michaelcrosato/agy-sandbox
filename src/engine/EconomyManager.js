@@ -137,6 +137,12 @@ export class EconomyManager {
 
         const current = p.market[item];
         const baseline = base[item];
+        // A market may hold a commodity that BASE_MARKETS does not define for
+        // this planet (e.g. after a cross-version persistence restore). Drifting
+        // toward an `undefined` baseline yields NaN, which permanently poisons
+        // the price and then spreads across trade lanes via GalaxyHeartbeat's
+        // diffusion. Skip such keys instead of corrupting the galaxy.
+        if (!Number.isFinite(baseline)) continue;
         if (current !== baseline) {
           const diff = baseline - current;
           const step =

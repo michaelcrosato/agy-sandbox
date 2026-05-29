@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T23:10 · iter-0027 · GREEN · spec-002-ws-inbound-hardening
+
+- **Baseline:** `17a4a34`-pre; 569 tests / 33 suites green. `new WebSocketServer({ server })` had no inbound limits. Executing `plan/specs/002`.
+- **Move:** Cap inbound frame size (memory-DoS) and reject Cross-Site WebSocket Hijacking by accepting only same-origin upgrades + an optional allowlist — without breaking tunnel-shared play.
+- **Changed:** New pure `src/net/originPolicy.js` — `isAllowedOrigin(origin, { host, allow, allowNoOrigin })`: same-origin (page host == ws host, so localhost AND any tunnel work automatically), explicit allowlist (full origins or bare hosts, `*` = any), and no-Origin (non-browser tools) allowed by default. `src/server.js` WSS now sets `maxPayload: 256*1024` and a `verifyClient` that consults the policy with `info.origin` + the request `Host` header, logging rejects; `ALLOWED_ORIGINS` env extends the allowlist. +7 deterministic tests.
+- **Decisions:** Chose same-origin matching over a static allowlist because the game is meant to be shared via dynamic tunnel URLs — a fixed allowlist would silently reject friends. Same-origin is the correct CSWSH defense (browsers always send a truthful Origin) and needs no per-deploy config. 256 KB is far above any legitimate client message.
+- **Validation:** `npm run agent:check` → green (576 tests / 34 suites, prettier clean). Boot smoke → listens. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 002 done.
+- **Next:** `plan/specs/003` — ws connection heartbeat / dead-socket reaper.
+
 ## 2026-05-28T23:00 · iter-0026 · GREEN · spec-001-localtunnel-axios-cve
 
 - **Baseline:** `772b976`-pre on branch `overnight/bugfix-and-coverage`; 569 tests / 33 suites green; `npm audit` reported 2 high (axios@0.21.4 via localtunnel@2.0.2). Executing `plan/specs/001`.

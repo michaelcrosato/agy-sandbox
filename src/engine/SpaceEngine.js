@@ -1,5 +1,6 @@
 import { Vector2D } from "../physics/Vector2D.js";
 import { Projectile } from "./Projectile.js";
+import { DEFAULT_WEAPON_COSTS } from "./WeaponArchetypes.js";
 
 /**
  * Orchestrator class managing simulation state, entity updates, weapon fires, and circular elastic collisions.
@@ -97,15 +98,19 @@ export class SpaceEngine {
   fireWeapon(ship) {
     if (ship.isDisabled || ship.isOverheated) return;
 
-    // Energy check (weapons consume 6 energy per burst to ensure consistent high-rate firing)
-    const energyCost = 6;
+    // Per-shot energy/heat budget. Ships with a weapon archetype carry
+    // their own `weaponEnergyCost`/`weaponHeatCost` (set by
+    // `applyArchetypeToShip`); ships without one fall back to the
+    // legacy baseline so pre-archetype behavior is byte-identical.
+    const energyCost = ship.weaponEnergyCost ?? DEFAULT_WEAPON_COSTS.energyCost;
+    const heatCost = ship.weaponHeatCost ?? DEFAULT_WEAPON_COSTS.heatCost;
     if (ship.energy !== undefined && ship.energy < energyCost) {
       return; // Weapon system lock - low power
     }
 
     if (ship.energy !== undefined) {
       ship.energy -= energyCost;
-      ship.heat = Math.min(ship.maxHeat * 1.5, ship.heat + 8); // weapon heat buildup
+      ship.heat = Math.min(ship.maxHeat * 1.5, ship.heat + heatCost);
     }
 
     // Position projectile slightly in front of the ship to avoid firing inside self

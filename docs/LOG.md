@@ -41,6 +41,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T21:45 · iter-0014 · GREEN · afk-ready-agent-harness-and-economy-nan-fix
+
+- **Baseline:** `a8fc6b5` on branch `overnight/bugfix-and-coverage`; 495 tests / 27 suites green locally, but CI's required `prettier --check` step was RED on 8 `src/` files. The substrate `local-gate.ps1` checks only a clean tree and the overnight runner gates on lint+test, so format drift accumulated invisibly.
+- **Move:** Convert the repo into an AFK-ready target for autonomous agents — turn CI green, fix a real engine bug with a test, and add a CI-mirroring local gate plus canonical agent docs/scripts/tickets — without touching the read-only substrate.
+- **Changed:**
+  - `EconomyManager.normalizePrices` now guards a non-finite baseline (a commodity absent from `BASE_MARKETS`, reachable via cross-version `applyGalaxy` restore) that produced `NaN` and spread galaxy-wide through `GalaxyHeartbeat` lane diffusion; +1 deterministic regression test (496 total).
+  - Reformatted 8 Prettier-drifted `src/` files (whitespace only) so CI's format check passes.
+  - Added `format:check`, `agent:bootstrap`, and `agent:check` (= prettier + eslint + jest, the CI mirror) npm scripts; `scripts/agent/{bootstrap,doctor,check,test,lint,format,typecheck,status}` in both `.sh` and `.ps1`.
+  - New `AGENTS.md` (canonical agent entry that defers to the substrate) + thin `CLAUDE.md` pointer; `ROADMAP.md`; `docs/ai/REPO_MAP.md`; `.aiignore`; `.env.example`; `tickets/TICKET001-005`. README documentation links + status refresh.
+- **Decisions:** Did NOT create a second root `GOAL.md` (would duplicate `docs/GOAL.md`); folded the agent-meta layer into `AGENTS.md`. Left the substrate `local-gate.ps1` untouched and added `agent:check` as the real gate instead. Landed as three commits (fix / style / docs) plus this ledger entry; no push (overnight default).
+- **Validation:** `npm run agent:check` → exit 0; `All matched files use Prettier code style!`; `496 passed / 27 suites`. `PORT=18190 NODE_ENV=test node src/server.js` → boots and listens, no crash. Substrate files unchanged (verified via `git diff`).
+- **Notes:** Substrate untouched. No push/merge — local on the feature branch for human review.
+- **Next:** TICKET004 (kill→restart→rejoin persistence integration test); TICKET003 follow-up (self-heal non-finite prices + guard heartbeat diffusion); TICKET001 (declare `http-server`, add `engines`).
+
 ## 2026-05-28T04:30 · iter-0013 · GREEN · p8-hud-readability-combat-feedback-polish
 
 - **Baseline:** `c73d254` on branch `overnight/bugfix-and-coverage`; 495 tests / 27 suites green; `docs/GOAL.md` P8 ("Presentation & Game Feel") still gap-listed and the engine already exposes `controls.isBoosting`, `timeSinceLastHit`/`shieldRegenDelay`, `heat`/`isOverheated`, and `energy` per ship — none of which the HUD currently surfaces as discrete cues.

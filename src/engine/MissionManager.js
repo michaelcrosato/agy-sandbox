@@ -1,3 +1,8 @@
+import {
+  generateMissionsFromWorld,
+  applyMissionConsequences,
+} from "./GenerativeMissions.js";
+
 /**
  * Manages the procedural mission generation, active contract tracking, and completion cycles.
  */
@@ -338,6 +343,69 @@ export class MissionManager {
     }
 
     return null;
+  }
+
+  /**
+   * Generates missions composed from the live world state (real shortages and
+   * notable bounty targets) for `planetName`, appending them to the available
+   * pool for that planet. Pure delegation to {@link generateMissionsFromWorld}
+   * — see that module for the world snapshot shape and tuning knobs.
+   *
+   * @param {string} planetName - Planet whose available-mission list to append.
+   * @param {Object} world - World snapshot (planets/baseMarkets/bountyTargets/etc.).
+   * @param {Object} options - Generator options; `options.rng` is REQUIRED.
+   * @returns {Array<Object>} The missions that were appended.
+   */
+  generateWorldMissions(planetName, world, options) {
+    const generated = generateMissionsFromWorld(world, options);
+    if (generated.length === 0) return generated;
+    if (!this.availableMissions[planetName]) {
+      this.availableMissions[planetName] = [];
+    }
+    this.availableMissions[planetName].push(...generated);
+    return generated;
+  }
+
+  /**
+   * Marks a generated mission complete: pays out the reward, unloads any
+   * cargo it carried, applies the world-state consequences the mission was
+   * promised at generation time, and removes it from the active list.
+   *
+   * @param {string} missionId - The generated mission's id.
+   * @param {Object} player - Player ship (`credits`, `removeCargo`).
+   * @param {Object} world - World snapshot (`planets`, `baseMarkets`, `factionRegistry`).
+   * @returns {?{mission: Object, marketChanges: Array<Object>, factionChanges: Array<Object>}}
+   *   Result of completion, or `null` if the id isn't an active generated mission.
+   */
+  completeGeneratedMission(missionId, player, world = {}) {
+    const index = this.activeMissions.findIndex(
+      (m) => m.id === missionId && m.generated === true,
+    );
+    if (index === -1) return null;
+    const mission = this.activeMissions[index];
+
+    if (
+      mission.cargoItem &&
+      mission.cargoAmount &&
+      player &&
+      typeof player.removeCargo === "function"
+    ) {
+      player.removeCargo(mission.cargoItem, mission.cargoAmount);
+    }
+    if (player && Number.isFinite(player.credits)) {
+      player.credits += mission.reward || 0;
+    }
+
+    const consequences = applyMissionConsequences(mission, world);
+
+    mission.isCompleted = true;
+    this.activeMissions.splice(index, 1);
+
+    return {
+      mission,
+      marketChanges: consequences.marketChanges,
+      factionChanges: consequences.factionChanges,
+    };
   }
 
   /**

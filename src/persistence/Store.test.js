@@ -7,7 +7,9 @@ import { InMemoryStore, JsonFileStore, Store } from "./Store.js";
 describe("Store base class", () => {
   test("base Store class throws on direct save/load/has calls", async () => {
     const base = new Store();
-    await expect(base.save("k", { a: 1 })).rejects.toThrow(/must be implemented/);
+    await expect(base.save("k", { a: 1 })).rejects.toThrow(
+      /must be implemented/,
+    );
     await expect(base.load("k")).rejects.toThrow(/must be implemented/);
     await expect(base.has("k")).rejects.toThrow(/must be implemented/);
   });

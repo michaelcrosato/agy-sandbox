@@ -26,7 +26,11 @@ describe("classifyStanding", () => {
   });
 
   test("honors custom thresholds passed in options", () => {
-    const opts = { ...DEFAULT_OPTIONS, hostileThreshold: -10, friendlyThreshold: 10 };
+    const opts = {
+      ...DEFAULT_OPTIONS,
+      hostileThreshold: -10,
+      friendlyThreshold: 10,
+    };
     expect(classifyStanding(15, opts)).toBe("friendly");
     expect(classifyStanding(-15, opts)).toBe("hostile");
     expect(classifyStanding(0, opts)).toBe("neutral");
@@ -93,18 +97,24 @@ describe("FactionRegistry.setStanding clamping", () => {
     const reg = new FactionRegistry();
     const stored = reg.setStanding("p1", "Federation", 9999);
     expect(stored).toBe(DEFAULT_OPTIONS.maxStanding);
-    expect(reg.getStanding("p1", "Federation")).toBe(DEFAULT_OPTIONS.maxStanding);
+    expect(reg.getStanding("p1", "Federation")).toBe(
+      DEFAULT_OPTIONS.maxStanding,
+    );
   });
 
   test("clamps values below the configured floor", () => {
     const reg = new FactionRegistry();
     const stored = reg.setStanding("p1", "Federation", -9999);
     expect(stored).toBe(DEFAULT_OPTIONS.minStanding);
-    expect(reg.getStanding("p1", "Federation")).toBe(DEFAULT_OPTIONS.minStanding);
+    expect(reg.getStanding("p1", "Federation")).toBe(
+      DEFAULT_OPTIONS.minStanding,
+    );
   });
 
   test("honors custom min/max from options", () => {
-    const reg = new FactionRegistry({ options: { minStanding: -5, maxStanding: 5 } });
+    const reg = new FactionRegistry({
+      options: { minStanding: -5, maxStanding: 5 },
+    });
     reg.setStanding("p1", "Federation", 100);
     expect(reg.getStanding("p1", "Federation")).toBe(5);
     reg.setStanding("p1", "Federation", -100);
@@ -135,14 +145,18 @@ describe("FactionRegistry.adjustStanding — primary effect and clamping", () =>
     const reg = new FactionRegistry();
     reg.setStanding("p1", "Federation", 95);
     reg.adjustStanding("p1", "Federation", 50);
-    expect(reg.getStanding("p1", "Federation")).toBe(DEFAULT_OPTIONS.maxStanding);
+    expect(reg.getStanding("p1", "Federation")).toBe(
+      DEFAULT_OPTIONS.maxStanding,
+    );
   });
 
   test("the primary write is clamped at the floor", () => {
     const reg = new FactionRegistry();
     reg.setStanding("p1", "Federation", -95);
     reg.adjustStanding("p1", "Federation", -50);
-    expect(reg.getStanding("p1", "Federation")).toBe(DEFAULT_OPTIONS.minStanding);
+    expect(reg.getStanding("p1", "Federation")).toBe(
+      DEFAULT_OPTIONS.minStanding,
+    );
   });
 
   test("a zero delta is a no-op and does not propagate", () => {
@@ -208,7 +222,9 @@ describe("FactionRegistry.adjustStanding — ally/enemy propagation signs", () =
     reg.setStanding("p1", "Pirates", 0);
     reg.setStanding("p1", "Independents", 0);
     reg.adjustStanding("p1", "Federation", 40);
-    expect(reg.getStanding("p1", "Federation")).toBe(DEFAULT_OPTIONS.maxStanding);
+    expect(reg.getStanding("p1", "Federation")).toBe(
+      DEFAULT_OPTIONS.maxStanding,
+    );
     expect(reg.getStanding("p1", "Independents")).toBeCloseTo(20, 10);
     expect(reg.getStanding("p1", "Pirates")).toBeCloseTo(-20, 10);
   });

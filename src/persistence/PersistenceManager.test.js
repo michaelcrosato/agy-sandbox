@@ -189,7 +189,9 @@ describe("PersistenceManager (in-memory)", () => {
       store: new InMemoryStore(),
       logger: () => {},
     });
-    await expect(manager.saveAllGalaxies([null, undefined, { id: "" }])).resolves.toBe(0);
+    await expect(
+      manager.saveAllGalaxies([null, undefined, { id: "" }]),
+    ).resolves.toBe(0);
   });
 });
 
@@ -219,7 +221,9 @@ describe("PersistenceManager (JsonFileStore)", () => {
       // Construct a totally fresh instance and confirm its baseline differs.
       const fresh = new GameInstance("public", "Public Arena");
       try {
-        const polarisFresh = fresh.planets.find((p) => p.name === "New Polaris");
+        const polarisFresh = fresh.planets.find(
+          (p) => p.name === "New Polaris",
+        );
         expect(polarisFresh.market.minerals).not.toBe(999);
 
         const snapshot = await manager.loadGalaxy(source.id);

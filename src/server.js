@@ -110,7 +110,10 @@ persistenceManager.loadGalaxy(publicInstance.id).then((snapshot) => {
 // Periodic galaxy autosave (P1): persist every live room on a slow cadence so
 // a kill -9 only ever loses up to ~30 seconds of heartbeat aging.
 const AUTOSAVE_INTERVAL_MS = Number(process.env.AUTOSAVE_INTERVAL_MS) || 30000;
-persistenceManager.startAutosave(() => instances.values(), AUTOSAVE_INTERVAL_MS);
+persistenceManager.startAutosave(
+  () => instances.values(),
+  AUTOSAVE_INTERVAL_MS,
+);
 
 // Setup multi-room ticker loops
 const TICK_RATE = 30;

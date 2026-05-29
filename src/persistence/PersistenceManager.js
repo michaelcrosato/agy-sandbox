@@ -145,7 +145,8 @@ export class PersistenceManager {
       // The wrapped format always carries `player`. If we ever encounter a
       // raw player snapshot from an earlier shape, accept it too so older
       // saves don't strand players.
-      const player = raw.player && typeof raw.player === "object" ? raw.player : raw;
+      const player =
+        raw.player && typeof raw.player === "object" ? raw.player : raw;
       const roomId = typeof raw.roomId === "string" ? raw.roomId : null;
       return { roomId, player };
     } catch (err) {
@@ -184,7 +185,9 @@ export class PersistenceManager {
    */
   startAutosave(getRooms, intervalMs = 30000) {
     if (typeof getRooms !== "function") {
-      throw new TypeError("PersistenceManager.startAutosave: getRooms must be a function");
+      throw new TypeError(
+        "PersistenceManager.startAutosave: getRooms must be a function",
+      );
     }
     this.stopAutosave();
     const handle = setInterval(() => {

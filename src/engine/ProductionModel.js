@@ -126,10 +126,7 @@ export function applyProductionPulse(
 
   const produces = profile.produces || {};
   const consumes = profile.consumes || {};
-  const touched = new Set([
-    ...Object.keys(produces),
-    ...Object.keys(consumes),
-  ]);
+  const touched = new Set([...Object.keys(produces), ...Object.keys(consumes)]);
 
   const changed = [];
   for (const commodity of touched) {

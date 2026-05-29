@@ -280,13 +280,15 @@ export class FactionRegistry {
         changes[other] = this.setStanding(
           playerId,
           other,
-          this.getStanding(playerId, other) + delta * this.options.allyPropagation,
+          this.getStanding(playerId, other) +
+            delta * this.options.allyPropagation,
         );
       } else if (relation === "enemy") {
         changes[other] = this.setStanding(
           playerId,
           other,
-          this.getStanding(playerId, other) - delta * this.options.enemyPropagation,
+          this.getStanding(playerId, other) -
+            delta * this.options.enemyPropagation,
         );
       }
     }
@@ -302,10 +304,7 @@ export class FactionRegistry {
    * @returns {'hostile'|'neutral'|'friendly'}
    */
   classify(playerId, faction) {
-    return classifyStanding(
-      this.getStanding(playerId, faction),
-      this.options,
-    );
+    return classifyStanding(this.getStanding(playerId, faction), this.options);
   }
 
   /**

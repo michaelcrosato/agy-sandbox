@@ -82,7 +82,8 @@ export function serializeGalaxy(gameInstance) {
     : [];
 
   const activeEconomicEvent =
-    gameInstance.economyManager && gameInstance.economyManager.activeEconomicEvent
+    gameInstance.economyManager &&
+    gameInstance.economyManager.activeEconomicEvent
       ? { ...gameInstance.economyManager.activeEconomicEvent }
       : null;
   const eventDurationTimer = gameInstance.economyManager
@@ -147,18 +148,18 @@ export function applyGalaxy(gameInstance, data) {
     gameInstance.economyManager.activeEconomicEvent = data.activeEconomicEvent
       ? { ...data.activeEconomicEvent }
       : null;
-    gameInstance.economyManager.eventDurationTimer =
-      Number.isFinite(data.eventDurationTimer) ? data.eventDurationTimer : 0;
+    gameInstance.economyManager.eventDurationTimer = Number.isFinite(
+      data.eventDurationTimer,
+    )
+      ? data.eventDurationTimer
+      : 0;
   }
 
   gameInstance.activeSectorEvent = data.activeSectorEvent
     ? cloneSectorEvent(data.activeSectorEvent)
     : null;
 
-  if (
-    gameInstance.galaxyHeartbeat &&
-    Number.isFinite(data.heartbeatPulses)
-  ) {
+  if (gameInstance.galaxyHeartbeat && Number.isFinite(data.heartbeatPulses)) {
     gameInstance.galaxyHeartbeat.pulses = data.heartbeatPulses;
   }
 
@@ -267,10 +268,7 @@ export function applyPlayer(clientObj, data) {
       }
       // Keep the SpaceEntity-level `mass` consistent with the restored
       // hull/outfit split so physics keeps matching the loadout.
-      if (
-        Number.isFinite(ship.hullMass) &&
-        Number.isFinite(ship.outfitMass)
-      ) {
+      if (Number.isFinite(ship.hullMass) && Number.isFinite(ship.outfitMass)) {
         ship.mass = ship.hullMass + ship.outfitMass;
       }
     }

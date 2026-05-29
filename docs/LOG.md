@@ -41,6 +41,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T22:33 · iter-0023 · GREEN · ew2-boarding-plunder-repair
+
+- **Baseline:** `c10176e` on branch `overnight/bugfix-and-coverage`; 552 tests / 31 suites green. EW2 from `docs/ai/FEATURE_PLAN.md` — the payoff for disable-before-destroy (uses EW1's value framing).
+- **Move:** Make boarding a disabled ship matter — plunder a hostile (cargo + a cut of its credits) or repair a friendly back to life — replacing the existing cargo-only, repeatable plunder.
+- **Changed:**
+  - New pure `src/engine/Boarding.js`: `canBoard(boarder, target, opts)` (target `isDisabled`, boarder within `boardRange` and below `maxBoardSpeed`, not self), `plunder(boarder, target, opts)` (moves cargo into the boarder's free hold, transfers `plunderCreditFraction` (0.5) of target credits, sets `target.looted` so it can't be re-plundered — returns `{ok, cargo, credits}`), `boardRepair(boarder, target, opts)` (restores armor to max + clears `isDisabled`, no loot). Frozen `DEFAULT_BOARDING_OPTIONS`.
+  - `server.js` `boarding_action`: the plunder branch now routes through `Boarding.plunder` with `{boardRange:250, maxBoardSpeed:Infinity}` so it preserves the handler's existing 250u reach while gaining credit theft + idempotency; added a `repair` action wired to `boardRepair`. The salvage branch is unchanged.
+  - +9 deterministic `Boarding.test.js` cases (canBoard gating; plunder cargo+credits, capacity-limited fill, idempotency, non-disabled refusal; boardRepair revive-no-loot).
+- **Decisions:** Kept `Boarding.js` faction-agnostic — the server/client decides plunder vs repair from disposition — so the module has no coupling to `FactionRegistry`. Preserved the legacy 250u boarding reach (rather than the stricter 60u default) by passing options, to avoid changing the live boarding UX while still adding the new payoffs. Idempotency via a `looted` flag means a stripped hulk yields nothing on a second attempt. Ship **capture** (boarded ship joins your fleet) remains deferred as a larger ticket.
+- **Validation:** `npm run agent:check` → green (prettier + eslint + 561 tests / 32 suites). `PORT=18197 NODE_ENV=test node src/server.js` → boots and listens. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge — local on the feature branch. TICKET013 closed.
+- **Next:** EW9 (mining depth — extract the asteroid→pod yield into a pure seeded helper + a Mining Laser outfit) is the last backlog item.
+
 ## 2026-05-28T22:29 · iter-0022 · GREEN · ew3-hyperdrive-fuel-economy
 
 - **Baseline:** `2a669cc` on branch `overnight/bugfix-and-coverage`; 540 tests / 30 suites green. EW3 from `docs/ai/FEATURE_PLAN.md`.

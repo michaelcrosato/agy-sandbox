@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T23:46 · iter-0031 · GREEN · spec-006-economy-nan-selfheal
+
+- **Baseline:** `1a60d05`-pre; 586 tests / 36 suites green. Final Phase 0 item; closes the TICKET003 follow-up. Executing `plan/specs/006`.
+- **Move:** Make the headless economy provably self-correcting — heal an already-non-finite price and prevent the heartbeat from ever propagating NaN.
+- **Changed:** `src/engine/EconomyManager.js` `normalizePrices` — after the finite-baseline guard, if `current` is non-finite it snaps to `baseline` (self-heal) and continues. `src/engine/GalaxyHeartbeat.js` `pulse` — skips a commodity whose `current` is non-finite, only sums **finite** neighbour values into the diffusion average, guards the equilibrium term with `Number.isFinite(base[commodity])`, and only pushes an update when `Number.isFinite(next)`. +3 deterministic tests (EconomyManager self-heal to baseline; heartbeat NaN-neighbour cannot poison; healthy commodity still diffuses alongside a NaN one).
+- **Decisions:** Division of labour — the heartbeat refuses to spread or read NaN, while EconomyManager owns the actual healing (snap to baseline). Together a corrupted value is contained on its own cell and corrected on the next normalize tick, so a "server that runs forever" can't accumulate economic corruption.
+- **Validation:** `npm run agent:check` → green (589 tests / 36 suites, prettier clean). `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 006 done; TICKET003 closed. **Phase 0 (specs 001–006) complete; `npm audit` = 0 vulnerabilities.**
+- **Next:** Phase 1 — `plan/specs/008` (persistence restart integration test) and `009` (decouple threat detection from names) are the highest-Σ unblocked items.
+
 ## 2026-05-28T23:38 · iter-0030 · GREEN · spec-005-dependency-hygiene
 
 - **Baseline:** `eb1c9b2`-pre; 586 tests / 36 suites green. Executing `plan/specs/005` (folds in TICKET001).

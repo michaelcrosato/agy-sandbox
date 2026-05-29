@@ -60,6 +60,7 @@ describe("Ship controls", () => {
       isTurningRight: true,
       isFiring: true,
     });
+    s.setControls({ isBoosting: true });
     s.clearControls();
     expect(s.controls).toEqual({
       isThrusting: false,
@@ -67,6 +68,7 @@ describe("Ship controls", () => {
       isTurningLeft: false,
       isTurningRight: false,
       isFiring: false,
+      isBoosting: false,
     });
   });
 });
@@ -195,6 +197,85 @@ describe("Ship.regenerateShields", () => {
     s.regenerateShields(1);
     expect(s.shield).toBe(50);
     expect(s.energy).toBe(100);
+  });
+
+  test("does not regenerate during the post-hit combat lockout", () => {
+    const s = new Ship({ maxShield: 200, shieldRegen: 10 });
+    s.shield = 100;
+    s.takeDamage(10); // shield 90, resets the combat-lockout timer to 0
+    expect(s.shield).toBe(90);
+    s.regenerateShields(1);
+    expect(s.shield).toBe(90); // still locked out, no regen
+  });
+
+  test("resumes regeneration once the combat delay elapses", () => {
+    const s = new Ship({ maxShield: 200, shieldRegen: 10 });
+    s.shield = 100;
+    s.takeDamage(10); // shield 90, timer 0
+    s.timeSinceLastHit = s.shieldRegenDelay; // delay has now elapsed
+    s.regenerateShields(1);
+    expect(s.shield).toBe(100); // +10
+  });
+});
+
+describe("Ship shield-piercing damage", () => {
+  test("a piercing fraction strikes armor directly, bypassing shields", () => {
+    const s = new Ship({ maxShield: 200, maxArmor: 100 });
+    s.takeDamage(100, 0.5); // 50 to shields, 50 straight to armor
+    expect(s.shield).toBe(150);
+    expect(s.armor).toBe(50);
+  });
+
+  test("full pierce ignores shields entirely", () => {
+    const s = new Ship({ maxShield: 200, maxArmor: 100 });
+    s.takeDamage(40, 1);
+    expect(s.shield).toBe(200);
+    expect(s.armor).toBe(60);
+  });
+
+  test("defaults to zero pierce for backward compatibility", () => {
+    const s = new Ship({ maxShield: 200, maxArmor: 100 });
+    s.takeDamage(30);
+    expect(s.shield).toBe(170);
+    expect(s.armor).toBe(100);
+  });
+});
+
+describe("Ship afterburner", () => {
+  test("update advances the combat-lockout timer", () => {
+    const s = new Ship();
+    s.takeDamage(10); // timer -> 0
+    s.update(0.5);
+    expect(s.timeSinceLastHit).toBeCloseTo(0.5, 6);
+  });
+
+  test("boosting yields more speed but burns more energy than normal thrust", () => {
+    const normal = new Ship();
+    normal.setControls({ isThrusting: true });
+    normal.update(0.1);
+
+    const boosted = new Ship();
+    boosted.setControls({ isThrusting: true, isBoosting: true });
+    boosted.update(0.1);
+
+    expect(boosted.velocity.magnitude()).toBeGreaterThan(
+      normal.velocity.magnitude(),
+    );
+    expect(boosted.energy).toBeLessThan(normal.energy);
+  });
+
+  test("raises the speed ceiling only while actively boosting", () => {
+    const capped = new Ship({ maxSpeed: 300 });
+    capped.velocity = new Vector2D(400, 0);
+    capped.setControls({ isThrusting: true });
+    capped.update(0.001);
+    expect(capped.velocity.magnitude()).toBeCloseTo(300, 6);
+
+    const boosted = new Ship({ maxSpeed: 300 });
+    boosted.velocity = new Vector2D(400, 0);
+    boosted.setControls({ isThrusting: true, isBoosting: true });
+    boosted.update(0.001);
+    expect(boosted.velocity.magnitude()).toBeGreaterThan(300);
   });
 });
 

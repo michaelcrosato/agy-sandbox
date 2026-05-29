@@ -15,6 +15,7 @@ export class Projectile extends SpaceEntity {
    * @param {Vector2D} config.startPosition - Initial coordinate.
    * @param {number} config.heading - Launch heading in radians.
    * @param {Vector2D} [config.ownerVelocity] - Additive velocity from the shooting ship.
+   * @param {number} [config.shieldPierce] - Fraction (0..1) of damage that bypasses shields.
    */
   constructor({
     ownerId,
@@ -24,6 +25,7 @@ export class Projectile extends SpaceEntity {
     startPosition,
     heading,
     ownerVelocity = new Vector2D(0, 0),
+    shieldPierce = 0,
   }) {
     // Projectiles are fast, light entities with a small radius
     const headingDir = new Vector2D(Math.cos(heading), Math.sin(heading));
@@ -40,6 +42,7 @@ export class Projectile extends SpaceEntity {
 
     this.ownerId = ownerId;
     this.damage = damage;
+    this.shieldPierce = shieldPierce;
     this.maxLifetime = range / speed; // in seconds
     this.lifetime = this.maxLifetime;
   }

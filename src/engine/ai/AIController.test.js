@@ -86,6 +86,31 @@ describe("AIController.scanSensors", () => {
     ctrl.scanSensors([ctrl.ship, rock]);
     expect(ctrl.target).toBeNull();
   });
+
+  test("does not crash when a candidate ship has no name", () => {
+    const ctrl = new AIController(
+      shipAt("System Guard", 0, 0, "self"),
+      "guard",
+    );
+    const nameless = new Ship({ id: "ghost", position: new Vector2D(40, 0) });
+    nameless.name = undefined;
+    expect(() => ctrl.scanSensors([ctrl.ship, nameless])).not.toThrow();
+    expect(ctrl.target).toBeNull(); // nameless ship is never a threat
+  });
+});
+
+describe("AIController.isPirateShip", () => {
+  test("classifies pirate- and raider-named ships as hostile", () => {
+    expect(AIController.isPirateShip({ name: "Pirate Raider" })).toBe(true);
+    expect(AIController.isPirateShip({ name: "Siege Raider" })).toBe(true);
+    expect(AIController.isPirateShip({ name: "Pirate Boss Gallows" })).toBe(true);
+  });
+
+  test("treats civilians and nameless entities as non-hostile", () => {
+    expect(AIController.isPirateShip({ name: "Atlas Hauler" })).toBe(false);
+    expect(AIController.isPirateShip({ name: undefined })).toBe(false);
+    expect(AIController.isPirateShip({})).toBe(false);
+  });
 });
 
 describe("AIController.executePirateAI", () => {

@@ -50,6 +50,19 @@ export class AIController {
   }
 
   /**
+   * Null-safe hostile-pirate classifier. Ships without a name string (e.g. a
+   * freshly-spawned player hull) are never hostile, which prevents a tick-wide
+   * crash from calling .includes on an undefined name.
+   * @param {SpaceEntity} ent - Entity to classify.
+   * @returns {boolean} True if the entity is a pirate-class threat.
+   */
+  static isPirateShip(ent) {
+    const n = ent.name;
+    if (typeof n !== "string") return false;
+    return n.includes("Pirate") || n.includes("Raider");
+  }
+
+  /**
    * Searches for suitable nearby targets depending on role.
    * @param {Array<SpaceEntity>} entities - All entities.
    */
@@ -67,23 +80,13 @@ export class AIController {
       if (dist < closestDist) {
         if (this.role === "pirate") {
           // Pirates target any player or non-pirate ship
-          const isAnotherPirate =
-            ent.name === "Pirate Raider" ||
-            ent.name === "Siege Raider" ||
-            ent.name.includes("Pirate") ||
-            ent.name.includes("Raider");
-          if (!isAnotherPirate) {
+          if (!AIController.isPirateShip(ent)) {
             closestTarget = ent;
             closestDist = dist;
           }
         } else if (this.role === "guard") {
           // Guards target pirate ships
-          const isThreat =
-            ent.name === "Pirate Raider" ||
-            ent.name === "Siege Raider" ||
-            ent.name.includes("Pirate") ||
-            ent.name.includes("Raider");
-          if (isThreat) {
+          if (AIController.isPirateShip(ent)) {
             closestTarget = ent;
             closestDist = dist;
           }
@@ -259,7 +262,7 @@ export class AIController {
           (ent) =>
             ent.type === "ship" &&
             !ent.isDestroyed &&
-            (ent.name === "Pirate Raider" || ent.name.includes("Pirate")),
+            AIController.isPirateShip(ent),
         );
         let closestDist = 600;
         for (const pirate of hostiles) {
@@ -301,11 +304,7 @@ export class AIController {
     let closestThreatDist = 400;
     for (const ent of entities) {
       if (ent.isDestroyed || ent.type !== "ship") continue;
-      const isPirate =
-        ent.name === "Pirate Raider" ||
-        ent.name.includes("Pirate") ||
-        ent.name.includes("Raider");
-      if (isPirate) {
+      if (AIController.isPirateShip(ent)) {
         const distToFlagship = ent.position.distance(this.flagship.position);
         if (distToFlagship < closestThreatDist) {
           closestThreatDist = distToFlagship;

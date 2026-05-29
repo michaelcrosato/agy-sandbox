@@ -39,6 +39,23 @@ describe("Projectile construction", () => {
     expect(p.velocity.y).toBeCloseTo(500, 6);
   });
 
+  test("carries an optional shield-pierce fraction, defaulting to zero", () => {
+    const plain = new Projectile({
+      ownerId: "ship-1",
+      startPosition: new Vector2D(0, 0),
+      heading: 0,
+    });
+    expect(plain.shieldPierce).toBe(0);
+
+    const piercing = new Projectile({
+      ownerId: "ship-1",
+      startPosition: new Vector2D(0, 0),
+      heading: 0,
+      shieldPierce: 0.5,
+    });
+    expect(piercing.shieldPierce).toBe(0.5);
+  });
+
   test("computes lifetime as range divided by speed", () => {
     const p = new Projectile({
       ownerId: "ship-1",

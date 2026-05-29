@@ -6,6 +6,14 @@ import { SpaceEntity } from "./SpaceEntity.js";
 import { AIController } from "./ai/AIController.js";
 import { CargoPod } from "./CargoPod.js";
 import { EconomyManager } from "./EconomyManager.js";
+import { GalaxyHeartbeat } from "./GalaxyHeartbeat.js";
+
+// Which sectors share trade routes (warp-gate connected) for economic diffusion.
+export const SECTOR_ADJACENCY = {
+  core: ["frontier"],
+  frontier: ["core", "rim"],
+  rim: ["frontier"],
+};
 
 export const BASE_MARKETS = {
   Sol: {
@@ -86,6 +94,7 @@ export class GameInstance {
     this.activeEconomicEvent = null;
     this.activeSectorEvent = null;
     this.lastActiveTime = Date.now();
+    this.pendingTimers = new Set();
 
     // Set up engine event handlers
     this.engine.onProjectileFired = (proj, ship) => {
@@ -109,6 +118,14 @@ export class GameInstance {
 
     // Initialize the dynamic economy manager
     this.economyManager = new EconomyManager(this.planets);
+
+    // The galaxy heartbeat ages the economy even with no players connected,
+    // diffusing prices along trade lanes between sectors.
+    this.galaxyHeartbeat = new GalaxyHeartbeat({
+      planets: this.planets,
+      baseMarkets: BASE_MARKETS,
+      lanes: GalaxyHeartbeat.buildLanesBySector(this.planets, SECTOR_ADJACENCY),
+    });
   }
 
   seedGalaxy() {
@@ -422,9 +439,30 @@ export class GameInstance {
     this.ais.push(controller);
   }
 
+  // Tracks every timer the instance schedules so they can be cancelled on
+  // destroy() and never keep the process (or the Jest runner) alive on their own.
+  scheduleTimer(fn, ms) {
+    const id = setTimeout(() => {
+      this.pendingTimers.delete(id);
+      fn();
+    }, ms);
+    if (id && typeof id.unref === "function") id.unref();
+    this.pendingTimers.add(id);
+    return id;
+  }
+
+  // Cancels all pending timers. Call when a room is garbage-collected so respawn
+  // timers don't fire against a dead instance.
+  destroy() {
+    for (const id of this.pendingTimers) {
+      clearTimeout(id);
+    }
+    this.pendingTimers.clear();
+  }
+
   scheduleAIRespawn(name, role) {
     if (name === "Siege Raider") return;
-    setTimeout(() => {
+    this.scheduleTimer(() => {
       if (role === "pirate") {
         const pirateNames = [
           "Pirate Raider",
@@ -516,12 +554,15 @@ export class GameInstance {
       landedOn: m.planetLandedOn ? m.planetLandedOn.name : null,
     }));
 
+    const str = JSON.stringify({
+      type: "fleet_sync",
+      name: fleetCode,
+      members: membersArray,
+    });
     for (const m of set) {
-      m.send({
-        type: "fleet_sync",
-        name: fleetCode,
-        members: membersArray,
-      });
+      if (m.ws && m.ws.readyState === m.ws.OPEN) {
+        m.ws.send(str);
+      }
     }
   }
 
@@ -558,14 +599,16 @@ export class GameInstance {
       });
     }
 
-    const payload = {
+    const str = JSON.stringify({
       type: "lobby_sync",
       count: this.clients.size,
       roster: roster,
-    };
+    });
 
     for (const client of this.clients.values()) {
-      client.send(payload);
+      if (client.ws && client.ws.readyState === client.ws.OPEN) {
+        client.ws.send(str);
+      }
     }
   }
 
@@ -832,7 +875,7 @@ export class GameInstance {
       style: "error",
     });
 
-    setTimeout(() => {
+    this.scheduleTimer(() => {
       const fee = Math.floor(client.ship.credits * 0.1);
       client.ship.credits = Math.max(0, client.ship.credits - fee);
 

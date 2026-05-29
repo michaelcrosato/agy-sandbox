@@ -332,3 +332,112 @@ describe("SpaceEngine physical collisions", () => {
     expect(b.velocity.x).toBe(10);
   });
 });
+
+describe("SpaceEngine ramming damage", () => {
+  test("high-speed impacts damage both ships", () => {
+    const engine = new SpaceEngine({ restitution: 0.5 });
+    const a = new Ship({
+      id: "A",
+      position: new Vector2D(0, 0),
+      velocity: new Vector2D(100, 0),
+    });
+    const b = new Ship({
+      id: "B",
+      position: new Vector2D(20, 0),
+      velocity: new Vector2D(-100, 0),
+    });
+    engine.addEntity(a);
+    engine.addEntity(b);
+
+    engine.handleCollisions();
+
+    // closing speed 200 -> (200-50)*0.6 = 90 damage to each
+    expect(a.shield).toBeCloseTo(110, 6);
+    expect(b.shield).toBeCloseTo(110, 6);
+  });
+
+  test("low-speed bumps deal no ramming damage", () => {
+    const engine = new SpaceEngine({ restitution: 0.5 });
+    const a = new Ship({
+      id: "A",
+      position: new Vector2D(0, 0),
+      velocity: new Vector2D(10, 0),
+    });
+    const b = new Ship({
+      id: "B",
+      position: new Vector2D(20, 0),
+      velocity: new Vector2D(-10, 0),
+    });
+    engine.addEntity(a);
+    engine.addEntity(b);
+
+    engine.handleCollisions();
+
+    expect(a.shield).toBe(a.maxShield);
+    expect(b.shield).toBe(b.maxShield);
+  });
+
+  test("a fatal ram attributes the kill to the other ship", () => {
+    const engine = new SpaceEngine({ restitution: 0.5 });
+    const rammer = new Ship({
+      id: "rammer",
+      position: new Vector2D(0, 0),
+      velocity: new Vector2D(300, 0),
+    });
+    const victim = new Ship({
+      id: "victim",
+      position: new Vector2D(20, 0),
+      velocity: new Vector2D(-300, 0),
+    });
+    victim.isDisabled = true; // already crippled and drifting
+    victim.shield = 0;
+    victim.armor = 5;
+    engine.addEntity(rammer);
+    engine.addEntity(victim);
+
+    engine.handleCollisions();
+
+    expect(victim.isDestroyed).toBe(true);
+    expect(victim.destroyedBy).toBe("rammer");
+  });
+});
+
+describe("SpaceEngine shield-piercing projectiles", () => {
+  test("fireWeapon propagates the ship's shield-pierce onto the projectile", () => {
+    const engine = new SpaceEngine();
+    const ship = new Ship({ id: "shooter", position: new Vector2D(0, 0) });
+    ship.weaponShieldPierce = 0.5;
+    engine.addEntity(ship);
+
+    engine.fireWeapon(ship);
+
+    const proj = engine.entities.find((e) => e.type === "projectile");
+    expect(proj).toBeDefined();
+    expect(proj.shieldPierce).toBe(0.5);
+  });
+
+  test("a piercing projectile damages armor through standing shields", () => {
+    const engine = new SpaceEngine();
+    const target = new Ship({
+      id: "target",
+      position: new Vector2D(0, 0),
+      maxShield: 200,
+      maxArmor: 100,
+    });
+    const proj = new Projectile({
+      ownerId: "other",
+      damage: 40,
+      shieldPierce: 0.5,
+      startPosition: new Vector2D(0, 0),
+      heading: 0,
+    });
+    proj.id = "p";
+    engine.addEntity(target);
+    engine.addEntity(proj);
+
+    engine.handleCollisions();
+
+    expect(target.shield).toBe(180); // 20 normal damage
+    expect(target.armor).toBe(80); // 20 pierced straight to armor
+  });
+});

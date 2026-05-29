@@ -50,6 +50,10 @@ export class Ship extends SpaceEntity {
     this.maxArmor = maxArmor;
     this.armor = maxArmor;
     this.shieldRegen = shieldRegen;
+    // Combat lockout: shields only recharge after this many seconds without a hit.
+    // Fresh ships start "out of combat" so they regenerate immediately.
+    this.shieldRegenDelay = 3;
+    this.timeSinceLastHit = this.shieldRegenDelay;
 
     // Energy & Thermal Systems (Endless Sky Modernization)
     this.maxEnergy = 100;
@@ -85,6 +89,10 @@ export class Ship extends SpaceEntity {
     this.weaponCooldown = weaponCooldown;
     this.activeWeaponCooldown = 0; // current active countdown
 
+    // Afterburner: while boosting, thrust and top speed scale up at a steep
+    // energy/heat cost.
+    this.boostMultiplier = 1.8;
+
     // Controls state map
     this.controls = {
       isThrusting: false,
@@ -92,6 +100,7 @@ export class Ship extends SpaceEntity {
       isTurningLeft: false,
       isTurningRight: false,
       isFiring: false,
+      isBoosting: false,
     };
   }
 
@@ -112,25 +121,39 @@ export class Ship extends SpaceEntity {
     this.controls.isTurningLeft = false;
     this.controls.isTurningRight = false;
     this.controls.isFiring = false;
+    this.controls.isBoosting = false;
   }
 
   /**
    * Applies damage to ship, draining shields first, then structural armor.
    * @param {number} damage - Damage amount.
+   * @param {number} [shieldPierce] - Fraction (0..1) of damage that bypasses
+   *   shields and strikes armor directly (shield-piercing weapons).
    * @returns {boolean} True if the ship is destroyed (armor <= 0).
    */
-  takeDamage(damage) {
+  takeDamage(damage, shieldPierce = 0) {
     if (damage <= 0) return this.isDestroyed;
 
+    // Any hit resets the shield-recharge combat lockout.
+    this.timeSinceLastHit = 0;
+
+    const pierce = Math.max(0, Math.min(1, shieldPierce));
+    const directArmorDamage = damage * pierce;
+    const normalDamage = damage - directArmorDamage;
+
     if (this.shield > 0 && !this.isDisabled) {
-      this.shield -= damage;
+      this.shield -= normalDamage;
       if (this.shield < 0) {
         const overflow = Math.abs(this.shield);
         this.shield = 0;
         this.armor -= overflow;
       }
     } else {
-      this.armor -= damage;
+      this.armor -= normalDamage;
+    }
+
+    if (directArmorDamage > 0) {
+      this.armor -= directArmorDamage;
     }
 
     if (this.armor < 0) {
@@ -164,6 +187,8 @@ export class Ship extends SpaceEntity {
    */
   regenerateShields(dt) {
     if (this.isDestroyed || this.isDisabled || this.isOverheated) return;
+    // Shields stay down for a few seconds after taking a hit (combat lockout).
+    if (this.timeSinceLastHit < this.shieldRegenDelay) return;
     if (this.shield < this.maxShield) {
       const shieldDeficit = this.maxShield - this.shield;
       const regenAttempt = Math.min(shieldDeficit, this.shieldRegen * dt);
@@ -249,6 +274,9 @@ export class Ship extends SpaceEntity {
       return;
     }
 
+    // Advance the combat-lockout timer that gates shield regeneration.
+    this.timeSinceLastHit += dt;
+
     // 1. Recharge energy reserves
     this.energy = Math.min(this.maxEnergy, this.energy + this.energyRegen * dt);
 
@@ -286,13 +314,18 @@ export class Ship extends SpaceEntity {
 
     // --- Linear Propulsion Control Integration ---
     if (this.controls.isThrusting && !this.isOverheated) {
-      const thrustEnergyCost = 15 * dt;
+      const boosting = this.controls.isBoosting && this.energy > 0;
+      const thrustEnergyCost = (boosting ? 45 : 15) * dt;
       if (this.energy >= thrustEnergyCost) {
         this.energy -= thrustEnergyCost;
-        this.heat = Math.min(this.maxHeat * 1.5, this.heat + 8 * dt);
+        this.heat = Math.min(
+          this.maxHeat * 1.5,
+          this.heat + (boosting ? 20 : 8) * dt,
+        );
 
         const direction = this.getDirectionVector();
-        const thrustForce = direction.multiply(this.thrustPower);
+        const multiplier = boosting ? this.boostMultiplier : 1;
+        const thrustForce = direction.multiply(this.thrustPower * multiplier);
         this.applyForce(thrustForce);
       }
     }
@@ -324,7 +357,11 @@ export class Ship extends SpaceEntity {
     // Apply terminal speed limit cap
     const currentSpeed = this.velocity.magnitude();
     let speedCap = this.maxSpeed;
-    if (this.isOverheated) speedCap *= 0.5; // nerf max speed by 50% during reactor meltdown
+    if (this.isOverheated) {
+      speedCap *= 0.5; // nerf max speed by 50% during reactor meltdown
+    } else if (this.controls.isBoosting && this.controls.isThrusting) {
+      speedCap *= this.boostMultiplier; // afterburner raises the speed ceiling
+    }
     if (currentSpeed > speedCap) {
       this.velocity = this.velocity.normalize().multiply(speedCap);
     }

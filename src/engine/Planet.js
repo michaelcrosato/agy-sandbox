@@ -23,6 +23,7 @@ export class Planet extends SpaceEntity {
     outfitter = [],
     shipyard = [],
     landingRadius,
+    sector = null,
     ...parentParams
   }) {
     // Planets are static, high-radius, high-mass entities
@@ -36,6 +37,7 @@ export class Planet extends SpaceEntity {
     this.name = name;
     this.description = description;
     this.color = color;
+    this.sector = sector;
 
     // Commodity Market Values (prices fluctuate per planet!)
     this.market = {
@@ -73,6 +75,14 @@ export class Planet extends SpaceEntity {
             },
             { name: "Plasma Cannon", cost: 1800, type: "weapon", value: 25 },
             { name: "Neutron Blaster", cost: 4200, type: "weapon", value: 55 },
+            {
+              name: "Ion Disruptor Array",
+              cost: 5200,
+              type: "pierce",
+              value: 0.5,
+              description:
+                "Tunes weapon discharges to phase through shields: 50% of weapon damage strikes hull armor directly, ignoring shields.",
+            },
             {
               name: "Expanded Cargo Holds",
               cost: 1000,

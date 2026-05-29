@@ -95,4 +95,32 @@ describe("GameInstance Multi-Room Matchmaking & Isolation Mechanics", () => {
     expect(room.ais.length).toBe(initialAICount - 1);
     expect(room.ais.includes(targetAI)).toBe(false);
   });
+
+  test("scheduleAIRespawn registers a tracked, cancellable timer", () => {
+    const room = new GameInstance("room-timer", "Sector Timer");
+    expect(room.pendingTimers.size).toBe(0);
+
+    room.scheduleAIRespawn("Pirate Raider", "pirate");
+    expect(room.pendingTimers.size).toBe(1);
+
+    room.destroy();
+    expect(room.pendingTimers.size).toBe(0);
+  });
+
+  test("Siege Raider is exempt from respawn scheduling", () => {
+    const room = new GameInstance("room-siege", "Sector Siege");
+    room.scheduleAIRespawn("Siege Raider", "pirate");
+    expect(room.pendingTimers.size).toBe(0);
+    room.destroy();
+  });
+
+  test("destroy() clears all pending timers so they never fire against a dead room", () => {
+    const room = new GameInstance("room-destroy", "Sector Destroy");
+    room.scheduleAIRespawn("Viper Scout", "pirate");
+    room.scheduleAIRespawn("Guard One", "guard");
+    expect(room.pendingTimers.size).toBe(2);
+
+    room.destroy();
+    expect(room.pendingTimers.size).toBe(0);
+  });
 });

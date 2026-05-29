@@ -262,13 +262,17 @@ setInterval(() => {
       room.broadcastFleetUpdate(code);
     }
 
-    // J. Authoritative World State Broadcast
-    const serialized = room.serializeEntities();
+    // J. Authoritative World State Broadcast.
+    // Serialize the payload once per tick and reuse the string for every client
+    // instead of re-running JSON.stringify per recipient (scales with player count).
+    const statePayload = JSON.stringify({
+      type: "state",
+      entities: room.serializeEntities(),
+    });
     for (const client of room.clients.values()) {
-      client.send({
-        type: "state",
-        entities: serialized,
-      });
+      if (client.ws.readyState === client.ws.OPEN) {
+        client.ws.send(statePayload);
+      }
     }
   }
 }, 1000 / TICK_RATE);
@@ -294,6 +298,24 @@ setInterval(() => {
   }
 }, 6000);
 
+// 4b. Galaxy Heartbeat: age the economy and diffuse prices across trade lanes
+// even when nobody is in the sector (8 seconds).
+setInterval(() => {
+  for (const room of instances.values()) {
+    const changedNames = room.galaxyHeartbeat.pulse();
+    for (const name of changedNames) {
+      const planet = room.planets.find((p) => p.name === name);
+      if (planet) {
+        room.broadcast({
+          type: "market_sync",
+          planetName: planet.name,
+          market: planet.market,
+        });
+      }
+    }
+  }
+}, 8000);
+
 // 5. Inactive Custom Rooms Garbage Collection (10 seconds)
 setInterval(() => {
   const now = Date.now();
@@ -303,6 +325,7 @@ setInterval(() => {
       console.log(
         `🧹 Garbage Collecting inactive sector: [${room.name}] (${id})`,
       );
+      room.destroy();
       instances.delete(id);
       broadcastLobbySync();
     }
@@ -1158,6 +1181,11 @@ wss.on("connection", (ws) => {
           clientObj.ship.maxSpeed += 50;
         } else if (outfit.type === "weapon") {
           clientObj.ship.weaponDamage += outfit.value;
+        } else if (outfit.type === "pierce") {
+          clientObj.ship.weaponShieldPierce = Math.min(
+            1,
+            (clientObj.ship.weaponShieldPierce || 0) + outfit.value,
+          );
         } else if (outfit.type === "cargo") {
           clientObj.ship.cargoCapacity += outfit.value;
         } else if (outfit.type === "reactor") {

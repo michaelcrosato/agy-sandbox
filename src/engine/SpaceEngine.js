@@ -120,6 +120,7 @@ export class SpaceEngine {
       startPosition: spawnPos,
       heading: ship.heading,
       ownerVelocity: ship.velocity,
+      shieldPierce: ship.weaponShieldPierce || 0,
     });
 
     this.addEntity(proj);
@@ -249,7 +250,7 @@ export class SpaceEngine {
 
     // Apply damage to target
     if (target.type === "ship") {
-      target.takeDamage(proj.damage);
+      target.takeDamage(proj.damage, proj.shieldPierce || 0);
       if (target.isDestroyed) {
         target.destroyedBy = proj.ownerId;
       }
@@ -314,6 +315,39 @@ export class SpaceEngine {
         if (!isE2Static)
           e2.velocity = e2.velocity.add(impulse.multiply(invMass2));
       }
+
+      // Ramming damage: high-speed impacts hurt. velAlongNormal is negative
+      // while the pair is closing, so its magnitude is the impact speed.
+      const impactSpeed = -velAlongNormal;
+      if (impactSpeed > SpaceEngine.RAM_MIN_IMPACT_SPEED) {
+        const ramDamage =
+          (impactSpeed - SpaceEngine.RAM_MIN_IMPACT_SPEED) *
+          SpaceEngine.RAM_DAMAGE_COEF;
+        this.applyRamDamage(e1, e2, ramDamage);
+        this.applyRamDamage(e2, e1, ramDamage);
+      }
+    }
+  }
+
+  /**
+   * Applies ramming impact damage to a ship target and attributes any resulting
+   * kill to the other colliding entity.
+   * @param {SpaceEntity} target - Entity receiving impact damage.
+   * @param {SpaceEntity} other - The entity it collided with.
+   * @param {number} damage - Impact damage amount.
+   */
+  applyRamDamage(target, other, damage) {
+    if (target.type !== "ship" || typeof target.takeDamage !== "function") {
+      return;
+    }
+    target.takeDamage(damage);
+    if (target.isDestroyed && !target.destroyedBy) {
+      target.destroyedBy = other.id;
     }
   }
 }
+
+// Impacts below this closing speed (units/sec) cause no ramming damage.
+SpaceEngine.RAM_MIN_IMPACT_SPEED = 50;
+// Damage per unit of closing speed above the threshold.
+SpaceEngine.RAM_DAMAGE_COEF = 0.6;

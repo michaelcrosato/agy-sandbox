@@ -100,6 +100,7 @@ export class InputHandler {
         isTurningLeft: false,
         isTurningRight: false,
         isFiring: false,
+        isBoosting: false,
       });
       return;
     }
@@ -110,6 +111,7 @@ export class InputHandler {
       isTurningLeft: !!(this.keys["ArrowLeft"] || this.keys["KeyA"]),
       isTurningRight: !!(this.keys["ArrowRight"] || this.keys["KeyD"]),
       isFiring: !!this.keys["Space"],
+      isBoosting: !!(this.keys["ShiftLeft"] || this.keys["ShiftRight"]),
     });
   }
 }

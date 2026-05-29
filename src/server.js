@@ -23,6 +23,8 @@ import {
   DEFAULT_HYPERDRIVE_OPTIONS,
 } from "./engine/Hyperdrive.js";
 
+import { plunder, boardRepair } from "./engine/Boarding.js";
+
 const JUMP_FUEL_COST = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost;
 
 // Process-level uncaught error and promise rejection logging
@@ -1639,23 +1641,15 @@ wss.on("connection", (ws) => {
         }
 
         if (msg.action === "plunder") {
-          let plunderedCount = 0;
-          if (target.cargo) {
-            for (const [commodity, amount] of Object.entries(target.cargo)) {
-              if (amount > 0) {
-                for (let i = 0; i < amount; i++) {
-                  if (clientObj.ship.addCargo(commodity, 1)) {
-                    target.cargo[commodity]--;
-                    plunderedCount++;
-                  }
-                }
-              }
-            }
-          }
-          if (plunderedCount > 0) {
+          const result = plunder(clientObj.ship, target, {
+            boardRange: 250,
+            maxBoardSpeed: Number.POSITIVE_INFINITY,
+          });
+          if (result.ok) {
+            const tons = Object.values(result.cargo).reduce((a, b) => a + b, 0);
             clientObj.send({
               type: "notification",
-              message: `Success! Plundered ${plunderedCount} tons of commodities.`,
+              message: `Plundered ${tons} ton(s) of cargo and ${result.credits.toLocaleString()} CR.`,
               style: "success",
             });
             clientObj.sendStats();
@@ -1663,8 +1657,26 @@ wss.on("connection", (ws) => {
             clientObj.send({
               type: "notification",
               message:
-                "Plunder complete: target hold was empty or your cargo bay is full.",
+                "Nothing to plunder — this hulk has already been stripped.",
               style: "info",
+            });
+          }
+        } else if (msg.action === "repair") {
+          const result = boardRepair(clientObj.ship, target, {
+            boardRange: 250,
+            maxBoardSpeed: Number.POSITIVE_INFINITY,
+          });
+          if (result.ok) {
+            clientObj.send({
+              type: "notification",
+              message: `Boarding repair complete: restored ${result.repaired} armor and revived the ship.`,
+              style: "success",
+            });
+          } else {
+            clientObj.send({
+              type: "notification",
+              message: "Cannot repair: target is not boardable.",
+              style: "error",
             });
           }
         } else if (msg.action === "salvage") {

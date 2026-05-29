@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T23:56 · iter-0032 · GREEN · spec-008-persistence-restart-integration
+
+- **Baseline:** `e71db3f`-pre; 589 tests / 36 suites green. Phase 1 begins. Executing `plan/specs/008` (supersedes TICKET004).
+- **Move:** Lock in the P1 "the world moved" showcase as a CI-reproducible end-to-end test (the seam that produced the spec-006 NaN bug).
+- **Changed:** New `src/persistence/restart.integration.test.js` — ages a `GameInstance` (Sol market mutated + 12 deterministic `galaxyHeartbeat` pulses) and a player (credits/cargo/outfits + combat ledger + passenger/ramscoop/mining fields), persists via a REAL `JsonFileStore`, then a brand-new `PersistenceManager` + `GameInstance` over the same temp dir restores everything: asserts per-planet markets, heartbeat pulses, and every persisted player field match. Temp dir created in `beforeEach`, wiped in `afterEach`; both instances `destroy()`'d.
+- **Decisions:** Used a second manager/store/instance to genuinely simulate a process restart (not a same-object reload). Drove explicit `saveGalaxy`/`savePlayer` + `loadGalaxy→applyGalaxy` / `loadPlayer→applyPlayer` for determinism rather than the autosave timer. Asserted the EW-era fields (kills/combatValue/combatRating/passengerCapacity/ramscoopRate/miningYieldMultiplier) round-trip, covering the `PLAYER_HULL_FIELDS` additions made across iters 0016–0024.
+- **Validation:** `npm run agent:check` → green (590 tests / 37 suites, prettier clean). `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 008 done; TICKET004 closed.
+- **Next:** `plan/specs/009` — decouple threat detection from ship names.
+
 ## 2026-05-28T23:46 · iter-0031 · GREEN · spec-006-economy-nan-selfheal
 
 - **Baseline:** `1a60d05`-pre; 586 tests / 36 suites green. Final Phase 0 item; closes the TICKET003 follow-up. Executing `plan/specs/006`.

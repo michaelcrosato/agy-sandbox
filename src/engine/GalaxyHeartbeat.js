@@ -1,9 +1,17 @@
+import {
+  applyProductionPulse,
+  DEFAULT_PRODUCTION_OPTIONS,
+} from "./ProductionModel.js";
+
 /**
  * GalaxyHeartbeat advances the galactic economy independently of any connected
- * player. Each pulse lets commodity prices flow along trade lanes toward the
- * prices of connected systems (simulated arbitrage) while drifting gently back
- * toward each market's baseline. Over many pulses, a price shock in one system
- * ripples outward to its neighbors — the world keeps living when no one watches.
+ * player. Each pulse first lets every planet's producer/consumer profile push
+ * its local prices (surplus down, demand up, bounded around baseline), then
+ * lets prices flow along trade lanes toward the prices of connected systems
+ * (simulated arbitrage) while drifting gently back toward each market's
+ * baseline. Over many pulses, production creates real supply pressure that
+ * the lane-diffusion ripple then propagates to neighbors — the world keeps
+ * living, and producing, when no one watches.
  *
  * The class is pure and deterministic: it owns no timers, sockets, or randomness.
  */
@@ -15,6 +23,11 @@ export class GalaxyHeartbeat {
    * @param {Object} [config.lanes] - Adjacency: planet name -> array of connected planet names.
    * @param {number} [config.diffusionRate] - Fraction (0..1) of the gap to a neighbor average closed per pulse.
    * @param {number} [config.equilibriumRate] - Fraction (0..1) of the gap to baseline closed per pulse.
+   * @param {Object} [config.profiles] - Map of planet name -> producer/consumer profile
+   *   (`{ produces: {commodity: strength}, consumes: {...} }`). Planets without a profile
+   *   skip the production step. Defaults to `{}` so existing call sites are unaffected.
+   * @param {Object} [config.productionOptions] - Tuning passed to `applyProductionPulse`.
+   *   See `DEFAULT_PRODUCTION_OPTIONS` in `ProductionModel.js`.
    */
   constructor({
     planets = [],
@@ -22,12 +35,16 @@ export class GalaxyHeartbeat {
     lanes = {},
     diffusionRate = 0.15,
     equilibriumRate = 0.03,
+    profiles = {},
+    productionOptions = DEFAULT_PRODUCTION_OPTIONS,
   } = {}) {
     this.planets = planets;
     this.baseMarkets = baseMarkets;
     this.lanes = lanes;
     this.diffusionRate = diffusionRate;
     this.equilibriumRate = equilibriumRate;
+    this.profiles = profiles;
+    this.productionOptions = productionOptions;
     this.pulses = 0;
   }
 
@@ -38,6 +55,28 @@ export class GalaxyHeartbeat {
    * @returns {Array<string>} Names of planets whose market changed this pulse.
    */
   pulse() {
+    // 1. Production & consumption pressure each market on its own first.
+    // Each planet's production step depends only on its own market and profile,
+    // so order is irrelevant; mutating in place is safe and keeps the diffusion
+    // pass downstream working off the post-production prices.
+    const producedChanges = new Set();
+    for (const planet of this.planets) {
+      if (!planet.market) continue;
+      const profile = this.profiles[planet.name];
+      if (!profile) continue;
+      const baseline = this.baseMarkets[planet.name];
+      if (!baseline) continue;
+      const changedCommodities = applyProductionPulse(
+        planet,
+        profile,
+        baseline,
+        this.productionOptions,
+      );
+      if (changedCommodities.length > 0) producedChanges.add(planet.name);
+    }
+
+    // 2. Trade-lane diffusion + equilibrium drift, applied simultaneously
+    //    against the post-production snapshot so ordering still doesn't matter.
     const byName = new Map(this.planets.map((p) => [p.name, p]));
     const updates = [];
 
@@ -87,7 +126,10 @@ export class GalaxyHeartbeat {
 
     this.pulses += 1;
 
-    const changed = new Set(updates.map((u) => u.planet.name));
+    const changed = new Set([
+      ...producedChanges,
+      ...updates.map((u) => u.planet.name),
+    ]);
     return [...changed];
   }
 

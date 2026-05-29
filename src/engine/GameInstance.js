@@ -7,6 +7,7 @@ import { AIController } from "./ai/AIController.js";
 import { CargoPod } from "./CargoPod.js";
 import { EconomyManager } from "./EconomyManager.js";
 import { GalaxyHeartbeat } from "./GalaxyHeartbeat.js";
+import { PLANET_PROFILES } from "./ProductionModel.js";
 
 // Which sectors share trade routes (warp-gate connected) for economic diffusion.
 export const SECTOR_ADJACENCY = {
@@ -119,12 +120,15 @@ export class GameInstance {
     // Initialize the dynamic economy manager
     this.economyManager = new EconomyManager(this.planets);
 
-    // The galaxy heartbeat ages the economy even with no players connected,
+    // The galaxy heartbeat ages the economy even with no players connected:
+    // first applying each planet's producer/consumer profile (surplus pushes
+    // its commodities down, demand pushes consumed ones up) and then
     // diffusing prices along trade lanes between sectors.
     this.galaxyHeartbeat = new GalaxyHeartbeat({
       planets: this.planets,
       baseMarkets: BASE_MARKETS,
       lanes: GalaxyHeartbeat.buildLanesBySector(this.planets, SECTOR_ADJACENCY),
+      profiles: PLANET_PROFILES,
     });
   }
 

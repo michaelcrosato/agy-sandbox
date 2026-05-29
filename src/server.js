@@ -3,7 +3,6 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { WebSocketServer } from "ws";
-import localtunnel from "localtunnel";
 import { exec } from "child_process";
 
 import { Vector2D } from "./physics/Vector2D.js";
@@ -2025,7 +2024,11 @@ server.listen(PORT, async () => {
     process.env.NODE_ENV !== "test"
   ) {
     try {
-      console.log(`📡 Spinning up programmatic localtunnel...`);
+      // localtunnel is an OPTIONAL dependency (not installed by default) so the
+      // vulnerable axios it bundles stays out of the dependency tree. Load it
+      // lazily; if it is absent the catch below explains the alternatives.
+      const { default: localtunnel } = await import("localtunnel");
+      console.log(`📡 Spinning up optional localtunnel...`);
       const tunnel = await localtunnel({ port: PORT });
       activeTunnel = tunnel;
       console.log(`🚀 Public Multiplayer URL: ${tunnel.url}`);
@@ -2048,7 +2051,11 @@ server.listen(PORT, async () => {
         console.log("Localtunnel connection closed.");
       });
     } catch (e) {
-      console.log("Could not establish localtunnel: ", e.message);
+      console.log(
+        `ℹ️  Public tunnel unavailable (${e.message}). localtunnel is optional — ` +
+          `install it with \`npm i localtunnel\`, or share your game with ` +
+          `\`cloudflared tunnel --url http://localhost:${PORT}\`.`,
+      );
     }
   }
 });

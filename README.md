@@ -27,16 +27,15 @@ Then open **http://localhost:8080** in any modern browser.
 
 ### Play with friends — they only need the URL
 
-When the server starts it automatically opens a **localtunnel** and prints a public link:
+The server is the authoritative host — keep `node src/server.js` running and expose it with a tunnel. The recommended, dependency-free way is **Cloudflare Tunnel** (`cloudflared`):
 
+```bash
+cloudflared tunnel --url http://localhost:8080
 ```
-🚀 Public Multiplayer URL: https://<something>.loca.lt
-📋 Public URL successfully copied to clipboard! Share it with friends.
-```
 
-Send that link to your friends — they open it in a browser and join your live sector. **Nobody installs anything.** Your machine must keep `node src/server.js` running (it is the authoritative host).
+It prints a public `https://…trycloudflare.com` link — send it to friends, they open it in a browser and join your live sector. **They install nothing.**
 
-> localtunnel shows first-time visitors a one-page gate asking for a "tunnel password," which is simply the host machine's public IP (get it at https://loca.lt/mytunnelpassword). After that one click they're in.
+> **Why not bundled?** The previously-bundled `localtunnel` pulls a years-old, vulnerable `axios` (SSRF/DoS advisories), so it was removed from the runtime dependencies. The server still supports it as an **optional** extra: run `npm i localtunnel` and it will auto-open a `*.loca.lt` URL on startup (otherwise it prints the `cloudflared` hint and runs fine locally).
 
 ### Controls
 

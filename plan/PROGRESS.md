@@ -8,7 +8,7 @@ _Baseline at blueprint generation (2026-05-28): 569 tests / 33 suites green; ESL
 2 high `npm audit` advisories (axios via localtunnel)._
 
 ## Phase 0 — Quick Wins & Safety
-- [ ] `001` Remediate localtunnel/axios CVEs — _blocked by: none_
+- [x] `001` Remediate localtunnel/axios CVEs — **done** (files: `src/server.js` dynamic optional import + graceful fallback, removed `localtunnel` from `package.json`/lockfile, `README.md` cloudflared guidance; `npm audit` → 0 vulnerabilities)
 - [ ] `002` Harden ws inbound (maxPayload + Origin verifyClient) — _blocked by: none_
 - [ ] `003` ws connection heartbeat / dead-socket reaper — _blocked by: none_
 - [ ] `004` ws outbound backpressure handling — _blocked by: none_

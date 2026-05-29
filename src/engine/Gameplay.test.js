@@ -348,7 +348,13 @@ describe("Procedural Mission & Event Generation Engine Support", () => {
     expect(solAvailable.length).toBe(4);
 
     for (const m of solAvailable) {
-      expect(["courier", "smuggle", "bounty", "storyline"]).toContain(m.type);
+      expect([
+        "courier",
+        "smuggle",
+        "bounty",
+        "storyline",
+        "passenger",
+      ]).toContain(m.type);
       expect(m.destination).not.toBe("Sol");
       expect(m.reward).toBeGreaterThan(0);
       if (
@@ -358,6 +364,8 @@ describe("Procedural Mission & Event Generation Engine Support", () => {
       ) {
         expect(m.cargoAmount).toBeGreaterThan(0);
         expect(m.cargoItem).toBeDefined();
+      } else if (m.type === "passenger") {
+        expect(m.bunks).toBeGreaterThan(0);
       } else {
         expect(m.targetName).toBeDefined();
       }

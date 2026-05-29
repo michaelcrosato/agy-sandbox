@@ -19,7 +19,7 @@ _Baseline at blueprint generation (2026-05-28): 569 tests / 33 suites green; ESL
 - [ ] `007` Modularize server.js (extract tested units) — _blocked by: none (eased by 002–004)_
 - [x] `008` Persistence kill→restart→rejoin integration test — **done** (file: new `src/persistence/restart.integration.test.js` — real JsonFileStore round-trip, fresh manager/instance, asserts markets+pulses+full player ledger. Supersedes TICKET004)
 - [x] `009` Decouple threat detection from ship names; wire seeded names — **done** (files: `AIController.isPirateShip` role-precedence + null-safe; `GameInstance` loot branch routes through it; `spawnNPCPirate` sets `role="pirate"` + procedural `NameGenerator` names; +3 tests)
-- [ ] `010` Observability: structured logging + runtime metrics — _blocked by: none_
+- [x] `010` Observability: structured logging + runtime metrics — **done** (files: new `src/net/metrics.js` + `src/net/logger.js` + tests; `src/server.js` `/metrics` route + clients/rooms gauges, tick_ms, broadcast_bytes, slow_client_drops, heartbeat_reaps, connections_total)
 - [ ] `011` ESLint 9→10 migration — _blocked by: none_
 - [ ] `012` Jest 29→30 migration — _blocked by: none_
 - [ ] `013` Migrate @google/generative-ai → @google/genai — _blocked by: none_

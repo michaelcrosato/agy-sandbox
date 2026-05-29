@@ -26,8 +26,15 @@ import { plunder, boardRepair } from "./engine/Boarding.js";
 import { isAllowedOrigin } from "./net/originPolicy.js";
 import { selectDeadSockets, DEFAULT_HEARTBEAT_MS } from "./net/heartbeat.js";
 import { sendDecision } from "./net/backpressure.js";
+import { createRegistry } from "./net/metrics.js";
+import { createLogger } from "./net/logger.js";
 
 const JUMP_FUEL_COST = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost;
+
+// Observability (spec 010): a dependency-free metrics registry exposed at
+// GET /metrics, plus a leveled JSON logger for structured events.
+const metrics = createRegistry();
+const logger = createLogger({ level: process.env.LOG_LEVEL || "info" });
 
 // ws inbound hardening (spec 002): cap inbound frame size to blunt memory-DoS,
 // and accept only same-origin upgrades + an optional ALLOWED_ORIGINS allowlist
@@ -63,6 +70,14 @@ const PORT = process.env.PORT || 8080;
 // Initialize HTTP Server (static file delivery)
 const server = http.createServer((req, res) => {
   let safeUrl = req.url.split("?")[0];
+
+  // Observability endpoint (spec 010): read-only runtime metrics snapshot.
+  if (safeUrl === "/metrics" || safeUrl === "/healthz") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(metrics.snapshot()));
+    return;
+  }
+
   if (safeUrl === "/" || safeUrl === "") {
     safeUrl = "/index.html";
   }
@@ -340,11 +355,16 @@ setInterval(() => {
       });
       if (decision === "drop") {
         client.ws.terminate();
+        metrics.inc("slow_client_drops");
       } else if (decision === "send") {
         client.ws.send(statePayload);
+        metrics.inc("broadcast_bytes", statePayload.length);
       }
     }
   }
+  metrics.observe("tick_ms", Date.now() - now);
+  metrics.gauge("rooms", instances.size);
+  metrics.gauge("clients", wss.clients.size);
 }, 1000 / TICK_RATE);
 
 // 2. Room Economy Shortage/Surplus events loops (45 seconds)
@@ -793,7 +813,10 @@ const wss = new WebSocketServer({
 // which routes through the normal disconnect cleanup via its "close" event.
 const heartbeatInterval = setInterval(() => {
   const sockets = [...wss.clients];
-  for (const dead of selectDeadSockets(sockets)) dead.terminate();
+  for (const dead of selectDeadSockets(sockets)) {
+    dead.terminate();
+    metrics.inc("heartbeat_reaps");
+  }
   for (const ws of sockets) {
     if (ws.isAlive === false) continue; // just terminated above
     ws.isAlive = false;
@@ -811,6 +834,8 @@ wss.on("connection", (ws) => {
   ws.on("pong", () => {
     ws.isAlive = true;
   });
+  metrics.inc("connections_total");
+  logger.info("client_connected", { clients: wss.clients.size });
 
   const clientId = "player-" + Math.random().toString(36).substring(2, 9);
 

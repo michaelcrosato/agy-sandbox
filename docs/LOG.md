@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T23:00 · iter-0026 · GREEN · spec-001-localtunnel-axios-cve
+
+- **Baseline:** `772b976`-pre on branch `overnight/bugfix-and-coverage`; 569 tests / 33 suites green; `npm audit` reported 2 high (axios@0.21.4 via localtunnel@2.0.2). Executing `plan/specs/001`.
+- **Move:** Eliminate the vulnerable transitive axios by removing localtunnel from runtime deps while keeping the public-tunnel feature available as an optional, lazily-loaded extra.
+- **Changed:** `src/server.js` — dropped the top-level `import localtunnel`; the `NODE_ENV`-gated startup block now does `const { default: localtunnel } = await import("localtunnel")` inside try/catch, with the catch printing a graceful hint (install localtunnel or use `cloudflared tunnel --url …`). Removed `localtunnel` from `package.json` dependencies + lockfile. `README.md` "Play with friends" now recommends Cloudflare Tunnel and documents localtunnel as optional.
+- **Decisions:** Chose spec approach A (optionalize + remove) over `overrides`-pinning because axios is fully unused except by localtunnel, so removing it takes `npm audit` to **0 vulnerabilities** and shrinks the runtime surface. Local play is unaffected (no tunnel needed); the feature degrades gracefully when localtunnel isn't installed.
+- **Validation:** `npm audit` → 0 vulnerabilities; `npm ls axios` → empty. `npm run agent:check` → green (569/33, prettier clean). Boot smoke (default) → listens + prints the cloudflared hint, no crash; (`NODE_ENV=test`) → listens, tunnel skipped. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 001 marked done.
+- **Next:** `plan/specs/002` — ws inbound hardening (maxPayload + Origin verifyClient).
+
 ## 2026-05-28T22:50 · iter-0025 · GREEN · plan-directory-audit-blueprint
 
 - **Baseline:** `0cf2fd4` on branch `overnight/bugfix-and-coverage`; 569 tests / 33 suites green. Planning/architecture artifact (no product code changed).

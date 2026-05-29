@@ -16,15 +16,9 @@ if (!GEMINI_API_KEY) {
   process.exit(1);
 }
 
-// Set up generative AI client
-// Note: GoogleGenAI class might not exist, the standard import is `GoogleGenAI` or `GoogleGenAI` from @google/generative-ai
-// Actually, standard modern import is:
-// import { GoogleGenAI } from '@google/generative-ai'; is not correct in all versions.
-// The correct import in standard @google/generative-ai v0.11+ is:
-// import { GoogleGenerativeAI } from "@google/generative-ai";
-// Let's verify by importing GoogleGenerativeAI.
-import { GoogleGenerativeAI } from "@google/generative-ai";
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+// Set up the Google GenAI client (unified @google/genai SDK).
+import { GoogleGenAI, Type } from "@google/genai";
+const genAI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 // Helper to run shell commands safely
 function runCommand(command) {
@@ -250,27 +244,27 @@ Comments:
 ${comments.join("\n")}`;
 
     // Use gemini-1.5-pro for high quality software engineering reasoning
-    const modelName = "gemini-1.5-pro";
+    const modelName = "gemini-2.5-pro";
     console.log(`Calling LLM (${modelName}) to plan and generate changes...`);
-    const model = genAI.getGenerativeModel({
-      model: modelName,
-      generationConfig: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: "ARRAY",
-          description: "List of file operations to perform",
-          items: {
-            type: "OBJECT",
-            properties: {
-              path: { type: "STRING" },
-              action: { type: "STRING", enum: ["create", "modify", "delete"] },
-              content: { type: "STRING" },
+    const generationConfig = {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.ARRAY,
+        description: "List of file operations to perform",
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            path: { type: Type.STRING },
+            action: {
+              type: Type.STRING,
+              enum: ["create", "modify", "delete"],
             },
-            required: ["path", "action", "content"],
+            content: { type: Type.STRING },
           },
+          required: ["path", "action", "content"],
         },
       },
-    });
+    };
 
     let currentPrompt = userPrompt;
     let feedback = "";
@@ -286,8 +280,12 @@ ${comments.join("\n")}`;
       );
 
       const fullPrompt = `${systemPrompt}\n\n${currentPrompt}${feedback ? `\n\nPrevious attempt failed with errors:\n${feedback}\nPlease correct your code to fix these errors and ensure ALL tests pass.` : ""}`;
-      const result = await model.generateContent(fullPrompt);
-      const rawText = result.response.text();
+      const result = await genAI.models.generateContent({
+        model: modelName,
+        contents: fullPrompt,
+        config: generationConfig,
+      });
+      const rawText = result.text;
 
       let operations;
       try {

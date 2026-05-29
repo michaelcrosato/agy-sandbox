@@ -22,7 +22,7 @@ _Baseline at blueprint generation (2026-05-28): 569 tests / 33 suites green; ESL
 - [x] `010` Observability: structured logging + runtime metrics — **done** (files: new `src/net/metrics.js` + `src/net/logger.js` + tests; `src/server.js` `/metrics` route + clients/rooms gauges, tick_ms, broadcast_bytes, slow_client_drops, heartbeat_reaps, connections_total)
 - [ ] `011` ESLint 9→10 migration — _blocked by: none_
 - [ ] `012` Jest 29→30 migration — _blocked by: none_
-- [ ] `013` Migrate @google/generative-ai → @google/genai — _blocked by: none_
+- [x] `013` Migrate @google/generative-ai → @google/genai — _blocked by: none_
 
 ## Phase 2 — Major Features
 - [ ] `014` Interest management (viewport/proximity delta filtering) — _blocked by: 015 (recommended)_

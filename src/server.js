@@ -24,6 +24,7 @@ import {
 
 import { plunder, boardRepair } from "./engine/Boarding.js";
 import { isAllowedOrigin } from "./net/originPolicy.js";
+import { selectDeadSockets, DEFAULT_HEARTBEAT_MS } from "./net/heartbeat.js";
 
 const JUMP_FUEL_COST = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost;
 
@@ -777,7 +778,30 @@ const wss = new WebSocketServer({
   },
 });
 
+// Liveness heartbeat (spec 003): ping every socket each interval; any socket that
+// has not ponged since the last sweep is dead (half-open TCP) and is terminated,
+// which routes through the normal disconnect cleanup via its "close" event.
+const heartbeatInterval = setInterval(() => {
+  const sockets = [...wss.clients];
+  for (const dead of selectDeadSockets(sockets)) dead.terminate();
+  for (const ws of sockets) {
+    if (ws.isAlive === false) continue; // just terminated above
+    ws.isAlive = false;
+    try {
+      ws.ping();
+    } catch {
+      /* socket already closing */
+    }
+  }
+}, DEFAULT_HEARTBEAT_MS);
+heartbeatInterval.unref();
+
 wss.on("connection", (ws) => {
+  ws.isAlive = true;
+  ws.on("pong", () => {
+    ws.isAlive = true;
+  });
+
   const clientId = "player-" + Math.random().toString(36).substring(2, 9);
 
   const clientObj = {
@@ -2007,6 +2031,7 @@ const shutdown = async () => {
       console.error("Error closing localtunnel:", e.message);
     }
   }
+  clearInterval(heartbeatInterval);
   wss.close(() => {
     console.log("🛑 WebSocket server closed.");
     server.close(() => {

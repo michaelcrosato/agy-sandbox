@@ -41,6 +41,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T22:16 · iter-0019 · GREEN · ew4-passenger-missions
+
+- **Baseline:** `3c0c3dc` on branch `overnight/bugfix-and-coverage`; 532 tests / 29 suites green. Fourth easy-win (EW4) from `docs/ai/FEATURE_PLAN.md`.
+- **Move:** Add passenger-charter contracts — ferry N passengers (occupying ship "bunks", not cargo tonnage) to a destination for a payout on arrival, a distinct income stream from cargo runs.
+- **Changed:**
+  - `Ship` gains `passengerCapacity` (default 4), persisted via `PLAYER_HULL_FIELDS`.
+  - `MissionManager`: new `passenger` mission type. `acceptMission` reserves bunks (`usedBunks + mission.bunks > passengerCapacity` ⇒ refused) and adds no cargo; `checkArrivalCompletions` completes a passenger charter at its destination — pays the reward, touches no cargo, and frees the bunks by leaving `activeMissions`; `generateMissionsForPlanet` re-banded to four procedural types (courier/smuggle/bounty/passenger) while still emitting exactly 3 procedural missions per landing.
+  - +3 deterministic tests (`MissionManager.test.js`: reserve-no-cargo, over-capacity refusal, arrival-pays-and-frees-bunks) plus `Ship.test.js` default and persistence round-trip coverage.
+- **Decisions:** Bunks are tracked implicitly as the sum of `bunks` over active passenger missions — no separate passenger counter to persist or desync. Passenger charters ride the existing `mission_accept`/`land` server handlers (no new server wiring). Re-banding kept the procedural count at 3 so existing generation tests (which assert count, not type) stay green. Passenger-quarters outfit deferred to EW7.
+- **Validation:** `npm run agent:check` → green (prettier + eslint + 535 tests / 29 suites). `PORT=18194 NODE_ENV=test node src/server.js` → boots and listens. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge — local on the feature branch. TICKET009 closed.
+- **Next:** EW8 (seeded NPC/ship name generator), then EW7 (content), EW3 (hyperfuel), EW2 (boarding), EW9 (mining depth).
+
 ## 2026-05-28T22:12 · iter-0018 · GREEN · ew5-port-repair-refuel
 
 - **Baseline:** `9b5db07` on branch `overnight/bugfix-and-coverage`; 519 tests / 28 suites green. Third easy-win (EW5) from `docs/ai/FEATURE_PLAN.md`.

@@ -52,6 +52,7 @@ const PLAYER_HULL_FIELDS = Object.freeze([
   "cargoCapacity",
   "passengerCapacity",
   "ramscoopRate",
+  "miningYieldMultiplier",
   "hullMass",
   "outfitMass",
   "kills",

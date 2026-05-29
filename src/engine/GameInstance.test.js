@@ -184,4 +184,21 @@ describe("GameInstance Multi-Room Matchmaking & Isolation Mechanics", () => {
 
     room.destroy();
   });
+
+  test("destroying a gem asteroid spawns luxuries cargo pods (EW9)", () => {
+    const room = new GameInstance("room-mine", "Sector Mine");
+    const rock = {
+      type: "gem_asteroid",
+      position: new Vector2D(2000, 2000),
+      velocity: new Vector2D(0, 0),
+    };
+    room.handleEntityDestroyed(rock);
+
+    const luxuriesPods = room.engine.entities.filter(
+      (e) => e.type === "cargo_pod" && e.resourceType === "luxuries",
+    );
+    expect(luxuriesPods.length).toBeGreaterThanOrEqual(2); // gem yields 2-3
+
+    room.destroy();
+  });
 });

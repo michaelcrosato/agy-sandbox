@@ -181,6 +181,15 @@ export class Planet extends SpaceEntity {
               description:
                 "Reinforced cryo-fuel bunkerage. Increases maximum hyperdrive fuel by +50 units (and tops off the tank on install).",
             },
+            {
+              name: "Mining Laser",
+              cost: 2400,
+              type: "miner",
+              value: 1,
+              mass: 250,
+              description:
+                "Focused extraction beam. Doubles the cargo recovered from asteroids you shatter (+1.0 mining yield multiplier).",
+            },
           ];
 
     // Store Shipyard Catalog

@@ -23,6 +23,7 @@ describe("Ship construction", () => {
     expect(s.heat).toBe(0);
     expect(s.hyperFuel).toBe(100);
     expect(s.ramscoopRate).toBe(0);
+    expect(s.miningYieldMultiplier).toBe(1);
     expect(s.isOverheated).toBe(false);
     expect(s.isDisabled).toBe(false);
     expect(s.outfits).toEqual(["Basic Laser"]);

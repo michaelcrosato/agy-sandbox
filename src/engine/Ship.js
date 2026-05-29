@@ -39,6 +39,7 @@ export class Ship extends SpaceEntity {
     weaponCooldown = 0.25,
     bountyValue = null,
     ramscoopRate = 0,
+    miningYieldMultiplier = 1,
     ...parentParams
   } = {}) {
     super({ type: "ship", mass: 2000, radius: 15, ...parentParams });
@@ -83,6 +84,8 @@ export class Ship extends SpaceEntity {
     this.hyperFuel = 100;
     // Passive hyperdrive-fuel regen per second (EW3). 0 = no Ramscoop fitted.
     this.ramscoopRate = ramscoopRate;
+    // Asteroid-mining yield multiplier (EW9). 1 = stock; a Mining Laser raises it.
+    this.miningYieldMultiplier = miningYieldMultiplier;
 
     // Status states
     this.isOverheated = false;

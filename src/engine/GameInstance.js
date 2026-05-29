@@ -9,6 +9,7 @@ import { EconomyManager } from "./EconomyManager.js";
 import { GalaxyHeartbeat } from "./GalaxyHeartbeat.js";
 import { PLANET_PROFILES } from "./ProductionModel.js";
 import { recordKill, shipBountyValue } from "./CombatRating.js";
+import { mineYield } from "./Mining.js";
 
 // Which sectors share trade routes (warp-gate connected) for economic diffusion.
 export const SECTOR_ADJACENCY = {
@@ -701,11 +702,12 @@ export class GameInstance {
 
     // --- Asteroids destroyed ---
     if (ent.type === "generic" || ent.type === "gem_asteroid") {
-      const isGem = ent.type === "gem_asteroid";
-      const count = isGem
-        ? Math.floor(Math.random() * 2) + 2
-        : Math.floor(Math.random() * 2) + 1;
-      const resource = isGem ? "luxuries" : "minerals";
+      const { resource, count } = mineYield(ent.type, Math.random, {
+        yieldMultiplier:
+          killerClient && killerClient.ship
+            ? killerClient.ship.miningYieldMultiplier
+            : 1,
+      });
 
       for (let i = 0; i < count; i++) {
         const angle = Math.random() * Math.PI * 2;

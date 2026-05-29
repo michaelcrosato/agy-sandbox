@@ -1361,6 +1361,9 @@ wss.on("connection", (ws) => {
         } else if (outfit.type === "fuel") {
           clientObj.ship.maxHyperFuel += outfit.value;
           clientObj.ship.hyperFuel = clientObj.ship.maxHyperFuel;
+        } else if (outfit.type === "miner") {
+          clientObj.ship.miningYieldMultiplier =
+            (clientObj.ship.miningYieldMultiplier || 1) + outfit.value;
         }
 
         // Bolt the outfit's physical mass onto the hull so handling is the

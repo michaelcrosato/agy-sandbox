@@ -44,6 +44,13 @@ export class Ship extends SpaceEntity {
     this.turnRate = turnRate;
     this.maxSpeed = maxSpeed;
 
+    // Hull mass is the bare-ship mass before outfits are installed; outfit
+    // mass accumulates on top of it. `this.mass` (used by SpaceEntity physics)
+    // is always kept equal to hullMass + outfitMass so that adding heavy
+    // outfits naturally lowers acceleration (a = F / m) and turn responsiveness.
+    this.hullMass = this.mass;
+    this.outfitMass = 0;
+
     // Health Systems
     this.maxShield = maxShield;
     this.shield = maxShield;
@@ -122,6 +129,30 @@ export class Ship extends SpaceEntity {
     this.controls.isTurningRight = false;
     this.controls.isFiring = false;
     this.controls.isBoosting = false;
+  }
+
+  /**
+   * Bolts an outfit of the given mass onto the hull. Increases tracked outfit
+   * mass and total physical mass, so subsequent acceleration (F / m) and turn
+   * responsiveness scale down — heavy builds are tougher but more sluggish.
+   * @param {number} delta - Mass to add in kg. Non-positive values are ignored.
+   */
+  addOutfitMass(delta) {
+    if (!Number.isFinite(delta) || delta <= 0) return;
+    this.outfitMass += delta;
+    this.mass = this.hullMass + this.outfitMass;
+  }
+
+  /**
+   * Returns the current effective turn rate (rad/s) after mass scaling.
+   * A ship at hull mass turns at its base `turnRate`; outfit mass reduces it
+   * by the ratio `hullMass / totalMass`, so a doubled-mass ship turns half
+   * as fast under the same nominal turn rate.
+   * @returns {number} Effective angular speed in radians per second.
+   */
+  getEffectiveTurnRate() {
+    if (this.mass <= 0) return this.turnRate;
+    return this.turnRate * (this.hullMass / this.mass);
   }
 
   /**
@@ -304,10 +335,13 @@ export class Ship extends SpaceEntity {
     }
 
     // --- Rotational Control Integration ---
+    // Outfit mass slows the ship down rotationally (mass scaling), the same
+    // way it slows down linear acceleration via F / m on the linear axis.
+    const effectiveTurnRate = this.getEffectiveTurnRate();
     if (this.controls.isTurningLeft && !this.controls.isTurningRight) {
-      this.angularVelocity = -this.turnRate;
+      this.angularVelocity = -effectiveTurnRate;
     } else if (this.controls.isTurningRight && !this.controls.isTurningLeft) {
-      this.angularVelocity = this.turnRate;
+      this.angularVelocity = effectiveTurnRate;
     } else {
       this.angularVelocity = 0;
     }

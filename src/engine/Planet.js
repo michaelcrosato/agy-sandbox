@@ -50,36 +50,63 @@ export class Planet extends SpaceEntity {
     };
 
     // Store Outfitter Catalog
+    // Each outfit carries an optional `mass` (kg). Heavy shields and bulk
+    // cargo holds add a lot of mass; reactors/weapons are moderate; engines
+    // and small modules are light. The server bolts that mass onto the ship
+    // on purchase so a heavily-outfitted hull is tougher but more sluggish
+    // (acceleration F / m and turn rate scale inversely with total mass).
     this.outfitter =
       outfitter.length > 0
         ? outfitter
         : [
-            { name: "Heavy Shields", cost: 1200, type: "shield", value: 350 },
+            {
+              name: "Heavy Shields",
+              cost: 1200,
+              type: "shield",
+              value: 350,
+              mass: 800,
+            },
             {
               name: "Aegis Shield Matrix",
               cost: 4500,
               type: "shield",
               value: 800,
+              mass: 1500,
             },
             {
               name: "Overcharged Engines",
               cost: 1500,
               type: "engine",
               value: 12000,
+              mass: 200,
             },
             {
               name: "Hyper-Drive Thrusters",
               cost: 3800,
               type: "engine",
               value: 25000,
+              mass: 400,
             },
-            { name: "Plasma Cannon", cost: 1800, type: "weapon", value: 25 },
-            { name: "Neutron Blaster", cost: 4200, type: "weapon", value: 55 },
+            {
+              name: "Plasma Cannon",
+              cost: 1800,
+              type: "weapon",
+              value: 25,
+              mass: 300,
+            },
+            {
+              name: "Neutron Blaster",
+              cost: 4200,
+              type: "weapon",
+              value: 55,
+              mass: 600,
+            },
             {
               name: "Ion Disruptor Array",
               cost: 5200,
               type: "pierce",
               value: 0.5,
+              mass: 250,
               description:
                 "Tunes weapon discharges to phase through shields: 50% of weapon damage strikes hull armor directly, ignoring shields.",
             },
@@ -88,18 +115,21 @@ export class Planet extends SpaceEntity {
               cost: 1000,
               type: "cargo",
               value: 15,
+              mass: 500,
             },
             {
               name: "Sub-space Cargo Compressor",
               cost: 2800,
               type: "cargo",
               value: 45,
+              mass: 1200,
             },
             {
               name: "Tractor Beam Matrix",
               cost: 2500,
               type: "tractor",
               value: 250,
+              mass: 200,
               description:
                 "Emits a high-frequency gravimetric tether that automatically pulls floating cargo pods within 250u towards the ship's bay.",
             },
@@ -108,6 +138,7 @@ export class Planet extends SpaceEntity {
               cost: 3000,
               type: "reactor",
               value: 30,
+              mass: 350,
               description:
                 "Deep-space cold-fusion energy generator. Restores ship energy by +30 units/sec.",
             },
@@ -116,6 +147,7 @@ export class Planet extends SpaceEntity {
               cost: 2200,
               type: "radiator",
               value: 15,
+              mass: 250,
               description:
                 "Super-conductive helium radiator. Boosts heat dissipation by +15 units/sec.",
             },
@@ -124,6 +156,7 @@ export class Planet extends SpaceEntity {
               cost: 1600,
               type: "capacitor",
               value: 100,
+              mass: 200,
               description:
                 "Nanotech storage bank cells. Increases max energy capacity by +100 units.",
             },

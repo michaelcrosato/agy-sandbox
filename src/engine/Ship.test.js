@@ -25,6 +25,8 @@ describe("Ship construction", () => {
     expect(s.isDisabled).toBe(false);
     expect(s.outfits).toEqual(["Basic Laser"]);
     expect(s.getCargoWeight()).toBe(0);
+    expect(s.hullMass).toBe(2000);
+    expect(s.outfitMass).toBe(0);
   });
 
   test("shield and armor initialise to their maxima even when only the max is given", () => {
@@ -416,5 +418,116 @@ describe("Ship disabled drift", () => {
     expect(s.controls.isThrusting).toBe(false);
     expect(s.position.x).toBeCloseTo(10, 6); // still drifting at prior velocity
     expect(s.velocity.x).toBeCloseTo(10, 6);
+  });
+});
+
+describe("Ship outfit mass handling tradeoff (P6)", () => {
+  test("captures hull mass at construction and starts with zero outfit mass", () => {
+    const s = new Ship({ mass: 3000 });
+    expect(s.hullMass).toBe(3000);
+    expect(s.outfitMass).toBe(0);
+    expect(s.mass).toBe(3000);
+  });
+
+  test("addOutfitMass grows both outfitMass and total mass", () => {
+    const s = new Ship({ mass: 2000 });
+    s.addOutfitMass(800);
+    expect(s.outfitMass).toBe(800);
+    expect(s.mass).toBe(2800);
+    s.addOutfitMass(200);
+    expect(s.outfitMass).toBe(1000);
+    expect(s.mass).toBe(3000);
+    // Hull mass is immutable once captured.
+    expect(s.hullMass).toBe(2000);
+  });
+
+  test("addOutfitMass ignores non-positive or non-finite values", () => {
+    const s = new Ship({ mass: 2000 });
+    s.addOutfitMass(0);
+    s.addOutfitMass(-500);
+    s.addOutfitMass(Number.NaN);
+    s.addOutfitMass(Number.POSITIVE_INFINITY);
+    expect(s.outfitMass).toBe(0);
+    expect(s.mass).toBe(2000);
+  });
+
+  test("getEffectiveTurnRate scales inversely with total mass", () => {
+    const s = new Ship({ mass: 1000, turnRate: 4 });
+    expect(s.getEffectiveTurnRate()).toBe(4);
+    s.addOutfitMass(1000); // total mass doubles
+    expect(s.getEffectiveTurnRate()).toBeCloseTo(2, 6);
+    s.addOutfitMass(2000); // total mass quadruples vs hull
+    expect(s.getEffectiveTurnRate()).toBeCloseTo(1, 6);
+  });
+
+  test("heavier ship accelerates less than lighter ship under identical thrust", () => {
+    const baseConfig = {
+      thrustPower: 10000,
+      turnRate: 2.5,
+      mass: 1000,
+    };
+    const light = new Ship(baseConfig);
+    const heavy = new Ship(baseConfig);
+    heavy.addOutfitMass(3000); // 4x total mass
+
+    light.setControls({ isThrusting: true });
+    heavy.setControls({ isThrusting: true });
+    light.update(1);
+    heavy.update(1);
+
+    // a = F / m, so heavy.v ≈ light.v / 4.
+    expect(light.velocity.magnitude()).toBeGreaterThan(
+      heavy.velocity.magnitude(),
+    );
+    expect(heavy.velocity.magnitude()).toBeCloseTo(
+      light.velocity.magnitude() / 4,
+      6,
+    );
+  });
+
+  test("heavier ship turns more sluggishly under identical turn rate", () => {
+    const baseConfig = {
+      thrustPower: 10000,
+      turnRate: 2.5,
+      mass: 1000,
+    };
+    const light = new Ship(baseConfig);
+    const heavy = new Ship(baseConfig);
+    heavy.addOutfitMass(1000); // doubles mass -> half turn rate
+
+    light.setControls({ isTurningRight: true });
+    heavy.setControls({ isTurningRight: true });
+    light.update(1);
+    heavy.update(1);
+
+    expect(light.heading).toBeCloseTo(2.5, 6);
+    expect(heavy.heading).toBeCloseTo(1.25, 6);
+    expect(heavy.angularVelocity).toBeLessThan(light.angularVelocity);
+  });
+
+  test("a fully-loaded heavy build accelerates and turns far less than a stock hull", () => {
+    const stock = new Ship({ thrustPower: 8000, turnRate: 2.5 }); // mass 2000
+    const loaded = new Ship({ thrustPower: 8000, turnRate: 2.5 }); // mass 2000
+    // Two heavy shields + bulk cargo compressor: 800 + 800 + 1200 = 2800 kg.
+    loaded.addOutfitMass(800);
+    loaded.addOutfitMass(800);
+    loaded.addOutfitMass(1200);
+    expect(loaded.mass).toBe(4800);
+
+    stock.setControls({ isThrusting: true, isTurningRight: true });
+    loaded.setControls({ isThrusting: true, isTurningRight: true });
+    stock.update(1);
+    loaded.update(1);
+
+    expect(loaded.velocity.magnitude()).toBeLessThan(
+      stock.velocity.magnitude(),
+    );
+    expect(loaded.heading).toBeLessThan(stock.heading);
+    // Stock ratio vs loaded ratio for both axes lines up with the mass ratio.
+    const massRatio = stock.mass / loaded.mass;
+    expect(
+      loaded.velocity.magnitude() / stock.velocity.magnitude(),
+    ).toBeCloseTo(massRatio, 6);
+    expect(loaded.heading / stock.heading).toBeCloseTo(massRatio, 6);
   });
 });

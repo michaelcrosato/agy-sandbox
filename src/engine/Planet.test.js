@@ -42,6 +42,29 @@ describe("Planet catalogues", () => {
     expect(p.outfitter.find((o) => o.type === "shield")).toBeDefined();
   });
 
+  test("every default outfit carries a positive mass (P6 handling tradeoff)", () => {
+    const p = new Planet({ name: "X" });
+    for (const outfit of p.outfitter) {
+      expect(typeof outfit.mass).toBe("number");
+      expect(outfit.mass).toBeGreaterThan(0);
+    }
+  });
+
+  test("shields and bulk cargo holds are markedly heavier than engines", () => {
+    const p = new Planet({ name: "X" });
+    const findMass = (name) => p.outfitter.find((o) => o.name === name).mass;
+    // Per the spec: heavy shields and big cargo holds are heavy; engines light.
+    expect(findMass("Heavy Shields")).toBeGreaterThan(
+      findMass("Overcharged Engines"),
+    );
+    expect(findMass("Aegis Shield Matrix")).toBeGreaterThan(
+      findMass("Hyper-Drive Thrusters"),
+    );
+    expect(findMass("Sub-space Cargo Compressor")).toBeGreaterThan(
+      findMass("Overcharged Engines"),
+    );
+  });
+
   test("uses a provided outfitter catalogue verbatim", () => {
     const custom = [{ name: "Test Outfit", cost: 1, type: "x", value: 1 }];
     const p = new Planet({ name: "X", outfitter: custom });

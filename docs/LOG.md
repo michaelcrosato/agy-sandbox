@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T21:52 · iter-0015 · GREEN · ultraplan-easiest-win-feature-backlog
+
+- **Baseline:** `1db22ea` on branch `overnight/bugfix-and-coverage`; 496 tests / 27 suites green. No product code changed this iteration — this is a planning/direction artifact.
+- **Move:** Compare Starfall's actual `src/` feature surface against comparable space sims (Endless Sky / Escape Velocity / Elite) and produce a curated, executable backlog of the easiest high-value features plus a ready-to-run implementation directive.
+- **Changed:** New `docs/ai/FEATURE_PLAN.md` — the "ultraplan": what already exists (so nothing is rebuilt), the genre gaps, and a 9-item easy-win backlog (EW1 combat rating + bounty/kill ledger; EW2 boarding & plunder of disabled ships; EW3 hyperdrive fuel economy activating the unused `hyperFuel` stat; EW4 passenger missions; EW5 port repair/refuel; EW6 jettison cargo; EW7 content expansion incl. a 5th weapon archetype; EW8 seeded name generator; EW9 mining depth) with per-feature files/approach/tests, a dependency-ordered sequence, an explicit OUT-of-scope list, and a copy-paste `/goal` to drive the AGENTS.md loop over the backlog.
+- **Decisions:** Grounded every item in real fields/methods read this session (e.g. `Ship.hyperFuel` exists but is unused; `Ship.isDisabled` standby exists but has no boarding payoff; asteroid→CargoPod mining is ALREADY live in `handleEntityDestroyed`, so EW9 is enhancement-only, not new). Filtered strictly for pure-engine + Jest testability and S/M effort; deferred ship-capture, scan/interdiction AI, and client trade overlays as too large for "easiest."
+- **Validation:** `npm run agent:check` → green (prettier + eslint + 496/27) — unchanged, no code touched. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge — local on the feature branch. Implementation directive is embedded in the doc and surfaced to the operator for `/goal`.
+- **Next:** Run the embedded `/goal`; start with EW1 (combat rating + bounty value), then EW6/EW5/EW4 per the suggested order.
+
 ## 2026-05-28T21:45 · iter-0014 · GREEN · afk-ready-agent-harness-and-economy-nan-fix
 
 - **Baseline:** `a8fc6b5` on branch `overnight/bugfix-and-coverage`; 495 tests / 27 suites green locally, but CI's required `prettier --check` step was RED on 8 `src/` files. The substrate `local-gate.ps1` checks only a clean tree and the overnight runner gates on lint+test, so format drift accumulated invisibly.

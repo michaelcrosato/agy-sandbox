@@ -41,6 +41,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T22:40 · iter-0007 · GREEN · p3-reputation-shapes-hostility-prices
+
+- **Baseline:** `238d374` on branch `overnight/bugfix-and-coverage`; 361 tests / 21 suites green.
+- **Move:** Make standing matter — give the P3 faction core a market and a target reticle, so the same number that classifies disposition also shapes prices and decides which faction-tagged ship a guard chases.
+- **Changed:**
+  - `src/engine/FactionRegistry.js`: added `maxPriceSwing: 0.2` to `DEFAULT_OPTIONS`; exported pure helpers `priceModifier(standing, opts, mode='buy'|'sell')` (linear in standing, saturating at the band edges, friendlier = lower buy / higher sell) and `dockingPermitted(standing, opts)` (hostile refused, neutral/friendly allowed); added instance methods `disposition`, `dockingPermitted`, `priceModifier`, and `factionPolicy()` returning a frozen `{ getRelation, isHostile, isAllied }` view derived from the relations table so consumers don't couple to the registry's player-standing surface.
+  - `src/engine/Ship.js`: optional `faction` constructor parameter (default `null`) stored on the ship. Absent/null is the legacy state.
+  - `src/engine/ai/AIController.js`: constructor takes a third options arg `{ factionPolicy }`; added `shouldTarget(ent)` predicate — when both self and candidate carry a faction AND a policy is supplied, guards target faction-hostile ships and pirates skip allies/own-faction; otherwise the legacy `isPirateShip` name classifier is used unchanged. `scanSensors` collapses to a single nearest-`shouldTarget` scan.
+  - `src/engine/FactionRegistry.test.js`: +17 deterministic cases — `dockingPermitted` direction + custom thresholds, `priceModifier` zero-pivot / buy & sell direction / band clamping / swing tunability, registry-level `disposition`/`dockingPermitted`/`priceModifier` wiring, and `factionPolicy` shape (frozen, neutral self-vs-self, correct hostile/allied lookups).
+  - `src/engine/ai/AIController.test.js`: +9 cases covering guard engaging hostile-faction non-pirate-named ships, ignoring allied and neutral factions, picking the nearer of two hostiles; pirate skipping fellow-pirates and same-faction ships; legacy name-based fallback when self lacks a faction, when target lacks a faction, and when no policy is configured; and merchant role rejecting targets under all conditions.
+- **Decisions:** Made the faction path strictly additive — a policy is required AND both ships must carry a faction tag to leave the legacy code path, so every existing 386-strong test is unchanged and every server/main.js `new AIController(...)` call still works. Designed `priceModifier` with a single `mode` argument rather than two helpers, with `sell = 1 + t*swing` mirroring `buy = 1 - t*swing` so the algebra is one-line to reason about. Pushed `factionPolicy()` as a derived view rather than passing the whole registry into `AIController` to keep the controller decoupled from per-player standings (which it does not need to make pairwise faction decisions).
+- **Validation:** `npm test` → 386 passed (21 suites); `npm run lint` → clean.
+- **Notes:** Substrate untouched. No push/merge — local on the feature branch for human review. Pre-existing prettier drift on `FactionRegistry.js`/`FactionRegistry.test.js`/`ProductionModel.js` is unchanged; the new code I added in those files is prettier-clean.
+- **Next:** Wire `factionPolicy()` into the live `GameInstance`/server NPC spawn paths so spawned guards/pirates actually receive it; expose `priceModifier` to `EconomyManager.getPrice` and the market UI so a friendly Federation dock shows a visibly discounted buy column; have `MissionManager` reward/penalize faction standings on outcome so the loop "action → standing → price/hostility" closes end-to-end.
+
 ## 2026-05-28T22:10 · iter-0006 · GREEN · p5-utility-ai-scoring
 
 - **Baseline:** `3fc5655` on branch `overnight/bugfix-and-coverage`; 329 tests / 20 suites green.

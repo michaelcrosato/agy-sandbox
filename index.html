@@ -16,9 +16,12 @@
 
   <!-- Viewport Game Area -->
   <div id="game-viewport">
-    
+
     <!-- Canvas Portal -->
     <canvas id="space-canvas"></canvas>
+
+    <!-- Damage Vignette Overlay (briefly pulses on hull/shield hits) -->
+    <div id="hit-flash-overlay"></div>
 
     <!-- Top Left Notification Logs -->
     <div id="notification-log"></div>
@@ -61,6 +64,9 @@
         </div>
 
         <div id="hud-overheat-alert" class="hud-alert-flash" style="display: none; text-align: center; font-size: 8px; font-weight: 700; color: #ff1744; margin-top: 4px; letter-spacing: 1px; text-shadow: 0 0 8px rgba(255, 23, 68, 0.8);">REACTOR OVERHEAT ACTIVE</div>
+        <div id="hud-heat-warning" class="hud-status-pip heat-warning-pip" style="display: none;">HEAT CRITICAL</div>
+        <div id="hud-shield-lockout" class="hud-status-pip shield-lockout-pip" style="display: none;">SHIELD RECHARGE LOCKED</div>
+        <div id="hud-boost-indicator" class="hud-status-pip boost-pip" style="display: none;">▶▶ AFTERBURNER ENGAGED</div>
       </div>
 
       <!-- Fleet / Party Management Panel -->

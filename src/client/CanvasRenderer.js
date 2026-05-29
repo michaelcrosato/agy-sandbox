@@ -883,19 +883,41 @@ export class CanvasRenderer {
 
     this.ctx.rotate(ship.heading);
 
-    // Exhaust thrust flame
+    // Exhaust thrust flame — afterburner makes it longer, hotter, and adds a
+    // bright cyan-white inner core so the player can SEE their boost engaging.
     if (ship.controls && ship.controls.isThrusting && !ship.isDestroyed) {
-      this.ctx.fillStyle = "#ff6a00";
-      this.ctx.shadowBlur = 15;
-      this.ctx.shadowColor = "#ffb300";
+      const boosting = !!(
+        ship.controls.isBoosting &&
+        (ship.energy === undefined || ship.energy > 0) &&
+        !ship.isOverheated
+      );
+      const baseLen = 20 + Math.random() * 15;
+      const flameLen = boosting ? baseLen * 1.9 + Math.random() * 10 : baseLen;
+      const flameSpread = boosting ? 7 : 5;
+
+      this.ctx.fillStyle = boosting ? "#00f2fe" : "#ff6a00";
+      this.ctx.shadowBlur = boosting ? 22 : 15;
+      this.ctx.shadowColor = boosting ? "#00f2fe" : "#ffb300";
       this.ctx.beginPath();
-      // Flicker size
-      const flameLen = 20 + Math.random() * 15;
-      this.ctx.moveTo(-ship.radius, -5);
+      this.ctx.moveTo(-ship.radius, -flameSpread);
       this.ctx.lineTo(-ship.radius - flameLen, 0);
-      this.ctx.lineTo(-ship.radius, 5);
+      this.ctx.lineTo(-ship.radius, flameSpread);
       this.ctx.closePath();
       this.ctx.fill();
+
+      if (boosting) {
+        // Hot inner core
+        this.ctx.fillStyle = "#ffffff";
+        this.ctx.shadowBlur = 12;
+        this.ctx.shadowColor = "#ffffff";
+        this.ctx.beginPath();
+        const coreLen = flameLen * 0.55;
+        this.ctx.moveTo(-ship.radius, -flameSpread * 0.45);
+        this.ctx.lineTo(-ship.radius - coreLen, 0);
+        this.ctx.lineTo(-ship.radius, flameSpread * 0.45);
+        this.ctx.closePath();
+        this.ctx.fill();
+      }
     }
 
     // Draw Ship Hull

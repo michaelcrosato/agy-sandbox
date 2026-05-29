@@ -14,6 +14,19 @@ export class UIController {
     this.energyVal = document.getElementById("hud-energy-text");
     this.heatVal = document.getElementById("hud-heat-text");
     this.overheatAlert = document.getElementById("hud-overheat-alert");
+    this.heatWarningPip = document.getElementById("hud-heat-warning");
+    this.shieldLockoutPip = document.getElementById("hud-shield-lockout");
+    this.boostIndicator = document.getElementById("hud-boost-indicator");
+    this.hitFlashOverlay = document.getElementById("hit-flash-overlay");
+
+    // Internal client-only feedback timers — never feed back into the engine.
+    // Tracks the previous combined shield+armor total so we can detect a hit
+    // landing even in multiplayer where `timeSinceLastHit` ticks server-side.
+    this._lastShieldTotal = null;
+    this._hitFlashTimerMs = 0;
+    this._hitFlashKind = null; // "shield" | "armor"
+    this._shieldLockoutMs = 0; // local countdown matching engine shieldRegenDelay
+    this._lastUpdateTs = 0;
 
     this.speedDisplay = document.getElementById("stat-speed");
     this.coordDisplay = document.getElementById("stat-coords");
@@ -106,6 +119,8 @@ export class UIController {
     if (this.overheatAlert) {
       this.overheatAlert.style.display = player.isOverheated ? "block" : "none";
     }
+
+    this._updateCombatFeedback(player, shieldPct, energyPct, heatPct);
 
     // 2. Update Stats
     const currentSpeed = Math.round(player.velocity.magnitude());
@@ -224,6 +239,121 @@ export class UIController {
       this.nebulaPanel.style.boxShadow = `0 0 15px ${glow}`;
     } else if (this.nebulaPanel) {
       this.nebulaPanel.classList.remove("visible");
+    }
+  }
+
+  /**
+   * Drives the additive combat-feel HUD cues: boost indicator, shield-recharge
+   * lockout pip, low-resource bar pulses, heat-critical warning, and a brief
+   * red/blue vignette flash when the player loses armor or shield. All state
+   * is client-only and never feeds back into the engine.
+   *
+   * @param {Ship} player - Local player ship snapshot.
+   * @param {number} shieldPct - Current shield as 0-100.
+   * @param {number} energyPct - Current energy as 0-100.
+   * @param {number} heatPct - Current heat as 0-100.
+   */
+  _updateCombatFeedback(player, shieldPct, energyPct, heatPct) {
+    const now =
+      typeof performance !== "undefined" ? performance.now() : Date.now();
+    const dtMs = this._lastUpdateTs
+      ? Math.min(250, now - this._lastUpdateTs)
+      : 0;
+    this._lastUpdateTs = now;
+
+    // 1. Hit detection: any drop in shield+armor since the last frame is a hit.
+    const currentTotal = (player.shield || 0) + (player.armor || 0);
+    if (
+      this._lastShieldTotal !== null &&
+      currentTotal < this._lastShieldTotal - 0.5
+    ) {
+      const shieldDropped =
+        (player.shield || 0) <
+        this._lastShieldTotal - (player.armor || 0) - 0.5;
+      this._hitFlashTimerMs = 320;
+      this._hitFlashKind = shieldDropped ? "shield" : "armor";
+      // Combat lockout matches the engine's shieldRegenDelay (default 3s).
+      this._shieldLockoutMs = (player.shieldRegenDelay || 3) * 1000;
+    }
+    this._lastShieldTotal = currentTotal;
+
+    if (this._hitFlashTimerMs > 0) {
+      this._hitFlashTimerMs = Math.max(0, this._hitFlashTimerMs - dtMs);
+    }
+    if (this._shieldLockoutMs > 0) {
+      this._shieldLockoutMs = Math.max(0, this._shieldLockoutMs - dtMs);
+    }
+
+    // 2. Hit-flash vignette
+    if (this.hitFlashOverlay) {
+      if (this._hitFlashTimerMs > 0) {
+        this.hitFlashOverlay.classList.add("flash-active");
+        this.hitFlashOverlay.classList.toggle(
+          "shield-hit",
+          this._hitFlashKind === "shield",
+        );
+      } else {
+        this.hitFlashOverlay.classList.remove("flash-active");
+        this.hitFlashOverlay.classList.remove("shield-hit");
+      }
+    }
+
+    // 3. Boost indicator: only "live" when player is actively boosting and has energy.
+    const controls = player.controls || {};
+    const energyOk = (player.energy || 0) > 0;
+    const isBoosting = !!(
+      controls.isBoosting &&
+      controls.isThrusting &&
+      energyOk &&
+      !player.isOverheated
+    );
+    if (this.boostIndicator) {
+      this.boostIndicator.style.display = isBoosting ? "block" : "none";
+    }
+    if (this.energyBar) {
+      this.energyBar.classList.toggle("energy-boosting", isBoosting);
+    }
+
+    // 4. Shield-recharge combat lockout pip. Engine exposes timeSinceLastHit
+    // locally in single-player; in multiplayer that field doesn't tick on the
+    // client, so we fall back to the locally-tracked hit timer.
+    const engineLockoutActive =
+      typeof player.timeSinceLastHit === "number" &&
+      typeof player.shieldRegenDelay === "number" &&
+      player.timeSinceLastHit < player.shieldRegenDelay;
+    const lockoutActive =
+      !player.isDestroyed &&
+      !player.isDisabled &&
+      shieldPct < 99.5 &&
+      (engineLockoutActive || this._shieldLockoutMs > 0);
+    if (this.shieldLockoutPip) {
+      this.shieldLockoutPip.style.display = lockoutActive ? "block" : "none";
+    }
+    if (this.shieldBar) {
+      this.shieldBar.classList.toggle("shield-locked", lockoutActive);
+    }
+
+    // 5. Low-resource pulses
+    if (this.shieldBar) {
+      this.shieldBar.classList.toggle(
+        "bar-low",
+        !lockoutActive && shieldPct > 0 && shieldPct < 25,
+      );
+    }
+    if (this.energyBar) {
+      this.energyBar.classList.toggle("bar-low", !isBoosting && energyPct < 20);
+    }
+
+    // 6. Heat-critical pulse (warning before full overheat)
+    const heatCritical = !player.isOverheated && heatPct >= 80;
+    if (this.heatBar) {
+      this.heatBar.classList.toggle(
+        "heat-critical",
+        heatCritical || player.isOverheated,
+      );
+    }
+    if (this.heatWarningPip) {
+      this.heatWarningPip.style.display = heatCritical ? "block" : "none";
     }
   }
 

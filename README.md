@@ -1,55 +1,78 @@
-# agy-sandbox
+# Starfall: Living Galaxy
 
-A self-directed, principle-governed codebase that runs under a continuous autonomous-engineering loop. A human sets the strategic vision; deterministic gates enforce safety; a frontier reasoning engine designs and writes the code.
+A real-time, browser-native **multiplayer space-trading and combat game** — built inside a self-directed, principle-governed autonomous-engineering sandbox.
 
-The product currently being built inside this sandbox is **a real-time multiplayer space-trading and combat game** (Endless Sky-inspired) — a WebSocket-backed Node server with a browser canvas client.
+There are two stories here:
+
+- **The game.** A Node WebSocket server simulates an authoritative galaxy; a canvas client lets anyone fly, fight, trade, and take missions in a shared, persistent world. No install — just a URL.
+- **The sandbox.** The repository runs under a continuous autonomous loop where a human sets the vision, deterministic gates enforce safety, and a frontier reasoning engine designs and writes the code.
+
+The North Star: **a galaxy that is alive without you** — prices shift, factions move, and the world ages whether or not anyone is watching. See [`docs/GOAL.md`](docs/GOAL.md) for the full blueprint.
 
 ---
 
-## Quick Start
-
-### Play / run the game
+## Quick Start — Play the Game
 
 ```powershell
-# Install dependencies
+# 1. Install dependencies (first time only)
 npm install
 
-# Start the multiplayer server (HTTP static host + WebSocket on :8080)
+# 2. Start the authoritative multiplayer server (HTTP + WebSocket on :8080)
 node src/server.js
-
-# ...or serve the static client only
-npm run dev
 ```
 
-Then open `http://localhost:8080` in a browser. The server also attempts a `localtunnel` for remote play.
+Then open **http://localhost:8080** in any modern browser.
 
-### Run the checks
+> `npm run dev` only serves static files — it does **not** run the simulation or multiplayer. Use `node src/server.js` for the real game.
 
-```powershell
-npm test      # Jest suite (engine, physics, economy, missions, AI)
-npm run lint  # ESLint over src and scripts
-npm run format  # Prettier
+### Play with friends — they only need the URL
+
+When the server starts it automatically opens a **localtunnel** and prints a public link:
+
 ```
+🚀 Public Multiplayer URL: https://<something>.loca.lt
+📋 Public URL successfully copied to clipboard! Share it with friends.
+```
+
+Send that link to your friends — they open it in a browser and join your live sector. **Nobody installs anything.** Your machine must keep `node src/server.js` running (it is the authoritative host).
+
+> localtunnel shows first-time visitors a one-page gate asking for a "tunnel password," which is simply the host machine's public IP (get it at https://loca.lt/mytunnelpassword). After that one click they're in.
+
+### Controls
+
+| Action        | Keys              |
+| ------------- | ----------------- |
+| Thrust        | `W` / `↑`         |
+| Brake (retro) | `S` / `↓`         |
+| Turn          | `A` `D` / `←` `→` |
+| Fire weapon   | `Space`           |
+| Afterburner   | `Shift` (hold)    |
+
+Approach a planet slowly to land, then use the on-screen spaceport to trade commodities, buy outfits, purchase ships, and accept missions.
 
 ---
 
-## The Autonomous Loop
+## Features
 
-To run the headless engineering loop (human operator only):
+- **Authoritative multiplayer** — 30Hz server simulation, multiple sector rooms, lobby, and squad fleets.
+- **Living economy** — six commodities with dynamic price elasticity, shortage/surplus events, and a **galaxy heartbeat** that ages the market and diffuses price shocks along sector trade lanes even with no players online.
+- **Deep combat** — shields, armor, energy and heat budgets, overheat meltdown, disable-before-destroy, **shield-piercing weapons**, **ramming impact damage**, and an **afterburner**.
+- **Ships & outfitting** — six purchasable hulls and a dozen outfit modules (shields, engines, weapons, cargo, reactors, tractor beam, Ion Disruptor, and more).
+- **Missions & progression** — delivery contracts, bounties, and a multi-stage storyline.
+- **A populated galaxy** — merchant, guard, pirate, and escort AI; multi-sector navigation with warp gates, autopilot, and a galaxy map; nebula hazards and sector-wide EMP/siege events.
+- **Physics** — uniform spatial-grid broad-phase collision with elastic resolution.
+
+---
+
+## Testing & Quality
 
 ```powershell
-./scripts/run-autonomous-loop.ps1 'claude -p "Consult docs/AXIOMS.md and docs/AGENT-LOOP.md for compliance constraints. Reconcile workspace reality against docs/GOAL.md, and execute the next highest-leverage engineering move toward achieving that goal." --dangerously-skip-permissions'
+npm test        # Jest suite (engine, physics, economy, missions, AI, netcode)
+npm run lint    # ESLint over src and scripts
+npm run format  # Prettier (src, scripts, .github markdown, README)
 ```
 
-Each loop tick:
-
-1. Reads the constitution (`docs/AXIOMS.md`) and protocol (`docs/AGENT-LOOP.md`).
-2. Reconciles the strategic target in `docs/GOAL.md` against real repo state.
-3. Selects and executes the highest-leverage engineering move.
-4. Runs the validation gate (`scripts/local-gate.ps1`). On green it commits; on red it rolls back to the last green `HEAD`.
-5. Appends a compressed record to `docs/LOG.md`.
-
-For overnight batch work, `scripts/claude-night.ps1` drains a queue of tasks from `night-queue/tasks.json`, one fresh headless Claude per task.
+The engine is written headless and pure (no DOM, no sockets) so the simulation is fully unit-tested. Every feature ships with tests; the suite and lint must stay green.
 
 ---
 
@@ -57,53 +80,80 @@ For overnight batch work, `scripts/claude-night.ps1` drains a queue of tasks fro
 
 ```text
 ├── docs/
-│   ├── AXIOMS.md       <- The constitution (immutable principles)
-│   ├── AGENT-LOOP.md   <- Compliance protocol & write-protection registry
-│   ├── GOAL.md         <- Strategic target & system blueprint
+│   ├── AXIOMS.md       <- The constitution (immutable principles, read-only substrate)
+│   ├── AGENT-LOOP.md   <- Compliance protocol & write-protection registry (substrate)
+│   ├── GOAL.md         <- Strategic blueprint (Starfall: Living Galaxy, pillars P1-P8)
 │   └── LOG.md          <- Reverse-chronological operational ledger
 ├── scripts/
-│   ├── assert-gate-integrity.ps1   <- Substrate integrity check
-│   ├── local-gate.ps1              <- Workspace validation gate
-│   ├── run-autonomous-loop.ps1     <- Core loop driver
-│   ├── claude-night.ps1            <- Overnight task-queue runner
-│   └── validate-log-compliance.py  <- Ledger compliance auditor
+│   ├── run-autonomous-loop.ps1   <- Core local autonomous loop driver
+│   ├── claude-night.ps1          <- Unattended overnight task-queue runner
+│   ├── run-agent.js              <- GitHub Actions issue-triggered agent
+│   ├── local-gate.ps1            <- Workspace validation gate (substrate)
+│   └── ...                       <- Integrity/compliance tooling (substrate)
 ├── src/
 │   ├── server.js       <- WebSocket + static HTTP game server
-│   ├── main.js         <- Browser client entry/bootstrap
-│   ├── engine/         <- Game simulation
-│   │   ├── SpaceEngine.js      <- Physics orchestrator (spatial-grid broad-phase)
+│   ├── main.js         <- Browser client bootstrap
+│   ├── engine/         <- Headless simulation
+│   │   ├── SpaceEngine.js      <- Physics orchestrator (spatial grid, collisions, ramming)
 │   │   ├── GameInstance.js     <- Per-room authoritative world
-│   │   ├── Ship.js, Projectile.js, Planet.js, CargoPod.js
-│   │   ├── EconomyManager.js   <- Dynamic markets (price elasticity + events)
+│   │   ├── GalaxyHeartbeat.js  <- Player-independent economic simulation
+│   │   ├── EconomyManager.js   <- Dynamic markets (elasticity + events)
 │   │   ├── MissionManager.js   <- Missions, bounties, storyline
+│   │   ├── Ship.js, Projectile.js, Planet.js, CargoPod.js
 │   │   └── ai/AIController.js   <- Merchant / guard / pirate / escort AI
 │   ├── physics/Vector2D.js
-│   └── client/         <- Canvas renderer, input, networking, UI
+│   └── client/         <- Canvas renderer, input, networking, spaceport UI
 ├── index.html, index.css
+└── night-queue/        <- Local-only overnight task queue (gitignored)
 ```
 
 ---
 
-## Rules of Engagement for LLM Runtimes
+## Autonomous Development
 
-### 1. Substrate isolation
+This repo is designed to build itself. Two mechanisms drive it:
 
-These control-plane files are **write-protected** and must never be modified by an LLM:
-`docs/AXIOMS.md`, `docs/AGENT-LOOP.md`, `scripts/assert-gate-integrity.ps1`, `scripts/local-gate.ps1`, `scripts/run-autonomous-loop.ps1`, `scripts/validate-log-compliance.py`, `scripts/manifest.txt`. They are verified at the start of every loop tick.
+### 1. The local autonomous loop
 
-### 2. Autonomous sovereignty
+```powershell
+./scripts/run-autonomous-loop.ps1 'claude -p "Consult docs/AXIOMS.md and docs/AGENT-LOOP.md for compliance constraints. Reconcile workspace reality against docs/GOAL.md, and execute the next highest-leverage engineering move toward that goal." --dangerously-skip-permissions'
+```
 
-Beyond the explicit governance constraints, the agent has full engineering autonomy to refactor, redesign, and pivot whenever it maximizes systemic value.
+Each tick the agent grounds itself in the Axioms, reconciles `docs/GOAL.md` against real repo state, ships the highest-leverage increment, forces the validation gate, and — only on green — commits and appends a compressed record to `docs/LOG.md`.
 
-### 3. Machine-precise logging
+### 2. The overnight task queue
 
-Every iteration prepends a compressed, fluff-free record directly beneath the `== LOG-ANCHOR ==` token in `docs/LOG.md`.
+For batched, unattended work, `scripts/claude-night.ps1` drains `night-queue/tasks.json` — one fresh headless Claude per task:
+
+```powershell
+pwsh -File scripts/claude-night.ps1            # uses the current feature branch
+pwsh -File scripts/claude-night.ps1 -Model sonnet -TaskTimeoutMinutes 30
+```
+
+After each task it independently re-runs `npm run lint` and `npm test`, keeping the work **only** if both pass and a commit was made — otherwise it rolls the branch back. It **never pushes and never merges**; everything stays local for review:
+
+```powershell
+git log <branch>            # what landed overnight
+git diff main..<branch>     # the full change set
+```
+
+It refuses to start on a dirty tree or on `main`/`master`, and aborts after three consecutive failures.
+
+### 3. GitHub Actions (issue-triggered)
+
+Opening a GitHub issue with the `autonomous` label triggers `.github/workflows/autonomous-coder.yml`, which runs `scripts/run-agent.js` to implement the task and open a pull request. `ci.yml` runs Prettier, ESLint, and the Jest suite on every push and PR to `main`.
 
 ---
 
-## The Verification Ceiling
+## Rules of Engagement (for LLM runtimes)
 
-Verification is fully automated:
+- **Substrate is sacred.** `docs/AXIOMS.md`, `docs/AGENT-LOOP.md`, and the gate/integrity scripts listed in `docs/AGENT-LOOP.md` are write-protected and must never be modified by an agent.
+- **Keep main green.** Only fully validated work (lint + tests passing) lands.
+- **Log the truth.** Every code-changing iteration appends a compressed entry to `docs/LOG.md`.
+- **Determinism in tests.** Randomness is seeded or injected so the suite is reproducible.
 
-1. **Compilation fencing** — if an iteration introduces failing tests or syntax corruption, `scripts/local-gate.ps1` fails, uncommitted changes are wiped, and the repo rolls back to the last green `HEAD`.
-2. **Context compression** — stack traces are filtered at the loop layer; humans interface only with clean commits and the compressed ledger.
+---
+
+## Status & Known Gaps
+
+The galaxy currently lives **in memory** — restarting the server resets player and world state. Persistence (so the heartbeat-aged galaxy survives restarts), delta netcode, faction reputation, and goal-driven NPCs are the next pillars on the roadmap in [`docs/GOAL.md`](docs/GOAL.md).

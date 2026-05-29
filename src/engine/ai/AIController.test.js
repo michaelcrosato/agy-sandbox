@@ -103,7 +103,9 @@ describe("AIController.isPirateShip", () => {
   test("classifies pirate- and raider-named ships as hostile", () => {
     expect(AIController.isPirateShip({ name: "Pirate Raider" })).toBe(true);
     expect(AIController.isPirateShip({ name: "Siege Raider" })).toBe(true);
-    expect(AIController.isPirateShip({ name: "Pirate Boss Gallows" })).toBe(true);
+    expect(AIController.isPirateShip({ name: "Pirate Boss Gallows" })).toBe(
+      true,
+    );
   });
 
   test("treats civilians and nameless entities as non-hostile", () => {

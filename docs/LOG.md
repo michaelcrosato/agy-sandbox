@@ -40,3 +40,17 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 
 ---
 == LOG-ANCHOR ==
+
+## 2026-05-28T19:16 · iter-0001 · GREEN · combat-heartbeat-and-docs
+
+- **Baseline:** `81c8b88` on branch `overnight/bugfix-and-coverage` (descends from `679ebe3`); 236 tests / 17 suites green prior to docs pass.
+- **Move:** Land a combat-depth + living-economy increment, harden stability/perf, then polish all writable docs ahead of a 12-task overnight queue.
+- **Changed:**
+  - Combat & survival depth: shield-regen combat lockout, shield-piercing damage (`Projectile.shieldPierce`, `Ion Disruptor Array` outfit), afterburner boost (`controls.isBoosting`, Shift), ramming impact damage in `SpaceEngine`.
+  - Living galaxy: `GalaxyHeartbeat` ages the economy with no players — prices diffuse along sector trade lanes and drift to baseline; `Planet` retains `.sector`; wired into `GameInstance` + an 8s server interval.
+  - Stability/perf: `GameInstance` timer tracking + `destroy()` (fixes GC'd-room respawn-timer leak and the Jest open-handle warning); per-tick broadcast serialized once; `AIController.isPirateShip` null-safe guard.
+  - Docs: rewrote `README.md` (game + friends-via-URL + controls + autonomous mechanisms); aligned `.github/AGENT_RULES.md` git workflow with the no-push overnight reality and added substrate/determinism rules; this ledger entry.
+- **Decisions:** Treated combat/economy depth as engine-side and fully unit-tested so the gate stays meaningful; left browser/visual work for the queue. Removed obsolete untracked `README-old.md` (superseded; was blocking the clean-tree requirement).
+- **Validation:** `npm test` → 236 passed (17 suites); `npm run lint` → clean; `npm run format` applied to README/AGENT_RULES for CI Prettier.
+- **Notes:** Substrate (AXIOMS, AGENT-LOOP, gate scripts) untouched. Nothing pushed/merged; work is local on the feature branch.
+- **Next:** Run the 12-task overnight queue (P7 codec → P2/P3/P5/P6 engine systems → netcode/persistence/HUD); then P1 persistence so the aged galaxy survives restarts.

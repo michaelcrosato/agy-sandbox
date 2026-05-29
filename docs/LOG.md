@@ -41,6 +41,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T22:20 · iter-0020 · GREEN · ew8-seeded-name-generator
+
+- **Baseline:** `1e32885` on branch `overnight/bugfix-and-coverage`; 535 tests / 29 suites green. Fifth easy-win (EW8) from `docs/ai/FEATURE_PLAN.md`.
+- **Move:** Add a pure, deterministic pilot/ship name generator so NPCs, bounty targets (EW1), and encounters can read as named characters; fix a latent flaky generation test surfaced by EW4.
+- **Changed:**
+  - New `src/engine/NameGenerator.js`: `pilotName(rng)` ("First Last") and `shipName(rng)` ("Adjective Noun") from frozen word tables, driven by an injected `() => [0,1)` RNG (reuses `createSeededRng` from `GenerativeMissions.js`); `pick` clamps its index so a degenerate RNG can't go out of bounds. No `Math.random`.
+  - Fixed `Gameplay.test.js` "Generating procedural missions" — it whitelisted mission types `[courier, smuggle, bounty, storyline]` and asserted `targetName` on the non-cargo branch, so it intermittently failed once EW4 made `passenger` missions possible. It now accepts `passenger` and asserts `bunks` for that type. Confirmed stable across 5 repeated runs.
+  - +4 deterministic NameGenerator tests (seed determinism, two-part non-empty names, cross-seed divergence, varied single-rng sequence).
+- **Decisions:** Functions take an injected RNG (caller owns the seed) — same pattern as the generative-mission system — so output is reproducible. Did NOT wire names into live NPC spawns yet: the current pirate detection keys on the literal name substring "Pirate"/"Raider", so renaming spawns would break threat classification; decoupling that into role/faction is a separate ticket. The module ships pure, tested, and ready (the UtilityAI precedent).
+- **Validation:** `npm run agent:check` → green (prettier + eslint + 539 tests / 30 suites). `python scripts/validate-log-compliance.py` → PASS. No server/client wiring this slice, so no boot needed.
+- **Notes:** Substrate untouched. No push/merge — local on the feature branch. TICKET010 closed.
+- **Next:** EW7 (content expansion: a commodity, Mining Laser / Ramscoop / Fuel Cells outfits, a hull, a 5th weapon archetype), then EW3 (hyperfuel), EW2 (boarding), EW9 (mining depth).
+
 ## 2026-05-28T22:16 · iter-0019 · GREEN · ew4-passenger-missions
 
 - **Baseline:** `3c0c3dc` on branch `overnight/bugfix-and-coverage`; 532 tests / 29 suites green. Fourth easy-win (EW4) from `docs/ai/FEATURE_PLAN.md`.

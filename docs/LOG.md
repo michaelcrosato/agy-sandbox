@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-29T00:20 · iter-0034 · GREEN · spec-010-observability-metrics
+
+- **Baseline:** `27fd6da`-pre; 592 tests / 37 suites green. The server had only ad-hoc `console.*` and no runtime metrics. Executing `plan/specs/010`.
+- **Move:** Make the server observable — a dependency-free metrics registry exposed at `GET /metrics`, plus a structured JSON logger.
+- **Changed:** New pure `src/net/metrics.js` (`createRegistry` → `inc`/`gauge`/`observe`/`snapshot`, non-finite-safe) and `src/net/logger.js` (`createLogger` → leveled JSON lines via an injectable sink, serialize-safe). `src/server.js`: a `/metrics` (and `/healthz`) route returns the JSON snapshot; instruments `clients` + `rooms` gauges, `tick_ms` observation, `broadcast_bytes` + `slow_client_drops` (backpressure) + `heartbeat_reaps` + `connections_total` counters; logs structured `client_connected` events. +8 deterministic tests.
+- **Decisions:** Kept both modules dependency-free and injectable (clock/sink) so they're pure-testable and reusable for the future scaling work (`019`). Set the `clients`/`rooms` gauges from the 30Hz tick for an always-fresh count without hunting the close handler. Left low-traffic `console.*` as-is to keep the diff small (per the spec).
+- **Validation:** `npm run agent:check` → green (600 tests / 39 suites, prettier clean). Live smoke: booted the server and `curl /metrics` returned `{rooms:1, clients:0, tick_ms:{count:46, avg:0.80, max:3}}` — the tick loop is being measured. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 010 done. **Test suite crossed 600.**
+- **Next:** `plan/specs/013` (Google GenAI SDK migration) / `007` (modularize server.js); then the toolchain majors (011/012) and Phase 2 features.
+
 ## 2026-05-29T00:08 · iter-0033 · GREEN · spec-009-decouple-threat-detection
 
 - **Baseline:** `4df2a60`-pre; 590 tests / 37 suites green. Threat/loot classification keyed on ship-name substrings (fragile; a nameless ship once crashed the tick; blocked procedural NPC names). Executing `plan/specs/009`.

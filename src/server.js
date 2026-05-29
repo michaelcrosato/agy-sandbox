@@ -13,6 +13,9 @@ import { MissionManager } from "./engine/MissionManager.js";
 import { NEBULAE } from "./engine/Nebulae.js";
 import { GameInstance } from "./engine/GameInstance.js";
 import { nextFrame } from "./net/BroadcastFramer.js";
+import { JsonFileStore } from "./persistence/Store.js";
+import { PersistenceManager } from "./persistence/PersistenceManager.js";
+import { applyGalaxy, applyPlayer } from "./persistence/serializers.js";
 
 // Process-level uncaught error and promise rejection logging
 process.on("uncaughtException", (err) => {
@@ -78,9 +81,36 @@ const instances = new Map();
 const persistentSessions = new Map(); // sessionToken -> clientObj
 const clients = new Map(); // ws -> clientObj
 
+// Persistence layer (P1): swappable Store + serializers behind a manager that
+// silently absorbs disk failures. Tests against an InMemoryStore live in
+// `src/persistence/PersistenceManager.test.js`; here we wire the real file
+// store so the public sector survives restarts.
+const persistenceDir = process.env.PERSISTENCE_DIR || "./data";
+const persistenceManager = new PersistenceManager({
+  store: new JsonFileStore({ dir: persistenceDir }),
+});
+
 // Create Default permanent Public Arena Room
 const publicInstance = new GameInstance("public", "Public Arena");
 instances.set("public", publicInstance);
+
+// Restore any saved galaxy state for the public room. Fire-and-forget so the
+// HTTP server can start listening immediately; the heartbeat runs no sooner
+// than 8 seconds from boot which is well after this resolves. Errors are
+// already swallowed inside `loadGalaxy` so a corrupt save can't crash boot.
+persistenceManager.loadGalaxy(publicInstance.id).then((snapshot) => {
+  if (snapshot) {
+    applyGalaxy(publicInstance, snapshot);
+    console.log(
+      `💾 Restored galaxy state for [${publicInstance.name}] from ${persistenceDir}`,
+    );
+  }
+});
+
+// Periodic galaxy autosave (P1): persist every live room on a slow cadence so
+// a kill -9 only ever loses up to ~30 seconds of heartbeat aging.
+const AUTOSAVE_INTERVAL_MS = Number(process.env.AUTOSAVE_INTERVAL_MS) || 30000;
+persistenceManager.startAutosave(() => instances.values(), AUTOSAVE_INTERVAL_MS);
 
 // Setup multi-room ticker loops
 const TICK_RATE = 30;
@@ -863,6 +893,48 @@ wss.on("connection", (ws) => {
     if (msg.type === "join") {
       const token = msg.sessionToken;
 
+      if (token && !persistentSessions.has(token)) {
+        // First-touch after a server restart: the in-memory session map is
+        // empty even though the client carries a valid token from before.
+        // Try to revive them from disk; if no save exists, fall through to
+        // the lobby flow below.
+        persistenceManager
+          .loadPlayer(token)
+          .then((wrapped) => {
+            if (!wrapped || !wrapped.player) {
+              sendLobbyList(clientObj);
+              return;
+            }
+            // Use the saved id so the engine entity (and future saves) keep
+            // the same stable identity. `applyPlayer` will also reapply this
+            // but joinRoom builds the ship from `clientObj.id` first.
+            if (typeof wrapped.player.id === "string" && wrapped.player.id) {
+              clientObj.id = wrapped.player.id;
+            }
+            const targetRoomId =
+              wrapped.roomId && instances.has(wrapped.roomId)
+                ? wrapped.roomId
+                : "public";
+            joinRoom(
+              clientObj,
+              targetRoomId,
+              wrapped.player.nickname || clientObj.nickname,
+            );
+            applyPlayer(clientObj, wrapped.player);
+            clientObj.send({
+              type: "notification",
+              message: `Welcome back, Commander ${clientObj.nickname}. State restored from last session.`,
+              style: "success",
+            });
+            clientObj.sendStats();
+          })
+          .catch(() => {
+            // The manager already logged; just route the client to the lobby.
+            sendLobbyList(clientObj);
+          });
+        return;
+      }
+
       if (token && persistentSessions.has(token)) {
         const sessionClient = persistentSessions.get(token);
 
@@ -1061,6 +1133,10 @@ wss.on("connection", (ws) => {
           });
           clientObj.sendStats();
           room.broadcastRosterUpdate();
+
+          // Docking is a natural save-point: state is stable and trades have
+          // just happened. Fire-and-forget; errors are swallowed by the manager.
+          persistenceManager.savePlayer(clientObj.id, clientObj, room.id);
         } else {
           clientObj.send({
             type: "notification",
@@ -1724,6 +1800,14 @@ wss.on("connection", (ws) => {
 
     activeClient.cleanupTimeout = setTimeout(() => {
       const currentRoom = instances.get(activeClient.roomId);
+      // Persist the player's final state before evicting their session from
+      // memory; this is the only chance to capture credits/cargo/missions for
+      // a returning pilot who reconnects after the server restarts.
+      persistenceManager.savePlayer(
+        activeClient.id,
+        activeClient,
+        activeClient.roomId,
+      );
       if (currentRoom) {
         currentRoom.leaveCurrentFleet(activeClient);
         if (activeClient.ship) {
@@ -1772,8 +1856,35 @@ wss.on("connection", (ws) => {
 
 let activeTunnel = null;
 
-const shutdown = () => {
+const shutdown = async () => {
   console.log("\n🔌 Shutting down server gracefully...");
+
+  // Snapshot the world (and every connected pilot) to disk before tearing
+  // down. The manager swallows errors so a flaky filesystem still lets us
+  // proceed with the WS/HTTP teardown.
+  persistenceManager.stopAutosave();
+  try {
+    const savedRooms = await persistenceManager.saveAllGalaxies(
+      instances.values(),
+    );
+    console.log(`💾 Persisted ${savedRooms} galaxy snapshot(s).`);
+    let savedPlayers = 0;
+    for (const client of clients.values()) {
+      if (!client || !client.id || !client.ship) continue;
+      const ok = await persistenceManager.savePlayer(
+        client.id,
+        client,
+        client.roomId,
+      );
+      if (ok) savedPlayers++;
+    }
+    if (savedPlayers > 0) {
+      console.log(`💾 Persisted ${savedPlayers} active player session(s).`);
+    }
+  } catch (e) {
+    console.error("Persistence flush during shutdown failed:", e.message);
+  }
+
   if (activeTunnel) {
     try {
       activeTunnel.close();

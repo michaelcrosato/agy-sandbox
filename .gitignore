@@ -39,3 +39,6 @@ night-queue/
 
 # Local Claude Code state
 .claude/
+
+# Runtime persistence (P1 JSON snapshots of galaxy + players)
+data/

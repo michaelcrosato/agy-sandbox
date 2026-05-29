@@ -41,6 +41,22 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T22:05 · iter-0016 · GREEN · ew1-combat-rating-bounty-kill-ledger
+
+- **Baseline:** `f3389f4` on branch `overnight/bugfix-and-coverage`; 496 tests / 27 suites green. First feature from the `docs/ai/FEATURE_PLAN.md` easy-win backlog (EW1), the foundation EW2 boarding/plunder builds on.
+- **Move:** Track what a pilot has destroyed — give every ship a credit-worth `bountyValue` and accrue kills + a logarithmic combat rating on the `destroyedBy`-attributed killer, persisted across restarts.
+- **Changed:**
+  - New pure `src/engine/CombatRating.js`: `shipBountyValue(ship)` (explicit `bountyValue` override else derived from maxShield/maxArmor/weaponDamage), `combatRating(value)` (logarithmic via `log10`, monotonic non-decreasing, 0 for non-positive/non-finite), `combatRank(rating)` (Harmless→Elite), `recordKill(killer, value)` (kills++, combatValue+=value, recompute rating; null/zero-safe). Frozen `DEFAULT_COMBAT_RATING_OPTIONS`.
+  - `Ship` gains a `bountyValue` ctor param (default null = derive) and `kills`/`combatValue`/`combatRating` fields.
+  - `serializers.js` adds the three ledger fields to `PLAYER_HULL_FIELDS` so the combat record survives restart/rejoin.
+  - `GameInstance.handleEntityDestroyed` calls `recordKill(killerClient.ship, shipBountyValue(ent))` at the top of the ship-destroyed branch.
+  - `server.js` `sendStats` now emits `kills` and `combatRating` for the HUD.
+  - +19 deterministic tests across `CombatRating.test.js` (15), `Ship.test.js`, `GameInstance.test.js` (simulated kill increments the killer's ledger), `serializers.test.js` (ledger round-trip).
+- **Decisions:** Kept `Ship` free of a `CombatRating` import (duck-typed `recordKill`) to avoid a cycle. Credited only the directly attributed killer (not fleet-wide) to match "destroyedBy attribution"; fleet rating-sharing is a deferred follow-up. Logarithmic curve (`100*log10(1+value/500)`) gives legible diminishing returns. HUD rendering of the rating is client work, deferred (the value is now in the stats payload).
+- **Validation:** `npm run agent:check` → green (prettier + eslint + 514 tests / 28 suites). `PORT=18191 NODE_ENV=test node src/server.js` → boots and listens, no crash. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge — local on the feature branch. TICKET006 closed.
+- **Next:** EW6 (jettison cargo) per the suggested order, then EW5 (port repair/refuel).
+
 ## 2026-05-28T21:52 · iter-0015 · GREEN · ultraplan-easiest-win-feature-backlog
 
 - **Baseline:** `1db22ea` on branch `overnight/bugfix-and-coverage`; 496 tests / 27 suites green. No product code changed this iteration — this is a planning/direction artifact.

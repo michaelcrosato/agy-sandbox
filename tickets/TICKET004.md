@@ -1,6 +1,6 @@
 # TICKET004 — Persistence kill→restart→rejoin integration test
 
-- **Status:** TODO
+- **Status:** DONE (2026-05-28) — completed via `plan/specs/008`
 - **Priority:** P2 (medium)
 
 ## Goal

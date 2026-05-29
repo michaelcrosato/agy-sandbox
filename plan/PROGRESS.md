@@ -17,7 +17,7 @@ _Baseline at blueprint generation (2026-05-28): 569 tests / 33 suites green; ESL
 
 ## Phase 1 — Core Upgrades
 - [ ] `007` Modularize server.js (extract tested units) — _blocked by: none (eased by 002–004)_
-- [ ] `008` Persistence kill→restart→rejoin integration test — _blocked by: none_
+- [x] `008` Persistence kill→restart→rejoin integration test — **done** (file: new `src/persistence/restart.integration.test.js` — real JsonFileStore round-trip, fresh manager/instance, asserts markets+pulses+full player ledger. Supersedes TICKET004)
 - [ ] `009` Decouple threat detection from ship names; wire seeded names — _blocked by: none_
 - [ ] `010` Observability: structured logging + runtime metrics — _blocked by: none_
 - [ ] `011` ESLint 9→10 migration — _blocked by: none_

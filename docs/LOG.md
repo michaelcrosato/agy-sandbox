@@ -41,6 +41,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T22:08 · iter-0017 · GREEN · ew6-jettison-cargo
+
+- **Baseline:** `2afc8b2` on branch `overnight/bugfix-and-coverage`; 514 tests / 28 suites green. Second easy-win (EW6) from `docs/ai/FEATURE_PLAN.md`.
+- **Move:** Let pilots dump cargo into space as a scoopable pod — to flee scans, free hold space, or stage a handoff (pairs with smuggling and the upcoming EW2 boarding).
+- **Changed:**
+  - `Ship.jettison(commodity, amount)` — pure; removes up to the carried amount (dumping more than held ejects all), returns a `{resourceType, amount}` pod spec, or `null` on an unknown commodity / non-positive amount / empty bay.
+  - `GameInstance.jettisonFromShip(ship, commodity, amount)` — calls `ship.jettison`, and on success spawns a `CargoPod` just behind the ship inheriting its velocity (deterministic, no `Math.random` in the spawn placement), adds it to the engine, returns the pod.
+  - `server.js` — new `jettison` message handler: `room.jettisonFromShip(...)`, notification + `sendStats`.
+  - +5 deterministic tests (`Ship.test.js` jettison cases incl. dump-all and invalid-input guards; `GameInstance.test.js` pod-spawn + hold-freed + null-when-empty).
+- **Decisions:** `Ship.jettison` returns a spec rather than spawning, keeping the engine entity-graph-free and pure; the room owns pod spawning. Pod placement is deterministic (behind the ship, inheriting velocity) so the spawner is unit-testable. Client keybind/UI deferred (not headlessly testable) — the server path is reachable and boot-verified.
+- **Validation:** `npm run agent:check` → green (prettier + eslint + 519 tests / 28 suites). `PORT=18192 NODE_ENV=test node src/server.js` → boots and listens. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge — local on the feature branch. TICKET007 closed.
+- **Next:** EW5 (port repair/refuel) per the suggested order; then EW4 (passenger missions).
+
 ## 2026-05-28T22:05 · iter-0016 · GREEN · ew1-combat-rating-bounty-kill-ledger
 
 - **Baseline:** `f3389f4` on branch `overnight/bugfix-and-coverage`; 496 tests / 27 suites green. First feature from the `docs/ai/FEATURE_PLAN.md` easy-win backlog (EW1), the foundation EW2 boarding/plunder builds on.

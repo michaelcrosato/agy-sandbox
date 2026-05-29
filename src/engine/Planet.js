@@ -163,6 +163,24 @@ export class Planet extends SpaceEntity {
               description:
                 "Nanotech storage bank cells. Increases max energy capacity by +100 units.",
             },
+            {
+              name: "Ramscoop Collector",
+              cost: 2600,
+              type: "ramscoop",
+              value: 4,
+              mass: 200,
+              description:
+                "Interstellar hydrogen funnel. Passively regenerates +4 hyperdrive fuel per second so you are never stranded between stargates.",
+            },
+            {
+              name: "Auxiliary Fuel Cells",
+              cost: 1800,
+              type: "fuel",
+              value: 50,
+              mass: 300,
+              description:
+                "Reinforced cryo-fuel bunkerage. Increases maximum hyperdrive fuel by +50 units (and tops off the tank on install).",
+            },
           ];
 
     // Store Shipyard Catalog

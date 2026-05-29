@@ -22,6 +22,7 @@ describe("Ship construction", () => {
     expect(s.energy).toBe(100);
     expect(s.heat).toBe(0);
     expect(s.hyperFuel).toBe(100);
+    expect(s.ramscoopRate).toBe(0);
     expect(s.isOverheated).toBe(false);
     expect(s.isDisabled).toBe(false);
     expect(s.outfits).toEqual(["Basic Laser"]);
@@ -540,6 +541,26 @@ describe("Ship outfit mass handling tradeoff (P6)", () => {
       loaded.velocity.magnitude() / stock.velocity.magnitude(),
     ).toBeCloseTo(massRatio, 6);
     expect(loaded.heading / stock.heading).toBeCloseTo(massRatio, 6);
+  });
+});
+
+describe("Ship hyperdrive ramscoop regen (EW3)", () => {
+  test("a Ramscoop regenerates hyperFuel over update ticks, clamped to max", () => {
+    const s = new Ship({ ramscoopRate: 5 });
+    s.hyperFuel = 50;
+    s.update(1);
+    expect(s.hyperFuel).toBe(55);
+
+    s.hyperFuel = 98;
+    s.update(10); // +50 requested, clamps at maxHyperFuel (100)
+    expect(s.hyperFuel).toBe(100);
+  });
+
+  test("no ramscoop (rate 0) leaves hyperFuel unchanged", () => {
+    const s = new Ship(); // ramscoopRate 0 by default
+    s.hyperFuel = 40;
+    s.update(1);
+    expect(s.hyperFuel).toBe(40);
   });
 });
 

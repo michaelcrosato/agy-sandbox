@@ -1,4 +1,5 @@
 import { SpaceEntity } from "./SpaceEntity.js";
+import { ramscoopRegen } from "./Hyperdrive.js";
 
 /**
  * Enhanced Ship class representing player and NPC ships with shields, armor, cargo, credits, weapons, and upgrade systems.
@@ -37,6 +38,7 @@ export class Ship extends SpaceEntity {
     weaponSpeed = 500,
     weaponCooldown = 0.25,
     bountyValue = null,
+    ramscoopRate = 0,
     ...parentParams
   } = {}) {
     super({ type: "ship", mass: 2000, radius: 15, ...parentParams });
@@ -79,6 +81,8 @@ export class Ship extends SpaceEntity {
     this.heatDissipation = 10; // units/sec
     this.maxHyperFuel = 100;
     this.hyperFuel = 100;
+    // Passive hyperdrive-fuel regen per second (EW3). 0 = no Ramscoop fitted.
+    this.ramscoopRate = ramscoopRate;
 
     // Status states
     this.isOverheated = false;
@@ -351,6 +355,9 @@ export class Ship extends SpaceEntity {
 
     // 2. Dissipate excess thermal buildup
     this.heat = Math.max(0, this.heat - this.heatDissipation * dt);
+
+    // Passive hyperdrive-fuel regeneration (Ramscoop; no-op at rate 0).
+    ramscoopRegen(this, dt, this.ramscoopRate);
 
     // 3. Reactor Melt-down checking
     if (this.heat >= this.maxHeat) {

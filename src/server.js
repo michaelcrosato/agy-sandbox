@@ -17,6 +17,13 @@ import { JsonFileStore } from "./persistence/Store.js";
 import { PersistenceManager } from "./persistence/PersistenceManager.js";
 import { applyGalaxy, applyPlayer } from "./persistence/serializers.js";
 import { applyRepair, applyRefuel } from "./engine/PortServices.js";
+import {
+  canJump,
+  consumeJump,
+  DEFAULT_HYPERDRIVE_OPTIONS,
+} from "./engine/Hyperdrive.js";
+
+const JUMP_FUEL_COST = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost;
 
 // Process-level uncaught error and promise rejection logging
 process.on("uncaughtException", (err) => {
@@ -1346,6 +1353,12 @@ wss.on("connection", (ws) => {
         } else if (outfit.type === "capacitor") {
           clientObj.ship.maxEnergy += outfit.value;
           clientObj.ship.energy = clientObj.ship.maxEnergy;
+        } else if (outfit.type === "ramscoop") {
+          clientObj.ship.ramscoopRate =
+            (clientObj.ship.ramscoopRate || 0) + outfit.value;
+        } else if (outfit.type === "fuel") {
+          clientObj.ship.maxHyperFuel += outfit.value;
+          clientObj.ship.hyperFuel = clientObj.ship.maxHyperFuel;
         }
 
         // Bolt the outfit's physical mass onto the hull so handling is the
@@ -1553,7 +1566,7 @@ wss.on("connection", (ws) => {
           });
           return;
         }
-        if (clientObj.ship.hyperFuel < 20) {
+        if (!canJump(clientObj.ship, JUMP_FUEL_COST)) {
           clientObj.send({
             type: "notification",
             message:
@@ -1563,7 +1576,7 @@ wss.on("connection", (ws) => {
           return;
         }
 
-        clientObj.ship.hyperFuel = Math.max(0, clientObj.ship.hyperFuel - 20);
+        consumeJump(clientObj.ship, JUMP_FUEL_COST);
         clientObj.ship.position = gate.targetPosition.clone();
         clientObj.ship.velocity.set(0, 0);
 

@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T23:20 · iter-0028 · GREEN · spec-003-ws-heartbeat-reaper
+
+- **Baseline:** `7914242`-pre; 576 tests / 34 suites green. No transport-level liveness check existed (the `type:"pong"` handler is a game message, not a ws heartbeat). Executing `plan/specs/003`.
+- **Move:** Detect and reap half-open sockets (crashed clients, dropped networks) so they stop leaking room/fleet state, memory, and file descriptors.
+- **Changed:** New pure `src/net/heartbeat.js` — `selectDeadSockets(sockets)` returns those with `isAlive===false` (unset/new = live), iterable/edge-safe; `DEFAULT_HEARTBEAT_MS=30000`. `src/server.js`: on connection sets `ws.isAlive=true` + a `pong` handler that re-arms it; a 30s interval terminates dead sockets (routing through the normal `close` cleanup) then flips survivors to `isAlive=false` and `ping()`s them. Interval is `unref`'d and `clearInterval`'d in `shutdown`. +4 deterministic tests.
+- **Decisions:** Kept the selection pure/testable and left the timer + ping/terminate side-effects in the server (mirrors the autosave-interval lifecycle). Terminating routes through the existing disconnect handler so room/fleet eviction is unchanged. `unref` keeps Jest/process exit clean.
+- **Validation:** `npm run agent:check` → green (580 tests / 35 suites, prettier clean). Boot smoke → listens, no open-handle warnings. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 003 done.
+- **Next:** `plan/specs/004` — ws outbound backpressure handling.
+
 ## 2026-05-28T23:10 · iter-0027 · GREEN · spec-002-ws-inbound-hardening
 
 - **Baseline:** `17a4a34`-pre; 569 tests / 33 suites green. `new WebSocketServer({ server })` had no inbound limits. Executing `plan/specs/002`.

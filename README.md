@@ -67,9 +67,10 @@ Approach a planet slowly to land, then use the on-screen spaceport to trade comm
 ## Testing & Quality
 
 ```powershell
-npm test        # Jest suite (engine, physics, economy, missions, AI, netcode)
-npm run lint    # ESLint over src and scripts
-npm run format  # Prettier (src, scripts, .github markdown, README)
+npm run agent:check   # the full gate: Prettier --check + ESLint + Jest (mirrors CI)
+npm test              # Jest suite (engine, physics, economy, missions, AI, netcode)
+npm run lint          # ESLint over src and scripts
+npm run format        # Prettier (src, scripts, .github markdown, README)
 ```
 
 The engine is written headless and pure (no DOM, no sockets) so the simulation is fully unit-tested. Every feature ships with tests; the suite and lint must stay green.
@@ -83,12 +84,14 @@ The engine is written headless and pure (no DOM, no sockets) so the simulation i
 │   ├── AXIOMS.md       <- The constitution (immutable principles, read-only substrate)
 │   ├── AGENT-LOOP.md   <- Compliance protocol & write-protection registry (substrate)
 │   ├── GOAL.md         <- Strategic blueprint (Starfall: Living Galaxy, pillars P1-P8)
-│   └── LOG.md          <- Reverse-chronological operational ledger
+│   ├── LOG.md          <- Reverse-chronological operational ledger
+│   └── ai/REPO_MAP.md  <- Repo map for agents (where logic/tests/config live)
 ├── scripts/
 │   ├── run-autonomous-loop.ps1   <- Core local autonomous loop driver
 │   ├── claude-night.ps1          <- Unattended overnight task-queue runner
 │   ├── run-agent.js              <- GitHub Actions issue-triggered agent
 │   ├── local-gate.ps1            <- Workspace validation gate (substrate)
+│   ├── agent/                    <- Cross-platform agent wrappers (check = CI gate, doctor, status...)
 │   └── ...                       <- Integrity/compliance tooling (substrate)
 ├── src/
 │   ├── server.js       <- WebSocket + static HTTP game server
@@ -104,8 +107,24 @@ The engine is written headless and pure (no DOM, no sockets) so the simulation i
 │   ├── physics/Vector2D.js
 │   └── client/         <- Canvas renderer, input, networking, spaceport UI
 ├── index.html, index.css
+├── AGENTS.md           <- Canonical agent operating manual (CLAUDE.md is a thin pointer to it)
+├── ROADMAP.md          <- Engineering phases + ticket map
+├── tickets/            <- Atomic, executable work items (TICKET0NN.md)
 └── night-queue/        <- Local-only overnight task queue (gitignored)
 ```
+
+---
+
+## Project documentation
+
+| Doc                                          | What                                                           |
+| -------------------------------------------- | -------------------------------------------------------------- |
+| [`AGENTS.md`](AGENTS.md)                     | Canonical operating manual for coding agents — **read first**. |
+| [`docs/GOAL.md`](docs/GOAL.md)               | Product blueprint: North Star, invariants, pillars P1–P8.      |
+| [`ROADMAP.md`](ROADMAP.md)                   | Engineering phases and the prioritized ticket map.             |
+| [`docs/ai/REPO_MAP.md`](docs/ai/REPO_MAP.md) | Where everything lives; what to skip.                          |
+| [`tickets/`](tickets/)                       | Atomic, executable work items.                                 |
+| [`docs/LOG.md`](docs/LOG.md)                 | Reverse-chronological operational ledger.                      |
 
 ---
 
@@ -156,4 +175,8 @@ Opening a GitHub issue with the `autonomous` label triggers `.github/workflows/a
 
 ## Status & Known Gaps
 
-The galaxy currently lives **in memory** — restarting the server resets player and world state. Persistence (so the heartbeat-aged galaxy survives restarts), delta netcode, faction reputation, and goal-driven NPCs are the next pillars on the roadmap in [`docs/GOAL.md`](docs/GOAL.md).
+Health: **496 Jest tests / 27 suites green**, ESLint and Prettier clean (`npm run agent:check`).
+
+**Shipped:** P1 persistence — the heartbeat-aged galaxy and player state autosave to disk and restore on restart/rejoin; P7 delta netcode — the authoritative broadcast ships keyframes + deltas with self-healing resync.
+
+**Next pillars** (foundations built as pure modules; runtime wiring in progress): faction reputation shaping live NPC hostility and prices (P3), generative missions in the landing flow (P4), goal-driven NPCs (P5), and production chains (P2). See [`docs/GOAL.md`](docs/GOAL.md) and [`ROADMAP.md`](ROADMAP.md).

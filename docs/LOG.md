@@ -41,6 +41,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T22:12 · iter-0018 · GREEN · ew5-port-repair-refuel
+
+- **Baseline:** `9b5db07` on branch `overnight/bugfix-and-coverage`; 519 tests / 28 suites green. Third easy-win (EW5) from `docs/ai/FEATURE_PLAN.md`.
+- **Move:** Let a landed pilot pay to repair hull armor and top off hyperdrive fuel — the standard port loop that, until now, was missing (battle damage was only undone by death/respawn).
+- **Changed:**
+  - New pure `src/engine/PortServices.js`: `armorDeficit`/`fuelDeficit`, `repairCost`/`refuelCost` (proportional to the deficit, 0 when full), and `applyRepair`/`applyRefuel` — full-or-nothing: restore to max + charge credits + clamp, with insufficient credits a strict no-op. Frozen `DEFAULT_PORT_SERVICE_OPTIONS` (5 CR/armor point, 8 CR/fuel unit).
+  - `Planet` gains a `services = { repair: true, refuel: true }` flag set.
+  - `server.js`: `port_service` handler (`service: "repair"|"refuel"`), gated on landed + the planet offering the service; notification + `sendStats`.
+  - +13 deterministic tests (`PortServices.test.js` cost/clamp/no-op/null-safety for both services; `Planet.test.js` default services).
+- **Decisions:** Repair targets structural `armor` only — shields and heat already self-recover in `Ship.update`. Full-or-nothing keeps the "insufficient credits = no-op" acceptance unambiguous and the math trivial to test; pay-what-you-can partial service is a deferred follow-up. Refuel is wired now though `hyperFuel` is still cosmetic until EW3 makes jumps consume it.
+- **Validation:** `npm run agent:check` → green (prettier + eslint + 532 tests / 29 suites). `PORT=18193 NODE_ENV=test node src/server.js` → boots and listens. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge — local on the feature branch. TICKET008 closed.
+- **Next:** EW4 (passenger missions); then EW8 (seeded names), EW7 (content), EW3 (hyperfuel), EW2 (boarding), EW9 (mining depth).
+
 ## 2026-05-28T22:08 · iter-0017 · GREEN · ew6-jettison-cargo
 
 - **Baseline:** `2afc8b2` on branch `overnight/bugfix-and-coverage`; 514 tests / 28 suites green. Second easy-win (EW6) from `docs/ai/FEATURE_PLAN.md`.

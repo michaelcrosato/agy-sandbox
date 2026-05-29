@@ -541,3 +541,37 @@ describe("Ship outfit mass handling tradeoff (P6)", () => {
     expect(loaded.heading / stock.heading).toBeCloseTo(massRatio, 6);
   });
 });
+
+describe("Ship cargo jettison (EW6)", () => {
+  test("jettisons up to the carried amount and returns a pod spec", () => {
+    const s = new Ship();
+    s.addCargo("minerals", 5);
+    const spec = s.jettison("minerals", 3);
+    expect(spec).toEqual({ resourceType: "minerals", amount: 3 });
+    expect(s.cargo.minerals).toBe(2);
+    expect(s.getCargoWeight()).toBe(2);
+  });
+
+  test("dumping more than carried ejects everything held", () => {
+    const s = new Ship();
+    s.addCargo("food", 4);
+    const spec = s.jettison("food", 99);
+    expect(spec).toEqual({ resourceType: "food", amount: 4 });
+    expect(s.cargo.food).toBe(0);
+  });
+
+  test("returns null and changes nothing on unknown commodity or bad amount", () => {
+    const s = new Ship();
+    s.addCargo("luxuries", 2);
+    expect(s.jettison("unobtainium", 1)).toBeNull();
+    expect(s.jettison("luxuries", 0)).toBeNull();
+    expect(s.jettison("luxuries", -5)).toBeNull();
+    expect(s.jettison("luxuries", NaN)).toBeNull();
+    expect(s.cargo.luxuries).toBe(2);
+  });
+
+  test("returns null when the commodity bay is empty", () => {
+    const s = new Ship();
+    expect(s.jettison("minerals", 1)).toBeNull();
+  });
+});

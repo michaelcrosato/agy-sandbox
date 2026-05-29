@@ -660,6 +660,30 @@ export class GameInstance {
       });
   }
 
+  /**
+   * Jettisons cargo from a ship into the room as a scoopable pod. Deterministic:
+   * the pod drops just behind the ship and inherits its velocity (no randomness),
+   * so the behaviour is unit-testable.
+   * @param {Ship} ship - The ship dumping cargo.
+   * @param {string} commodity - Cargo type to eject.
+   * @param {number} amount - Units to eject (clamped to what is carried).
+   * @returns {CargoPod|null} The spawned pod, or null if nothing was jettisoned.
+   */
+  jettisonFromShip(ship, commodity, amount) {
+    if (!ship || typeof ship.jettison !== "function") return null;
+    const spec = ship.jettison(commodity, amount);
+    if (!spec) return null;
+    const behind = ship.getDirectionVector().multiply(-(ship.radius + 8));
+    const pod = new CargoPod({
+      resourceType: spec.resourceType,
+      amount: spec.amount,
+      position: ship.position.add(behind),
+      velocity: ship.velocity.clone(),
+    });
+    this.engine.addEntity(pod);
+    return pod;
+  }
+
   handleEntityDestroyed(ent) {
     if (ent.type === "projectile") return;
 

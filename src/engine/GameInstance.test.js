@@ -162,4 +162,26 @@ describe("GameInstance Multi-Room Matchmaking & Isolation Mechanics", () => {
 
     room.destroy();
   });
+
+  test("jettisonFromShip ejects a cargo pod and frees the hold (EW6)", () => {
+    const room = new GameInstance("room-jet", "Sector Jettison");
+    const ship = new Ship({ id: "jet-1", name: "Hauler" });
+    ship.addCargo("minerals", 5);
+    const before = room.engine.entities.length;
+
+    const pod = room.jettisonFromShip(ship, "minerals", 2);
+
+    expect(pod).not.toBeNull();
+    expect(pod.resourceType).toBe("minerals");
+    expect(pod.amount).toBe(2);
+    expect(ship.cargo.minerals).toBe(3);
+    expect(room.engine.entities.length).toBe(before + 1);
+    expect(room.engine.getEntity(pod.id)).toBe(pod);
+
+    // Nothing to jettison -> null, no new entity.
+    expect(room.jettisonFromShip(ship, "food", 1)).toBeNull();
+    expect(room.engine.entities.length).toBe(before + 1);
+
+    room.destroy();
+  });
 });

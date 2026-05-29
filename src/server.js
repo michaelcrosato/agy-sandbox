@@ -1240,6 +1240,28 @@ wss.on("connection", (ws) => {
           }
         }
       }
+    } else if (msg.type === "jettison") {
+      if (clientObj.ship && room) {
+        const pod = room.jettisonFromShip(
+          clientObj.ship,
+          msg.item,
+          Number(msg.amount) || 1,
+        );
+        if (pod) {
+          clientObj.send({
+            type: "notification",
+            message: `Jettisoned ${pod.amount} ton(s) of ${pod.resourceType}.`,
+            style: "info",
+          });
+          clientObj.sendStats();
+        } else {
+          clientObj.send({
+            type: "notification",
+            message: "Nothing to jettison.",
+            style: "error",
+          });
+        }
+      }
     } else if (msg.type === "outfit_buy") {
       if (clientObj.ship && clientObj.isLanded && clientObj.planetLandedOn) {
         const p = clientObj.planetLandedOn;

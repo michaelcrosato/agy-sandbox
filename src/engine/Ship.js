@@ -305,6 +305,24 @@ export class Ship extends SpaceEntity {
   }
 
   /**
+   * Jettisons cargo into space: removes up to `amount` units of `commodity` from
+   * the hold and returns a pod spec for the caller to spawn. Dumping more than is
+   * carried ejects everything held. Pure aside from mutating own cargo.
+   * @param {string} commodity - Cargo type to dump.
+   * @param {number} amount - Units to dump; clamped to what is actually carried.
+   * @returns {{resourceType: string, amount: number}|null} Pod spec, or null if
+   *   the commodity is unknown or nothing could be jettisoned.
+   */
+  jettison(commodity, amount) {
+    if (this.cargo[commodity] === undefined) return null;
+    if (!Number.isFinite(amount) || amount <= 0) return null;
+    const actual = Math.min(Math.floor(amount), this.cargo[commodity]);
+    if (actual <= 0) return null;
+    this.cargo[commodity] -= actual;
+    return { resourceType: commodity, amount: actual };
+  }
+
+  /**
    * Overridden update loop. Handles energy generation, thermal meltdown thresholds, regeneration, cooling, and propulsion controls.
    * @param {number} dt - Frame time step in seconds.
    */

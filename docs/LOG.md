@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T22:50 · iter-0025 · GREEN · plan-directory-audit-blueprint
+
+- **Baseline:** `0cf2fd4` on branch `overnight/bugfix-and-coverage`; 569 tests / 33 suites green. Planning/architecture artifact (no product code changed).
+- **Move:** Run a full repo audit + 2026 ecosystem web research and compile a deterministic, machine-readable `/plan/` blueprint for downstream agents.
+- **Changed:** New `plan/` directory — `ROADMAP.md` (REPO BASELINE with Mermaid architecture + measured scale; research synthesis; 3 waves + master prioritization table by Impact/Feasibility/Risk/Fit), `AGENTS.md` (plan-execution loop + verify commands, defers to root `AGENTS.md`), `PROGRESS.md` (Todo/In-Progress/Done tracker), and `specs/001–019` (atomic specs, each with Description/Impact, DoD/Acceptance, Implementation Approach, Test Strategy).
+- **Decisions:** Grounded findings in measured data: `npm audit` (2 high — `axios@0.21.4` via `localtunnel@2.0.2`), `new WebSocketServer({server})` lacks `maxPayload`/Origin check/heartbeat/backpressure, `server.js` is 2,054 LOC untested, ESLint 9→10 / Jest 29→30 / `@google/generative-ai`→`@google/genai` stale. Web research: Colyseus (binary delta sync + Redis scaling) / geckos.io (WebRTC-UDP) / Hathora as competitive landscape; `ws` 2026 hardening baseline; the localtunnel/axios CVE + March-2026 axios supply-chain attack. Did not duplicate the existing root `AGENTS.md`/`ROADMAP.md` — `/plan/` cross-references them and the completed EW1–EW9 backlog rather than restating.
+- **Validation:** `npm run agent:check` → green (prettier + eslint + 569 tests / 33 suites; `/plan/*.md` is outside the lint/prettier CI scope, so the gate is structurally unaffected). `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge — local on the feature branch. The blueprint is execution-ready; a copy-paste `/goal` to implement it was provided to the operator.
+- **Next:** Execute `plan/PROGRESS.md` in order — start with `specs/002` + `006` (highest priority Σ), then the rest of Phase 0 (`001`,`003`,`004`,`005`).
+
 ## 2026-05-28T22:37 · iter-0024 · GREEN · ew9-mining-depth-seeded-yields
 
 - **Baseline:** `14647cc` on branch `overnight/bugfix-and-coverage`; 561 tests / 32 suites green. EW9 — the final item of the `docs/ai/FEATURE_PLAN.md` easy-win backlog.

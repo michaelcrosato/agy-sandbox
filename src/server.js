@@ -25,6 +25,7 @@ import {
 import { plunder, boardRepair } from "./engine/Boarding.js";
 import { isAllowedOrigin } from "./net/originPolicy.js";
 import { selectDeadSockets, DEFAULT_HEARTBEAT_MS } from "./net/heartbeat.js";
+import { sendDecision } from "./net/backpressure.js";
 
 const JUMP_FUEL_COST = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost;
 
@@ -330,7 +331,16 @@ setInterval(() => {
     room.needsKeyframe = false;
     const statePayload = JSON.stringify(frame.payload);
     for (const client of room.clients.values()) {
-      if (client.ws.readyState === client.ws.OPEN) {
+      if (client.ws.readyState !== client.ws.OPEN) continue;
+      // Backpressure (spec 004): a slow client's send buffer must not grow
+      // unbounded. Skip deltas to a backed-up client (it resyncs on the next
+      // keyframe); drop one that is hopelessly behind.
+      const decision = sendDecision(client.ws.bufferedAmount, {
+        isKeyframe: frame.isKeyframe,
+      });
+      if (decision === "drop") {
+        client.ws.terminate();
+      } else if (decision === "send") {
         client.ws.send(statePayload);
       }
     }

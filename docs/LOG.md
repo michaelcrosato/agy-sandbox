@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T23:38 · iter-0030 · GREEN · spec-005-dependency-hygiene
+
+- **Baseline:** `eb1c9b2`-pre; 586 tests / 36 suites green. Executing `plan/specs/005` (folds in TICKET001).
+- **Move:** Make installs reproducible and the runtime pinned — patch-bump ws, declare the undeclared `http-server`, and pin Node.
+- **Changed:** `package.json` — `ws` `^8.20.1`→`^8.21.0`; added `http-server` to `devDependencies`; `dev` script now runs the local `http-server .` (no ad-hoc `npx` fetch); added `engines.node: ">=20"`. New `.nvmrc` (`20`). Lockfile updated. `tickets/TICKET001` closed (superseded).
+- **Decisions:** Kept `http-server` dev-only (never ships to the game runtime). Verified its 63 transitive packages add **0** audit advisories, so the security posture from spec 001 (0 vulnerabilities) holds.
+- **Validation:** `npm ci` from clean → 0 vulnerabilities, exit 0; `npm run agent:check` → green (586 tests / 36 suites, prettier clean); `npx http-server` resolves locally (v14.1.1). `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 005 done.
+- **Next:** `plan/specs/006` — economy NaN self-heal + heartbeat diffusion guard (last Phase 0 item).
+
 ## 2026-05-28T23:30 · iter-0029 · GREEN · spec-004-ws-outbound-backpressure
 
 - **Baseline:** `cc2c889`-pre; 580 tests / 35 suites green. The 30Hz broadcast fanned out with no regard for per-socket buffer depth — a slow client could grow `ws.bufferedAmount` until OOM. Executing `plan/specs/004`.

@@ -9,7 +9,7 @@ _Baseline at blueprint generation (2026-05-28): 569 tests / 33 suites green; ESL
 
 ## Phase 0 — Quick Wins & Safety
 - [x] `001` Remediate localtunnel/axios CVEs — **done** (files: `src/server.js` dynamic optional import + graceful fallback, removed `localtunnel` from `package.json`/lockfile, `README.md` cloudflared guidance; `npm audit` → 0 vulnerabilities)
-- [ ] `002` Harden ws inbound (maxPayload + Origin verifyClient) — _blocked by: none_
+- [x] `002` Harden ws inbound (maxPayload + Origin verifyClient) — **done** (files: new `src/net/originPolicy.js` + `.test.js`; `src/server.js` WSS sets `maxPayload: 256KB` + `verifyClient` same-origin/allowlist check)
 - [ ] `003` ws connection heartbeat / dead-socket reaper — _blocked by: none_
 - [ ] `004` ws outbound backpressure handling — _blocked by: none_
 - [ ] `005` Dependency hygiene (ws 8.21, http-server, engines, .nvmrc) — _blocked by: none_

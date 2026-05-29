@@ -23,8 +23,18 @@ import {
 } from "./engine/Hyperdrive.js";
 
 import { plunder, boardRepair } from "./engine/Boarding.js";
+import { isAllowedOrigin } from "./net/originPolicy.js";
 
 const JUMP_FUEL_COST = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost;
+
+// ws inbound hardening (spec 002): cap inbound frame size to blunt memory-DoS,
+// and accept only same-origin upgrades + an optional ALLOWED_ORIGINS allowlist
+// (defends against Cross-Site WebSocket Hijacking).
+const WS_MAX_PAYLOAD = 256 * 1024; // 256 KB — far above any legit client message
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
 
 // Process-level uncaught error and promise rejection logging
 process.on("uncaughtException", (err) => {
@@ -750,7 +760,22 @@ function joinRoom(clientObj, roomId, nickname) {
 }
 
 // 6. WebSockets Server Core Implementation
-const wss = new WebSocketServer({ server });
+const wss = new WebSocketServer({
+  server,
+  maxPayload: WS_MAX_PAYLOAD,
+  verifyClient: (info) => {
+    const allowed = isAllowedOrigin(info.origin, {
+      host: info.req && info.req.headers ? info.req.headers.host : "",
+      allow: ALLOWED_ORIGINS,
+    });
+    if (!allowed) {
+      console.warn(
+        `[ws] rejected upgrade from disallowed origin: ${info.origin}`,
+      );
+    }
+    return allowed;
+  },
+});
 
 wss.on("connection", (ws) => {
   const clientId = "player-" + Math.random().toString(36).substring(2, 9);

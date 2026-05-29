@@ -10,6 +10,7 @@ import { GalaxyHeartbeat } from "./GalaxyHeartbeat.js";
 import { PLANET_PROFILES } from "./ProductionModel.js";
 import { recordKill, shipBountyValue } from "./CombatRating.js";
 import { mineYield } from "./Mining.js";
+import { shipName, createSeededRng } from "./NameGenerator.js";
 
 // Which sectors share trade routes (warp-gate connected) for economic diffusion.
 export const SECTOR_ADJACENCY = {
@@ -408,13 +409,6 @@ export class GameInstance {
   }
 
   spawnNPCPirate(i) {
-    const pirateNames = [
-      "Pirate Raider",
-      "Viper Scout",
-      "Marauder",
-      "Corsair Star",
-      "Gallows Destroyer",
-    ];
     const angle = Math.random() * Math.PI * 2;
     const dist = 1000 + Math.random() * 2000;
     const spawnPos = new Vector2D(
@@ -426,7 +420,9 @@ export class GameInstance {
     const pShip = new Ship({
       name: isHeavy
         ? "Pirate Boss Gallows"
-        : pirateNames[i % pirateNames.length],
+        : shipName(
+            createSeededRng(Date.now() + i + Math.floor(Math.random() * 1e6)),
+          ),
       position: spawnPos,
       velocity: new Vector2D(
         (Math.random() - 0.5) * 50,
@@ -439,6 +435,9 @@ export class GameInstance {
       weaponDamage: isHeavy ? 35 : 18,
       weaponCooldown: isHeavy ? 0.2 : 0.3,
     });
+    // Tag the role so threat/loot classification and respawn are
+    // name-independent (procedurally-named pirates are still recognised).
+    pShip.role = "pirate";
 
     const controller = new AIController(pShip, "pirate");
     this.engine.addEntity(pShip);
@@ -740,10 +739,8 @@ export class GameInstance {
         recordKill(killerClient.ship, shipBountyValue(ent));
       }
 
-      const isPirate =
-        ent.name === "Pirate Raider" ||
-        ent.name.includes("Pirate") ||
-        ent.name.includes("Raider");
+      // Role/faction-based (name-independent) classification — null-safe.
+      const isPirate = AIController.isPirateShip(ent);
 
       // Check bounties for connected and standby clients
       for (const client of this.clients.values()) {

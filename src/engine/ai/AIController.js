@@ -57,13 +57,21 @@ export class AIController {
   }
 
   /**
-   * Null-safe hostile-pirate classifier. Ships without a name string (e.g. a
-   * freshly-spawned player hull) are never hostile, which prevents a tick-wide
-   * crash from calling .includes on an undefined name.
+   * Null-safe hostile-pirate classifier. Prefers an explicit `role`/`faction`
+   * tag so a procedurally-named pirate is still recognised and a friendly ship
+   * that happens to be named "...Raider..." is not. Falls back to the legacy
+   * name heuristic only for entities with no role tag (keeps older call sites and
+   * hand-built test fixtures working). Entities without a name string are never
+   * hostile, which prevents a tick-wide crash from `.includes` on an undefined name.
    * @param {SpaceEntity} ent - Entity to classify.
    * @returns {boolean} True if the entity is a pirate-class threat.
    */
   static isPirateShip(ent) {
+    if (!ent) return false;
+    if (ent.role === "pirate") return true;
+    // A ship with an explicit non-pirate role is decoupled from its name.
+    // (Faction *disposition* is the factionPolicy's job, not this classifier.)
+    if (typeof ent.role === "string" && ent.role.length > 0) return false;
     const n = ent.name;
     if (typeof n !== "string") return false;
     return n.includes("Pirate") || n.includes("Raider");

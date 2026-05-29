@@ -123,6 +123,31 @@ describe("AIController.isPirateShip", () => {
     expect(AIController.isPirateShip({ name: undefined })).toBe(false);
     expect(AIController.isPirateShip({})).toBe(false);
   });
+
+  test("prefers role over name (spec 009 decoupling)", () => {
+    // A procedurally-named pirate is still hostile via its role.
+    expect(
+      AIController.isPirateShip({ role: "pirate", name: "Crimson Talon" }),
+    ).toBe(true);
+    expect(AIController.isPirateShip({ role: "pirate" })).toBe(true);
+    // A roled non-pirate is NOT a pirate even if its name contains "Raider".
+    expect(
+      AIController.isPirateShip({ role: "merchant", name: "Raider Hauler" }),
+    ).toBe(false);
+    expect(
+      AIController.isPirateShip({ role: "guard", name: "Pirate Hunter" }),
+    ).toBe(false);
+    // Faction disposition is the factionPolicy's job, NOT this classifier:
+    // a Pirates-faction ship with no role and a civilian name is not flagged.
+    expect(
+      AIController.isPirateShip({ faction: "Pirates", name: "Smuggler" }),
+    ).toBe(false);
+  });
+
+  test("isPirateShip is null-safe", () => {
+    expect(AIController.isPirateShip(null)).toBe(false);
+    expect(AIController.isPirateShip(undefined)).toBe(false);
+  });
 });
 
 describe("AIController.executePirateAI", () => {

@@ -41,6 +41,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T22:24 · iter-0021 · GREEN · ew7-flak-archetype-and-interceptor-hull
+
+- **Baseline:** `60c71e4` on branch `overnight/bugfix-and-coverage`; 539 tests / 30 suites green. EW7 content slice from `docs/ai/FEATURE_PLAN.md` (the lowest-ripple, self-contained additions).
+- **Move:** Add genre variety via pure data — a 5th weapon archetype and a new hull — without the wide ripple of a new commodity.
+- **Changed:**
+  - `WeaponArchetypes.js`: new `FLAK` archetype (rapid-fire point defense — damageScale 0.5, speedScale 1.4, rangeScale 0.5, cooldownScale 0.4, shieldPierce 0, energyCost 4, heatCost 4) added to the `WeaponArchetype` enum, `WEAPON_ARCHETYPE_ORDER`, and the frozen profile table. Tuned to stay under the table's superlatives — MISSILE keeps the strictly-highest damageScale (2.2) and shieldPierce (0.4); BEAM keeps the strictly-highest heatCost (18) — so the existing invariant tests hold.
+  - `Planet.js`: new `Interceptor` hull (fast/agile/light-cargo: thrust 20000, turn 3.6, shield 280, armor 150, cargo 6) in the default shipyard.
+  - Tests: updated the two pinned assertions (`WEAPON_ARCHETYPE_ORDER` now 5 entries; default shipyard length 6→7 + Interceptor present), added a FLAK identity test. `applyArchetypeToShip` already handles FLAK generically (no engine change).
+- **Decisions:** Deferred the rest of EW7 to their natural homes — a new commodity ripples across `Ship.cargo`, all 8 `BASE_MARKETS`, `Planet.market` defaults, `ProductionModel`, and the "six-commodity" test (its own careful slice); Mining Laser pairs with EW9 and Ramscoop / Fuel Cells with EW3. FLAK's cooldown is snappier than KINETIC's but the KINETIC test only compares against ENERGY, so the "snappy vs ENERGY" claim stays valid.
+- **Validation:** `npm run agent:check` → green (prettier + eslint + 540 tests / 30 suites). `PORT=18195 NODE_ENV=test node src/server.js` → boots and listens. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge — local on the feature branch. TICKET011 closed (FLAK + Interceptor; remainder deferred with reasons).
+- **Next:** EW3 (hyperdrive fuel economy — activate the unused `hyperFuel` stat, add Ramscoop/Fuel Cells outfits), then EW2 (boarding), EW9 (mining depth).
+
 ## 2026-05-28T22:20 · iter-0020 · GREEN · ew8-seeded-name-generator
 
 - **Baseline:** `1e32885` on branch `overnight/bugfix-and-coverage`; 535 tests / 29 suites green. Fifth easy-win (EW8) from `docs/ai/FEATURE_PLAN.md`.

@@ -41,6 +41,18 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-28T21:05 · iter-0004 · GREEN · p3-faction-reputation-core
+
+- **Baseline:** `25feb2b` on branch `overnight/bugfix-and-coverage`; 290 tests / 20 suites green.
+- **Move:** Land Pillar P3's foundation — a pure, headless faction & reputation core whose standings clamp, propagate through allies/enemies, classify, and decay toward neutral, ready for P1 persistence to save later.
+- **Changed:**
+  - New `src/engine/FactionRegistry.js` exporting `DEFAULT_FACTIONS` (Federation, Frontier League, Pirates, Independents), `DEFAULT_RELATIONS` (symmetric ally/enemy/neutral table), `DEFAULT_OPTIONS` (band `[-100,100]`, classify thresholds `±30`, propagation `0.5`, decay `0.01`), `classifyStanding` helper, and a `FactionRegistry` class with `getStanding` / `setStanding` (clamped) / `getAllStandings` / `getRelation` / `adjustStanding` (propagates a fraction of the requested delta to allies as same-sign, to enemies as opposite-sign — even when the primary write clamps, so diplomatic fallout survives a cap) / `classify` / `decay` (per-player toward zero) / `decayAll` / `serialize` (deep-copy, JSON-safe) / static `fromJSON`.
+  - New `src/engine/FactionRegistry.test.js` — 30 deterministic Jest cases covering classify thresholds and inclusivity, default roster + relation symmetry, getRelation fallback to neutral, clamping at floor/ceiling with default and custom bands, zero-delta no-op, primary clamp under propagation pressure, per-player isolation, malformed-relations self-reference guard, classify thresholds + overrides, decay direction for positive/negative/zero standings, many-step decay-toward-zero without crossover, decayAll touching every player, determinism across two registries, and serialize/fromJSON round-trip + JSON-safety + defensive copy.
+- **Decisions:** Propagation uses the REQUESTED delta, not the post-clamp change — the task framed it as a player's action having consequences, so being already maxed with Faction A still angers A's enemies. Kept the class headless, plain-data, and not wired into the server or AI (also per task spec) so P1 persistence can serialize `registry.serialize()` alongside markets without coupling to runtime state. Inclusive classification at the threshold (`>=30` friendly, `<=-30` hostile) so callers can hit "friendly" exactly at `30`.
+- **Validation:** `npm test` → 320 passed (20 suites); `npm run lint` → clean.
+- **Notes:** Substrate untouched. No push/merge — local on the feature branch for human review.
+- **Next:** Wire `FactionRegistry` into `GameInstance` and have `AIController` consult `classify()` to gate hostility/hails so the standing actually changes NPC behaviour (the P3 DoD); have `EconomyManager` skew buy/sell prices by player's faction standing where the planet sits; extend `GalaxyHeartbeat` to decay standings on its slow pulse so reputation ages with the world.
+
 ## 2026-05-28T20:30 · iter-0003 · GREEN · p2-production-model
 
 - **Baseline:** `86b6c6b` on branch `overnight/bugfix-and-coverage`; 259 tests / 18 suites green.

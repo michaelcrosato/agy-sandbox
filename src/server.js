@@ -12,6 +12,7 @@ import { AIController } from "./engine/ai/AIController.js";
 import { MissionManager } from "./engine/MissionManager.js";
 import { NEBULAE } from "./engine/Nebulae.js";
 import { GameInstance } from "./engine/GameInstance.js";
+import { nextFrame } from "./net/BroadcastFramer.js";
 
 // Process-level uncaught error and promise rejection logging
 process.on("uncaughtException", (err) => {
@@ -262,13 +263,19 @@ setInterval(() => {
       room.broadcastFleetUpdate(code);
     }
 
-    // J. Authoritative World State Broadcast.
-    // Serialize the payload once per tick and reuse the string for every client
-    // instead of re-running JSON.stringify per recipient (scales with player count).
-    const statePayload = JSON.stringify({
-      type: "state",
+    // J. Authoritative World State Broadcast (P7: snapshots + deltas).
+    // Frame this tick as either a full keyframe (`state_snapshot`) or a delta
+    // against the previous broadcast (`state_delta`). The wire string is built
+    // ONCE per tick and reused for every client so cost stays O(clients) on the
+    // socket layer alone, not O(clients * entities) on JSON.stringify.
+    const frame = nextFrame({
       entities: room.serializeEntities(),
+      prev: room.broadcastState,
+      forceKeyframe: !!room.needsKeyframe,
     });
+    room.broadcastState = frame.nextState;
+    room.needsKeyframe = false;
+    const statePayload = JSON.stringify(frame.payload);
     for (const client of room.clients.values()) {
       if (client.ws.readyState === client.ws.OPEN) {
         client.ws.send(statePayload);
@@ -629,6 +636,9 @@ function joinRoom(clientObj, roomId, nickname) {
 
   room.clients.set(clientObj.ws, clientObj);
   room.lastActiveTime = Date.now();
+  // Force the next broadcast to be a keyframe so the newcomer starts from a
+  // full snapshot instead of waiting up to ~1s for the next scheduled one.
+  room.needsKeyframe = true;
 
   const spawnPos = new Vector2D(
     (Math.random() - 0.5) * 150,
@@ -876,6 +886,9 @@ wss.on("connection", (ws) => {
           }
         }
         currentRoom.clients.set(ws, sessionClient);
+        // Reconnecting client needs a full keyframe — their local snapshot/seq
+        // has gone stale across the disconnect.
+        currentRoom.needsKeyframe = true;
 
         if (sessionClient.ship) {
           const existing = currentRoom.engine.entities.find(

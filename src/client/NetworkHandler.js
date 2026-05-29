@@ -1,3 +1,5 @@
+import { applyDelta } from "../net/StateCodec.js";
+
 /**
  * Manages WebSocket networking, input transmission, state synchronization,
  * and cooperative party/fleet systems.
@@ -18,6 +20,12 @@ export class NetworkHandler {
     // Client entities cache synced from server states
     this.entitiesData = [];
     this.activeSectorEvent = null;
+
+    // P7: server broadcasts state as keyframes + deltas. We hold the latest
+    // reconstructed snapshot (id-keyed entity map) and the seq it represents,
+    // so an incoming delta can be applied iff its baseSeq matches.
+    this.serverSnapshot = { entities: {} };
+    this.serverSeq = -1;
 
     // Message Hook callbacks
     this.onInit = null;
@@ -106,10 +114,26 @@ export class NetworkHandler {
           if (this.onInit) this.onInit(msg);
           break;
 
-        case "state":
-          this.entitiesData = msg.entities;
-          if (this.onStateReceived) this.onStateReceived(msg.entities);
+        case "state_snapshot": {
+          // Full keyframe: replace the local snapshot wholesale and adopt seq.
+          this.serverSnapshot = { entities: msg.entities || {} };
+          this.serverSeq = msg.seq;
+          this.entitiesData = Object.values(this.serverSnapshot.entities);
+          if (this.onStateReceived) this.onStateReceived(this.entitiesData);
           break;
+        }
+
+        case "state_delta": {
+          // Delta is only valid if its baseSeq matches the snapshot we hold.
+          // Otherwise we've missed a frame — drop the delta and wait for the
+          // next keyframe (the ~1s cadence on the server self-heals desync).
+          if (msg.baseSeq !== this.serverSeq) break;
+          this.serverSnapshot = applyDelta(this.serverSnapshot, msg.delta);
+          this.serverSeq = msg.seq;
+          this.entitiesData = Object.values(this.serverSnapshot.entities);
+          if (this.onStateReceived) this.onStateReceived(this.entitiesData);
+          break;
+        }
 
         case "stats":
           if (this.onStatsReceived) this.onStatsReceived(msg);
@@ -181,6 +205,11 @@ export class NetworkHandler {
         clearInterval(this.pingInterval);
         this.pingInterval = null;
       }
+      // Drop the cached snapshot/seq so the next session starts from the
+      // forced keyframe the server sends on reconnect rather than trying to
+      // apply deltas against pre-disconnect state.
+      this.serverSnapshot = { entities: {} };
+      this.serverSeq = -1;
       if (this.onConnectionStatusChange) {
         this.onConnectionStatusChange("reconnecting");
       }

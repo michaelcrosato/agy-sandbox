@@ -16,7 +16,7 @@ _**v8 re-audit baseline (2026-05-30, ENTIRE v7 blueprint shipped): 827 Jest test
 ## v8 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
-- [ ] `055` Naval Command Decks & Faction Bounty Vouchers (reputation progression) — **todo** (files: `src/engine/Ship.js`, `src/engine/PortServices.js`, `src/server/portHandlers.js`, `src/client/SpaceportUI.js`, `index.html`; collect dynamic bounty vouchers from combat, redeem at Naval Command Decks for credits + standing; enforce rank-based lockout).
+- [x] `055` Naval Command Decks & Faction Bounty Vouchers (reputation progression) — **done** (files: `src/engine/Ship.js`, `src/engine/PortServices.js`, `src/server/portHandlers.js`, `src/client/SpaceportUI.js`, `index.html`; successfully transitioned instant credit payouts from hostile neutralizations into collectible faction bounty vouchers, implemented Naval Command Decks with rank progression milestones and +15% Allied commendation credit bonuses, enforced premium shipyard hulls and outfitter weapon rank lockouts; 833 Jest tests passing, 100% green gate check).
 
 ### Phase 1 — Core Upgrades & Debt Paydown
 - [ ] `056` Hyperspace Warp Lane Interdiction (tactical gravity fields) — **todo** (files: `src/engine/outfitCatalog.js`, `src/engine/Hyperdrive.js`, `src/engine/ai/AIController.js`, `src/client/CanvasRenderer.js`; project warp interdiction wells from modules/patrols, disrupting and blocking nearby stargate warp jumps).

@@ -9,7 +9,7 @@
  * @param {Object} clientObj - `{ ship, missionManager }`.
  * @returns {Object|null} The `stats` message, or null when there is no ship.
  */
-export function buildStatsPayload(clientObj) {
+export function buildStatsPayload(clientObj, factionRegistry = null) {
   const ship = clientObj && clientObj.ship;
   if (!ship) return null;
   return {
@@ -22,6 +22,11 @@ export function buildStatsPayload(clientObj) {
     maxArmor: ship.maxArmor,
     name: ship.name,
     outfits: ship.outfits,
+    bountyVouchers: ship.bountyVouchers || [],
+    standings:
+      factionRegistry && clientObj.id
+        ? factionRegistry.getAllStandings(clientObj.id)
+        : {},
     cargoCapacity: ship.cargoCapacity,
     thrustPower: ship.thrustPower,
     turnRate: ship.turnRate,

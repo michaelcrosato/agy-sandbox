@@ -275,3 +275,170 @@ export function applyRefine(
     cost,
   };
 }
+
+/**
+ * Calculates player's Naval Rank based on their numeric faction standing.
+ * @param {number} standing - Faction standing value.
+ * @returns {string} One of: "OUTLAW" | "RECRUIT" | "LIEUTENANT" | "COMMANDER" | "ADMIRAL".
+ */
+export function getNavalRank(standing) {
+  if (standing <= -10) return "OUTLAW";
+  if (standing < 10) return "RECRUIT";
+  if (standing < 40) return "LIEUTENANT";
+  if (standing < 80) return "COMMANDER";
+  return "ADMIRAL";
+}
+
+/**
+ * Redeems player's collected bounty vouchers for the given faction (or all factions if null/all).
+ * Awards credits (plus allied/friendly multiplier) and dynamic standing points.
+ *
+ * @param {Object} ship - Ship object to mutate (credits, bountyVouchers).
+ * @param {string|null} faction - Specific faction to redeem, or null/"all" for all.
+ * @param {Object|null} factionRegistry - The FactionRegistry instance to update standing.
+ * @param {string|null} playerId - The ID of the player to adjust standing for.
+ * @returns {Object} `{ ok: boolean, reason: string, creditsClaimed: number, reputationGained: number, count: number }`
+ */
+export function redeemFactionVouchers(
+  ship,
+  faction,
+  factionRegistry,
+  playerId,
+) {
+  if (!ship)
+    return {
+      ok: false,
+      reason: "invalid_ship",
+      creditsClaimed: 0,
+      reputationGained: 0,
+      count: 0,
+    };
+  if (!ship.bountyVouchers || ship.bountyVouchers.length === 0) {
+    return {
+      ok: false,
+      reason: "no_vouchers",
+      creditsClaimed: 0,
+      reputationGained: 0,
+      count: 0,
+    };
+  }
+
+  const targetFaction = faction === "all" ? null : faction;
+
+  const toRedeem = [];
+  const toKeep = [];
+
+  for (const v of ship.bountyVouchers) {
+    if (!targetFaction || v.faction === targetFaction) {
+      toRedeem.push(v);
+    } else {
+      toKeep.push(v);
+    }
+  }
+
+  if (toRedeem.length === 0) {
+    return {
+      ok: false,
+      reason: "no_matching_vouchers",
+      creditsClaimed: 0,
+      reputationGained: 0,
+      count: 0,
+    };
+  }
+
+  // Calculate base credits and standing increments
+  let baseCredits = 0;
+  const factionTotals = {};
+
+  for (const v of toRedeem) {
+    baseCredits += v.value || 0;
+    const f = v.faction || "Independents";
+    factionTotals[f] = (factionTotals[f] || 0) + (v.value || 0);
+  }
+
+  // Calculate dynamic standing/reputation adjustments (1 point per 1000 CR value)
+  let totalReputationGained = 0;
+  if (factionRegistry && playerId) {
+    for (const [f, totalValue] of Object.entries(factionTotals)) {
+      const repDelta = Math.max(0.5, totalValue / 1000);
+      factionRegistry.adjustStanding(playerId, f, repDelta);
+      totalReputationGained += repDelta;
+    }
+  }
+
+  // Calculate credit standing bonus: friendly/allied standing grants 15% Naval Commendation credit bonus!
+  let standing = 0;
+  const governingFaction =
+    targetFaction || toRedeem[0].faction || "Independents";
+  if (factionRegistry && playerId) {
+    standing = factionRegistry.getStanding(playerId, governingFaction);
+  }
+  const isFriendly = standing >= 10;
+  const multiplier = isFriendly ? 1.15 : 1.0;
+  const creditsClaimed = Math.round(baseCredits * multiplier);
+
+  // Apply to ship
+  ship.credits = (ship.credits || 0) + creditsClaimed;
+  ship.bountyVouchers = toKeep;
+
+  return {
+    ok: true,
+    reason: "redeemed",
+    creditsClaimed,
+    reputationGained: totalReputationGained,
+    count: toRedeem.length,
+  };
+}
+
+/**
+ * Checks if purchase of a hull or outfit is blocked due to rank requirements.
+ *
+ * @param {string} itemName - Name of hull or outfit upgrade.
+ * @param {Object|null} factionRegistry - FactionRegistry instance.
+ * @param {string|null} playerId - Player ID.
+ * @param {string|null} faction - Governing planet faction.
+ * @returns {Object} `{ allowed: boolean, requiredRank: string, currentRank: string }`
+ */
+export function checkUpgradeLockout(
+  itemName,
+  factionRegistry,
+  playerId,
+  faction,
+) {
+  let requiredRank = "RECRUIT";
+  if (itemName === "Interceptor") {
+    requiredRank = "LIEUTENANT";
+  } else if (itemName === "Military Destroyer") {
+    requiredRank = "COMMANDER";
+  } else if (itemName === "Ion Disruptor Array") {
+    requiredRank = "LIEUTENANT";
+  }
+
+  if (requiredRank === "RECRUIT") {
+    return { allowed: true, requiredRank, currentRank: "RECRUIT" };
+  }
+
+  let standing = 0;
+  if (factionRegistry && playerId && faction) {
+    standing = factionRegistry.getStanding(playerId, faction);
+  }
+
+  const currentRank = getNavalRank(standing);
+
+  // Rank hierarchy priority value for comparison
+  const rankPriority = {
+    OUTLAW: -1,
+    RECRUIT: 0,
+    LIEUTENANT: 1,
+    COMMANDER: 2,
+    ADMIRAL: 3,
+  };
+
+  const hasRank = rankPriority[currentRank] >= rankPriority[requiredRank];
+
+  return {
+    allowed: hasRank,
+    requiredRank,
+    currentRank,
+  };
+}

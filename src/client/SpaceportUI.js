@@ -1,4 +1,9 @@
-import { applyRefine, refineCost } from "../engine/PortServices.js";
+import {
+  applyRefine,
+  refineCost,
+  getNavalRank,
+  redeemFactionVouchers,
+} from "../engine/PortServices.js";
 
 /**
  * Manages the interactive glassmorphic spaceport menu, handling trading, ship upgrades, and purchases.
@@ -23,12 +28,14 @@ export class SpaceportUI {
     this.tabOutfitter = document.getElementById("tab-outfitter");
     this.tabShipyard = document.getElementById("tab-shipyard");
     this.tabRefinery = document.getElementById("tab-refinery");
+    this.tabNaval = document.getElementById("tab-naval");
 
     this.paneTrade = document.getElementById("pane-trade");
     this.paneMissions = document.getElementById("pane-missions");
     this.paneOutfitter = document.getElementById("pane-outfitter");
     this.paneShipyard = document.getElementById("pane-shipyard");
     this.paneRefinery = document.getElementById("pane-refinery");
+    this.paneNaval = document.getElementById("pane-naval");
 
     this.btnLaunch = document.getElementById("btn-launch");
 
@@ -57,6 +64,7 @@ export class SpaceportUI {
     this.tabRefinery?.addEventListener("click", () =>
       this.switchTab("refinery"),
     );
+    this.tabNaval?.addEventListener("click", () => this.switchTab("naval"));
 
     this.btnLaunch?.addEventListener("click", () => {
       if (window.network) {
@@ -79,12 +87,14 @@ export class SpaceportUI {
     this.tabOutfitter?.classList.remove("active");
     this.tabShipyard?.classList.remove("active");
     this.tabRefinery?.classList.remove("active");
+    this.tabNaval?.classList.remove("active");
 
     this.paneTrade?.classList.remove("active");
     this.paneMissions?.classList.remove("active");
     this.paneOutfitter?.classList.remove("active");
     this.paneShipyard?.classList.remove("active");
     this.paneRefinery?.classList.remove("active");
+    this.paneNaval?.classList.remove("active");
 
     if (pane === "trade") {
       this.tabTrade?.classList.add("active");
@@ -106,6 +116,10 @@ export class SpaceportUI {
       this.tabRefinery?.classList.add("active");
       this.paneRefinery?.classList.add("active");
       this.renderRefinery();
+    } else if (pane === "naval") {
+      this.tabNaval?.classList.add("active");
+      this.paneNaval?.classList.add("active");
+      this.renderNaval();
     }
   }
 
@@ -127,6 +141,16 @@ export class SpaceportUI {
         this.tabRefinery.style.display = "block";
       } else {
         this.tabRefinery.style.display = "none";
+      }
+    }
+
+    // Show/hide naval tab based on whether planet faction is a major one
+    if (this.tabNaval) {
+      const majorFactions = ["Federation", "Frontier League", "Pirates"];
+      if (planet.faction && majorFactions.includes(planet.faction)) {
+        this.tabNaval.style.display = "block";
+      } else {
+        this.tabNaval.style.display = "none";
       }
     }
 
@@ -987,5 +1011,289 @@ export class SpaceportUI {
       this.renderMissions();
     else if (this.tabRefinery?.classList.contains("active"))
       this.renderRefinery();
+    else if (this.tabNaval?.classList.contains("active")) this.renderNaval();
+  }
+
+  /**
+   * Renders the interactive Naval Command Deck panel.
+   */
+  renderNaval() {
+    if (!this.paneNaval || !this.player || !this.planet) return;
+
+    this.paneNaval.innerHTML = "";
+
+    const standings = this.player.standings || {};
+    const standing = standings[this.planet.faction] || 0;
+    const currentRank = getNavalRank(standing);
+
+    // Rank milestones
+    let nextRank;
+    let nextRankReq;
+    let prevRankReq;
+    if (standing <= -10) {
+      nextRank = "RECRUIT";
+      nextRankReq = -9;
+      prevRankReq = -100;
+    } else if (standing < 10) {
+      nextRank = "LIEUTENANT";
+      nextRankReq = 10;
+      prevRankReq = -10;
+    } else if (standing < 40) {
+      nextRank = "COMMANDER";
+      nextRankReq = 40;
+      prevRankReq = 10;
+    } else if (standing < 80) {
+      nextRank = "ADMIRAL";
+      nextRankReq = 80;
+      prevRankReq = 40;
+    } else {
+      nextRank = "MAX RANK";
+      nextRankReq = 100;
+      prevRankReq = 80;
+    }
+
+    const range = nextRankReq - prevRankReq;
+    const progressPercent = Math.max(
+      0,
+      Math.min(100, ((standing - prevRankReq) / range) * 100),
+    );
+
+    // Calculate vouchers
+    const planetFaction = this.planet.faction;
+    const vouchers = this.player.bountyVouchers || [];
+    const matchingVouchers = vouchers.filter(
+      (v) => v.faction === planetFaction,
+    );
+    const otherVouchers = vouchers.filter((v) => v.faction !== planetFaction);
+
+    const matchingCount = matchingVouchers.length;
+    const matchingTotal = matchingVouchers.reduce(
+      (sum, v) => sum + (v.value || 0),
+      0,
+    );
+
+    const isFriendly = standing >= 10;
+    const bonusMultiplier = isFriendly ? 0.15 : 0.0;
+    const bonusCredits = Math.round(matchingTotal * bonusMultiplier);
+    const totalClaimable = matchingTotal + bonusCredits;
+
+    // Build container layout
+    const container = document.createElement("div");
+    container.className = "naval-container";
+    container.style.cssText = `
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 20px;
+      padding: 15px;
+      color: #e0e5f5;
+      font-family: var(--font-body);
+    `;
+
+    // Left Column: Faction Status & Rank
+    const leftCol = document.createElement("div");
+    leftCol.className = "naval-status glass-panel";
+    leftCol.style.cssText = `
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+    `;
+
+    // Header with Faction Name & Standing
+    const factionColor =
+      planetFaction === "Federation"
+        ? "var(--color-cyan)"
+        : planetFaction === "Frontier League"
+          ? "var(--color-gold)"
+          : "var(--color-red)";
+    leftCol.innerHTML = `
+      <div>
+        <h3 style="font-family: var(--font-display); font-size: 16px; font-weight: 700; color: ${factionColor}; margin: 0 0 5px 0; letter-spacing: 1px;">
+          ${planetFaction.toUpperCase()} NAVAL DIVISION
+        </h3>
+        <p style="font-size: 11px; color: #a0a5b5; margin: 0; line-height: 1.4;">
+          Enlist with the command deck to secure space lanes, claim outlaw bounties, and climb the ranks of the faction navy. High standings unlock premium military equipment.
+        </p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: rgba(0, 0, 0, 0.2); padding: 15px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.03);">
+        <div>
+          <div style="font-size: 10px; color: #8a90a0; font-weight: 600; letter-spacing: 1px;">CURRENT RANK</div>
+          <div style="font-size: 18px; font-weight: bold; color: #ffffff; font-family: var(--font-display); margin-top: 4px; letter-spacing: 1px;">
+            ${currentRank}
+          </div>
+        </div>
+        <div>
+          <div style="font-size: 10px; color: #8a90a0; font-weight: 600; letter-spacing: 1px;">FACTION STANDING</div>
+          <div style="font-size: 18px; font-weight: bold; color: ${standing >= 0 ? "var(--color-green)" : "var(--color-red)"}; font-family: var(--font-display); margin-top: 4px;">
+            ${standing >= 0 ? "+" : ""}${standing.toFixed(1)} Merits
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; margin-bottom: 8px;">
+          <span style="color: #a0a5b5;">Rank Progression: <strong style="color: #ffffff;">${progressPercent.toFixed(0)}%</strong></span>
+          <span style="color: var(--color-gold);">${nextRank} (${nextRankReq > 0 ? "+" : ""}${nextRankReq} Req)</span>
+        </div>
+        <div style="height: 8px; background: rgba(0, 0, 0, 0.4); border-radius: 4px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.05); position: relative;">
+          <div style="height: 100%; width: ${progressPercent}%; background: linear-gradient(90deg, ${factionColor}, #ffffff); transition: width 0.4s ease-out; box-shadow: 0 0 10px ${factionColor};"></div>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+        <h4 style="font-size: 11px; font-weight: 700; color: var(--color-gold); margin: 0 0 10px 0; letter-spacing: 0.5px;">MILITARY EQUIPMENT UNLOCKS</h4>
+        <div style="display: grid; gap: 8px; font-size: 11px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.01); padding: 6px 10px; border-radius: 4px;">
+            <span>🚀 Interceptor (Hull)</span>
+            <span style="font-size: 10px; padding: 2px 6px; border-radius: 3px; background: ${currentRank !== "OUTLAW" && currentRank !== "RECRUIT" ? "rgba(0, 255, 0, 0.15); color: var(--color-green);" : "rgba(255, 255, 255, 0.05); color: #8a90a0;"}">
+              ${currentRank !== "OUTLAW" && currentRank !== "RECRUIT" ? "UNLOCKED" : "LIEUTENANT"}
+            </span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.01); padding: 6px 10px; border-radius: 4px;">
+            <span>⚡ Ion Disruptor Array (Outfit)</span>
+            <span style="font-size: 10px; padding: 2px 6px; border-radius: 3px; background: ${currentRank !== "OUTLAW" && currentRank !== "RECRUIT" ? "rgba(0, 255, 0, 0.15); color: var(--color-green);" : "rgba(255, 255, 255, 0.05); color: #8a90a0;"}">
+              ${currentRank !== "OUTLAW" && currentRank !== "RECRUIT" ? "UNLOCKED" : "LIEUTENANT"}
+            </span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.01); padding: 6px 10px; border-radius: 4px;">
+            <span>🚢 Military Destroyer (Hull)</span>
+            <span style="font-size: 10px; padding: 2px 6px; border-radius: 3px; background: ${currentRank === "COMMANDER" || currentRank === "ADMIRAL" ? "rgba(0, 255, 0, 0.15); color: var(--color-green);" : "rgba(255, 255, 255, 0.05); color: #8a90a0;"}">
+              ${currentRank === "COMMANDER" || currentRank === "ADMIRAL" ? "UNLOCKED" : "COMMANDER"}
+            </span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Right Column: Redemption Card
+    const rightCol = document.createElement("div");
+    rightCol.className = "naval-redemption glass-panel";
+    rightCol.style.cssText = `
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px;
+      background: rgba(0, 242, 254, 0.02);
+      border: 1px solid rgba(0, 242, 254, 0.1);
+      border-radius: 8px;
+    `;
+
+    const summarySection = document.createElement("div");
+    summarySection.innerHTML = `
+      <h4 style="font-family: var(--font-display); font-size: 12px; font-weight: 700; color: var(--color-gold); margin: 0 0 15px 0; letter-spacing: 1px;">VOUCHER LEDGER</h4>
+      <div style="display: flex; flex-direction: column; gap: 10px; font-size: 11px;">
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: #a0a5b5;">Unredeemed Slips (${planetFaction}):</span>
+          <span style="color: #ffffff; font-weight: 600;">${matchingCount} slip${matchingCount === 1 ? "" : "s"}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: #a0a5b5;">Voucher Face Value:</span>
+          <span style="color: var(--color-cyan); font-weight: bold;">${matchingTotal.toLocaleString()} CR</span>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 8px; margin-top: 4px;">
+          <span style="color: #a0a5b5;">Allied Commendation (15%):</span>
+          <span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; font-weight: bold; background: ${isFriendly ? "rgba(0, 255, 0, 0.15); color: var(--color-green);" : "rgba(255, 255, 255, 0.05); color: #8a90a0;"}">
+            ${isFriendly ? "ACTIVE" : "LOCKED"}
+          </span>
+        </div>
+
+        ${
+          isFriendly
+            ? `
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: #a0a5b5;">Bonus CR:</span>
+          <span style="color: var(--color-green); font-weight: 600;">+${bonusCredits.toLocaleString()} CR</span>
+        </div>
+        `
+            : ""
+        }
+
+        <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 10px; margin-top: 5px;">
+          <span style="color: #ffffff; font-weight: bold; font-size: 12px;">Total Payout:</span>
+          <span style="color: var(--color-green); font-weight: bold; font-size: 14px;">${totalClaimable.toLocaleString()} CR</span>
+        </div>
+      </div>
+      
+      <div style="font-size: 9px; color: #8a90a0; margin-top: 15px; line-height: 1.4; border-left: 2px solid var(--color-cyan); padding-left: 8px;">
+        Bounty vouchers are rewarded upon outlaw neutralizations in this sector. Merit bonuses are awarded at 1 merit point per 1,000 CR value redeemed.
+      </div>
+    `;
+
+    // Action button
+    const btnRedeem = document.createElement("button");
+    btnRedeem.className = "btn-primary btn-block";
+    btnRedeem.style.cssText =
+      "margin-top: 20px; padding: 12px; border-radius: 6px; font-weight: bold; letter-spacing: 1px;";
+
+    if (matchingCount === 0) {
+      btnRedeem.disabled = true;
+      btnRedeem.innerText = "NO BOUNTIES TO CLAIM";
+    } else {
+      btnRedeem.innerText = `REDEEM ${matchingCount} VOUCHERS`;
+      btnRedeem.addEventListener("click", () => {
+        if (window.network) {
+          if (window.network.connected) {
+            window.network.send({ type: "port_redeem_vouchers" });
+          } else {
+            this.ui.notify(
+              "Neural link offline! Cannot redeem vouchers.",
+              "error",
+            );
+          }
+          return;
+        }
+
+        // Offline logic
+        const res = redeemFactionVouchers(
+          this.player,
+          planetFaction,
+          null,
+          null,
+        );
+        if (res.ok) {
+          this.ui.notify(
+            `Successfully redeemed ${res.count} Bounty Vouchers for ${res.creditsClaimed.toLocaleString()} CR!`,
+            "success",
+          );
+          this.refreshUI();
+          this.renderNaval();
+        }
+      });
+    }
+
+    // Other Factions Vouchers details
+    const otherFactionsSection = document.createElement("div");
+    otherFactionsSection.style.cssText =
+      "border-top: 1px solid rgba(255, 255, 255, 0.05); margin-top: 20px; padding-top: 15px; font-size: 10px; color: #a0a5b5;";
+    if (otherVouchers.length > 0) {
+      const otherTotals = {};
+      for (const v of otherVouchers) {
+        otherTotals[v.faction] = (otherTotals[v.faction] || 0) + (v.value || 0);
+      }
+      let detailsHTML = `<div style="font-weight: bold; margin-bottom: 5px; color: var(--color-gold);">HELD VOUCHERS FOR OTHER FACTIONS:</div>`;
+      for (const [fac, val] of Object.entries(otherTotals)) {
+        detailsHTML += `<div style="display: flex; justify-content: space-between; margin-top: 3px;">
+          <span>• ${fac}:</span>
+          <span>${val.toLocaleString()} CR</span>
+        </div>`;
+      }
+      otherFactionsSection.innerHTML = detailsHTML;
+    } else {
+      otherFactionsSection.innerHTML = `<div style="color: #6a7080; text-align: center;">No vouchers held for other factions.</div>`;
+    }
+
+    summarySection.appendChild(btnRedeem);
+    summarySection.appendChild(otherFactionsSection);
+    rightCol.appendChild(summarySection);
+
+    container.appendChild(leftCol);
+    container.appendChild(rightCol);
+
+    this.paneNaval.appendChild(container);
   }
 }

@@ -1,5 +1,9 @@
 import { applyOutfitStats } from "../engine/Outfitting.js";
 import {
+  checkUpgradeLockout,
+  redeemFactionVouchers,
+} from "../engine/PortServices.js";
+import {
   applyHullPurchase,
   getModifiedUpgradePrice,
 } from "../engine/Trading.js";
@@ -33,6 +37,21 @@ export function handleOutfitBuy(
   }
 
   const factionRegistry = room ? room.factionRegistry : null;
+
+  const lockout = checkUpgradeLockout(
+    outfit.name,
+    factionRegistry,
+    clientObj.id,
+    targetPlanet.faction,
+  );
+  if (!lockout.allowed) {
+    clientObj.send({
+      type: "notification",
+      message: `Access Denied: Requires rank ${lockout.requiredRank} (Current: ${lockout.currentRank})!`,
+      style: "error",
+    });
+    return;
+  }
   const cost = getModifiedUpgradePrice(
     outfit.cost,
     factionRegistry,
@@ -77,6 +96,21 @@ export function handleShipBuy(clientObj, shipName, targetPlanet, room = null) {
   if (!s) return;
 
   const factionRegistry = room ? room.factionRegistry : null;
+
+  const lockout = checkUpgradeLockout(
+    s.name,
+    factionRegistry,
+    clientObj.id,
+    targetPlanet.faction,
+  );
+  if (!lockout.allowed) {
+    clientObj.send({
+      type: "notification",
+      message: `Access Denied: Requires rank ${lockout.requiredRank} (Current: ${lockout.currentRank})!`,
+      style: "error",
+    });
+    return;
+  }
   const cost = getModifiedUpgradePrice(
     s.cost,
     factionRegistry,
@@ -205,4 +239,49 @@ export function handleEscortCommand(clientObj, msg, room) {
     message: `Transmitted [${command.toUpperCase()}] commands to ${count} AI wingmen.`,
     style: "success",
   });
+}
+
+/**
+ * Handles redemption of bounty vouchers.
+ * @param {Object} clientObj - Client connection object.
+ * @param {Object|null} [room=null] - Dynamic room.
+ */
+export function handleVoucherRedeem(clientObj, room = null) {
+  if (
+    !clientObj ||
+    !clientObj.ship ||
+    !clientObj.isLanded ||
+    !clientObj.planetLandedOn
+  ) {
+    return;
+  }
+
+  const factionRegistry = room ? room.factionRegistry : null;
+  const result = redeemFactionVouchers(
+    clientObj.ship,
+    clientObj.planetLandedOn.faction,
+    factionRegistry,
+    clientObj.id,
+  );
+
+  if (result.ok) {
+    clientObj.send({
+      type: "notification",
+      message: `Successfully redeemed ${result.count} Bounty Vouchers! Earned +${result.creditsClaimed.toLocaleString()} CR and gained +${result.reputationGained.toFixed(1)} reputation standing merits!`,
+      style: "success",
+    });
+    clientObj.sendStats();
+  } else {
+    let reasonMessage = "No bounty vouchers to redeem for this faction.";
+    if (result.reason === "no_vouchers") {
+      reasonMessage = "You do not have any bounty vouchers in your inventory.";
+    } else if (result.reason === "no_matching_vouchers") {
+      reasonMessage = `No vouchers available for redemption from the governing faction (${clientObj.planetLandedOn.faction}).`;
+    }
+    clientObj.send({
+      type: "notification",
+      message: reasonMessage,
+      style: "error",
+    });
+  }
 }

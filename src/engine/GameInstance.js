@@ -948,22 +948,32 @@ export class GameInstance {
 
         const rewardBase = 1000;
         if (killerClient) {
+          const faction = this.getGoverningFaction();
           if (killerFleetMembers) {
             const share = Math.floor(rewardBase / killerFleetMembers.length);
             for (const member of killerFleetMembers) {
-              member.ship.credits += share;
+              if (!member.ship.bountyVouchers) {
+                member.ship.bountyVouchers = [];
+              }
+              member.ship.bountyVouchers.push({ faction, value: share });
               member.send({
                 type: "notification",
-                message: `Pirate eliminated by ${killerClient.nickname}! Fleet share bounty: +${share} CR`,
+                message: `Pirate eliminated by ${killerClient.nickname}! Fleet share bounty voucher: +${share} CR (${faction})`,
                 style: "success",
               });
               member.sendStats();
             }
           } else {
-            killerClient.ship.credits += rewardBase;
+            if (!killerClient.ship.bountyVouchers) {
+              killerClient.ship.bountyVouchers = [];
+            }
+            killerClient.ship.bountyVouchers.push({
+              faction,
+              value: rewardBase,
+            });
             killerClient.send({
               type: "notification",
-              message: `${ent.name} neutralized! Bounty claimed +1,000 CR`,
+              message: `${ent.name} neutralized! Earned ${faction} Bounty Voucher: +${rewardBase} CR`,
               style: "success",
             });
             killerClient.sendStats();

@@ -1404,6 +1404,8 @@ network.onStatsReceived = (msg) => {
   player.cargoCapacity = msg.cargoCapacity;
   player.cargo = msg.cargo;
   player.outfits = msg.outfits;
+  player.bountyVouchers = msg.bountyVouchers || [];
+  player.standings = msg.standings || {};
   player.weaponDamage = msg.weaponDamage;
   player.weaponCooldown = msg.weaponCooldown;
   player.thrustPower = msg.thrustPower;

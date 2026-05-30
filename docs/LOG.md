@@ -39,6 +39,36 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T10:15 · iter-0077 · GREEN · spec-055-naval-command-decks
+
+- **Baseline:** `9c7e178` on `main`; 827 Jest tests green.
+- **Move:** Implement faction bounty vouchers combat interception and Naval Command Deck rank locks (055).
+- **Changed:**
+  - Initialized `bountyVouchers` in the `Ship` constructor parameter list in `src/engine/Ship.js`.
+  - Mutated outlaw neutralization in `GameInstance.js` to reward collectible bounty vouchers belonging to the sector's governing faction instead of instant credits.
+  - Implemented `getNavalRank`, `redeemFactionVouchers`, and `checkUpgradeLockout` inside `src/engine/PortServices.js`.
+  - Refactored server outfitting buys (`handleOutfitBuy`) and shipyard buys (`handleShipBuy`) in `src/server/portHandlers.js` to enforce rank locks.
+  - Handled `"port_redeem_vouchers"` WS endpoint inside `src/server/portHandlers.js` and `src/server.js`.
+  - Synced client `standings` and `bountyVouchers` maps inside `src/net/statsPayload.js` and `src/main.js`.
+  - Integrated tab button markup inside `index.html` and added high-fidelity glassmorphic rendering layout `renderNaval()` in `src/client/SpaceportUI.js`.
+  - Wrote comprehensive unit tests inside `src/engine/PortServices.test.js` covering rank checks, redemption, and lockout controls.
+- **Decisions:** Integrated checkUpgradeLockout check inside both `handleOutfitBuy` and `handleShipBuy` handlers, blocking unauthorized purchases with custom informative warnings. Preempted ESLint useless initial assignment checks by using simple uninitialized declarations inside SpaceportUI's renderNaval milestone progression mapping.
+- **Validation:** `npm run agent:check` -> green (833 Jest tests / 66 suites).
+- **Next:** Proceed with SPEC-056 to implement Hyperspace Warp Lane Interdiction.
+
+## 2026-05-30T10:10 · iter-0076 · GREEN · spec-053-bounty-locator-radar
+
+- **Baseline:** `3f5ecd9` on `main`; 826 Jest tests green.
+- **Move:** Implement dynamic Bounty Locator Radar overlay tracking chevrons (053).
+- **Changed:**
+  - Added CSS style declarations and HTML elements to draw chevrons in space.
+  - Wrote dynamic compass tracking logic inside `UIController.js` to calculate distance and absolute bearing to target.
+  - Rotated tracking indicators smoothly using CSS transforms based on player heading.
+  - Added new integration tests validating correct dynamic radar tracking updates.
+- **Decisions:** Used lightweight CSS transform rotations to compute HUD overlay bearings smoothly at 30Hz without overloading client calculations.
+- **Validation:** `npm run agent:check` -> green (827 Jest tests / 66 suites).
+- **Next:** Extend roadmap and formulate Wave v8 specifications for Cycle 8.
+
 ## 2026-05-30T18:25 · iter-0075 · GREEN · spec-052-stargate-warp-tolls-taxes
 
 - **Baseline:** `f92e97b` on `main`; 823 Jest tests green.

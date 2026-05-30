@@ -8,6 +8,9 @@ import {
   applyRefuel,
   refineCost,
   applyRefine,
+  getNavalRank,
+  redeemFactionVouchers,
+  checkUpgradeLockout,
 } from "./PortServices.js";
 
 describe("PortServices (EW5)", () => {
@@ -254,6 +257,159 @@ describe("PortServices (EW5)", () => {
       expect(r.ok).toBe(false);
       expect(r.reason).toBe("insufficient_credits");
       expect(ship.credits).toBe(50); // unchanged
+    });
+  });
+
+  describe("naval rank and bounty vouchers", () => {
+    test("getNavalRank maps stands to the correct rank title", () => {
+      expect(getNavalRank(-15)).toBe("OUTLAW");
+      expect(getNavalRank(-10)).toBe("OUTLAW");
+      expect(getNavalRank(-5)).toBe("RECRUIT");
+      expect(getNavalRank(0)).toBe("RECRUIT");
+      expect(getNavalRank(9.9)).toBe("RECRUIT");
+      expect(getNavalRank(10)).toBe("LIEUTENANT");
+      expect(getNavalRank(39)).toBe("LIEUTENANT");
+      expect(getNavalRank(40)).toBe("COMMANDER");
+      expect(getNavalRank(79)).toBe("COMMANDER");
+      expect(getNavalRank(80)).toBe("ADMIRAL");
+      expect(getNavalRank(105)).toBe("ADMIRAL");
+    });
+
+    test("redeemFactionVouchers returns no_vouchers when ship has none", () => {
+      const ship = { credits: 100, bountyVouchers: [] };
+      const r = redeemFactionVouchers(ship, "Federation");
+      expect(r.ok).toBe(false);
+      expect(r.reason).toBe("no_vouchers");
+    });
+
+    test("redeemFactionVouchers handles no matching faction vouchers", () => {
+      const ship = {
+        credits: 100,
+        bountyVouchers: [{ faction: "Pirates", value: 1000 }],
+      };
+      const r = redeemFactionVouchers(ship, "Federation");
+      expect(r.ok).toBe(false);
+      expect(r.reason).toBe("no_matching_vouchers");
+      expect(ship.bountyVouchers.length).toBe(1);
+    });
+
+    test("redeemFactionVouchers successfully redeems vouchers and increases standings without friendly bonus", () => {
+      const ship = {
+        credits: 100,
+        bountyVouchers: [
+          { faction: "Federation", value: 1000 },
+          { faction: "Federation", value: 2000 },
+          { faction: "Pirates", value: 500 },
+        ],
+      };
+
+      const standingsMap = { player1: { Federation: 0 } };
+      const mockFactionRegistry = {
+        getStanding: (pId, fac) => standingsMap[pId]?.[fac] || 0,
+        adjustStanding: (pId, fac, amt) => {
+          if (!standingsMap[pId]) standingsMap[pId] = {};
+          standingsMap[pId][fac] = (standingsMap[pId][fac] || 0) + amt;
+        },
+      };
+
+      const r = redeemFactionVouchers(
+        ship,
+        "Federation",
+        mockFactionRegistry,
+        "player1",
+      );
+      expect(r.ok).toBe(true);
+      expect(r.creditsClaimed).toBe(3000);
+      expect(r.count).toBe(2);
+      expect(ship.credits).toBe(3100);
+      expect(ship.bountyVouchers).toEqual([{ faction: "Pirates", value: 500 }]);
+      // 1 standing point per 1000 CR value redeemed => total 3 merits
+      expect(standingsMap.player1.Federation).toBe(3);
+    });
+
+    test("redeemFactionVouchers applies 15% Allied Commendation bonus if standing >= 10", () => {
+      const ship = {
+        credits: 100,
+        bountyVouchers: [{ faction: "Federation", value: 1000 }],
+      };
+
+      const standingsMap = { player1: { Federation: 15 } }; // friendly
+      const mockFactionRegistry = {
+        getStanding: (pId, fac) => standingsMap[pId]?.[fac] || 0,
+        adjustStanding: (pId, fac, amt) => {
+          if (!standingsMap[pId]) standingsMap[pId] = {};
+          standingsMap[pId][fac] = (standingsMap[pId][fac] || 0) + amt;
+        },
+      };
+
+      const r = redeemFactionVouchers(
+        ship,
+        "Federation",
+        mockFactionRegistry,
+        "player1",
+      );
+      expect(r.ok).toBe(true);
+      expect(r.creditsClaimed).toBe(1150); // 1000 * 1.15
+      expect(ship.credits).toBe(1250);
+      expect(ship.bountyVouchers.length).toBe(0);
+      expect(standingsMap.player1.Federation).toBe(16); // 15 + 1
+    });
+
+    test("checkUpgradeLockout evaluates item availability correctly based on rank", () => {
+      const standingsMap = { player1: { Federation: 0 } };
+      const mockRegistry = {
+        getStanding: (pId, fac) => standingsMap[pId]?.[fac] || 0,
+      };
+
+      // Unlocked / default items
+      expect(
+        checkUpgradeLockout(
+          "Basic Laser",
+          mockRegistry,
+          "player1",
+          "Federation",
+        ).allowed,
+      ).toBe(true);
+
+      // Interceptor (requires LIEUTENANT / 10 standing)
+      expect(
+        checkUpgradeLockout(
+          "Interceptor",
+          mockRegistry,
+          "player1",
+          "Federation",
+        ).allowed,
+      ).toBe(false);
+
+      // Let's rank up player to Lieutenant (15 standing)
+      standingsMap.player1.Federation = 15;
+      expect(
+        checkUpgradeLockout(
+          "Interceptor",
+          mockRegistry,
+          "player1",
+          "Federation",
+        ).allowed,
+      ).toBe(true);
+      expect(
+        checkUpgradeLockout(
+          "Military Destroyer",
+          mockRegistry,
+          "player1",
+          "Federation",
+        ).allowed,
+      ).toBe(false);
+
+      // Let's rank up player to Commander (50 standing)
+      standingsMap.player1.Federation = 50;
+      expect(
+        checkUpgradeLockout(
+          "Military Destroyer",
+          mockRegistry,
+          "player1",
+          "Federation",
+        ).allowed,
+      ).toBe(true);
     });
   });
 });

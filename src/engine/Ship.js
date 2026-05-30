@@ -36,6 +36,7 @@ export class Ship extends SpaceEntity {
     ramscoopRate = 0,
     miningYieldMultiplier = 1,
     outfits = ["Basic Laser"],
+    bountyVouchers = [],
     ...parentParams
   } = {}) {
     super({ type: "ship", mass: 2000, radius: 15, ...parentParams });
@@ -96,6 +97,7 @@ export class Ship extends SpaceEntity {
 
     // Weapon & Outfit Loadouts
     this.outfits = outfits;
+    this.bountyVouchers = bountyVouchers;
     this.weaponDamage = weaponDamage;
     this.weaponRange = weaponRange;
     this.weaponSpeed = weaponSpeed;

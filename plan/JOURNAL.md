@@ -7,8 +7,8 @@ It records cycle transitions, key milestones, and precise next steps.
 
 ## Cycle 8 — 2026-05-30 (Current)
 - **Status:** IN_PROGRESS
-- **Summary:** Initiated Cycle 8 replenishment. Promoted backlog features and formulated specs `054` (Faction Conflict Battlegrounds), `055` (Naval Command Decks & Faction Bounty Vouchers), and `056` (Hyperspace Warp Lane Interdiction). Formulated full specifications and staged the roadmap for Wave v8.
-- **Next Action:** Claim and begin implementation of SPEC-055 to transition immediate combat credit awards to collectible bounty vouchers and design the Naval Command Deck spaceport service.
+- **Summary:** Successfully shipped SPEC-055 (Naval Command Decks & Faction Bounty Vouchers), transitioning immediate cash payouts from hostiles into collectible bounty vouchers, designing Naval Command Deck spaceport service with Allied commendation credit bonuses, and introducing rank requirements for premium shipyard hulls and outfitter upgrades. Formulated full specifications and staged the roadmap for Wave v8. All 833 Jest tests and gate checks passing 100% green.
+- **Next Action:** Claim and begin implementation of SPEC-056 (Hyperspace Warp Lane Interdiction) to project warp interdiction wells from modules and patrols.
 
 ---
 

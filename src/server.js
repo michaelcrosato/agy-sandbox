@@ -55,6 +55,7 @@ import {
   handleMissionAccept,
   handleMissionAbandon,
   handleEscortCommand,
+  handleVoucherRedeem,
 } from "./server/portHandlers.js";
 import {
   tradeOne,
@@ -868,7 +869,9 @@ wss.on("connection", (ws) => {
       }
     },
     sendStats() {
-      const payload = buildStatsPayload(this);
+      const room = instances.get(this.roomId);
+      const registry = room ? room.factionRegistry : null;
+      const payload = buildStatsPayload(this, registry);
       if (payload) this.send(payload);
     },
   };
@@ -1564,6 +1567,8 @@ wss.on("connection", (ws) => {
       );
     } else if (msg.type === "ship_buy") {
       handleShipBuy(clientObj, msg.shipName, clientObj.planetLandedOn, room);
+    } else if (msg.type === "port_redeem_vouchers") {
+      handleVoucherRedeem(clientObj, room);
     } else if (msg.type === "mission_accept") {
       handleMissionAccept(
         clientObj,

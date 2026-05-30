@@ -1,4 +1,5 @@
 import { applyDelta } from "../net/StateCodec.js";
+import { decode as decodeFrame } from "../net/BinaryCodec.js";
 
 /**
  * Manages WebSocket networking, input transmission, state synchronization,
@@ -99,6 +100,9 @@ export class NetworkHandler {
 
     console.log(`Connecting to Nebula Server: ${wsUrl}`);
     this.socket = new WebSocket(wsUrl);
+    // Receive the binary world-state frames (spec 015) as ArrayBuffers so we can
+    // decode them; chat/notification/etc. still arrive as JSON text.
+    this.socket.binaryType = "arraybuffer";
 
     this.socket.onopen = () => {
       this.connected = true;
@@ -126,10 +130,20 @@ export class NetworkHandler {
 
     this.socket.onmessage = (event) => {
       let msg;
-      try {
-        msg = JSON.parse(event.data);
-      } catch {
-        return;
+      if (event.data instanceof ArrayBuffer) {
+        // Binary world-state frame (spec 015): decode it back into the same
+        // {type, seq, ...} shape the JSON path produces.
+        try {
+          msg = decodeFrame(new Uint8Array(event.data));
+        } catch {
+          return;
+        }
+      } else {
+        try {
+          msg = JSON.parse(event.data);
+        } catch {
+          return;
+        }
       }
 
       switch (msg.type) {

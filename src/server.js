@@ -13,6 +13,7 @@ import { NEBULAE } from "./engine/Nebulae.js";
 import { GameInstance } from "./engine/GameInstance.js";
 import { nextFrame } from "./net/BroadcastFramer.js";
 import { interestFilter } from "./net/interest.js";
+import { encode as encodeFrame } from "./net/BinaryCodec.js";
 import { JsonFileStore } from "./persistence/Store.js";
 import { PersistenceManager } from "./persistence/PersistenceManager.js";
 import { applyGalaxy, applyPlayer } from "./persistence/serializers.js";
@@ -44,6 +45,12 @@ const JUMP_FUEL_COST = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost;
 // far a client sees.
 const INTEREST_ENABLED = process.env.INTEREST_MANAGEMENT !== "0";
 const INTEREST_RADIUS = Number(process.env.INTEREST_RADIUS) || 3000;
+
+// Binary wire protocol (spec 015): encode the state_snapshot/state_delta frames
+// as compact binary (BinaryCodec) instead of JSON text. Enabled by default; set
+// BINARY_PROTOCOL=0 to fall back to JSON for one release to de-risk. Only the
+// world-state broadcast is binary — chat/notifications/market stay JSON.
+const BINARY_PROTOCOL = process.env.BINARY_PROTOCOL !== "0";
 
 // Observability (spec 010): a dependency-free metrics registry exposed at
 // GET /metrics, plus a leveled JSON logger for structured events.
@@ -394,9 +401,14 @@ setInterval(() => {
       } else if (decision === "send") {
         client.broadcastState = frame.nextState;
         client.needsKeyframe = false;
-        const statePayload = JSON.stringify(frame.payload);
+        const statePayload = BINARY_PROTOCOL
+          ? encodeFrame(frame.payload)
+          : JSON.stringify(frame.payload);
         client.ws.send(statePayload);
-        metrics.inc("broadcast_bytes", statePayload.length);
+        metrics.inc(
+          "broadcast_bytes",
+          BINARY_PROTOCOL ? statePayload.byteLength : statePayload.length,
+        );
       }
     }
   }

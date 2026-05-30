@@ -114,18 +114,18 @@ flowchart TD
 
 ---
 
-## EXECUTION WAVES (v8)
+## EXECUTION WAVES (v9)
 
-Completed waves (`001–053`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
+Completed waves (`001–056`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
 
-### Phase 0 — Quick Wins & Safety — `055`
-`055` Naval Command Decks & Faction Bounty Vouchers (collect dynamic bounty vouchers from combat; redeem at faction Naval Command Decks for credits + standing; enforce faction-based Hull/Outfit lockouts).
+### Phase 0 — Quick Wins & Safety — `057`
+`057` Dynamic Market Events & Sector Economy Shocks (periodically trigger economic events with dynamic trade price modifiers, broadcast Announcements, and adapt merchant AI).
 
-### Phase 1 — Core Upgrades & Debt Paydown — `056`
-`056` Hyperspace Warp Lane Interdiction (project interdiction fields from specialized outfits or security patrols; block warp drive engagement when active; render cyan gravitational rings).
+### Phase 1 — Core Upgrades & Debt Paydown — `058`
+`058` Outfitting Fittings Shop & Loadout Presets (partition equipment into Weapon/Shield/Utility slots, support 90% trade-in refunds, and save/load custom loadout profiles).
 
-### Phase 2 — Scale-Out & Premium Features — `054`
-`054` Faction Conflict Battlegrounds (emergent sector warzones; spawn clashing faction fleets; choose sides dynamically to shift battles and earn merits).
+### Phase 2 — Scale-Out & Premium Features — `059`
+`059` Multiplayer Squads & Allied Shared Standing (squad creation protocol, split bounty/merit rewards among sector squadmates, and render squad status panel overlay on client HUD).
 
 ---
 
@@ -135,11 +135,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 055 | Naval Command Decks & Faction Bounty Vouchers | 0 | 5 | 5 | 4 | 5 | 19 |
-| 056 | Hyperspace Warp Lane Interdiction | 1 | 5 | 4 | 4 | 5 | 18 |
-| 054 | Faction Conflict Battlegrounds | 2 | 5 | 4 | 3 | 5 | 17 |
+| 057 | Dynamic Market Events & Sector Economy Shocks | 0 | 5 | 5 | 4 | 5 | 19 |
+| 058 | Outfitting Fittings Shop & Loadout Presets | 1 | 5 | 4 | 4 | 5 | 18 |
+| 059 | Multiplayer Squads & Allied Shared Standing | 2 | 4 | 4 | 3 | 5 | 16 |
 
-**Recommended start:** `055` (Σ19 — faction progression service, high impact, safe and self-contained) to transition immediate combat credits to dynamic vouchers and build progression blocks, then proceed to `056` (Σ18) to introduce tactical hyperspace interdictors. Complete the wave with `054` (Σ17) to design real-time fleet conflict zones.
+**Recommended start:** `057` (Σ19 — economic shocks and market events, high immersion, safe and self-contained) to add dynamic events in galaxy ticker economics pulse, then proceed to `058` (Σ18) to introduce starship fitting slots. Complete the wave with `059` (Σ16) to implement squads and co-op shared bounty splits.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

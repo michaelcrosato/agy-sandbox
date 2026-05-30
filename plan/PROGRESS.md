@@ -12,8 +12,20 @@ _**v5 re-audit baseline (2026-05-30, ENTIRE v4 blueprint shipped): 798 Jest test
 _**v6 re-audit baseline (2026-05-30, ENTIRE v5 blueprint shipped): 811 Jest tests / 66 suites + 18 client green; 0 `npm audit` vulnerabilities; contraband jammers + modular port handlers + dynamic reputation spawns all DONE.** Remaining = v6 Phase 0 (050) + Phase 1 (049) + Phase 2 (048)._
 _**v7 re-audit baseline (2026-05-30, ENTIRE v6 blueprint shipped): 821 Jest tests / 66 suites + 18 client green; 0 `npm audit` vulnerabilities; contraband space scans + spatial interest grid + wingman formations all DONE.** Remaining = v7 Phase 0 (051) + Phase 1 (052) + Phase 2 (053)._
 _**v8 re-audit baseline (2026-05-30, ENTIRE v7 blueprint shipped): 827 Jest tests / 66 suites + 15 client green; 0 `npm audit` vulnerabilities; kinetic damage + warp tolls + bounty radar HUD all DONE.** Remaining = v8 Phase 0 (055) + Phase 1 (056) + Phase 2 (054)._
+_**v9 re-audit baseline (2026-05-30, ENTIRE v8 blueprint shipped): 839 Jest tests / 66 suites + 22 client green; 0 `npm audit` vulnerabilities; dynamic reputation battles + interdiction + command decks all DONE.** Remaining = v9 Phase 0 (057) + Phase 1 (058) + Phase 2 (059)._
 
-## v8 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+## v9 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Quick Wins & Safety
+- [ ] `057` Dynamic Market Events & Sector Economy Shocks (periodically trigger economic events with dynamic trade price modifiers, broadcast Announcements, and adapt merchant AI) — **todo** (files: `src/engine/Trading.js`, `src/engine/GalaxyEventsManager.js`, `src/server.js`, `src/client/UIController.js`).
+
+### Phase 1 — Core Upgrades & Debt Paydown
+- [ ] `058` Outfitting Fittings Shop & Loadout Presets (partition equipment into Weapon/Shield/Utility slots, support 90% trade-in refunds, and save/load custom loadout profiles) — **todo** (files: `src/engine/Outfitting.js`, `src/server/portHandlers.js`, `src/client/SpaceportUI.js`).
+
+### Phase 2 — Scale-Out & Premium Features
+- [ ] `059` Multiplayer Squads & Allied Shared Standing (squad creation protocol, split bounty/merit rewards among sector squadmates, and render squad status panel overlay on client HUD) — **todo** (files: `src/server.js`, `src/engine/GameInstance.js`, `src/net/interest.js`).
+
+## v8 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
 - [x] `055` Naval Command Decks & Faction Bounty Vouchers (reputation progression) — **done** (files: `src/engine/Ship.js`, `src/engine/PortServices.js`, `src/server/portHandlers.js`, `src/client/SpaceportUI.js`, `index.html`; successfully transitioned instant credit payouts from hostile neutralizations into collectible faction bounty vouchers, implemented Naval Command Decks with rank progression milestones and +15% Allied commendation credit bonuses, enforced premium shipyard hulls and outfitter weapon rank lockouts; 833 Jest tests passing, 100% green gate check).

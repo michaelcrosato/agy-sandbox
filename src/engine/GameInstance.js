@@ -7,6 +7,7 @@ import { AIController } from "./ai/AIController.js";
 import { DEFAULT_OUTFITS } from "./outfitCatalog.js";
 import { CargoPod } from "./CargoPod.js";
 import { EconomyManager } from "./EconomyManager.js";
+import { GalaxyEventsManager } from "./GalaxyEventsManager.js";
 import { FactionRegistry } from "./FactionRegistry.js";
 import { GalaxyHeartbeat } from "./GalaxyHeartbeat.js";
 import { PLANET_PROFILES } from "./ProductionModel.js";
@@ -117,6 +118,7 @@ export class GameInstance {
     this.isConflictZone = false;
     this.conflictFactionA = null;
     this.conflictFactionB = null;
+    this.galaxyEventsManager = new GalaxyEventsManager();
 
     // Set up engine event handlers
     this.engine.onProjectileFired = (proj, ship) => {

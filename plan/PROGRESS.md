@@ -17,7 +17,7 @@ _**v9 re-audit baseline (2026-05-30, ENTIRE v8 blueprint shipped): 839 Jest test
 ## v9 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
-- [ ] `057` Dynamic Market Events & Sector Economy Shocks (periodically trigger economic events with dynamic trade price modifiers, broadcast Announcements, and adapt merchant AI) — **todo** (files: `src/engine/Trading.js`, `src/engine/GalaxyEventsManager.js`, `src/server.js`, `src/client/UIController.js`).
+- [x] `057` Dynamic Market Events & Sector Economy Shocks (periodically trigger economic events with dynamic trade price modifiers, broadcast Announcements, and adapt merchant AI) — **done** (files: `src/engine/GalaxyEventsManager.js`, `src/engine/GalaxyEventsManager.test.js`, `src/engine/EconomyManager.js`, `src/engine/faction.integration.test.js`, `src/server.js`, `src/client/NetworkHandler.js`, `src/client/UIController.js`, `src/main.js`, `index.html`; created GalaxyEventsManager with famine/harvest-boom/blockade/breakthrough roster, wired event multipliers to dynamically modify planet markets on sever side, added local client duration ticking and pulsing glassmorphic ticker banner at top of HUD viewport, and verified AI trade scoring reroots merchant AIs naturally; 845 Jest + 22 client Vitest tests 100% green).
 
 ### Phase 1 — Core Upgrades & Debt Paydown
 - [ ] `058` Outfitting Fittings Shop & Loadout Presets (partition equipment into Weapon/Shield/Utility slots, support 90% trade-in refunds, and save/load custom loadout profiles) — **todo** (files: `src/engine/Outfitting.js`, `src/server/portHandlers.js`, `src/client/SpaceportUI.js`).

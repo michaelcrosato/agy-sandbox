@@ -41,6 +41,7 @@ export class NetworkHandler {
     this.onMarketSync = null;
     this.onMarketBulkSync = null;
     this.onEventSync = null;
+    this.onGalaxyEventAnnouncement = null;
     this.onPingReceived = null;
     this.onLobbySync = null;
     this.onConnectionStatusChange = null;
@@ -217,6 +218,13 @@ export class NetworkHandler {
         case "event_sync":
           this.activeSectorEvent = msg.event;
           if (this.onEventSync) this.onEventSync(msg);
+          break;
+
+        case "galaxy_event_announcement":
+          this.activeGalaxyEvent = msg.event;
+          if (this.onGalaxyEventAnnouncement) {
+            this.onGalaxyEventAnnouncement(msg);
+          }
           break;
 
         case "cargo_pickup":

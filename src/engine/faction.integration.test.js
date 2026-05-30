@@ -770,4 +770,64 @@ describe("mission + trade faction standings (spec 032)", () => {
       expect(room.factionRegistry.getStanding("player1", "Pirates")).toBe(-3.5);
     });
   });
+
+  describe("Dynamic Market Events & Sector Economy Shocks (057)", () => {
+    it("applies economic event modifiers, skips price normalization, and restores baseline prices on expiration", () => {
+      const room = new GameInstance("room-econ", "Sector Economy");
+
+      // Planets are seeded during initialization
+      expect(room.planets.length).toBeGreaterThan(0);
+      const planet = room.planets[0];
+      const originalFoodPrice = planet.market.food;
+      const originalElectronicsPrice = planet.market.electronics;
+
+      // Trigger famine economic shock event
+      const ev = room.galaxyEventsManager.triggerEvent("famine");
+      expect(ev.type).toBe("famine");
+      expect(room.galaxyEventsManager.activeEvent).toBeDefined();
+
+      // Apply multipliers to current market prices (simulating the galaxyTicker loop)
+      for (const p of room.planets) {
+        p.preEventMarket = { ...p.market };
+        for (const [commodity, modifier] of Object.entries(ev.priceModifiers)) {
+          if (p.market[commodity] !== undefined) {
+            p.market[commodity] = Math.max(
+              1,
+              Math.round(p.market[commodity] * modifier),
+            );
+          }
+        }
+      }
+
+      // Verify prices scaled correctly (Famine: Food 3.0x, Electronics 0.8x)
+      expect(planet.market.food).toBe(originalFoodPrice * 3.0);
+      expect(planet.market.electronics).toBe(
+        Math.round(originalElectronicsPrice * 0.8),
+      );
+
+      // Normalization should skip famine commodities (food & electronics)
+      room.economyManager.normalizePrices(room.galaxyEventsManager);
+      expect(planet.market.food).toBe(originalFoodPrice * 3.0);
+      expect(planet.market.electronics).toBe(
+        Math.round(originalElectronicsPrice * 0.8),
+      );
+
+      // Expire the event
+      room.galaxyEventsManager.activeEvent.duration = 0;
+      const expired = room.galaxyEventsManager.tick(1);
+      expect(expired).toBe(true);
+
+      // Restore baseline prices (simulating the physics tick cleanup)
+      for (const p of room.planets) {
+        if (p.preEventMarket) {
+          p.market = { ...p.preEventMarket };
+          delete p.preEventMarket;
+        }
+      }
+
+      // Verify prices restored back to original baseline
+      expect(planet.market.food).toBe(originalFoodPrice);
+      expect(planet.market.electronics).toBe(originalElectronicsPrice);
+    });
+  });
 });

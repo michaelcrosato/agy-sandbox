@@ -39,6 +39,23 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T10:40 · iter-0080 · GREEN · spec-057-dynamic-market-events
+
+- **Baseline:** `31ea39e` on `main`; 839 Jest tests green.
+- **Move:** Implement dynamic economic event triggers and price shocks inside the living sector (057).
+- **Changed:**
+  - Implemented the `GalaxyEventsManager` module inside `src/engine/GalaxyEventsManager.js` with Famine, Asteroid Harvest Boom, Pirate Blockade, and Technological Breakthrough economic shocks.
+  - Hooked event price modifiers to dynamically scale planet market prices inside `runEconomyTickForRoom` in `src/server/galaxyTicker.js`.
+  - Upgraded the price normalization routine in `src/engine/EconomyManager.js` to bypass commodities affected by active events.
+  - Programmed automated pre-event market restorations when economic shock durations expire in the server physics loop.
+  - Broadcast dynamic event announcements and clearing notifications using `"galaxy_event_announcement"` socket payloads.
+  - Constructed a pulsing, glassmorphic HUD ticker banner at the top of the viewport in `index.html`.
+  - Programmed client-side duration ticks and synchronized dynamic state updates in `src/client/UIController.js`, `src/client/NetworkHandler.js`, and `src/main.js`.
+  - Added full unit tests in `src/engine/GalaxyEventsManager.test.js` and comprehensive integration tests in `src/engine/faction.integration.test.js` covering event triggering, price multipliers, normalization bypass, and restorations.
+- **Decisions:** Directly scaled active planet market prices on the server and synced them dynamically using `market_sync` to keep the client pricing visual dry, performant, and 100% bug-free without frontend code bloating.
+- **Validation:** `npm run agent:check` -> green (845 Jest tests / 67 suites).
+- **Next:** Proceed with SPEC-058 to implement Fittings starship slots and outfitting loadout presets.
+
 ## 2026-05-30T10:30 · iter-0079 · GREEN · spec-054-faction-conflict-battlegrounds
 
 - **Baseline:** `0c005d5` on `main`; 836 Jest tests green.

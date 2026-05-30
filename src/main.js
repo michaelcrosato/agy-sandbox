@@ -20,6 +20,7 @@ const planets = [];
 let eventCheckTimer = 0;
 let empTimer = 0;
 let activeSectorEvent = null;
+let activeGalaxyEvent = null;
 
 // Endless Sky Navigation & Autopilot state variables
 let navTargetSector = null;
@@ -1740,6 +1741,14 @@ network.onEventSync = (msg) => {
   activeSectorEvent = msg.event;
 };
 
+network.onGalaxyEventAnnouncement = (msg) => {
+  activeGalaxyEvent = msg.event;
+  uiController.updateGalaxyEvent(msg.event);
+  if (isLanded && spaceportUI.planet) {
+    spaceportUI.refreshActiveTab();
+  }
+};
+
 // Safe sanitization for comms messages
 function escapeHTML(str) {
   return (str || "")
@@ -1839,6 +1848,19 @@ function gameLoop(time) {
 
   // Cap delta time to prevent massive position skipping on browser tab sleeps
   if (dt > 0.1) dt = 0.1;
+
+  if (activeGalaxyEvent) {
+    activeGalaxyEvent.duration -= dt;
+    if (activeGalaxyEvent.duration <= 0) {
+      activeGalaxyEvent = null;
+      uiController.updateGalaxyEvent(null);
+      if (isLanded && spaceportUI.planet) {
+        spaceportUI.refreshActiveTab();
+      }
+    } else {
+      uiController.updateGalaxyEvent(activeGalaxyEvent);
+    }
+  }
 
   if (!isLanded) {
     // A. Handle active Solar EMP Flare effects

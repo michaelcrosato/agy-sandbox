@@ -60,6 +60,43 @@ export class UIController {
     this.bountyRadarTelemetry = document.getElementById(
       "bounty-radar-telemetry",
     );
+
+    // Dynamic Galaxy Event Ticker Banner elements (SPEC-057)
+    this.eventTicker = document.getElementById("galaxy-event-ticker");
+    this.eventTitle = document.getElementById("galaxy-event-title");
+    this.eventDesc = document.getElementById("galaxy-event-desc");
+    this.eventTimer = document.getElementById("galaxy-event-timer");
+  }
+
+  /**
+   * Updates or hides the dynamic galaxy economic event ticker banner.
+   * @param {Object|null} event - The active galaxy event or null.
+   */
+  updateGalaxyEvent(event) {
+    if (!this.eventTicker) return;
+    if (!event) {
+      this.eventTicker.style.display = "none";
+      return;
+    }
+    this.eventTicker.style.display = "block";
+    if (this.eventTitle) {
+      this.eventTitle.textContent = `GALAXY EVENT: ${event.name.toUpperCase()}`;
+    }
+    if (this.eventDesc) {
+      let modifierStrings = [];
+      if (event.priceModifiers) {
+        for (const [commodity, val] of Object.entries(event.priceModifiers)) {
+          modifierStrings.push(`${commodity.toUpperCase()} ${val}x`);
+        }
+      }
+      const modifiersDesc =
+        modifierStrings.length > 0 ? ` (${modifierStrings.join(", ")})` : "";
+      this.eventDesc.textContent = `${event.description}${modifiersDesc}`;
+    }
+    if (this.eventTimer) {
+      const remainingSecs = Math.max(0, Math.ceil(event.duration));
+      this.eventTimer.textContent = `TIME REMAINING: ${remainingSecs}s`;
+    }
   }
 
   /**

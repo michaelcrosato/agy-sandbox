@@ -7,6 +7,56 @@ import { AIController } from "../engine/ai/AIController.js";
  * @param {Object} room
  */
 export function runEconomyTickForRoom(room) {
+  // Sector-wide Dynamic Galaxy Economic Events scheduling check (SPEC-057)
+  if (room.galaxyEventsManager && !room.galaxyEventsManager.activeEvent) {
+    // 30% probability of triggering a dynamic economic event
+    if (Math.random() < 0.3) {
+      const ev = room.galaxyEventsManager.triggerEvent();
+
+      // Save pre-event market prices so we can restore them exactly upon expiration
+      for (const p of room.planets) {
+        p.preEventMarket = { ...p.market };
+        // Apply multipliers to the current market prices
+        for (const [commodity, modifier] of Object.entries(ev.priceModifiers)) {
+          if (p.market[commodity] !== undefined) {
+            p.market[commodity] = Math.max(
+              1,
+              Math.round(p.market[commodity] * modifier),
+            );
+          }
+        }
+      }
+
+      // Broadcast announcement and notifications
+      room.broadcast({
+        type: "galaxy_event_announcement",
+        event: ev,
+      });
+
+      const alertMsg = `GALAXY SHOCK ALERT: ${ev.name} is affecting the sector! ${ev.description}`;
+      room.broadcastNotification(alertMsg, "error");
+
+      const chatPayload = {
+        type: "chat",
+        channel: "global",
+        sender: "SYSTEM-ECONOMY",
+        text: alertMsg,
+      };
+      for (const c of room.clients.values()) {
+        c.send(chatPayload);
+      }
+
+      // Sync markets for all planets
+      for (const p of room.planets) {
+        room.broadcast({
+          type: "market_sync",
+          planetName: p.name,
+          market: p.market,
+        });
+      }
+    }
+  }
+
   if (room.economyManager.activeEconomicEvent) {
     const prevPlanetName = room.economyManager.activeEconomicEvent.planetName;
     const prevPlanet = room.planets.find((p) => p.name === prevPlanetName);
@@ -212,7 +262,9 @@ export function runSectorEventTickForRoom(room) {
  * @param {Object} room
  */
 export function runEconomyNormalizationForRoom(room) {
-  const changedPlanets = room.economyManager.normalizePrices();
+  const changedPlanets = room.economyManager.normalizePrices(
+    room.galaxyEventsManager,
+  );
   for (const p of changedPlanets) {
     room.broadcast({
       type: "market_sync",

@@ -26,6 +26,13 @@
     <!-- Top Left Notification Logs -->
     <div id="notification-log"></div>
 
+    <!-- Centered Dynamic Galaxy Events Ticker Banner (SPEC-057) -->
+    <div id="galaxy-event-ticker" class="glass-panel" style="display: none; position: absolute; top: 15px; left: 50%; transform: translateX(-50%); width: 420px; z-index: 100; text-align: center; padding: 8px 12px; font-family: var(--font-display); font-size: 10px; border: 1px solid rgba(255, 179, 0, 0.4); background: rgba(16, 20, 30, 0.75); backdrop-filter: blur(8px); border-radius: 6px; box-shadow: 0 0 15px rgba(255, 179, 0, 0.2); pointer-events: none;">
+      <div id="galaxy-event-title" style="color: #ffb300; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; animation: pulse 1.5s infinite alternate; font-size: 11px;">GALAXY EVENT ACTIVE</div>
+      <div id="galaxy-event-desc" style="color: #ffffff; margin-top: 4px; font-size: 9px; opacity: 0.95;">No active events.</div>
+      <div id="galaxy-event-timer" style="color: #a0a5b5; font-size: 8px; margin-top: 4px; font-weight: 500;">TIME REMAINING: --s</div>
+    </div>
+
     <!-- HUD Overlay Dashboard -->
     <div id="hud-dashboard">
       

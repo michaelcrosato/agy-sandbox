@@ -441,6 +441,48 @@ const physicsInterval = setInterval(() => {
       room.broadcastFleetUpdate(code);
     }
 
+    // K. Tick down sector-wide Galaxy Dynamic Economic Events (SPEC-057)
+    if (room.galaxyEventsManager && room.galaxyEventsManager.activeEvent) {
+      const expired = room.galaxyEventsManager.tick(dt);
+      if (expired) {
+        // Restore all planet prices to pre-event values
+        for (const p of room.planets) {
+          if (p.preEventMarket) {
+            p.market = { ...p.preEventMarket };
+            delete p.preEventMarket;
+          }
+        }
+
+        // Broadcast event clear
+        room.broadcast({
+          type: "galaxy_event_announcement",
+          event: null,
+        });
+
+        const alertMsg = `GALAXY SHOCK OVER: The dynamic economic shock has subsided. Sector markets returned to baseline.`;
+        room.broadcastNotification(alertMsg, "success");
+
+        const chatPayload = {
+          type: "chat",
+          channel: "global",
+          sender: "SYSTEM-ECONOMY",
+          text: alertMsg,
+        };
+        for (const c of room.clients.values()) {
+          c.send(chatPayload);
+        }
+
+        // Broadcast market synchronizations
+        for (const p of room.planets) {
+          room.broadcast({
+            type: "market_sync",
+            planetName: p.name,
+            market: p.market,
+          });
+        }
+      }
+    }
+
     // J. Authoritative World State Broadcast (P7: snapshots + deltas).
     // Frame this tick as either a full keyframe (`state_snapshot`) or a delta
     // against the previous broadcast (`state_delta`). The wire string is built
@@ -799,6 +841,13 @@ async function joinRoom(clientObj, roomId, nickname) {
         }
       : null,
   });
+
+  if (room.galaxyEventsManager && room.galaxyEventsManager.activeEvent) {
+    clientObj.send({
+      type: "galaxy_event_announcement",
+      event: room.galaxyEventsManager.activeEvent,
+    });
+  }
 
   room.broadcastRosterUpdate();
 }

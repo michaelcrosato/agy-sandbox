@@ -119,9 +119,10 @@ export class EconomyManager {
 
   /**
    * Normalizes prices back to baseline using a smooth drift.
+   * @param {Object|null} [galaxyEventsManager=null] - Dynamic economic events manager.
    * @returns {Array<Planet>} List of planets whose market was updated.
    */
-  normalizePrices() {
+  normalizePrices(galaxyEventsManager = null) {
     const changedPlanets = [];
     for (const p of this.planets) {
       const base = BASE_MARKETS[p.name];
@@ -133,6 +134,14 @@ export class EconomyManager {
           this.activeEconomicEvent &&
           this.activeEconomicEvent.planetName === p.name &&
           this.activeEconomicEvent.commodity === item
+        ) {
+          continue;
+        }
+
+        if (
+          galaxyEventsManager &&
+          galaxyEventsManager.activeEvent &&
+          galaxyEventsManager.activeEvent.priceModifiers[item] !== undefined
         ) {
           continue;
         }

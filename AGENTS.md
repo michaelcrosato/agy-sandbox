@@ -1,20 +1,15 @@
-# AGENTS.md — Canonical Operating Manual for Coding Agents
+# AGENTS.md — Canonical Operating Manual
 
-**Read this first.** It is the single entry point for any agent (Claude Code, Cursor, GitHub
-Actions, or a human) working in `agy-sandbox`. It ties together the existing control-plane docs
-and the day-to-day workflow. It does **not** replace them — where it points at a substrate doc,
-that doc wins.
+Read this first. It is the single operating manual for agents and humans working in `agy-sandbox`. Other agent-facing files should point here or add only local deltas.
 
-> `agy-sandbox` is two layers: a **product** (`Starfall: Living Galaxy`, a multiplayer space sim,
-> all under `src/`) and an **autonomous-engineering harness** (the `docs/` + `scripts/` substrate
-> that loops a headless model over the product). You improve the product; you obey the harness.
+`agy-sandbox` has two layers:
 
----
+- **Product:** `Starfall: Living Galaxy`, a persistent browser-native multiplayer space sim under `src/`.
+- **Harness:** the autonomous-engineering control plane that plans, executes, verifies, logs, and replenishes work.
 
-## 0. Substrate boundary (READ FIRST, never cross)
+## 0. Substrate boundary
 
-These control-plane files are **write-protected**. Never modify, edit, plan changes to, rename, or
-delete them — they are verified by `scripts/assert-gate-integrity.ps1` against `scripts/manifest.txt`:
+These files are write-protected substrate. Do not modify, rename, delete, or plan changes to them:
 
 - `docs/AXIOMS.md`
 - `docs/AGENT-LOOP.md`
@@ -24,134 +19,94 @@ delete them — they are verified by `scripts/assert-gate-integrity.ps1` against
 - `scripts/validate-log-compliance.py`
 - `scripts/manifest.txt`
 
-Everything else is yours to evolve, including `docs/GOAL.md` (the product blueprint) and
-`docs/LOG.md` (the append-only ledger). See `docs/AGENT-LOOP.md` for the authoritative statement.
-
----
+The cross-platform verifier is `npm run agent:verify-substrate`. It reads `scripts/manifest.txt` and fails if any protected file hash changes.
 
 ## 1. Read-first order
 
-1. **`AGENTS.md`** (this file) — how to work here.
-2. **`docs/AXIOMS.md`** — the constitution (substrate, read-only). Ground every decision in it.
-3. **`docs/AGENT-LOOP.md`** — the compliance protocol & iteration checklist (substrate, read-only).
-4. **`docs/GOAL.md`** — the product blueprint: North Star, invariants, pillars **P1–P8**, and "how
-   to pick the next move." This is your high-level intent. **Real repo state outranks it**; when
-   they conflict, fix the code and amend the relevant section of `docs/GOAL.md`.
-5. **`ROADMAP.md`** — engineering phases and the prioritized ticket map.
-6. **`docs/ai/REPO_MAP.md`** — where everything lives and what to skip.
-7. **`tickets/`** — atomic, executable units of work. Pick the top unblocked one.
-8. **`docs/LOG.md`** — recent history (newest first); see what the last iterations did and intended.
-9. **`.github/AGENT_RULES.md`** — coding standards & the git workflow (Phase 1–4).
+1. `AGENTS.md` — this manual.
+2. `docs/AXIOMS.md` — immutable constitution.
+3. `docs/AGENT-LOOP.md` — compliance protocol.
+4. `docs/GOAL.md` — product blueprint and architectural intent.
+5. `plan/PROGRESS.md` — live work queue and resume anchor.
+6. The selected `plan/specs/<id>_*.md` — atomic task contract.
+7. `docs/ai/REPO_MAP.md` — where code and tests live.
+8. Top entries of `docs/LOG.md` — recent history only.
 
----
+`tickets/` is legacy history unless an explicit launch context says otherwise. The canonical queue is `plan/PROGRESS.md` + `plan/specs/`.
 
-## 2. The workflow loop (run this every iteration, unprompted)
+## 2. Per-iteration loop
 
-```
-1. STATUS    — scripts/agent/status.{sh,ps1}; read git + working-tree state.
-2. ORIENT    — re-read docs/AXIOMS.md, then docs/GOAL.md + ROADMAP.md + REPO_MAP + the top ticket.
-               Confirm zero substrate mutations are planned.
-3. SELECT    — pick ONE unblocked, small ticket (or the lowest-numbered pillar with unblocked work).
-               Prefer the smallest vertical slice that lands green and visibly advances the North Star.
-4. CLAIM     — mark the ticket in-progress.
-5. CHANGE    — implement the slice. Keep the engine pure (no DOM/sockets/Math.random in src/engine,
-               src/physics, src/net). Add deterministic tests for every behavior you add or fix.
-6. VERIFY    — targeted first (scripts/agent/test.sh <file>), then the broad gate: npm run agent:check
-               (= prettier --check + eslint + jest, mirroring CI exactly).
-7. RECORD    — update the ticket's checkboxes, update docs/GOAL.md or ROADMAP if intent shifted,
-               and append a compressed entry to docs/LOG.md per its schema (newest-first, below the
-               == LOG-ANCHOR ==). File follow-up tickets for anything you discovered but didn't do.
-8. COMMIT    — only on a fully green gate, per the git workflow in .github/AGENT_RULES.md §Phase 4.
-9. SUMMARIZE — state what changed, gate result, and the single best next move.
+```text
+1. STATUS   — inspect git/worktree state and latest progress/log entries.
+2. ORIENT   — read the files above; confirm no substrate mutation is planned.
+3. SELECT   — choose one unblocked spec or the smallest pillar slice that lands green.
+4. CLAIM    — mark the spec in progress when operating in the plan queue.
+5. CHANGE   — implement the smallest correct vertical slice; keep engine/net/persistence pure.
+6. VERIFY   — targeted tests first, then `npm run agent:check` before claiming success.
+7. RECORD   — update spec/progress, writable docs, and `docs/LOG.md` when required.
+8. COMMIT   — only after the required gate is green and only under the active launch-context git rule.
+9. SUMMARIZE — state changes, validation run, unvalidated areas, and next move.
 ```
 
-This operationalizes the checklist in `docs/AGENT-LOOP.md`. If red or stuck: archive the attempt,
-roll back to the last green baseline, log the pivot, and pick a different slice (see the Axioms).
+If red or stuck, preserve the attempt, record the pivot, and recover to a known-good state. Do not hard-delete failed work without a trace.
 
----
+## 3. Commands
 
-## 3. Command reference
+Package manager: **npm**. Runtime policy: `.nvmrc` pins local dev to Node 24; `package.json` requires Node `>=22`; CI verifies Node 22/24/26.
 
-Package manager is **npm** (`package-lock.json` is committed; Node 20+).
+| Intent | Command |
+| --- | --- |
+| Install | `npm run agent:bootstrap` |
+| Substrate integrity | `npm run agent:verify-substrate` |
+| Core gate | `npm run agent:check:core` |
+| Full agent/commit gate | `npm run agent:check` |
+| Jest tests | `npm test` |
+| Client tests | `npm run test:client` |
+| Browser client tests | `npm run test:client:browser` |
+| Lint | `npm run lint` |
+| Typecheck | `npm run typecheck` |
+| Format check | `npm run format:check` |
+| Format write | `npm run format` |
+| Run game | `node src/server.js`, then open `http://localhost:8080` |
 
-| Intent | Portable (npm, any OS) | Windows (pwsh) | POSIX (bash) |
-| --- | --- | --- | --- |
-| Install deps | `npm run agent:bootstrap` (`npm ci`) | `scripts/agent/bootstrap.ps1` | `scripts/agent/bootstrap.sh` |
-| Env diagnostics | — | `scripts/agent/doctor.ps1` | `scripts/agent/doctor.sh` |
-| **Full gate (= CI)** | **`npm run agent:check`** | `scripts/agent/check.ps1` | `scripts/agent/check.sh` |
-| Tests | `npm test` | `scripts/agent/test.ps1` | `scripts/agent/test.sh` |
-| One test file | `npm test -- src/engine/Ship.test.js` | `scripts/agent/test.ps1 <file>` | `scripts/agent/test.sh <file>` |
-| Lint | `npm run lint` | `scripts/agent/lint.ps1` | `scripts/agent/lint.sh` |
-| Format (write) | `npm run format` | `scripts/agent/format.ps1` | `scripts/agent/format.sh` |
-| Format (check) | `npm run format:check` | — | — |
-| Type-check | — (plain JS) | `scripts/agent/typecheck.ps1` | `scripts/agent/typecheck.sh` |
-| Repo status | — | `scripts/agent/status.ps1` | `scripts/agent/status.sh` |
-| Run the game | `node src/server.js` then open http://localhost:8080 | | |
+`npm run agent:check` is the gate of record: substrate integrity, Prettier check, ESLint, typecheck, Jest, then client tests. Use `agent:check:core` only as an inner-loop shortcut; do not call a task done from the core shortcut alone.
 
-> **Always gate with `npm run agent:check` before committing.** The substrate `scripts/local-gate.ps1`
-> only checks for a clean tree / conflict markers — it does **not** run prettier/lint/test. CI
-> (`.github/workflows/ci.yml`) runs all three, so `agent:check` is what keeps `main` green. (This
-> file set drifted out of Prettier compliance once precisely because the local gate skipped the
-> format check — don't let it happen again.)
+## 4. Coding rules
 
----
+- Use ES modules only (`import`/`export`, no CommonJS).
+- Keep `src/engine`, `src/physics`, `src/net`, and `src/persistence` pure: no DOM, sockets, timers, direct filesystem effects, or unseeded randomness in test-reachable paths.
+- Seed or inject randomness; never let `Math.random` leak into deterministic assertions.
+- Add or update tests for every behavior change.
+- Prefer pure helpers plus thin server handlers over adding logic to `src/server.js`.
+- Use JSDoc on exported functions; prefix intentionally-unused variables/params with `_`.
+- Do not add placeholders, TODO-only stubs, partial files, or debug leftovers.
+- Use Conventional Commits.
 
-## 4. Conventions
+## 5. Git workflow
 
-- **ES Modules** (`import`/`export`, `"type": "module"`). No CommonJS `require`.
-- **Pure, headless engine.** `src/engine`, `src/physics`, `src/net`, `src/persistence` must not touch
-  the DOM, sockets, timers, or `Math.random` in test-reachable paths. The **server** orchestrates;
-  the **client** renders; the **engine** simulates. Randomness is seeded or injected.
-- **Tests are mandatory and deterministic.** Every feature/fix ships Jest tests next to the source
-  (`*.test.js`). No `Math.random` in assertions; seed it (see `createSeededRng` in `GenerativeMissions.js`).
-- **No placeholders / TODOs / partial files.** Every file you write is a complete, production-ready
-  drop-in. (`docs/AGENT_RULES.md` forbids stubs.)
-- **JSDoc** params/returns on exported functions. Lint is `eslint` flat config; `no-unused-vars` is a
-  warning (prefix intentionally-unused params with `_`).
-- **Conventional Commits**: `feat(scope): …`, `fix(scope): …`, `test: …`, `docs: …`.
-- **Determinism & additivity win.** Prefer a backward-compatible slice (new optional params, `??`
-  defaults) over a breaking rewrite — see the P6/P3 LOG entries for the house style.
+The launch context controls the commit target:
 
----
+- **Substrate local loop:** follows `docs/AGENT-LOOP.md`; commit only on a green full gate.
+- **Local/overnight review branches:** work on the current feature branch and do not push or merge unless the launch context authorizes it.
+- **GitHub issue flow:** create a branch and PR linking the issue.
 
-## 5. Autonomous vs. ask
+Always forbidden unless explicitly authorized: force-push, history rewrite, `--no-verify`, destructive cleanup of non-generated files, committed secrets, or dependency/service additions requiring credentials.
 
-**Proceed autonomously** (default — this is a zero-human-in-the-loop sandbox):
-- Implementing tickets / pillar slices, fixing bugs, adding tests, refactoring within `src/`.
-- Editing writable docs (`docs/GOAL.md`, `docs/LOG.md`, `ROADMAP.md`, `tickets/`, `README.md`, this file).
-- Anything reversible and local that keeps the gate green.
+## 6. Token-efficiency rules
 
-**Stop and ask a human** (or, when truly headless, take the safest reversible assumption, document it
-in `docs/LOG.md`, and continue):
-- Any change that would touch a **substrate** file (§0) — never do it.
-- **Pushing, merging, force-pushing, or opening PRs** unless your launch context explicitly authorizes
-  it (see the git workflow override in `.github/AGENT_RULES.md §Phase 4`). The local/overnight default
-  is **no push, no merge** — work stays on the feature branch for human review.
-- Destructive or irreversible ops: `git reset --hard`, history rewrites, deleting non-generated files,
-  dropping data, removing dependencies.
-- Adding a new runtime dependency, paid service, or anything needing secrets/credentials.
-- Real legal/security ambiguity.
+- Start from `plan/PROGRESS.md` and `docs/ai/REPO_MAP.md`; do not blind-scan the repo.
+- Skip `node_modules/`, `.git/`, `package-lock.json`, `coverage/`, `data/`, `night-queue/`, `.claude/`, and other generated/runtime folders.
+- Read only the relevant `src/` module and its tests unless the spec requires broader context.
+- `src/server.js` is the main risky seam; read the relevant section, then extract to tested modules when possible.
+- `docs/LOG.md` is newest-first; read only the top entries unless investigating history.
+- Avoid new overlapping context docs. Prefer one canonical source plus thin pointers.
 
----
+## 7. Definition of done
 
-## 6. Token-efficiency notes
-
-- **Map, don't blind-scan.** Start from `docs/ai/REPO_MAP.md`. Use `git ls-files` (excludes
-  `node_modules/`) over recursive globs. Honor `.aiignore`.
-- **Skip the noise:** `node_modules/`, `.git/`, `package-lock.json`, `coverage/`, `data/`,
-  `night-queue/`. Don't read them into context.
-- `src/server.js` is large (~1900 lines) and **not** unit-tested — read the section you need (it's
-  organized by lettered section headers), don't ingest the whole file unless you must.
-- `docs/LOG.md` is newest-first; read the top few entries for current context, not the whole ledger.
-- The engine modules are small and pure — prefer reading one module + its `*.test.js` together.
-
----
-
-## 7. Definition of done (per iteration)
-
-- [ ] `npm run agent:check` is **green** (prettier + eslint + jest), or any red is explained and ticketed.
+- [ ] Required gate was actually run and green: usually `npm run agent:check`.
 - [ ] New/changed behavior has deterministic tests.
-- [ ] No substrate file touched; engine stayed pure.
-- [ ] The ticket's acceptance checkboxes are updated; follow-ups filed.
-- [ ] `docs/LOG.md` has a compliant entry **iff** product code / gate status / architecture changed.
-- [ ] You never claimed a check passed that you did not actually run.
+- [ ] No substrate file changed.
+- [ ] Engine/net/persistence purity boundaries held.
+- [ ] Spec/progress checkboxes and writable docs are reconciled.
+- [ ] `docs/LOG.md` has a compliant entry iff required by its schema.
+- [ ] Final handoff names validation run, unvalidated areas, and the next best move.

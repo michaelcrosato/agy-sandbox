@@ -1,131 +1,218 @@
 # System Blueprint & Target Specification
 
 ## Lifecycle State Machine
-- **CURRENT_STATE:** ACTIVE_SPECIFICATION  # [BOOTSTRAP | ACTIVE_SPECIFICATION]
-- **TARGET_INFRASTRUCTURE:** Multi-Agent Scale-Out (Sequential/Concurrent Execution)
-- **PRODUCT:** `Starfall: Living Galaxy` — a persistent, browser-native, multiplayer space sim where the world keeps living whether or not you are watching.
+
+- **CURRENT_STATE:** ACTIVE_SPECIFICATION
+- **TARGET_INFRASTRUCTURE:** Multi-agent scale-out for sequential and concurrent autonomous coding
+- **PRODUCT:** `Starfall: Living Galaxy` — a persistent browser-native multiplayer space sim where the world keeps living whether or not players are connected.
+
+This file is the **product blueprint**: North Star, invariants, architecture constraints, and pillar intent. It is not the live work queue and not the loop prompt.
+
+- Live work queue: `plan/PROGRESS.md` + `plan/specs/`
+- Loop prompt: `plan/GOAL_PROMPT.md`
+- Operating manual: root `AGENTS.md`
+
+Real repo state outranks this document. When docs, code, tests, logs, and CI conflict, inspect reality, fix the repo, and update writable docs.
 
 ---
 
-## Role & Persona (ACTIVE_SPECIFICATION State)
-You are the lead engine architect for `Starfall`. The blueprint below is your high-level intent and structural constraint. Each loop tick you select and ship the **single highest-leverage increment** toward the North Star without breaking the validation gate. Real repo state outranks this document; when they conflict, fix the code and amend the relevant section here. When `CURRENT_STATE` is `ACTIVE_SPECIFICATION`, skip the BOOTSTRAP discovery interview.
+## North Star
+
+Build a galaxy that is **alive without you**.
+
+A player should be able to log off, return later, and find that the world changed for simulation-derived reasons: markets shifted, factions reacted, NPCs adapted, and ignored opportunities were resolved by the world rather than frozen in time.
+
+The product bar:
+
+- A stranger opens a browser tab and is flying within 60 seconds.
+- Within 10 minutes, the player makes a choice the world remembers.
+- The player can understand why the galaxy reacted.
 
 ---
 
-===============================================================================
-## ESTABLISHED BLUEPRINT
+## Design Tenets
 
-### North Star
-Build a galaxy that is **alive without you**. A player should be able to log off, return a day later, and find that prices shifted because a war disrupted a trade lane, a faction they wronged now hunts their old haunts, a pirate clan grew bold in a system the navy abandoned, and a contract they ignored was completed by someone else. Not scripted events on a timer — **consequences of a simulation that never stopped running.**
+1. **Simulation over scripting.** Prefer systems that produce stories over hand-authored story beats.
+2. **Every action leaves a mark.** Trades, kills, missions, travel, docking, and presence should mutate state.
+3. **Legible depth.** Deep systems must expose causes clearly to the player.
+4. **The server dreams.** The authoritative server advances the galaxy independent of connected clients.
+5. **Headless, testable core.** Simulation logic stays pure, deterministic, and unit-tested.
+6. **Small green slices.** A shippable vertical slice beats a broad broken refactor.
+7. **Parallel-safe work.** Specs should declare touched files so non-overlapping work can run concurrently.
 
-The bar: a stranger opens a browser tab, and within sixty seconds is flying; within ten minutes is making a choice that the world remembers.
+---
 
-### Design Tenets
-1. **Simulation over scripting.** Prefer systems that produce stories to stories hand-authored into the code. Emergence is the product.
-2. **Every action leaves a mark.** Trades move prices, kills shift reputations, presence changes spawns. No inert verbs.
-3. **Legible depth.** Deep systems, surfaced clearly. The player should always understand *why* the galaxy reacted.
-4. **The server dreams.** World simulation advances on the server independent of any connected client; players are observers and participants, never the clock.
-5. **Headless, testable core.** All simulation logic stays pure and unit-tested — no DOM, no sockets in the engine. If it matters, it has a test.
+## Invariants
 
-### Invariants (never violated)
-1. **Main stays green.** Every landed increment keeps `npm test` and `npm run lint` clean. No skipped tests, no weakened gate.
-2. **Determinism in tests.** Randomness is seeded or injected so every test is reproducible; no `Math.random` leaking into assertions.
-3. **Substrate is sacred.** Never modify the write-protected control-plane files listed in `docs/AGENT-LOOP.md`.
-4. **Authoritative server.** The server is the single source of truth; the client renders and predicts, it never decides.
-5. **Preserve every attempt.** Failed work is archived per the Axioms before rollback.
-6. **Small, shippable moves.** A vertical slice that lands green today beats a grand refactor that sits broken.
+1. **Main stays green.** Landed work must keep the required gate green.
+2. **Substrate is sacred.** Never edit the protected files listed in `AGENTS.md §0` and `docs/AGENT-LOOP.md`.
+3. **Authoritative server.** The server is the single source of truth; the client renders and requests.
+4. **Determinism in tests.** Randomness in simulation code is seeded or injected.
+5. **Engine purity.** `src/engine`, `src/physics`, `src/net`, and `src/persistence` do not depend on DOM, sockets, timers, direct filesystem effects, or unseeded randomness in test-reachable paths.
+6. **No weakened gates.** Do not skip, delete, or loosen tests to hide failures.
+7. **Preserve attempts.** Failed work is archived or logged before rollback.
+8. **No placeholders.** Every change must be complete, tested, and production-ready for its slice.
 
-### Baseline (delivered — verify before trusting)
-- 30Hz authoritative multi-room WebSocket server; canvas client; multi-sector galaxy with warp gates and autopilot.
-- Simulation engine: `SpaceEngine` (spatial-grid broad-phase, elastic collisions, **ramming impact damage**), `Ship`, `Projectile` (**shield-piercing damage type**), `Planet`, `CargoPod`.
-- **Combat & survival depth:** energy/heat/overheat, disable-before-destroy, **post-hit shield-regen combat lockout**, **afterburner boost** (Shift), shield-pierce weapons (`Ion Disruptor Array`).
-- `EconomyManager`: dynamic markets with price elasticity, shortage/surplus events, normalization drift.
-- **`GalaxyHeartbeat` (P1 delivered):** a headless, deterministic pulse that ages the economy with zero players connected — prices diffuse along sector trade lanes (cornering a commodity in one system measurably ripples to its neighbors) and drift toward baseline. Runs server-side on a slow interval across all rooms.
-- `MissionManager`: missions, bounties, multi-stage storyline.
-- `AIController`: merchant / guard / pirate / escort behaviours (FSM).
-- Outfitting (12 modules) and shipyard (6 hulls); fleets; nebula hazards; tractor beam; salvage.
-- ~228 passing Jest tests; ESLint clean.
-- **Frontier gaps:** state is in-memory (lost on restart — the next P1 slice); combat/physics still only simulate where players are (the economy now ages globally via the heartbeat); full world-state is broadcast every tick (no deltas); NPCs are role-FSMs, not goal-driven agents; the economy has no production chains.
+---
 
-### The Deep Systems (pillars)
-Work the lowest-numbered pillar with unblocked work; within it, ship the smallest slice that lands green and visibly advances the North Star. Each pillar lists its **depth** (what makes it deep) and **DoD** (a concrete, testable proof it is real).
+## Current Product State
 
-**P1 — Persistent Living Universe** *(the foundation the North Star stands on — IN PROGRESS)*
-- *Depth:* A save/load layer (interface first, JSON-on-disk to start, DB-swappable) persisting players (ship, credits, cargo, outfits, reputation, missions) and galaxy state (markets, faction standings, active conflicts). A background "galaxy heartbeat" advances economy and faction simulation on a slow tick even with zero players online, so the world ages.
-- *Delivered:* `GalaxyHeartbeat` — economy ages and price shocks diffuse across trade lanes with no players, deterministic and unit-tested.
-- *Remaining:* persistence to disk behind a swappable store interface; restore player + galaxy (incl. heartbeat-aged markets) on restart/login; extend the heartbeat to drive faction standings once P3 lands.
-- *DoD:* Kill the server, restart, log back in → player and market state restored. Run the heartbeat headless for N simulated ticks → prices (and later standings) provably drift. All covered by deterministic tests.
+Verify current counts and details from `plan/PROGRESS.md`, `docs/LOG.md`, CI, and actual test output. Avoid hand-maintained LOC/test numbers in prose.
 
-**P2 — Emergent Economy**
-- *Depth:* Commodities flow through production chains (raw → refined → manufactured); planets produce and consume based on type; scarcity and surplus propagate along trade lanes; player bulk trades visibly move local prices; contraband and smuggling carry risk/reward against faction patrols.
-- *DoD:* A simulated supply shock in one system measurably raises prices in connected systems over time; a large player sale depresses local price; tests assert the propagation and elasticity math.
+Delivered or substantially delivered:
 
-**P3 — Faction & Reputation Web**
-- *Depth:* Multiple factions with standing per player and pairwise relations (allies/enemies). Standing governs how NPCs treat you (hails, aggression, docking rights, prices), shifts from your actions (kills, trades, missions), and decays/propagates (helping faction A angers its enemy B). Territory control determines spawn tables and patrol strength.
-- *DoD:* A scripted sequence of player actions moves a standing value that then **demonstrably changes NPC behaviour and prices**; covered by tests on the reputation model.
+- Authoritative multi-room WebSocket server and Canvas client.
+- Persistent player and galaxy state behind a swappable store.
+- Server-side galaxy heartbeat that advances economy and reputation decay without connected players.
+- Dynamic markets, production chains, refining, shortages/surpluses, trade-lane propagation, and economic shock events.
+- Faction standing model wired into prices, docking, taxes, tolls, patrols, contraband scans, NPC hostility, vouchers, and conflict zones.
+- Mission, bounty, passenger, smuggler, and storyline foundations with faction consequences.
+- Utility-AI advisor for NPC behavior with perception-driven FLEE/REGROUP/TRADE/ENGAGE behavior.
+- Ship/outfit/fleet systems with heat, energy, mass, ramming, shield-pierce, interdiction, wingman orders, and command progression.
+- Delta/keyframe state sync, interest filtering, binary broadcast framing, room routing, Redis-store foundations, worker supervisor, sticky routing, pub/sub presence leases, graceful drain, matchmaking, metrics, and dashboard.
+- Client HUD/spaceport/radar/event presentation with Vitest client coverage and browser-test support.
 
-**P4 — Generative Missions & Narrative**
-- *Depth:* A mission generator that composes objectives from world state (real shortages → delivery contracts; real bounties → hunt missions; real conflicts → combat ops) with stakes, rewards, and faction consequences — so missions are *about* the living galaxy, not flavor text. Branching multi-stage arcs that react to outcomes.
-- *DoD:* Generated missions reference actual current world state and, on completion, mutate it (economy/reputation); generation is seeded and tested for shape, solvability, and consequence.
+Known frontiers:
 
-**P5 — Intelligent NPCs (Goal-Driven Agents)**
-- *Depth:* Replace role-FSMs with utility/goal-driven agents that own persistent goals (profit, survival, territory, vengeance), perceive the world, and plan (trade routes, hunting, fleeing, regrouping). Pirates that learn where the money flows; merchants that reroute around danger; navies that respond to incursions.
-- *DoD:* An agent demonstrably changes its plan when the world changes (a new threat reroutes a merchant; a rich lane attracts pirates); decision logic is pure and unit-tested.
+- Wire generated, world-derived missions into the landing flow as the primary contract source.
+- Finish fittings/loadout presets and deeper ship identity work.
+- Make onboarding and game feel strong enough for a first-time player without external instructions.
+- Continue shrinking `src/server.js` into tested handler modules.
+- Add machine-generated repo maps/metrics so hand-written counts stop drifting.
+- Prove multi-host scale and client/server happy paths with reproducible smoke/e2e gates.
 
-**P6 — Ship Identity & Fleet Command**
-- *Depth:* Outfits with real tradeoffs (mass → handling, energy/heat budgets), distinct hull roles, weapon archetypes (kinetic/energy/missile/beam) on one damage model, and player fleets you command in formation and combat.
-- *DoD:* Build choices produce measurably different simulated performance; a commanded wingman executes a formation/attack order; combat and loadout math fully tested.
+---
 
-**P7 — Netcode & Scale** *(carries the rest at player count)*
-- *Depth:* Delta/interest-managed state sync (see `night-queue` M0 tasks), client interpolation + server reconciliation, instrumentation, and grid-accelerated server-side hot loops.
-- *DoD:* A 50-entity room with 8 simulated clients holds 30Hz at materially lower bandwidth than full-state; reconnection is seamless; encoder and interpolator are unit-tested.
+## Product Pillars
 
-**P8 — Presentation & Game Feel**
-- *Depth:* Readable HUD/minimap, weapon/thruster/damage feedback, audio, and a sixty-second onboarding flow; touch/mobile input.
-- *DoD:* A first-time player can fly, fight, trade, and dock without external instructions.
+### P1 — Persistent Living Universe
 
-### Showcase Moments (what "impressive" looks like)
-These are the demos that prove the North Star — steer increments toward making them real:
-- **"The world moved."** Log off, run the heartbeat, log back in → markets and faction lines have shifted from causes you can name.
-- **"It remembers."** Wrong a faction, fly away, return → its patrols are now hostile in its territory.
-- **"The economy is real."** Corner a commodity; watch the price you set ripple to neighboring systems and spawn a delivery mission for someone else.
-- **"They think."** A pirate clan abandons a picked-clean lane and migrates to where your trades created new wealth.
+**Goal:** World and player state survive restarts, reconnects, and offline time.
 
-### How to Pick the Next Move (per loop tick)
-1. Re-read the Axioms; confirm no substrate mutation is planned.
-2. Reconcile this blueprint against real repo state (`git`, tests, `src/`, `night-queue/`).
-3. Choose the lowest-numbered pillar with unfinished, unblocked work; within it, the smallest slice that lands green and visibly advances the North Star or a Showcase Moment.
-4. Implement + test, force the validation gate; on green, commit and log the truth per `docs/LOG.md` rules.
-5. If blocked or red: archive, roll back to last green, log the pivot, pick a different slice.
+**Status:** Core delivered for player and galaxy state; deepen faction/event persistence and migration coverage.
+
+**DoD:** Kill server, restart, rejoin, and verify player plus heartbeat-aged world state restored. Offline ticks produce explainable market/faction drift.
+
+### P2 — Emergent Economy
+
+**Goal:** Prices and opportunities emerge from production, consumption, shocks, routes, factions, and player action.
+
+**Status:** Core delivered; deepen multi-tier chains, smuggling economics, and UI cause explanations.
+
+**DoD:** Supply shocks propagate through connected systems; bulk trades move price; generated missions reference and mutate real market state.
+
+### P3 — Faction & Reputation Web
+
+**Goal:** Factions remember and react.
+
+**Status:** Substantially delivered; deepen territory control and long-term conflict pressure.
+
+**DoD:** Player action changes standing; standing changes NPC behavior, port economics, and access; changes persist.
+
+### P4 — Generative Missions & Narrative
+
+**Goal:** Missions arise from actual galaxy state.
+
+**Status:** Foundations delivered; runtime landing-flow integration remains the main frontier.
+
+**DoD:** Generated missions reference current shortages, conflict, piracy, or faction state; completion mutates world state; generation is seeded and tested.
+
+### P5 — Intelligent NPCs
+
+**Goal:** NPCs pursue goals, adapt to threats/opportunity, and create pressure in the world.
+
+**Status:** Utility advisor delivered; deepen persistent goals, learned routes, vengeance, territory pressure, and fleet-level decisions.
+
+**DoD:** NPC plans change when world state changes, under deterministic tests.
+
+### P6 — Ship Identity & Fleet Command
+
+**Goal:** Ships, fittings, and fleets create meaningful tradeoffs and tactical identity.
+
+**Status:** Mostly delivered; fittings/loadout presets remain a current live spec.
+
+**DoD:** Loadouts produce measurable performance differences; wingmen execute commands; fitting math is tested.
+
+### P7 — Netcode & Scale
+
+**Goal:** Authoritative multiplayer remains efficient, resilient, and horizontally scalable.
+
+**Status:** Major foundations delivered; prove multi-host scale and load targets.
+
+**DoD:** Target entity/client counts hold tick/bandwidth budgets; reconnect and room handoff preserve state.
+
+### P8 — Presentation & Game Feel
+
+**Goal:** A first-time player can understand and enjoy the game without external explanation.
+
+**Status:** Partial; this is a top remaining product frontier.
+
+**DoD:** A first-time player can fly, fight, dock, trade, accept a mission, and understand consequences within 60 seconds; automated smoke/e2e covers the happy path.
+
+---
+
+## Phase II Horizon
+
+Promote these into `plan/specs/` when P1-P8 depth stops producing higher-leverage work.
+
+- **H1 — The Chronicle:** player-readable causal history explaining why the galaxy changed.
+- **H2 — Territory & Conquest:** faction borders move with conflict outcomes and player action.
+- **H3 — Proven Scale:** reproducible multi-worker/Redis load harness with p99 tick and bandwidth targets.
+- **H4 — Ship-Quality Onboarding:** touch input, audio, damage/thruster feedback, and first-session polish.
+
+---
+
+## Target Architecture
+
+- `src/server.js` trends toward a thin composition root. Runtime behavior belongs in tested modules under `src/server/`, `src/engine/`, `src/net/`, or `src/persistence`.
+- Engine, physics, net, and persistence modules remain pure and deterministic.
+- Backward-compatible additive slices are preferred over rewrites.
+- Parallel work uses non-overlapping file sets and isolated branches/worktrees.
+- Generated context should replace hand-maintained volatile metrics where practical.
 
 ---
 
 ## Non-Goals
-- **Single-player offline-only mode:** The game is architected around an authoritative server-side simulation. We do not support offline client-only simulations.
-- **High-fidelity 3D graphics:** The client uses a pure, high-performance 2D Canvas. Porting to WebGL/3D is a non-goal.
-- **Custom low-level network protocols:** Standard WebSockets (`ws` library) are used. Custom TCP/UDP layers are out of scope.
-- **Commercialization assets:** Anti-cheat, licensing, or payment processors are not part of the sandbox scope.
+
+- Offline client-authoritative game mode.
+- High-fidelity 3D/WebGL rewrite.
+- Custom TCP/UDP networking beyond application framing over WebSockets.
+- Payment, licensing, anti-cheat, or commercialization systems.
+- Dependency on one model vendor or one agent runtime.
+- Broad rewrites without an incremental green migration path.
+
+---
 
 ## Constraints & Assumptions
-- **Node.js Environment:** The engine pins Node >= 20. Plain ECMAScript Modules (ESM) with JSDoc checkJs typings. No CommonJS or runtime compilation.
-- **Math.random Prohibition:** The core simulation packages (`src/engine`, `src/physics`, `src/net`) must be deterministic. Randomness must be injected or generated from seeded PRNGs (`createSeededRng`).
-- **Single-Threaded Shard Boundaries:** Each shard node runs in an isolated single thread (or worker). State synchronization between shards uses Redis Pub/Sub and lease registry.
 
-## Agent Guidance
-- **Read-First Order:** Agents MUST read files in the exact order documented in `AGENTS.md §1` (AGENTS.md -> AXIOMS.md -> AGENT-LOOP.md -> GOAL.md -> ROADMAP.md -> REPO_MAP.md -> tickets/ -> LOG.md).
-- **Patterns to Follow:**
-  - Keep modules pure, headless, and unit-tested next to their source files (`*.test.js`).
-  - Rely on JSDoc type comments for TypeScript checks (`checkJs: true`).
-  - Prefix unused variables or parameters with `_` to satisfy ESLint rules.
-- **Patterns to Avoid:**
-  - NEVER import `ws`, `http`, `fs`, `document`, or use timers in `src/engine/`.
-  - Avoid large monolithic blocks; prefer small, isolated extractions.
-  - Do NOT modify any write-protected substrate files.
+- **Node policy:** `.nvmrc` pins local dev to Node 24; `package.json` requires Node `>=22`; CI verifies Node 22/24/26.
+- **Language:** plain ESM JavaScript with JSDoc/checkJs; no CommonJS; no runtime compilation; no build step.
+- **Randomness:** core simulation packages must use injected or seeded randomness.
+- **Shard model:** each shard/worker owns isolated state boundaries; cross-shard coordination uses store/pub-sub/lease abstractions.
 
-## Definition of Done (Pillar Slices)
-A slice or tick is considered DONE when:
-1. `npm run agent:check` (or `scripts/agent/check.sh`) is fully green (prettier, eslint, typecheck, tests).
-2. The added feature has complete deterministic unit and integration test coverage.
-3. The specific ticket's checkboxes in `tickets/` are fully updated and marked complete.
-4. An entry programmatically compliant with `docs/LOG.md` is appended.
-5. Unused files or debug statements are fully cleaned up; no code placeholders remain.
+---
+
+## How to Pick the Next Move
+
+1. Read the canonical order in `AGENTS.md`.
+2. Confirm no substrate mutation is planned.
+3. Reconcile this blueprint against `plan/PROGRESS.md`, selected spec, code, tests, CI, and recent `docs/LOG.md` entries.
+4. Prefer repo-health work if the gate, docs, queue, or safety layer would mislead agents.
+5. Otherwise choose the lowest-numbered unblocked product pillar/spec that visibly advances the North Star.
+6. Implement the smallest green slice.
+7. Run the required gate.
+8. Update progress, writable docs, and log entries truthfully.
+
+---
+
+## Definition of Done
+
+A slice is done only when:
+
+1. The required gate actually ran and passed; usually `npm run agent:check`.
+2. Behavior changes have deterministic tests.
+3. No substrate file changed.
+4. Purity boundaries held.
+5. `plan/PROGRESS.md` and the selected spec are updated.
+6. `docs/LOG.md` is updated when its schema requires it.
+7. The final handoff states validation run, unvalidated areas, and the next best move.

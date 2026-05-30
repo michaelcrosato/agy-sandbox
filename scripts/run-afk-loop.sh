@@ -1,6 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # File: scripts/run-afk-loop.sh
-# The Ultimate Headless AFK Loops Daemonic Substrate (POSIX).
+# POSIX unattended AFK loop. Keeps orientation small, verifies the full gate,
+# and preserves failed attempts for inspection instead of destructive cleanup.
+set -u
 
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
@@ -9,56 +11,50 @@ RED='\033[0;31m'
 GRAY='\033[1;30m'
 NC='\033[0;0m'
 
+AGENT_COMMAND="${AGENT_COMMAND:-agy}"
+ITERATION_COUNT=1
+
 echo -e "${GREEN}=========================================================${NC}"
 echo -e "${GREEN}      STARFALL GALAXY - UNATTENDED AFK DAEMON LOOP       ${NC}"
 echo -e "${GREEN}=========================================================${NC}"
-echo -e "${CYAN}[INIT] Awaking loop grid...${NC}"
 
-if [ ! -f "plan/STATE.md" ]; then
-    echo -e "${RED}[ERROR] plan/STATE.md not found! Cannot orient loop.${NC}"
-    exit 1
+if [ ! -f "plan/PROGRESS.md" ]; then
+  echo -e "${RED}[ERROR] plan/PROGRESS.md not found. Cannot orient loop.${NC}"
+  exit 1
 fi
 
-IterationCount=1
-
 while true; do
-    # Clear the console screen to keep terminal presentation completely clean and token-efficient (spec /clear)
-    clear
-    echo -e "${CYAN}---------------------------------------------------------${NC}"
-    echo -e "${CYAN}   CYCLE RUN TICK #$IterationCount - $(date +'%H:%M:%S')   ${NC}"
-    echo -e "${CYAN}---------------------------------------------------------${NC}"
+  clear
+  echo -e "${CYAN}---------------------------------------------------------${NC}"
+  echo -e "${CYAN}   CYCLE RUN TICK #${ITERATION_COUNT} - $(date +'%H:%M:%S')   ${NC}"
+  echo -e "${CYAN}---------------------------------------------------------${NC}"
 
-    # 1. Read current dynamic state anchor
-    echo -e "${YELLOW}[STATE] Current Active Task Anchor:${NC}"
-    cat plan/STATE.md
-    
-    # 2. Run BIOS gate integrity check if available
-    if [ -f "scripts/assert-gate-integrity.ps1" ]; then
-        echo -e "${CYAN}[BIOS] Substrate integrity check bypassed on POSIX shell.${NC}"
-    fi
+  echo -e "${YELLOW}[STATE] Live Queue Anchor:${NC}"
+  sed -n '1,35p' plan/PROGRESS.md
 
-    # 3. Fire up the Agent Engine
-    echo -e "${CYAN}[ENGINE] Executing Agent Core Command: agy${NC}"
-    # Change command if running another agent runner locally
-    agy
-    AgentExitCode=$?
-    echo -e "${GRAY}[ENGINE] Cycle complete. Exit Code: $AgentExitCode${NC}"
+  echo -e "${CYAN}[BIOS] Verifying substrate integrity...${NC}"
+  npm run --silent agent:verify-substrate
+  if [ $? -ne 0 ]; then
+    echo -e "${RED}[HALT] Substrate integrity failed. Stopping loop.${NC}"
+    exit 1
+  fi
 
-    # 4. Force global verification check
-    if [ -f "scripts/local-gate.ps1" ]; then
-        echo -e "${CYAN}[VERIFY] Running validation check gate (npm run agent:check)...${NC}"
-        npm run agent:check
-        if [ $? -ne 0 ]; then
-            echo -e "${RED}[FAIL] Validation gate failed! Forcing Git rollback to last stable green commit...${NC}"
-            git reset --hard HEAD
-            git clean -fd
-        else
-            echo -e "${GREEN}[SUCCESS] Validation check passed cleanly!${NC}"
-        fi
-    fi
+  echo -e "${CYAN}[ENGINE] Executing Agent Core Command: ${AGENT_COMMAND}${NC}"
+  ${AGENT_COMMAND}
+  AGENT_EXIT_CODE=$?
+  echo -e "${GRAY}[ENGINE] Cycle complete. Exit Code: ${AGENT_EXIT_CODE}${NC}"
 
-    # 5. Prevent CPU thrashing
-    echo -e "${GRAY}[REST] Machine tick resting. Pausing for 5 seconds...${NC}"
-    sleep 5
-    IterationCount=$((IterationCount+1))
+  echo -e "${CYAN}[VERIFY] Running full validation gate: npm run agent:check${NC}"
+  npm run agent:check
+  GATE_EXIT_CODE=$?
+  if [ ${GATE_EXIT_CODE} -ne 0 ]; then
+    echo -e "${RED}[FAIL] Validation gate failed. Preserving workspace for inspection.${NC}"
+    echo -e "${YELLOW}[NEXT] Archive/log the failed attempt, then manually recover to the last green baseline.${NC}"
+    exit ${GATE_EXIT_CODE}
+  fi
+
+  echo -e "${GREEN}[SUCCESS] Full validation gate passed.${NC}"
+  echo -e "${GRAY}[REST] Machine tick resting. Pausing for 5 seconds...${NC}"
+  sleep 5
+  ITERATION_COUNT=$((ITERATION_COUNT + 1))
 done

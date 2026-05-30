@@ -2,131 +2,107 @@ import fs from "fs";
 import path from "path";
 import { execSync } from "child_process";
 import dotenv from "dotenv";
+import { GoogleGenAI, Type } from "@google/genai";
 
-// dotenv 17 prints a startup banner by default; quiet keeps CI/agent logs clean.
 dotenv.config({ quiet: true });
 
-// Ensure required environment variables are set
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_REPOSITORY =
   process.env.GITHUB_REPOSITORY || "michaelcrosato/agy-sandbox";
+const MODEL_NAME = process.env.GEMINI_MODEL || "gemini-3.5-flash";
+
+const SUBSTRATE_PATHS = new Set([
+  "docs/AXIOMS.md",
+  "docs/AGENT-LOOP.md",
+  "scripts/assert-gate-integrity.ps1",
+  "scripts/local-gate.ps1",
+  "scripts/run-autonomous-loop.ps1",
+  "scripts/validate-log-compliance.py",
+  "scripts/manifest.txt",
+]);
 
 if (GEMINI_API_KEY && GEMINI_API_KEY.startsWith("ghp_")) {
-  console.error(
-    "❌ Error: GEMINI_API_KEY starts with 'ghp_', which is a GitHub Personal Access Token!",
-  );
-  console.error(
-    "   Please set GITHUB_TOKEN in your `.env` to your 'ghp_...' token.",
-  );
-  console.error(
-    "   For GEMINI_API_KEY, you can leave it blank/empty if you are on the Google AI Ultra package.",
-  );
+  console.error("GEMINI_API_KEY appears to contain a GitHub token. Aborting.");
   process.exit(1);
 }
 
-// Set up the Google GenAI client (unified @google/genai SDK).
-import { GoogleGenAI, Type } from "@google/genai";
 const genAI =
   GEMINI_API_KEY && GEMINI_API_KEY !== "hidden"
     ? new GoogleGenAI({ apiKey: GEMINI_API_KEY })
     : new GoogleGenAI({});
 
-// Helper to run shell commands safely
-function runCommand(command) {
+function runCommand(command, options = {}) {
   try {
-    console.log(`Running: ${command}`);
-    const stdout = execSync(command, { encoding: "utf-8", stdio: "pipe" });
-    return { success: true, output: stdout };
+    console.log(`$ ${command}`);
+    const output = execSync(command, {
+      encoding: "utf-8",
+      stdio: "pipe",
+      ...options,
+    });
+    return { success: true, output };
   } catch (error) {
-    return { success: false, output: error.stdout || error.message };
-  }
-}
-
-// Parse command line arguments
-const args = process.argv.slice(2);
-let issueNumber = process.env.ISSUE_NUMBER;
-
-for (let i = 0; i < args.length; i++) {
-  if (args[i] === "--issue" && args[i + 1]) {
-    issueNumber = args[i + 1];
-    break;
-  }
-}
-if (!issueNumber) {
-  console.error(
-    "❌ Error: No issue number specified. Use --issue <number> or set the ISSUE_NUMBER env var.",
-  );
-  process.exit(1);
-}
-
-if (issueNumber !== "0" && (!GITHUB_TOKEN || GITHUB_TOKEN === "hidden")) {
-  console.error(
-    "❌ Error: GITHUB_TOKEN is not set or is still 'hidden' in `.env`.",
-  );
-  console.error(
-    "   Please set GITHUB_TOKEN to your GitHub Personal Access Token.",
-  );
-  process.exit(1);
-}
-
-// Fetch issue details using the native fetch API
-async function fetchIssueDetails(issueNum) {
-  if (issueNum === "0" || issueNum === 0) {
-    console.log("ℹ️ Running in local offline/mock mode for issue #0.");
-    let mockTitle = "Local Mock Dry Run Issue";
-    let mockBody =
-      "Implement a simple dummy test feature or add a descriptive comment in src/server.js to verify that the autonomous loop completes successfully.";
-    if (fs.existsSync("plan/mock_issue.md")) {
-      try {
-        const content = fs.readFileSync("plan/mock_issue.md", "utf-8");
-        const lines = content.split("\n");
-        const titleLine = lines[0].replace(/^#\s*/, "").trim();
-        if (titleLine) mockTitle = titleLine;
-        const bodyContent = lines.slice(1).join("\n").trim();
-        if (bodyContent) mockBody = bodyContent;
-      } catch (err) {
-        console.warn(
-          "⚠️ Warning: Failed to read plan/mock_issue.md, using default mock details.",
-          err,
-        );
-      }
-    }
     return {
-      title: mockTitle,
-      body: mockBody,
-      commentsUrl: null,
+      success: false,
+      output: `${error.stdout || ""}${error.stderr || ""}${error.message || ""}`,
     };
   }
-
-  console.log(`Fetching details for issue #${issueNum}...`);
-  const url = `https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${issueNum}`;
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${GITHUB_TOKEN}`,
-      Accept: "application/vnd.github.v3+json",
-      "User-Agent": "agy-autonomous-agent",
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch issue: ${response.statusText} (${response.status})`,
-    );
-  }
-
-  const issueData = await response.json();
-  return {
-    title: issueData.title,
-    body: issueData.body,
-    commentsUrl: issueData.comments_url,
-  };
 }
 
-// Fetch issue comments
+function requiredEnvForIssue(issueNumber) {
+  if (issueNumber === "0") return;
+  if (!GITHUB_TOKEN || GITHUB_TOKEN === "hidden") {
+    console.error("GITHUB_TOKEN is required for non-mock issue runs.");
+    process.exit(1);
+  }
+}
+
+function parseIssueNumber() {
+  const args = process.argv.slice(2);
+  let issueNumber = process.env.ISSUE_NUMBER;
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "--issue" && args[i + 1]) issueNumber = args[i + 1];
+  }
+  if (!issueNumber) {
+    console.error("No issue number specified. Use --issue <number>.");
+    process.exit(1);
+  }
+  return String(issueNumber);
+}
+
+async function fetchIssueDetails(issueNumber) {
+  if (issueNumber === "0") {
+    let title = "Local Mock Dry Run Issue";
+    let body =
+      "Implement a small, reversible improvement and prove it with npm run agent:check.";
+    if (fs.existsSync("plan/mock_issue.md")) {
+      const content = fs.readFileSync("plan/mock_issue.md", "utf-8");
+      const [firstLine = "", ...rest] = content.split("\n");
+      title = firstLine.replace(/^#\s*/, "").trim() || title;
+      body = rest.join("\n").trim() || body;
+    }
+    return { title, body, commentsUrl: null };
+  }
+
+  const response = await fetch(
+    `https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${issueNumber}`,
+    {
+      headers: {
+        Authorization: `Bearer ${GITHUB_TOKEN}`,
+        Accept: "application/vnd.github.v3+json",
+        "User-Agent": "agy-autonomous-agent",
+      },
+    },
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to fetch issue: ${response.status} ${response.statusText}`);
+  }
+  const issue = await response.json();
+  return { title: issue.title, body: issue.body || "", commentsUrl: issue.comments_url };
+}
+
 async function fetchIssueComments(commentsUrl) {
   if (!commentsUrl) return [];
-  console.log(`Fetching comments...`);
   const response = await fetch(commentsUrl, {
     headers: {
       Authorization: `Bearer ${GITHUB_TOKEN}`,
@@ -134,337 +110,226 @@ async function fetchIssueComments(commentsUrl) {
       "User-Agent": "agy-autonomous-agent",
     },
   });
-
-  if (!response.ok) {
-    return [];
-  }
-
+  if (!response.ok) return [];
   const comments = await response.json();
-  return comments.map((c) => `${c.user.login}: ${c.body}`);
+  return comments.map((comment) => `${comment.user.login}: ${comment.body}`);
 }
 
-// Collect local file contents for context
-function getLocalCodeContext() {
-  const context = [];
-  const srcDir = path.resolve("src");
-
-  if (!fs.existsSync(srcDir)) {
-    return "No src/ directory exists yet.";
-  }
-
-  function readDirRecursive(dir) {
-    const files = fs.readdirSync(dir);
-    for (const file of files) {
-      const fullPath = path.join(dir, file);
-      const stat = fs.statSync(fullPath);
-
-      if (stat.isDirectory()) {
-        readDirRecursive(fullPath);
-      } else if (
-        (file.endsWith(".js") && !file.endsWith(".test.js")) ||
-        file.endsWith(".json") ||
-        file.endsWith(".md")
-      ) {
-        const relativePath = path.relative(process.cwd(), fullPath);
-        const content = fs.readFileSync(fullPath, "utf-8");
-        context.push(`--- FILE: ${relativePath} ---\n${content}\n`);
-      }
-    }
-  }
-
-  readDirRecursive(srcDir);
-  return context.join("\n");
-}
-
-// Submit a PR to GitHub
-async function createPullRequest(branchName, title, body) {
-  console.log(`Creating Pull Request on GitHub...`);
-  const url = `https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${GITHUB_TOKEN}`,
-      Accept: "application/vnd.github.v3+json",
-      "Content-Type": "application/json",
-      "User-Agent": "agy-autonomous-agent",
-    },
-    body: JSON.stringify({
-      title: title,
-      body: body,
-      head: branchName,
-      base: "main",
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `Failed to create Pull Request: ${response.statusText} - ${errorText}`,
-    );
-  }
-
-  const prData = await response.json();
-  console.log(`🚀 Pull Request successfully created: ${prData.html_url}`);
-  return prData.html_url;
-}
-
-// Add a comment to the issue
-async function addIssueComment(issueNum, body) {
-  if (issueNum === "0" || issueNum === 0) {
-    console.log(`📡 [MOCK] Logging issue comment:\n${body}\n`);
+async function addIssueComment(issueNumber, body) {
+  if (issueNumber === "0") {
+    console.log(`[MOCK issue comment]\n${body}`);
     return;
   }
-  console.log(`Adding comment to issue #${issueNum}...`);
-  const url = `https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${issueNum}/comments`;
-  await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${GITHUB_TOKEN}`,
-      Accept: "application/vnd.github.v3+json",
-      "Content-Type": "application/json",
-      "User-Agent": "agy-autonomous-agent",
+  await fetch(
+    `https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${issueNumber}/comments`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${GITHUB_TOKEN}`,
+        Accept: "application/vnd.github.v3+json",
+        "Content-Type": "application/json",
+        "User-Agent": "agy-autonomous-agent",
+      },
+      body: JSON.stringify({ body }),
     },
-    body: JSON.stringify({ body }),
-  });
+  );
 }
 
-// Apply file operations generated by Gemini
-function applyFileOperations(operations) {
-  console.log("Applying operations generated by agent...");
-  for (const op of operations) {
-    const targetPath = path.resolve(op.path);
+async function createPullRequest(branchName, title, body) {
+  const response = await fetch(
+    `https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${GITHUB_TOKEN}`,
+        Accept: "application/vnd.github.v3+json",
+        "Content-Type": "application/json",
+        "User-Agent": "agy-autonomous-agent",
+      },
+      body: JSON.stringify({ title, body, head: branchName, base: "main" }),
+    },
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to create PR: ${response.status} ${await response.text()}`);
+  }
+  const pr = await response.json();
+  return pr.html_url;
+}
 
-    // Security check: ensure path is within the workspace
-    if (!targetPath.startsWith(process.cwd())) {
-      console.warn(
-        `⚠️ Warning: Blocked write operation outside workspace: ${op.path}`,
-      );
+function readIfExists(filePath) {
+  return fs.existsSync(filePath)
+    ? `--- FILE: ${filePath} ---\n${fs.readFileSync(filePath, "utf-8")}\n`
+    : "";
+}
+
+function listGitFiles() {
+  const result = runCommand("git ls-files", { maxBuffer: 1024 * 1024 * 20 });
+  if (!result.success) return [];
+  return result.output.split(/\r?\n/).filter(Boolean);
+}
+
+function getContextPack() {
+  const alwaysRead = [
+    "AGENTS.md",
+    ".github/AGENT_RULES.md",
+    "docs/GOAL.md",
+    "plan/PROGRESS.md",
+    "docs/ai/REPO_MAP.md",
+    "package.json",
+  ];
+  const files = listGitFiles().filter((filePath) => {
+    if (!filePath.startsWith("src/")) return false;
+    if (!filePath.endsWith(".js")) return false;
+    return !filePath.includes("/node_modules/");
+  });
+
+  const chunks = [];
+  for (const filePath of alwaysRead) chunks.push(readIfExists(filePath));
+  for (const filePath of files) chunks.push(readIfExists(filePath));
+  return chunks.join("\n");
+}
+
+function normalizePath(relativePath) {
+  const normalized = path.normalize(relativePath).replaceAll("\\", "/");
+  if (normalized.startsWith("../") || normalized === ".." || path.isAbsolute(normalized)) {
+    throw new Error(`Unsafe path outside workspace: ${relativePath}`);
+  }
+  return normalized;
+}
+
+function assertWritablePath(relativePath) {
+  const normalized = normalizePath(relativePath);
+  if (SUBSTRATE_PATHS.has(normalized)) {
+    throw new Error(`Blocked substrate write: ${normalized}`);
+  }
+  return normalized;
+}
+
+function applyFileOperations(operations) {
+  const originals = new Map();
+  for (const operation of operations) {
+    const target = assertWritablePath(operation.path);
+    if (!originals.has(target)) {
+      originals.set(target, fs.existsSync(target) ? fs.readFileSync(target, "utf-8") : null);
+    }
+
+    if (operation.action === "create" || operation.action === "modify") {
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.writeFileSync(target, operation.content, "utf-8");
+      console.log(`wrote ${target}`);
+    } else if (operation.action === "delete") {
+      if (fs.existsSync(target)) fs.unlinkSync(target);
+      console.log(`deleted ${target}`);
+    }
+  }
+  return originals;
+}
+
+function restoreOriginals(originals) {
+  for (const [filePath, content] of originals.entries()) {
+    if (content === null) {
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    } else {
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      fs.writeFileSync(filePath, content, "utf-8");
+    }
+  }
+}
+
+function checkoutTaskBranch(issueNumber, title) {
+  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 30);
+  const branchName = `auto/issue-${issueNumber}-${slug || "task"}-${Date.now()}`;
+  const checkout = runCommand(`git checkout -b ${branchName}`);
+  if (!checkout.success) throw new Error(checkout.output);
+  return branchName;
+}
+
+async function run() {
+  const issueNumber = parseIssueNumber();
+  requiredEnvForIssue(issueNumber);
+
+  const issue = await fetchIssueDetails(issueNumber);
+  const comments = await fetchIssueComments(issue.commentsUrl);
+  const branchName = checkoutTaskBranch(issueNumber, issue.title);
+
+  const systemPrompt = `You are a fully autonomous AI developer agent working in agy-sandbox.
+Follow AGENTS.md and .github/AGENT_RULES.md exactly.
+Do not modify substrate files. Keep changes small. Add or update tests. The final work must pass npm run agent:check.
+Return only a JSON array of file operations with complete file content.`;
+
+  const userPrompt = `Issue #${issueNumber}\nTitle: ${issue.title}\nBody:\n${issue.body}\n\nComments:\n${comments.join("\n")}\n\nRepository context:\n${getContextPack()}`;
+
+  const generationConfig = {
+    responseMimeType: "application/json",
+    responseSchema: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          path: { type: Type.STRING },
+          action: { type: Type.STRING, enum: ["create", "modify", "delete"] },
+          content: { type: Type.STRING },
+        },
+        required: ["path", "action", "content"],
+      },
+    },
+  };
+
+  let feedback = "";
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    console.log(`generation attempt ${attempt}/3 using ${MODEL_NAME}`);
+    const result = await genAI.models.generateContent({
+      model: MODEL_NAME,
+      contents: `${systemPrompt}\n\n${userPrompt}${feedback ? `\n\nPrevious gate output:\n${feedback}` : ""}`,
+      config: generationConfig,
+    });
+
+    let operations;
+    try {
+      operations = JSON.parse(result.text);
+    } catch (error) {
+      feedback = `Model response was not valid JSON: ${error.message}`;
       continue;
     }
 
-    if (op.action === "create" || op.action === "modify") {
-      fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-      fs.writeFileSync(targetPath, op.content, "utf-8");
-      console.log(`✅ Written: ${op.path}`);
-    } else if (op.action === "delete") {
-      if (fs.existsSync(targetPath)) {
-        fs.unlinkSync(targetPath);
-        console.log(`🗑️ Deleted: ${op.path}`);
-      }
-    }
-  }
-}
+    const originals = applyFileOperations(operations);
+    const gate = runCommand("npm run agent:check", { maxBuffer: 1024 * 1024 * 30 });
+    if (gate.success) {
+      runCommand("git add .");
+      const commitMessage = `feat: autonomously resolve issue #${issueNumber}\n\nResolves issue #${issueNumber}: ${issue.title}`;
+      fs.writeFileSync(".git-commit-msg.txt", commitMessage, "utf-8");
+      runCommand("git commit -F .git-commit-msg.txt");
+      fs.unlinkSync(".git-commit-msg.txt");
 
-// Main autonomous loop
-async function run() {
-  try {
-    // 1. Fetch Issue context
-    const issue = await fetchIssueDetails(issueNumber);
-    const comments = await fetchIssueComments(issue.commentsUrl);
-
-    console.log(`\n--- Working on Issue #${issueNumber}: ${issue.title} ---`);
-    console.log(`Description:\n${issue.body}\n`);
-
-    // 2. Read Agent rules and existing files
-    const agentRules = fs.existsSync(".github/AGENT_RULES.md")
-      ? fs.readFileSync(".github/AGENT_RULES.md", "utf-8")
-      : "";
-    const codeContext = getLocalCodeContext();
-
-    // 3. Initiate agent prompt
-    const systemPrompt = `You are a fully autonomous AI developer agent.
-You are tasked with solving the following GitHub Issue in a Node.js project.
-Your modifications MUST strictly comply with the following instructions:
-${agentRules}
-
-Current repository codebase contents:
-${codeContext}
-
-Your response must be a structured JSON array representing the file operations to create, modify, or delete files to solve this issue.
-Every file operation must provide the entire, complete replacement content for the file.
-
-Response schema:
-An array of objects, where each object has:
-- "path": Relative path from project root (e.g. "src/math.js")
-- "action": "create", "modify", or "delete"
-- "content": "Complete contents of the file"`;
-
-    const userPrompt = `GitHub Issue #${issueNumber} Details:
-Title: ${issue.title}
-Body: ${issue.body}
-Comments:
-${comments.join("\n")}`;
-
-    // Default to gemini-3.5-flash for high quota, high reasoning, and speed
-    const modelName = process.env.GEMINI_MODEL || "gemini-3.5-flash";
-    console.log(`Calling LLM (${modelName}) to plan and generate changes...`);
-    const generationConfig = {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.ARRAY,
-        description: "List of file operations to perform",
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            path: { type: Type.STRING },
-            action: {
-              type: Type.STRING,
-              enum: ["create", "modify", "delete"],
-            },
-            content: { type: Type.STRING },
-          },
-          required: ["path", "action", "content"],
-        },
-      },
-    };
-
-    let currentPrompt = userPrompt;
-    let feedback = "";
-    let attempts = 0;
-    const maxAttempts = 3;
-    let success = false;
-
-    // Self-correction loop
-    while (attempts < maxAttempts && !success) {
-      attempts++;
-      console.log(
-        `\n--- Code Generation Attempt ${attempts}/${maxAttempts} ---`,
-      );
-
-      const fullPrompt = `${systemPrompt}\n\n${currentPrompt}${feedback ? `\n\nPrevious attempt failed with errors:\n${feedback}\nPlease correct your code to fix these errors and ensure ALL tests pass.` : ""}`;
-      const result = await genAI.models.generateContent({
-        model: modelName,
-        contents: fullPrompt,
-        config: generationConfig,
-      });
-      const rawText = result.text;
-
-      let operations;
-      try {
-        operations = JSON.parse(rawText);
-      } catch (err) {
-        console.error("Failed to parse Gemini JSON output:", err);
-        feedback =
-          "The output could not be parsed as valid JSON. Ensure your output matches the requested schema.";
-        continue;
+      if (issueNumber === "0") {
+        console.log(`[MOCK] committed ${branchName}; skipping push and PR.`);
+        return;
       }
 
-      console.log(`Received ${operations.length} file operations.`);
+      const push = runCommand(`git push -u origin ${branchName}`);
+      if (!push.success) throw new Error(push.output);
 
-      // Keep track of original state for reverting in case of failure
-      const originalFiles = {};
-      for (const op of operations) {
-        if (fs.existsSync(op.path)) {
-          originalFiles[op.path] = fs.readFileSync(op.path, "utf-8");
-        } else {
-          originalFiles[op.path] = null; // Marked for deletion if we revert
-        }
-      }
-
-      // Apply the operations
-      applyFileOperations(operations);
-
-      // Verify changes (lint, format, test)
-      console.log("Verifying code health...");
-      const formatRes = runCommand("npm run format");
-      const lintRes = runCommand("npm run lint");
-      const testRes = runCommand("npm run test");
-
-      if (formatRes.success && lintRes.success && testRes.success) {
-        console.log("✨ All code health and unit tests passed perfectly!");
-        success = true;
-      } else {
-        console.log("❌ Code health checks failed.");
-        feedback = `Format output:\n${formatRes.output}\n\nLint output:\n${lintRes.output}\n\nTest output:\n${testRes.output}`;
-
-        // Revert files to avoid corrupting workspace for next attempt
-        console.log("Reverting changes for next attempt...");
-        for (const [filePath, content] of Object.entries(originalFiles)) {
-          if (content === null) {
-            if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-          } else {
-            fs.writeFileSync(filePath, content, "utf-8");
-          }
-        }
-      }
-    }
-
-    if (!success) {
-      console.error(
-        "❌ Failed to resolve the issue autonomously after maximum self-correction attempts.",
-      );
-      await addIssueComment(
-        issueNumber,
-        `❌ **Autonomous Coding Failed**\n\nThe autonomous agent failed to resolve this issue. All self-correction attempts resulted in compilation, lint, or test suite failures. Manual intervention is required.`,
-      );
-      process.exit(1);
-    }
-
-    // 4. Git branch, commit, push, PR
-    console.log("Preparing Pull Request...");
-    const branchName = `feat/issue-${issueNumber}-${issue.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .slice(0, 30)}`;
-
-    // Check if branch exists, delete it if so
-    runCommand(`git checkout main`);
-    runCommand(`git branch -D ${branchName}`);
-
-    // Create new branch
-    runCommand(`git checkout -b ${branchName}`);
-
-    // Add all modified files
-    runCommand(`git add .`);
-
-    // Commit
-    const commitMsg = `feat: autonomously resolve issue #${issueNumber}
-
-Resolves issue #${issueNumber}: "${issue.title}"`;
-    // Write commit message to temporary file to avoid shell escaping issues
-    fs.writeFileSync(".git-commit-msg.txt", commitMsg, "utf-8");
-    runCommand(`git commit -F .git-commit-msg.txt`);
-    fs.unlinkSync(".git-commit-msg.txt");
-
-    if (issueNumber === "0" || issueNumber === 0) {
-      console.log(
-        `🚀 [MOCK] Autonomously resolved local mock issue #${issueNumber}.`,
-      );
-      console.log(
-        `🚀 [MOCK] Branch ${branchName} successfully created and committed locally.`,
-      );
-      console.log(
-        `🚀 [MOCK] Skipping git push, GitHub PR creation, and comments.`,
-      );
-    } else {
-      // Push branch
-      // Note: in CI, authentication is handled by the actions runner using the GITHUB_TOKEN
-      const pushRes = runCommand(`git push -u origin ${branchName} --force`);
-      if (!pushRes.success) {
-        throw new Error(`Failed to push git branch: ${pushRes.output}`);
-      }
-
-      // Create Pull Request
       const prUrl = await createPullRequest(
         branchName,
         `[AUTO] Resolve: ${issue.title}`,
-        `This Pull Request was generated autonomously by the **AGY Autonomous Coder Agent** to resolve issue #${issueNumber}.\n\n### Changes Implemented\n- Programmatically applied generated code improvements.\n- Fully validated with \`npm run lint\` and \`npm run test\` (all tests pass).\n- Checked and reformatted according to standard styling conventions.\n\nCloses #${issueNumber}.`,
+        `Autonomous solution for #${issueNumber}.\n\nValidation: \`npm run agent:check\` passed.\n\nCloses #${issueNumber}.`,
       );
-
-      // Comment on the issue
-      await addIssueComment(
-        issueNumber,
-        `🚀 **Autonomous Solution Proposed!**\n\nI have successfully resolved the requirements for this issue and fully verified the solution against the local unit tests and style guides. All tests passed successfully.\n\nI have submitted a Pull Request containing the proposed improvements here:\n👉 **[Pull Request](${prUrl})**\n\nCloses #${issueNumber}.`,
-      );
+      await addIssueComment(issueNumber, `Autonomous solution proposed: ${prUrl}`);
+      return;
     }
 
-    // Return to main branch
-    runCommand(`git checkout main`);
-    console.log("🎉 Autonomous cycle successfully completed!");
-  } catch (error) {
-    console.error("❌ Error in autonomous runner execution:", error);
-    process.exit(1);
+    feedback = gate.output;
+    restoreOriginals(originals);
   }
+
+  await addIssueComment(
+    issueNumber,
+    "Autonomous coding failed after three attempts. No green commit was produced.",
+  );
+  process.exit(1);
 }
 
-run();
+run().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

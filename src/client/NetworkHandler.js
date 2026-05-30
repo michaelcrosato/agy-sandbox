@@ -59,6 +59,38 @@ export class NetworkHandler {
   }
 
   /**
+   * Adopts a full keyframe snapshot from the server: replaces the local
+   * reconstructed snapshot wholesale and adopts its seq. Pure with respect to
+   * the network layer (no socket/DOM), so the snapshot/delta reconstruction is
+   * unit-testable in isolation.
+   * @param {{entities?: Object<string, Object>, seq: number}} msg
+   * @returns {Array<Object>} The reconstructed entity list (id-map values).
+   */
+  applySnapshotMessage(msg) {
+    this.serverSnapshot = { entities: msg.entities || {} };
+    this.serverSeq = msg.seq;
+    this.entitiesData = Object.values(this.serverSnapshot.entities);
+    return this.entitiesData;
+  }
+
+  /**
+   * Applies an incremental delta iff its `baseSeq` matches the snapshot we
+   * currently hold. A mismatch means we missed a frame, so the delta is dropped
+   * and we wait for the next keyframe (the server's ~1s cadence self-heals the
+   * desync). On success the local snapshot/seq advance and the new entity list
+   * is returned; on a dropped delta the local state is left untouched.
+   * @param {{baseSeq: number, seq: number, delta: Object}} msg
+   * @returns {Array<Object>|null} Entity list on apply, or null if dropped.
+   */
+  applyDeltaMessage(msg) {
+    if (msg.baseSeq !== this.serverSeq) return null;
+    this.serverSnapshot = applyDelta(this.serverSnapshot, msg.delta);
+    this.serverSeq = msg.seq;
+    this.entitiesData = Object.values(this.serverSnapshot.entities);
+    return this.entitiesData;
+  }
+
+  /**
    * Connects to the authoritative WebSocket server.
    */
   connect() {
@@ -116,10 +148,8 @@ export class NetworkHandler {
 
         case "state_snapshot": {
           // Full keyframe: replace the local snapshot wholesale and adopt seq.
-          this.serverSnapshot = { entities: msg.entities || {} };
-          this.serverSeq = msg.seq;
-          this.entitiesData = Object.values(this.serverSnapshot.entities);
-          if (this.onStateReceived) this.onStateReceived(this.entitiesData);
+          const entities = this.applySnapshotMessage(msg);
+          if (this.onStateReceived) this.onStateReceived(entities);
           break;
         }
 
@@ -127,11 +157,8 @@ export class NetworkHandler {
           // Delta is only valid if its baseSeq matches the snapshot we hold.
           // Otherwise we've missed a frame — drop the delta and wait for the
           // next keyframe (the ~1s cadence on the server self-heals desync).
-          if (msg.baseSeq !== this.serverSeq) break;
-          this.serverSnapshot = applyDelta(this.serverSnapshot, msg.delta);
-          this.serverSeq = msg.seq;
-          this.entitiesData = Object.values(this.serverSnapshot.entities);
-          if (this.onStateReceived) this.onStateReceived(this.entitiesData);
+          const entities = this.applyDeltaMessage(msg);
+          if (entities && this.onStateReceived) this.onStateReceived(entities);
           break;
         }
 

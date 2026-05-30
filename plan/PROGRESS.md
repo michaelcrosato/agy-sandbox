@@ -19,8 +19,20 @@ _**v12 re-audit baseline (2026-05-30, ENTIRE v11 blueprint shipped): 882 Jest te
 _**v13 re-audit baseline (2026-05-30, ENTIRE v12 blueprint shipped): 886 Jest tests / 71 suites + 24 client green; 0 `npm audit` vulnerabilities; procedural mission completions + UtilityAI global rollout + centralized commodities all DONE.**_
 _**v14 re-audit baseline (2026-05-30, ENTIRE v13 blueprint shipped): 897 Jest tests / 72 suites + 24 client green; 0 `npm audit` vulnerabilities; canvas visual regression + MMR progressive queues + sharded storage partitions all DONE.**_
 _**v15 re-audit baseline (2026-05-30, ENTIRE v14 blueprint shipped): 901 Jest tests / 73 suites + 26 client green + 3 Vitest browser tests green; 0 `npm audit` vulnerabilities; client-side prediction reconciler + delta snapshot compression + canvas dashboard sparklines all DONE.**_
+_**v16 re-audit baseline (2026-05-30, ENTIRE v15 blueprint shipped): 904 Jest tests / 73 suites + 26 client green + 3 Vitest browser tests green; 0 `npm audit` vulnerabilities; pairwise standing propagation + generative consequences broadcast + wingman formations and HUD overlay all DONE.**_
 
-## v15 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+## v16 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Quick Wins & Safety
+- [ ] `077` raw ore refining port services and mining laser mass (implement Spaceport refining conversions, tax adjustments, and mining laser outfits contributing mass property to hulls)
+
+### Phase 1 — Core Upgrades & Feature Delivery
+- [ ] `078` reputation decay heartbeat hook (globally trigger FactionRegistry reputation decays drift towards zero from server ticker updates)
+
+### Phase 2 — System Architecture
+- [ ] `079` wingman intercept tactics and shield/armor HUD telemetry (program wingman intercept targets commands and FSM transitions, and render mini cockpit HUD status panels)
+
+## v15 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
 - [x] `074` Faction Pairwise Standing Propagation & Pairwise Relations (wire canonical alliances and enemies in FactionRegistry, so that standing gains/losses auto-propagate to Allies and Enemies proportionally) — **done** (files: `src/engine/FactionRegistry.js`, `src/engine/FactionRegistry.test.js`; successfully verified pairwise standing propagation for Allies (+50% gain) and Enemies (-50% loss) in FactionRegistry, fully covered by extensive unit tests in the faction suite)

@@ -114,18 +114,18 @@ flowchart TD
 
 ---
 
-## EXECUTION WAVES (v14)
+## EXECUTION WAVES (v16)
 
-Completed waves (`001–070`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
+Completed waves (`001–076`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
 
-### Phase 0 — Quick Wins & Safety — `071`
-`071` Client-Side Input Prediction & Server Reconciliation Harness (engineer a pure deterministic reconciler simulating physics vectors, input sequences, and authoritative state snapping under packet lag).
+### Phase 0 — Quick Wins & Safety — `077`
+`077` raw ore refining port services and mining laser mass (implement Spaceport refining conversions, tax adjustments, and mining laser outfits contributing mass property to hulls).
 
-### Phase 1 — Core Upgrades & Feature Delivery — `072`
-`072` Snapshot Delta Compression Network Pipeline (implement client-specific acknowledged frame baseline tracking and field-level dynamic dirty checks to compress broadcast payloads).
+### Phase 1 — Core Upgrades & Feature Delivery — `078`
+`078` reputation decay heartbeat hook (globally trigger FactionRegistry reputation decays drift towards zero from server ticker updates).
 
-### Phase 2 — System Architecture — `073`
-`073` Observability Teleboard Sparkline Chart Extensions (expand visual telemetry dashboard cards with smooth, self-rendering canvas sparkline line graphs visualizing real-time history logs).
+### Phase 2 — System Architecture — `079`
+`079` wingman intercept tactics and shield/armor HUD telemetry (program wingman intercept targets commands and FSM transitions, and render mini cockpit HUD status panels).
 
 ---
 
@@ -135,11 +135,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 071 | Client-Side Input Prediction & Server Reconciliation | 0 | 5 | 5 | 5 | 5 | 20 |
-| 072 | Snapshot Delta Compression Network Pipeline | 1 | 5 | 5 | 5 | 5 | 20 |
-| 073 | Observability Teleboard Sparkline Chart Extensions | 2 | 5 | 5 | 5 | 5 | 20 |
+| 077 | Raw Ore Refining & Mining Laser Mass | 0 | 5 | 5 | 5 | 5 | 20 |
+| 078 | Reputation Decay Heartbeat Hook | 1 | 5 | 5 | 5 | 5 | 20 |
+| 079 | Wingman Intercept & HUD Telemetry | 2 | 5 | 5 | 5 | 5 | 20 |
 
-**Recommended start:** `071` (Σ20 — client input prediction), then proceed to `072` (Σ20) for snapshot delta-compression broadcasts, and finally `073` (Σ20) for real-time observability visual sparklines.
+**Recommended start:** `077` (Σ20 — raw ore refining), then proceed to `078` (Σ20) for standings decay, and finally `079` (Σ20) for advanced wingman commands and HUD status panels.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

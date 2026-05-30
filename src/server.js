@@ -1666,6 +1666,7 @@ wss.on("connection", (ws) => {
           JUMP_FUEL_COST,
           room.factionRegistry,
           governingFaction,
+          room.engine.entities,
         );
         if (!val.ok) {
           clientObj.send({

@@ -750,6 +750,10 @@ export class GameInstance {
           base.maxHeat = ent.maxHeat;
           base.isOverheated = ent.isOverheated;
           base.isDisabled = ent.isDisabled;
+          base.isInterdicting =
+            typeof ent.hasActiveInterdictor === "function"
+              ? ent.hasActiveInterdictor()
+              : false;
         } else if (ent.type === "cargo_pod") {
           base.resourceType = ent.resourceType;
           base.amount = ent.amount;

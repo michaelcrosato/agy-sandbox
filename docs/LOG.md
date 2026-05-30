@@ -39,6 +39,25 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T10:20 · iter-0078 · GREEN · spec-056-warp-lane-interdiction
+
+- **Baseline:** `0c005d5` on `main`; 833 Jest tests green.
+- **Move:** Implement dynamic gravity interdiction fields blocking hyperspace jump validation (056).
+- **Changed:**
+  - Added the `Hyperdrive Interdictor Matrix` outfit to `src/engine/outfitCatalog.js`.
+  - Added switch case support for `interdictor` outfit type in `src/engine/Outfitting.js`.
+  - Declared `isInterdicting` in `Ship` constructor and implemented the `hasActiveInterdictor()` query on the `Ship` class in `src/engine/Ship.js`.
+  - Updated `validateWarpJump` inside `src/engine/Hyperdrive.js` to accept `entities` list, verify active hostile interdiction fields within 300 units, and block warp jumps.
+  - Implemented the standalone `isEntityHostile` function inside `src/engine/Hyperdrive.js` merging role-based and standing-based hostility.
+  - Passed `room.engine.entities` into `validateWarpJump` from server warp handler inside `src/server.js`.
+  - Enabled guard, pirate, and escort AI Controllers to activate `isInterdicting` dynamically during combat inside `src/engine/ai/AIController.js`.
+  - Packed and synchronized `isInterdicting` state to clients via `serializeEntities()` inside `src/engine/GameInstance.js`.
+  - Rendered a pulsing, expanding cyan gravitational distortion ring field overlay around interdicting ships on the canvas inside `src/client/CanvasRenderer.js`.
+  - Added comprehensive unit tests in `src/engine/Hyperdrive.test.js` validating jump disruption, friendly bypass, and range exclusions.
+- **Decisions:** Used uninitialized class variable mappings to pass JSDoc typechecking gates cleanly. Resolved the O(N) sector entity checks by designing a robust range check within validateWarpJump that handles both player and NPC jumps deterministically.
+- **Validation:** `npm run agent:check` -> green (836 Jest tests / 66 suites).
+- **Next:** Proceed with SPEC-054 to implement emergent Faction Conflict Battlegrounds.
+
 ## 2026-05-30T10:15 · iter-0077 · GREEN · spec-055-naval-command-decks
 
 - **Baseline:** `9c7e178` on `main`; 827 Jest tests green.

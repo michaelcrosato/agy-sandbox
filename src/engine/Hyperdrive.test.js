@@ -131,5 +131,95 @@ describe("Hyperdrive (EW3)", () => {
           "Insufficient Hyper-Fuel! Requires 20 units. Land on a planet to refuel.",
       });
     });
+
+    test("fails when a hostile interdictor ship is within 300 units", () => {
+      const ship = {
+        id: "player1",
+        role: "merchant",
+        hyperFuel: 50,
+        position: pos(0, 0),
+      };
+      const gate = { type: "warp_gate", position: pos(10, 0) };
+
+      const hostileInterdictor = {
+        type: "ship",
+        role: "pirate",
+        position: pos(100, 0), // within 300 units (100)
+        hasActiveInterdictor: () => true,
+      };
+
+      const entities = [hostileInterdictor];
+
+      const res = validateWarpJump(
+        ship,
+        gate,
+        20,
+        null,
+        "Independents",
+        entities,
+      );
+      expect(res.ok).toBe(false);
+      expect(res.reason).toBe(
+        "WARP ENGINE DISRUPTED: Interdiction Gravity Well Active",
+      );
+    });
+
+    test("succeeds if the interdictor ship is friendly", () => {
+      const ship = {
+        id: "player1",
+        role: "merchant",
+        hyperFuel: 50,
+        position: pos(0, 0),
+      };
+      const gate = { type: "warp_gate", position: pos(10, 0) };
+
+      const friendlyInterdictor = {
+        type: "ship",
+        role: "guard", // not hostile to merchant by default
+        position: pos(100, 0),
+        hasActiveInterdictor: () => true,
+      };
+
+      const entities = [friendlyInterdictor];
+
+      const res = validateWarpJump(
+        ship,
+        gate,
+        20,
+        null,
+        "Independents",
+        entities,
+      );
+      expect(res.ok).toBe(true);
+    });
+
+    test("succeeds if the hostile interdictor ship is too far (e.g. 400u)", () => {
+      const ship = {
+        id: "player1",
+        role: "merchant",
+        hyperFuel: 50,
+        position: pos(0, 0),
+      };
+      const gate = { type: "warp_gate", position: pos(10, 0) };
+
+      const hostileInterdictor = {
+        type: "ship",
+        role: "pirate",
+        position: pos(400, 0), // outside 300 units (400)
+        hasActiveInterdictor: () => true,
+      };
+
+      const entities = [hostileInterdictor];
+
+      const res = validateWarpJump(
+        ship,
+        gate,
+        20,
+        null,
+        "Independents",
+        entities,
+      );
+      expect(res.ok).toBe(true);
+    });
   });
 });

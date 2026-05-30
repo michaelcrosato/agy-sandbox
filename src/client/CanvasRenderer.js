@@ -978,6 +978,38 @@ export class CanvasRenderer {
       this.ctx.stroke();
     }
 
+    // Render interdictor pulsing gravitational distortion field
+    if (ship.isInterdicting && !ship.isDestroyed) {
+      const timeSec = Date.now() / 1000;
+      const pulseVal = Math.sin(timeSec * 3) * 0.5 + 0.5;
+
+      this.ctx.save();
+
+      // Outer field boundary ring (300 units radius)
+      this.ctx.strokeStyle = `rgba(0, 242, 254, ${0.08 + pulseVal * 0.05})`;
+      this.ctx.lineWidth = 1.5;
+      this.ctx.setLineDash([8, 12]);
+      this.ctx.beginPath();
+      this.ctx.arc(0, 0, 300, 0, Math.PI * 2);
+      this.ctx.stroke();
+
+      // Pulsing expanding inner distortion rings
+      this.ctx.setLineDash([]);
+      for (let i = 0; i < 3; i++) {
+        const ringProgress = (timeSec * 0.4 + i / 3) % 1;
+        const ringRadius = 30 + ringProgress * 270;
+        const ringOpacity = (1 - ringProgress) * 0.22;
+
+        this.ctx.strokeStyle = `rgba(0, 242, 254, ${ringOpacity})`;
+        this.ctx.lineWidth = 1 + (1 - ringProgress) * 2;
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, ringRadius, 0, Math.PI * 2);
+        this.ctx.stroke();
+      }
+
+      this.ctx.restore();
+    }
+
     // 1. Render thermal reactor meltdown core glowing (Overheated ships)
     if (ship.isOverheated && !ship.isDestroyed) {
       this.ctx.save();

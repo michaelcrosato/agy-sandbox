@@ -73,6 +73,21 @@ export class AIController {
     // 1. Scan for targets if necessary
     this.scanSensors(entities);
 
+    // Update interdictor projection state on NPC warships
+    if (this.ship.target && !this.ship.target.isDestroyed) {
+      if (
+        this.role === "guard" ||
+        this.role === "pirate" ||
+        this.role === "escort"
+      ) {
+        this.ship.isInterdicting = true;
+      } else {
+        this.ship.isInterdicting = false;
+      }
+    } else {
+      this.ship.isInterdicting = false;
+    }
+
     // 1b. Advisory goal layer (spec 017): when enabled, a UtilityAI goal can
     // pre-empt the role FSM. Only FLEE overrides today — a pressured agent
     // breaks off and evades regardless of role, which is the cross-role plan

@@ -145,4 +145,13 @@ export const DEFAULT_OUTFITS = Object.freeze([
     description:
       "Military-grade tracking system. Projects real-time directional bearing and range telemetry to bounty targets in-sector.",
   },
+  {
+    name: "Hyperdrive Interdictor Matrix",
+    cost: 8500,
+    type: "interdictor",
+    value: 1,
+    mass: 350,
+    description:
+      "Emits an intense localized gravity well. Prevents nearby hostile ships within 300 units from engaging warp drives or jumping sectors.",
+  },
 ]);

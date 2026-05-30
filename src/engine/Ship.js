@@ -135,6 +135,7 @@ export class Ship extends SpaceEntity {
       isFiring: false,
       isBoosting: false,
     };
+    this.isInterdicting = false;
   }
 
   /**
@@ -453,5 +454,20 @@ export class Ship extends SpaceEntity {
     if (currentSpeed > speedCap) {
       this.velocity = this.velocity.normalize().multiply(speedCap);
     }
+  }
+
+  /**
+   * Returns whether the ship has an active hyperdrive interdictor field.
+   * @returns {boolean}
+   */
+  hasActiveInterdictor() {
+    if (this.isDestroyed) return false;
+    if (
+      this.outfits &&
+      this.outfits.includes("Hyperdrive Interdictor Matrix")
+    ) {
+      return true;
+    }
+    return !!this.isInterdicting;
   }
 }

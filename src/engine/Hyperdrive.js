@@ -110,12 +110,73 @@ export function getWarpToll(ship, factionRegistry, governingFaction) {
  * @param {string} [governingFaction] - Faction name.
  * @returns {{ ok: boolean, reason?: string }} Result.
  */
+/**
+ * Helper to determine if an entity is hostile to the jumping ship.
+ * @param {Object} ship - The jumping ship.
+ * @param {Object} ent - Candidate entity.
+ * @param {Object|null} factionRegistry - Standings/relations registry.
+ * @returns {boolean}
+ */
+export function isEntityHostile(ship, ent, factionRegistry) {
+  if (!ship || !ent) return false;
+  if (ent.isDestroyed) return false;
+
+  // Role-based hostility
+  const isPirate =
+    ent.role === "pirate" ||
+    (typeof ent.name === "string" &&
+      (ent.name.includes("Pirate") || ent.name.includes("Raider")));
+  const selfIsPirate =
+    ship.role === "pirate" ||
+    (typeof ship.name === "string" &&
+      (ship.name.includes("Pirate") || ship.name.includes("Raider")));
+
+  if (isPirate && !selfIsPirate) return true;
+  if (ent.role === "guard" && selfIsPirate) return true;
+
+  // Faction standing hostility
+  if (factionRegistry) {
+    const threshold =
+      factionRegistry.options &&
+      factionRegistry.options.hostileThreshold !== undefined
+        ? factionRegistry.options.hostileThreshold
+        : -30;
+
+    if (ent.faction && ship.id) {
+      const standing = factionRegistry.getStanding(ship.id, ent.faction);
+      if (standing <= threshold) return true;
+    }
+    if (ship.faction && ent.id) {
+      const standing = factionRegistry.getStanding(ent.id, ship.faction);
+      if (standing <= threshold) return true;
+    }
+    if (ship.faction && ent.faction) {
+      if (factionRegistry.getRelation(ship.faction, ent.faction) === "enemy") {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Validates stargate distance, hyper-fuel, and credit toll requirements for a jump.
+ * @param {Object} ship - The jumping ship.
+ * @param {Object} gate - Stargate entity.
+ * @param {number} [jumpCost] - Fuel cost.
+ * @param {Object|null} [factionRegistry] - Faction standings.
+ * @param {string} [governingFaction] - Faction name.
+ * @param {Array<Object>} [entities] - Array of all entities in sector.
+ * @returns {{ ok: boolean, reason?: string }} Result.
+ */
 export function validateWarpJump(
   ship,
   gate,
   jumpCost = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost,
   factionRegistry = null,
   governingFaction = "Independents",
+  entities = [],
 ) {
   if (!ship || !gate || gate.type !== "warp_gate") {
     return { ok: false, reason: "Warp Gate invalid or not found!" };
@@ -146,6 +207,29 @@ export function validateWarpJump(
         ok: false,
         reason: `Insufficient credits for warp gate toll! Requires ${toll} CR.`,
       };
+    }
+  }
+
+  // Check for active hostile interdiction fields within 300 units
+  if (Array.isArray(entities) && entities.length > 0) {
+    for (const ent of entities) {
+      if (
+        ent &&
+        ent.type === "ship" &&
+        ent !== ship &&
+        typeof ent.hasActiveInterdictor === "function" &&
+        ent.hasActiveInterdictor()
+      ) {
+        if (isEntityHostile(ship, ent, factionRegistry)) {
+          const d = ship.position.distance(ent.position);
+          if (d <= 300) {
+            return {
+              ok: false,
+              reason: "WARP ENGINE DISRUPTED: Interdiction Gravity Well Active",
+            };
+          }
+        }
+      }
     }
   }
 

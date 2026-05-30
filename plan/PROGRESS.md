@@ -35,7 +35,7 @@ v3 Phase 0 (026–029) + Phase 1 (030–035) + Phase 2 scale-out (019b–f, 036�
 - [ ] `019f` Graceful drain / zero-downtime restart — _blocked by: 019c, 019e (recommended)_
 - [ ] `036` Matchmaking with room filters + queue — _blocked by: none_
 - [ ] `037` `permessage-deflate` compression eval (benchmark) — _blocked by: none_
-- [ ] `038` Schema-based state encoding eval — _blocked by: 015 (done)_
+- [x] `038` Schema-based state encoding eval — **done** (commit `4d193bd`; files: new `src/net/SchemaCodec.js` + `.test.js` (5, green); an EVAL prototype extending spec-015 `BinaryCodec` with a **value-string dictionary** — interns ALL strings (object keys AND repeated string values like `"ship"`) into one per-frame table referenced by varint index. Bit-exact `decode(encode(x))` round-trip incl. `undefined` delta-removal fields. **Measured**: for a 40-entity keyframe `SchemaCodec < BinaryCodec < JSON`. **Recommendation**: modest win over the key-dictionary alone at the cost of a maintained string table → adopt only if profiling shows broadcast size is the bottleneck; `BinaryCodec` stays the wire format. Eval-only, not wired into the live broadcast.)
 
 ## ✅ Phase 0 — Quick Wins & Safety (DONE)
 - [x] `001` Remediate localtunnel/axios CVEs — **done** (files: `src/server.js` dynamic optional import + graceful fallback, removed `localtunnel` from `package.json`/lockfile, `README.md` cloudflared guidance; `npm audit` → 0 vulnerabilities)

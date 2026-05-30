@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-29T21:55 · iter-0038 · GREEN · spec-011-eslint-10-migration
+
+- **Baseline:** `a23a3d7` on branch `main`; 614 tests / 42 suites green; ESLint 9.39. Executing `plan/specs/011`. (Note: HEAD is on `main` — a parallel process switched branches mid-run; history is linear and intact, see iter-0037.)
+- **Move:** Move onto the supported ESLint 10 line and fix any new findings.
+- **Changed:** `package.json`/lockfile — `eslint` `^9`→`^10` (resolved 10.4.1), plus `@eslint/js` and `globals` promoted to explicit `devDependencies` (both are imported by `eslint.config.js`). The flat config needed no changes. ESLint 10 added `no-useless-assignment` to its recommended set, which flagged 3 real dead assignments: `px`/`py` initialised to 0 then unconditionally overwritten in both branches (`src/client/CanvasRenderer.js`), and a `title` default always overwritten by the hazardType if/else/else chain (`src/client/UIController.js`). Fixed by dropping the dead initialisers (behavior-preserving — the values were never read).
+- **Decisions:** Fixed the findings rather than suppressing the rule (per spec). The two touched files are client/canvas code with no headless tests; the changes are provably safe because ESLint's control-flow analysis confirmed the removed values were never read on any path.
+- **Validation:** `npm run lint` → exit 0; `npm run agent:check` → green (614 tests / 42 suites, prettier clean); `npm audit` → 0 vulnerabilities.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 011 done. Browser HUD not headlessly testable; the edits remove dead code only.
+- **Next:** `plan/specs/012` (Jest 29→30) — the last Phase 1 item.
+
 ## 2026-05-29T21:49 · iter-0037 · INCIDENT · restore-clobbered-ledger-history
 
 - **Baseline:** `368bbfd` on branch `overnight/bugfix-and-coverage`. A non-conventional commit (`368bbfd`, "feat: implement spec 013 …") that landed the genai migration **also rewrote `docs/LOG.md`, truncating it from 476 lines / 32 entries (iter-0001…0035) to 52 lines** — it matched the `== LOG-ANCHOR ==` *substring inside the Rules text* (line 15) and prepended its entry there, splitting the rule sentence and dropping the entire ledger below the real anchor.

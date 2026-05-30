@@ -1,0 +1,155 @@
+# 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
+
+> **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
+> Generated: `2026-05-30T23:56:20.754Z` · Baseline: `15,601 LOC` across `67 source files`
+
+---
+
+## 📊 SYSTEM METRICS & HEALTH
+
+| Category | Metric | Status |
+| --- | --- | --- |
+| **Total Code Volume** | `15,601 LOC` | 🟢 Healthy |
+| **Source Modules** | `67 files` | 🟢 Structured |
+| **Test Suites** | `93 test files` | 🟢 Integrated |
+| **Total Test Cases** | `1309 cases` | 🟢 Deterministic |
+| **Active/Archived Specs** | `107 specifications` | 🟢 Traceable |
+| **Untested Core Modules** | `0 files` | 🟢 100% Covered |
+
+---
+
+## 🗺️ REPOSITORY ONTOLOGY MAP
+
+### 📂 Directory: `src/engine/ai/`
+
+| File | LOC | Classes / Exports | Unit Test File | Referencing Specs |
+| --- | --- | --- | --- | --- |
+| [AIController.js](file:///C:/dev/agy-sandbox/src/engine/ai/AIController.js) | 1094 | `class AIController` | [AIController.test.js](file:///C:/dev/agy-sandbox/src/engine/ai/AIController.test.js) | [`009_decouple_threat_detection_from_names`](file:///C:/dev/agy-sandbox/plan/specs/009_decouple_threat_detection_from_names.md)<br>[`040_utilityai_advisor_rich_actions`](file:///C:/dev/agy-sandbox/plan/specs/040_utilityai_advisor_rich_actions.md)<br>[`050_wingman_tactical_formation_controls`](file:///C:/dev/agy-sandbox/plan/specs/050_wingman_tactical_formation_controls.md)<br>[`054_faction_conflict_battlegrounds`](file:///C:/dev/agy-sandbox/plan/specs/054_faction_conflict_battlegrounds.md)<br>[`056_warp_lane_interdiction`](file:///C:/dev/agy-sandbox/plan/specs/056_warp_lane_interdiction.md) |
+| [buildPerception.js](file:///C:/dev/agy-sandbox/src/engine/ai/buildPerception.js) | 425 | `function defaultIsThreat`, `function defaultThreatLevel`, `function defaultIsPrey`, `function defaultPreyWeakness`, `function defaultIsTrade`, `function defaultTradeProfit`, `constant DEFAULT_PERCEPTION_OPTIONS`, `function isTargetedBySecurity`, `function buildPerception` | [buildPerception.test.js](file:///C:/dev/agy-sandbox/src/engine/ai/buildPerception.test.js) | [`017_goal_driven_npc_runtime`](file:///C:/dev/agy-sandbox/plan/specs/017_goal_driven_npc_runtime.md)<br>[`040_utilityai_advisor_rich_actions`](file:///C:/dev/agy-sandbox/plan/specs/040_utilityai_advisor_rich_actions.md)<br>[`066_utilityai_advisor_spawns_rollout`](file:///C:/dev/agy-sandbox/plan/specs/066_utilityai_advisor_spawns_rollout.md) |
+| [UtilityAI.js](file:///C:/dev/agy-sandbox/src/engine/ai/UtilityAI.js) | 398 | `constant Goals`, `constant GOAL_ORDER`, `constant DEFAULT_UTILITY_OPTIONS`, `function clamp01`, `function proximityFactor`, `function maxThreatPressure`, `function bestOpportunity`, `function combatReadiness`, `function scoreEngage`, `function scoreFlee`, `function scoreTrade`, `function scoreRegroup`, `function scorePatrol`, `function normalizeSelf`, `function evaluateGoals`, `function selectGoal`, `function selfStateFromShip` | [UtilityAI.test.js](file:///C:/dev/agy-sandbox/src/engine/ai/UtilityAI.test.js) | _None_ |
+
+### 📂 Directory: `src/engine/`
+
+| File | LOC | Classes / Exports | Unit Test File | Referencing Specs |
+| --- | --- | --- | --- | --- |
+| [Boarding.js](file:///C:/dev/agy-sandbox/src/engine/Boarding.js) | 159 | `constant DEFAULT_BOARDING_OPTIONS`, `function canBoard`, `function plunder`, `function boardRepair`, `function boardSalvage`, `function boardCapture` | [Boarding.test.js](file:///C:/dev/agy-sandbox/src/engine/Boarding.test.js) | _None_ |
+| [CargoPod.js](file:///C:/dev/agy-sandbox/src/engine/CargoPod.js) | 29 | `class CargoPod` | [CargoPod.test.js](file:///C:/dev/agy-sandbox/src/engine/CargoPod.test.js) | _None_ |
+| [CombatRating.js](file:///C:/dev/agy-sandbox/src/engine/CombatRating.js) | 106 | `constant DEFAULT_COMBAT_RATING_OPTIONS`, `function shipBountyValue`, `function combatRating`, `function combatRank`, `function recordKill` | [CombatRating.test.js](file:///C:/dev/agy-sandbox/src/engine/CombatRating.test.js) | _None_ |
+| [commodities.js](file:///C:/dev/agy-sandbox/src/engine/commodities.js) | 38 | `constant COMMODITIES`, `function makeEmptyCargo` | [commodities.test.js](file:///C:/dev/agy-sandbox/src/engine/commodities.test.js) | [`031_commodities_centralization`](file:///C:/dev/agy-sandbox/plan/specs/031_commodities_centralization.md)<br>[`067_centralize_commodities_invariants`](file:///C:/dev/agy-sandbox/plan/specs/067_centralize_commodities_invariants.md)<br>[`099_centralized_commodities_schema_registry`](file:///C:/dev/agy-sandbox/plan/specs/099_centralized_commodities_schema_registry.md) |
+| [CosmicStorm.js](file:///C:/dev/agy-sandbox/src/engine/CosmicStorm.js) | 95 | `class CosmicStorm` | [CosmicStorm.test.js](file:///C:/dev/agy-sandbox/src/engine/CosmicStorm.test.js) | [`063_cosmic_storms`](file:///C:/dev/agy-sandbox/plan/specs/063_cosmic_storms.md) |
+| [EconomyManager.js](file:///C:/dev/agy-sandbox/src/engine/EconomyManager.js) | 255 | `class EconomyManager` | [EconomyManager.test.js](file:///C:/dev/agy-sandbox/src/engine/EconomyManager.test.js) | [`006_economy_nan_selfheal`](file:///C:/dev/agy-sandbox/plan/specs/006_economy_nan_selfheal.md) |
+| [FactionRegistry.js](file:///C:/dev/agy-sandbox/src/engine/FactionRegistry.js) | 481 | `class FactionRegistry`, `constant DEFAULT_FACTIONS`, `constant DEFAULT_RELATIONS`, `constant DEFAULT_OPTIONS`, `function classifyStanding`, `function priceModifier`, `function dockingPermitted` | [FactionRegistry.test.js](file:///C:/dev/agy-sandbox/src/engine/FactionRegistry.test.js) | [`074_faction_pairwise_propagation`](file:///C:/dev/agy-sandbox/plan/specs/074_faction_pairwise_propagation.md) |
+| [GalaxyEventsManager.js](file:///C:/dev/agy-sandbox/src/engine/GalaxyEventsManager.js) | 141 | `class GalaxyEventsManager` | [GalaxyEventsManager.test.js](file:///C:/dev/agy-sandbox/src/engine/GalaxyEventsManager.test.js) | [`057_dynamic_market_events`](file:///C:/dev/agy-sandbox/plan/specs/057_dynamic_market_events.md) |
+| [GalaxyHeartbeat.js](file:///C:/dev/agy-sandbox/src/engine/GalaxyHeartbeat.js) | 169 | `class GalaxyHeartbeat` | [GalaxyHeartbeat.test.js](file:///C:/dev/agy-sandbox/src/engine/GalaxyHeartbeat.test.js) | [`006_economy_nan_selfheal`](file:///C:/dev/agy-sandbox/plan/specs/006_economy_nan_selfheal.md) |
+| [GameInstance.js](file:///C:/dev/agy-sandbox/src/engine/GameInstance.js) | 1746 | `class GameInstance`, `constant SECTOR_ADJACENCY`, `constant BASE_MARKETS` | [GameInstance.test.js](file:///C:/dev/agy-sandbox/src/engine/GameInstance.test.js) | [`047_dynamic_reputation_patrol_spawns`](file:///C:/dev/agy-sandbox/plan/specs/047_dynamic_reputation_patrol_spawns.md)<br>[`048_contraband_space_patrol_scans`](file:///C:/dev/agy-sandbox/plan/specs/048_contraband_space_patrol_scans.md)<br>[`054_faction_conflict_battlegrounds`](file:///C:/dev/agy-sandbox/plan/specs/054_faction_conflict_battlegrounds.md)<br>[`066_utilityai_advisor_spawns_rollout`](file:///C:/dev/agy-sandbox/plan/specs/066_utilityai_advisor_spawns_rollout.md)<br>[`081_outlaw_black_markets`](file:///C:/dev/agy-sandbox/plan/specs/081_outlaw_black_markets.md) |
+| [GenerativeMissions.js](file:///C:/dev/agy-sandbox/src/engine/GenerativeMissions.js) | 417 | `constant DEFAULT_GENERATIVE_OPTIONS`, `function createSeededRng`, `function generateMissionsFromWorld`, `function applyMissionConsequences` | [GenerativeMissions.test.js](file:///C:/dev/agy-sandbox/src/engine/GenerativeMissions.test.js) | _None_ |
+| [Hyperdrive.js](file:///C:/dev/agy-sandbox/src/engine/Hyperdrive.js) | 238 | `constant DEFAULT_HYPERDRIVE_OPTIONS`, `function canJump`, `function consumeJump`, `function refuel`, `function ramscoopRegen`, `function getWarpToll`, `function isEntityHostile`, `function validateWarpJump` | [Hyperdrive.test.js](file:///C:/dev/agy-sandbox/src/engine/Hyperdrive.test.js) | [`052_stargate_warp_tolls_taxes`](file:///C:/dev/agy-sandbox/plan/specs/052_stargate_warp_tolls_taxes.md)<br>[`056_warp_lane_interdiction`](file:///C:/dev/agy-sandbox/plan/specs/056_warp_lane_interdiction.md) |
+| [InvariantVerifier.js](file:///C:/dev/agy-sandbox/src/engine/InvariantVerifier.js) | 219 | `class InvariantVerifier` | [InvariantVerifier.test.js](file:///C:/dev/agy-sandbox/src/engine/InvariantVerifier.test.js) | [`091_game_invariant_verifier`](file:///C:/dev/agy-sandbox/plan/specs/091_game_invariant_verifier.md) |
+| [Mining.js](file:///C:/dev/agy-sandbox/src/engine/Mining.js) | 50 | `constant DEFAULT_MINING_OPTIONS`, `function mineYield` | [Mining.test.js](file:///C:/dev/agy-sandbox/src/engine/Mining.test.js) | _None_ |
+| [MissionManager.js](file:///C:/dev/agy-sandbox/src/engine/MissionManager.js) | 715 | `class MissionManager` | [MissionManager.test.js](file:///C:/dev/agy-sandbox/src/engine/MissionManager.test.js) | [`060_naval_campaigns`](file:///C:/dev/agy-sandbox/plan/specs/060_naval_campaigns.md)<br>[`065_procedural_mission_completions`](file:///C:/dev/agy-sandbox/plan/specs/065_procedural_mission_completions.md)<br>[`085_underworld_smuggling_contracts`](file:///C:/dev/agy-sandbox/plan/specs/085_underworld_smuggling_contracts.md) |
+| [NameGenerator.js](file:///C:/dev/agy-sandbox/src/engine/NameGenerator.js) | 111 | `function pilotName`, `function shipName` | [NameGenerator.test.js](file:///C:/dev/agy-sandbox/src/engine/NameGenerator.test.js) | _None_ |
+| [Nebulae.js](file:///C:/dev/agy-sandbox/src/engine/Nebulae.js) | 43 | `constant NEBULAE` | [Nebulae.test.js](file:///C:/dev/agy-sandbox/src/engine/Nebulae.test.js) | _None_ |
+| [outfitCatalog.js](file:///C:/dev/agy-sandbox/src/engine/outfitCatalog.js) | 167 | `constant DEFAULT_OUTFITS` | [outfitCatalog.test.js](file:///C:/dev/agy-sandbox/src/engine/outfitCatalog.test.js) | [`045_shielded_cargo_contraband_jammer`](file:///C:/dev/agy-sandbox/plan/specs/045_shielded_cargo_contraband_jammer.md)<br>[`053_bounty_locator_radar`](file:///C:/dev/agy-sandbox/plan/specs/053_bounty_locator_radar.md)<br>[`056_warp_lane_interdiction`](file:///C:/dev/agy-sandbox/plan/specs/056_warp_lane_interdiction.md) |
+| [Outfitting.js](file:///C:/dev/agy-sandbox/src/engine/Outfitting.js) | 230 | `function applyOutfitStats`, `function removeOutfitStats`, `function getOutfitCategory`, `function validateSlotAvailability` | [Outfitting.test.js](file:///C:/dev/agy-sandbox/src/engine/Outfitting.test.js) | [`039_tractor_outfit_mass_correction`](file:///C:/dev/agy-sandbox/plan/specs/039_tractor_outfit_mass_correction.md)<br>[`058_loadout_presets`](file:///C:/dev/agy-sandbox/plan/specs/058_loadout_presets.md)<br>[`080_tractor_outfit_mass_correction`](file:///C:/dev/agy-sandbox/plan/specs/080_tractor_outfit_mass_correction.md) |
+| [Planet.js](file:///C:/dev/agy-sandbox/src/engine/Planet.js) | 150 | `class Planet` | [Planet.test.js](file:///C:/dev/agy-sandbox/src/engine/Planet.test.js) | _None_ |
+| [PortServices.js](file:///C:/dev/agy-sandbox/src/engine/PortServices.js) | 457 | `constant DEFAULT_PORT_SERVICE_OPTIONS`, `function armorDeficit`, `function fuelDeficit`, `function repairCost`, `function refuelCost`, `function applyRepair`, `function applyRefuel`, `function refineCost`, `function applyRefine`, `function getNavalRank`, `function redeemFactionVouchers`, `function checkUpgradeLockout` | [PortServices.test.js](file:///C:/dev/agy-sandbox/src/engine/PortServices.test.js) | [`041_player_refinery_port_services`](file:///C:/dev/agy-sandbox/plan/specs/041_player_refinery_port_services.md)<br>[`055_naval_command_decks`](file:///C:/dev/agy-sandbox/plan/specs/055_naval_command_decks.md) |
+| [ProductionModel.js](file:///C:/dev/agy-sandbox/src/engine/ProductionModel.js) | 184 | `constant PLANET_PROFILES`, `constant DEFAULT_PRODUCTION_OPTIONS`, `function computeCommodityPressure`, `function applyProductionPulse` | [ProductionModel.test.js](file:///C:/dev/agy-sandbox/src/engine/ProductionModel.test.js) | _None_ |
+| [Projectile.js](file:///C:/dev/agy-sandbox/src/engine/Projectile.js) | 68 | `class Projectile` | [Projectile.test.js](file:///C:/dev/agy-sandbox/src/engine/Projectile.test.js) | _None_ |
+| [Ship.js](file:///C:/dev/agy-sandbox/src/engine/Ship.js) | 489 | `class Ship` | [Ship.test.js](file:///C:/dev/agy-sandbox/src/engine/Ship.test.js) | [`055_naval_command_decks`](file:///C:/dev/agy-sandbox/plan/specs/055_naval_command_decks.md)<br>[`067_centralize_commodities_invariants`](file:///C:/dev/agy-sandbox/plan/specs/067_centralize_commodities_invariants.md) |
+| [SpaceEngine.js](file:///C:/dev/agy-sandbox/src/engine/SpaceEngine.js) | 388 | `class SpaceEngine` | [SpaceEngine.test.js](file:///C:/dev/agy-sandbox/src/engine/SpaceEngine.test.js) | [`051_collision_kinetic_damage`](file:///C:/dev/agy-sandbox/plan/specs/051_collision_kinetic_damage.md) |
+| [SpaceEntity.js](file:///C:/dev/agy-sandbox/src/engine/SpaceEntity.js) | 123 | `class SpaceEntity` | [SpaceEntity.test.js](file:///C:/dev/agy-sandbox/src/engine/SpaceEntity.test.js) | _None_ |
+| [Trading.js](file:///C:/dev/agy-sandbox/src/engine/Trading.js) | 226 | `function tradeOne`, `function factionPrice`, `function getTransactionTaxRate`, `function getModifiedUpgradePrice`, `function applyHullPurchase`, `function findBestTradeRoutes` | [Trading.test.js](file:///C:/dev/agy-sandbox/src/engine/Trading.test.js) | [`052_stargate_warp_tolls_taxes`](file:///C:/dev/agy-sandbox/plan/specs/052_stargate_warp_tolls_taxes.md)<br>[`057_dynamic_market_events`](file:///C:/dev/agy-sandbox/plan/specs/057_dynamic_market_events.md)<br>[`065_procedural_mission_completions`](file:///C:/dev/agy-sandbox/plan/specs/065_procedural_mission_completions.md)<br>[`067_centralize_commodities_invariants`](file:///C:/dev/agy-sandbox/plan/specs/067_centralize_commodities_invariants.md)<br>[`081_outlaw_black_markets`](file:///C:/dev/agy-sandbox/plan/specs/081_outlaw_black_markets.md)<br>[`082_faction_aware_trade_advisor`](file:///C:/dev/agy-sandbox/plan/specs/082_faction_aware_trade_advisor.md)<br>[`087_dynamic_trade_profit_perception`](file:///C:/dev/agy-sandbox/plan/specs/087_dynamic_trade_profit_perception.md) |
+| [WeaponArchetypes.js](file:///C:/dev/agy-sandbox/src/engine/WeaponArchetypes.js) | 187 | `constant WeaponArchetype`, `constant WEAPON_ARCHETYPE_ORDER`, `constant WEAPON_ARCHETYPE_PROFILES`, `constant DEFAULT_WEAPON_COSTS`, `function getArchetypeProfile`, `function applyArchetypeToShip` | [WeaponArchetypes.test.js](file:///C:/dev/agy-sandbox/src/engine/WeaponArchetypes.test.js) | _None_ |
+
+### 📂 Directory: `src/physics/`
+
+| File | LOC | Classes / Exports | Unit Test File | Referencing Specs |
+| --- | --- | --- | --- | --- |
+| [Vector2D.js](file:///C:/dev/agy-sandbox/src/physics/Vector2D.js) | 89 | `class Vector2D` | [Vector2D.test.js](file:///C:/dev/agy-sandbox/src/physics/Vector2D.test.js) | _None_ |
+
+### 📂 Directory: `src/net/`
+
+| File | LOC | Classes / Exports | Unit Test File | Referencing Specs |
+| --- | --- | --- | --- | --- |
+| [ApiRateLimiter.js](file:///C:/dev/agy-sandbox/src/net/ApiRateLimiter.js) | 312 | `class ApiRateLimiter`, `class extends`, `class extends`, `function activateOutboundSentinel`, `function deactivateOutboundSentinel` | [ApiRateLimiter.test.js](file:///C:/dev/agy-sandbox/src/net/ApiRateLimiter.test.js) | [`097_guest_isolation_api_rate_limiter`](file:///C:/dev/agy-sandbox/plan/specs/097_guest_isolation_api_rate_limiter.md) |
+| [backpressure.js](file:///C:/dev/agy-sandbox/src/net/backpressure.js) | 36 | `constant DEFAULT_BACKPRESSURE_OPTIONS`, `function sendDecision` | [backpressure.test.js](file:///C:/dev/agy-sandbox/src/net/backpressure.test.js) | [`004_ws_outbound_backpressure`](file:///C:/dev/agy-sandbox/plan/specs/004_ws_outbound_backpressure.md) |
+| [BinaryCodec.js](file:///C:/dev/agy-sandbox/src/net/BinaryCodec.js) | 254 | `class ByteWriter`, `class ByteReader`, `constant BINARY_PROTOCOL_VERSION`, `function encode`, `function decode` | [BinaryCodec.test.js](file:///C:/dev/agy-sandbox/src/net/BinaryCodec.test.js) | [`015_binary_wire_protocol`](file:///C:/dev/agy-sandbox/plan/specs/015_binary_wire_protocol.md) |
+| [BroadcastFramer.js](file:///C:/dev/agy-sandbox/src/net/BroadcastFramer.js) | 102 | `constant DEFAULT_KEYFRAME_INTERVAL`, `function nextFrame` | [BroadcastFramer.test.js](file:///C:/dev/agy-sandbox/src/net/BroadcastFramer.test.js) | _None_ |
+| [DeltaStateCodec.js](file:///C:/dev/agy-sandbox/src/net/DeltaStateCodec.js) | 120 | `class DeltaStateCodec` | [DeltaStateCodec.test.js](file:///C:/dev/agy-sandbox/src/net/DeltaStateCodec.test.js) | [`072_snapshot_delta_compression`](file:///C:/dev/agy-sandbox/plan/specs/072_snapshot_delta_compression.md) |
+| [heartbeat.js](file:///C:/dev/agy-sandbox/src/net/heartbeat.js) | 30 | `constant DEFAULT_HEARTBEAT_MS`, `function selectDeadSockets` | [heartbeat.test.js](file:///C:/dev/agy-sandbox/src/net/heartbeat.test.js) | [`003_ws_connection_heartbeat`](file:///C:/dev/agy-sandbox/plan/specs/003_ws_connection_heartbeat.md) |
+| [interest.js](file:///C:/dev/agy-sandbox/src/net/interest.js) | 170 | `constant DEFAULT_INTEREST_RADIUS`, `function interestFilter`, `function buildSpatialGrid` | [interest.test.js](file:///C:/dev/agy-sandbox/src/net/interest.test.js) | [`014_interest_management`](file:///C:/dev/agy-sandbox/plan/specs/014_interest_management.md)<br>[`049_interest_management_grid_optimization`](file:///C:/dev/agy-sandbox/plan/specs/049_interest_management_grid_optimization.md)<br>[`059_alliance_fleets`](file:///C:/dev/agy-sandbox/plan/specs/059_alliance_fleets.md) |
+| [LatencyMonitor.js](file:///C:/dev/agy-sandbox/src/net/LatencyMonitor.js) | 108 | `class LatencyMonitor` | [LatencyMonitor.test.js](file:///C:/dev/agy-sandbox/src/net/LatencyMonitor.test.js) | [`090_event_loop_latency_backpressure`](file:///C:/dev/agy-sandbox/plan/specs/090_event_loop_latency_backpressure.md) |
+| [logger.js](file:///C:/dev/agy-sandbox/src/net/logger.js) | 42 | `function createLogger` | [logger.test.js](file:///C:/dev/agy-sandbox/src/net/logger.test.js) | [`010_observability_metrics`](file:///C:/dev/agy-sandbox/plan/specs/010_observability_metrics.md) |
+| [metrics.js](file:///C:/dev/agy-sandbox/src/net/metrics.js) | 65 | `function createRegistry` | [metrics.test.js](file:///C:/dev/agy-sandbox/src/net/metrics.test.js) | [`010_observability_metrics`](file:///C:/dev/agy-sandbox/plan/specs/010_observability_metrics.md) |
+| [NetworkLatencyInjector.js](file:///C:/dev/agy-sandbox/src/net/NetworkLatencyInjector.js) | 105 | `class NetworkLatencyInjector` | [NetworkLatencyInjector.test.js](file:///C:/dev/agy-sandbox/src/net/NetworkLatencyInjector.test.js) | [`095_concurrency_stress_latency_injector`](file:///C:/dev/agy-sandbox/plan/specs/095_concurrency_stress_latency_injector.md) |
+| [originPolicy.js](file:///C:/dev/agy-sandbox/src/net/originPolicy.js) | 60 | `function isAllowedOrigin` | [originPolicy.test.js](file:///C:/dev/agy-sandbox/src/net/originPolicy.test.js) | [`002_ws_inbound_hardening`](file:///C:/dev/agy-sandbox/plan/specs/002_ws_inbound_hardening.md) |
+| [ProcessReaper.js](file:///C:/dev/agy-sandbox/src/net/ProcessReaper.js) | 101 | `constant ProcessReaper` | [ProcessReaper.test.js](file:///C:/dev/agy-sandbox/src/net/ProcessReaper.test.js) | [`092_zombie_reaper_orphan_cleanup`](file:///C:/dev/agy-sandbox/plan/specs/092_zombie_reaper_orphan_cleanup.md) |
+| [PubSub.js](file:///C:/dev/agy-sandbox/src/net/PubSub.js) | 194 | `class PubSub`, `class InMemoryPubSub`, `class RedisPubSub` | [PubSub.test.js](file:///C:/dev/agy-sandbox/src/net/PubSub.test.js) | _None_ |
+| [roomRouter.js](file:///C:/dev/agy-sandbox/src/net/roomRouter.js) | 304 | `class RoomRegistry`, `function hashString`, `function assignShard`, `function routeConnection`, `function planDrain` | [roomRouter.test.js](file:///C:/dev/agy-sandbox/src/net/roomRouter.test.js) | [`019a_scaling_decomposition`](file:///C:/dev/agy-sandbox/plan/specs/019a_scaling_decomposition.md) |
+| [SandboxTelemetry.js](file:///C:/dev/agy-sandbox/src/net/SandboxTelemetry.js) | 171 | `class SandboxTelemetry` | [SandboxTelemetry.test.js](file:///C:/dev/agy-sandbox/src/net/SandboxTelemetry.test.js) | [`094_observability_sandbox_telemetry`](file:///C:/dev/agy-sandbox/plan/specs/094_observability_sandbox_telemetry.md) |
+| [SchemaCodec.js](file:///C:/dev/agy-sandbox/src/net/SchemaCodec.js) | 265 | `class ByteWriter`, `class ByteReader`, `constant SCHEMA_PROTOCOL_VERSION`, `function encode`, `function decode` | [SchemaCodec.test.js](file:///C:/dev/agy-sandbox/src/net/SchemaCodec.test.js) | _None_ |
+| [SchemaValidator.js](file:///C:/dev/agy-sandbox/src/net/SchemaValidator.js) | 234 | `function validateMessage` | [SchemaValidator.test.js](file:///C:/dev/agy-sandbox/src/net/SchemaValidator.test.js) | [`089_zero_trust_websocket_validation`](file:///C:/dev/agy-sandbox/plan/specs/089_zero_trust_websocket_validation.md)<br>[`099_centralized_commodities_schema_registry`](file:///C:/dev/agy-sandbox/plan/specs/099_centralized_commodities_schema_registry.md) |
+| [StateCodec.js](file:///C:/dev/agy-sandbox/src/net/StateCodec.js) | 207 | `function encodeSnapshot`, `function diff`, `function applyDelta` | [StateCodec.test.js](file:///C:/dev/agy-sandbox/src/net/StateCodec.test.js) | _None_ |
+| [statsPayload.js](file:///C:/dev/agy-sandbox/src/net/statsPayload.js) | 70 | `function buildStatsPayload` | [statsPayload.test.js](file:///C:/dev/agy-sandbox/src/net/statsPayload.test.js) | _None_ |
+| [wsCompression.js](file:///C:/dev/agy-sandbox/src/net/wsCompression.js) | 42 | `constant DEFAULT_DEFLATE_OPTIONS`, `function perMessageDeflateOption` | [wsCompression.test.js](file:///C:/dev/agy-sandbox/src/net/wsCompression.test.js) | _None_ |
+
+### 📂 Directory: `src/persistence/`
+
+| File | LOC | Classes / Exports | Unit Test File | Referencing Specs |
+| --- | --- | --- | --- | --- |
+| [GalacticChronicle.js](file:///C:/dev/agy-sandbox/src/persistence/GalacticChronicle.js) | 118 | `class GalacticChronicle` | [GalacticChronicle.test.js](file:///C:/dev/agy-sandbox/src/persistence/GalacticChronicle.test.js) | [`096_galactic_chronicle_observability`](file:///C:/dev/agy-sandbox/plan/specs/096_galactic_chronicle_observability.md) |
+| [PersistenceManager.js](file:///C:/dev/agy-sandbox/src/persistence/PersistenceManager.js) | 217 | `class PersistenceManager` | [PersistenceManager.test.js](file:///C:/dev/agy-sandbox/src/persistence/PersistenceManager.test.js) | _None_ |
+| [RedisStore.js](file:///C:/dev/agy-sandbox/src/persistence/RedisStore.js) | 74 | `class RedisStore` | [RedisStore.test.js](file:///C:/dev/agy-sandbox/src/persistence/RedisStore.test.js) | [`019b_redis_store`](file:///C:/dev/agy-sandbox/plan/specs/019b_redis_store.md) |
+| [serializers.js](file:///C:/dev/agy-sandbox/src/persistence/serializers.js) | 404 | `constant SNAPSHOT_VERSION`, `function serializeGalaxy`, `function applyGalaxy`, `function serializePlayer`, `function applyPlayer` | [serializers.test.js](file:///C:/dev/agy-sandbox/src/persistence/serializers.test.js) | _None_ |
+| [ShardedStore.js](file:///C:/dev/agy-sandbox/src/persistence/ShardedStore.js) | 96 | `class ShardedStore` | [ShardedStore.test.js](file:///C:/dev/agy-sandbox/src/persistence/ShardedStore.test.js) | [`070_sharded_database_backend`](file:///C:/dev/agy-sandbox/plan/specs/070_sharded_database_backend.md) |
+| [Store.js](file:///C:/dev/agy-sandbox/src/persistence/Store.js) | 172 | `class Store`, `class InMemoryStore`, `class JsonFileStore` | [Store.test.js](file:///C:/dev/agy-sandbox/src/persistence/Store.test.js) | [`070_sharded_database_backend`](file:///C:/dev/agy-sandbox/plan/specs/070_sharded_database_backend.md) |
+
+### 📂 Directory: `src/server/`
+
+| File | LOC | Classes / Exports | Unit Test File | Referencing Specs |
+| --- | --- | --- | --- | --- |
+| [galaxyTicker.js](file:///C:/dev/agy-sandbox/src/server/galaxyTicker.js) | 368 | `function runEconomyTickForRoom`, `function broadcastEventSyncForRoom`, `function runSectorEventTickForRoom`, `function runEconomyNormalizationForRoom`, `function runEconomyShortageInterval`, `function runEnvironmentalSiegeInterval`, `function runEconomyNormalizationInterval`, `function runGalaxyHeartbeatInterval` | [galaxyTicker.test.js](file:///C:/dev/agy-sandbox/src/server/galaxyTicker.test.js) | [`042_server_monolith_extraction_galaxy_ticker`](file:///C:/dev/agy-sandbox/plan/specs/042_server_monolith_extraction_galaxy_ticker.md)<br>[`078_reputation_decay_heartbeat`](file:///C:/dev/agy-sandbox/plan/specs/078_reputation_decay_heartbeat.md) |
+| [lobbySync.js](file:///C:/dev/agy-sandbox/src/server/lobbySync.js) | 59 | `function buildLobbyRoomsList`, `function broadcastLobbySync`, `function sendLobbyList` | [lobbySync.test.js](file:///C:/dev/agy-sandbox/src/server/lobbySync.test.js) | [`042_server_monolith_extraction_galaxy_ticker`](file:///C:/dev/agy-sandbox/plan/specs/042_server_monolith_extraction_galaxy_ticker.md) |
+| [matchmaking.js](file:///C:/dev/agy-sandbox/src/server/matchmaking.js) | 255 | `class JoinQueue`, `function roomMatches`, `function freeSlots`, `function matchRoom`, `function matchQueueToRooms` | [matchmaking.test.js](file:///C:/dev/agy-sandbox/src/server/matchmaking.test.js) | [`036_matchmaking_room_filters`](file:///C:/dev/agy-sandbox/plan/specs/036_matchmaking_room_filters.md)<br>[`043_matchmaking_queue_lifecycle`](file:///C:/dev/agy-sandbox/plan/specs/043_matchmaking_queue_lifecycle.md)<br>[`069_matchmaking_queues_ratings`](file:///C:/dev/agy-sandbox/plan/specs/069_matchmaking_queues_ratings.md) |
+| [portHandlers.js](file:///C:/dev/agy-sandbox/src/server/portHandlers.js) | 827 | `function handleOutfitBuy`, `function handleShipBuy`, `function handleMissionAccept`, `function handleMissionAbandon`, `function handleEscortCommand`, `function handleVoucherRedeem`, `function handleOutfitSell`, `function handlePresetSave`, `function handlePresetLoad`, `function handleOreRefine`, `function handleDistressBeacon` | [portHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/portHandlers.test.js) | [`046_modularize_port_mission_handlers`](file:///C:/dev/agy-sandbox/plan/specs/046_modularize_port_mission_handlers.md)<br>[`050_wingman_tactical_formation_controls`](file:///C:/dev/agy-sandbox/plan/specs/050_wingman_tactical_formation_controls.md)<br>[`055_naval_command_decks`](file:///C:/dev/agy-sandbox/plan/specs/055_naval_command_decks.md)<br>[`058_loadout_presets`](file:///C:/dev/agy-sandbox/plan/specs/058_loadout_presets.md)<br>[`060_naval_campaigns`](file:///C:/dev/agy-sandbox/plan/specs/060_naval_campaigns.md)<br>[`077_refinement_mining_laser_industrial_dock`](file:///C:/dev/agy-sandbox/plan/specs/077_refinement_mining_laser_industrial_dock.md) |
+| [roomGc.js](file:///C:/dev/agy-sandbox/src/server/roomGc.js) | 57 | _None_ | [roomGc.test.js](file:///C:/dev/agy-sandbox/src/server/roomGc.test.js) | [`042_server_monolith_extraction_galaxy_ticker`](file:///C:/dev/agy-sandbox/plan/specs/042_server_monolith_extraction_galaxy_ticker.md) |
+| [roomLifecycle.js](file:///C:/dev/agy-sandbox/src/server/roomLifecycle.js) | 38 | `constant DEFAULT_ROOM_IDLE_MS`, `function shouldGcRoom`, `function sanitizeNickname` | [roomLifecycle.test.js](file:///C:/dev/agy-sandbox/src/server/roomLifecycle.test.js) | _None_ |
+| [SquadManager.js](file:///C:/dev/agy-sandbox/src/server/SquadManager.js) | 126 | `class Squad`, `class SquadManager`, `constant squadManager` | [SquadManager.test.js](file:///C:/dev/agy-sandbox/src/server/SquadManager.test.js) | [`059_alliance_fleets`](file:///C:/dev/agy-sandbox/plan/specs/059_alliance_fleets.md) |
+| [supervisor.js](file:///C:/dev/agy-sandbox/src/server/supervisor.js) | 111 | `function planWorkers`, `function runSupervisor` | [supervisor.test.js](file:///C:/dev/agy-sandbox/src/server/supervisor.test.js) | [`019c_worker_process_model`](file:///C:/dev/agy-sandbox/plan/specs/019c_worker_process_model.md)<br>[`062_redis_cluster_integration`](file:///C:/dev/agy-sandbox/plan/specs/062_redis_cluster_integration.md) |
+
+---
+
+## ⚡ EPISTEMIC DEBT & STALE LOGIC REPORT
+
+### ⚠️ Untested Core Modules (0)
+_None! All core modules have associated test suites._
+
+### ⚠️ Stale Specification File References (8)
+- [ ] Spec [`019d_sticky_routing_lb.md`](file:///C:/dev/agy-sandbox/plan/specs/019d_sticky_routing_lb.md) references missing files: `src/server/router.js`
+- [ ] Spec [`035_client_visual_browser_layer.md`](file:///C:/dev/agy-sandbox/plan/specs/035_client_visual_browser_layer.md) references missing files: `src/client/**/*.browser.test.js`
+- [ ] Spec [`071_client_prediction_reconciliation.md`](file:///C:/dev/agy-sandbox/plan/specs/071_client_prediction_reconciliation.md) references missing files: `src/client/__tests__/Reconciler.test.js`
+- [ ] Spec [`082_faction_aware_trade_advisor.md`](file:///C:/dev/agy-sandbox/plan/specs/082_faction_aware_trade_advisor.md) references missing files: `src/engine/TradeAdvisor.js`
+- [ ] Spec [`098_emergent_faction_territory_control.md`](file:///C:/dev/agy-sandbox/plan/specs/098_emergent_faction_territory_control.md) references missing files: `src/engine/TerritoryControl.js`
+- [ ] Spec [`099_centralized_commodities_schema_registry.md`](file:///C:/dev/agy-sandbox/plan/specs/099_centralized_commodities_schema_registry.md) references missing files: `src/net/SchemaRegistry.js`
+- [ ] Spec [`100_ship_fittings_presets_loadout_manager.md`](file:///C:/dev/agy-sandbox/plan/specs/100_ship_fittings_presets_loadout_manager.md) references missing files: `src/engine/LoadoutManager.js`
+- [ ] Spec [`101_living_codex_semantic_registry.md`](file:///C:/dev/agy-sandbox/plan/specs/101_living_codex_semantic_registry.md) references missing files: `src/**/*.test.js`
+
+### ⚠️ Missing JSDoc Type Signatures (12 symbols)
+- `src/engine/GameInstance.js`:
+  - Line 102: Missing JSDoc for `class GameInstance`
+  - Line 21: Missing JSDoc for `constant SECTOR_ADJACENCY`
+  - Line 27: Missing JSDoc for `constant BASE_MARKETS`
+- `src/net/BinaryCodec.js`:
+  - Line 25: Missing JSDoc for `constant BINARY_PROTOCOL_VERSION`
+- `src/net/ProcessReaper.js`:
+  - Line 12: Missing JSDoc for `constant ProcessReaper`
+- `src/net/PubSub.js`:
+  - Line 9: Missing JSDoc for `class PubSub`
+- `src/net/SchemaCodec.js`:
+  - Line 42: Missing JSDoc for `class ByteWriter`
+  - Line 76: Missing JSDoc for `class ByteReader`
+  - Line 24: Missing JSDoc for `constant SCHEMA_PROTOCOL_VERSION`
+- `src/server/SquadManager.js`:
+  - Line 6: Missing JSDoc for `class Squad`
+  - Line 20: Missing JSDoc for `class SquadManager`
+  - Line 125: Missing JSDoc for `constant squadManager`

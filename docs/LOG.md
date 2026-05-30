@@ -39,6 +39,22 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T01:30 · iter-0107 · GREEN · cycle-23-spec-101-living-codex-semantic-registry
+- **Baseline:** `5214232` on `feat/procedural-missions`; 979 Jest green.
+- **Move:** Implement the Self-Synchronizing Codebase "Living Codex" & Semantic Registry (SPEC-101).
+- **Changed:**
+  - Created `scripts/agent/generate-codex.js` scanning directories, parsing JSDocs, and mapping tests and specs.
+  - Compiles structured graph data to `/plan/codex.json` and human markdown to `/plan/CODEX.md`.
+  - Added unit test suite `scripts/agent/generate-codex.test.js` validating JSDoc/class parser rules.
+  - Integrated `npm run codex:generate` directly inside the full gate workflow (`npm run agent:check` in `package.json`).
+- **Decisions:**
+  - Pure Node.js script using core fs/path packages to manage context without external dependency runaways.
+  - Wired automated epistemic debt detection reporting untested core files, missing JSDoc signatures, and link rot.
+- **Validation:**
+  - `npm run agent:check` passed successfully with all 87 test suites and 981 tests green.
+- **Next:**
+  - Execute SPEC-099 (Centralized Commodities & Unified Schema Registry) under Cycle 23.
+
 ## 2026-05-31T01:10 · iter-0106 · GREEN · cycle-22-spec-097-guest-isolation-api-limiter
 - **Baseline:** `b53cd1c` on `feat/procedural-missions`; 968 Jest green.
 - **Move:** Implement the Sandboxed Outbound API Rate Limiter & Network Domain Sentinel (SPEC-097).

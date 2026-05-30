@@ -17,7 +17,8 @@
     "format:check": "prettier --check \"src/**/*.{js,json}\" \"scripts/**/*.js\" \".github/**/*.md\" README.md",
     "typecheck": "tsc --noEmit",
     "agent:bootstrap": "npm ci",
-    "agent:check": "npm run format:check && npm run lint && npm run typecheck && npm test"
+    "codex:generate": "node scripts/agent/generate-codex.js",
+    "agent:check": "npm run codex:generate && npm run format:check && npm run lint && npm run typecheck && npm test"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

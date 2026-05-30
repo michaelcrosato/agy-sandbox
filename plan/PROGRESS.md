@@ -29,8 +29,8 @@ _**v22 re-audit baseline (2026-05-31, ENTIRE v22 sandbox blueprint shipped): 979
 ## v23 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Core Architecture Hardening
-- [~] `101` Self-Synchronizing Codebase "Living Codex" & Semantic Registry (scan directories, map classes, methods, JSDoc, tests, and specs into a dynamic machine plan/codex.json and plan/CODEX.md ontology)
-- [ ] `099` Centralized Commodities & Unified Schema Registry (centralize commodities configurations and all WebSocket / request command structures into a unified schema registry to prevent client/server drift and validation bugs)
+- [x] `101` Self-Synchronizing Codebase "Living Codex" & Semantic Registry (scan directories, map classes, methods, JSDoc, tests, and specs into a dynamic machine plan/codex.json and plan/CODEX.md ontology) — **done** (files: `scripts/agent/generate-codex.js`, `scripts/agent/generate-codex.test.js`, `package.json`, `plan/codex.json`, `plan/CODEX.md`; implemented an automated Node.js repository parser scanning all source modules, JSDocs, specs, and test suites, compiling a detailed machine-readable JSON graph and a beautiful human-readable CODEX.md ontology report with epistemic debt detection, and wired it directly into npm run agent:check; all 981 backend Jest tests green)
+- [~] `099` Centralized Commodities & Unified Schema Registry (centralize commodities configurations and all WebSocket / request command structures into a unified schema registry to prevent client/server drift and validation bugs)
 
 ### Phase 1 — Emergent Universe Operations
 - [ ] `098` Emergent Faction Territory Control & Dynamic Sector Borders (build dynamic influence tracker shifting sector control, security ratings, and tax rates dynamically based on combat and mission outcomes)

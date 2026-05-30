@@ -300,14 +300,19 @@
       transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* Sub-Layout: Matchmaking & Shard details */
     .detail-grid {
       display: grid;
-      grid-template-columns: 2fr 1fr;
+      grid-template-columns: 1.5fr 1fr 1fr;
       gap: 1.5rem;
     }
 
-    @media (max-width: 1024px) {
+    @media (max-width: 1200px) {
+      .detail-grid {
+        grid-template-columns: 1.5fr 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
       .detail-grid {
         grid-template-columns: 1fr;
       }
@@ -513,6 +518,88 @@
       color: #64748b;
       padding: 2rem;
       font-style: italic;
+    }
+
+    /* Galactic Chronicle Neon-Gold Glassmorphic Styling */
+    .panel-gold {
+      border: 1px solid rgba(255, 159, 26, 0.25) !important;
+      background: rgba(15, 12, 5, 0.4) !important;
+      box-shadow: 0 8px 32px 0 rgba(255, 159, 26, 0.05), inset 0 0 15px rgba(255, 159, 26, 0.02) !important;
+    }
+    
+    .chronicle-feed {
+      max-height: 480px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding-right: 4px;
+    }
+    
+    .chronicle-item {
+      display: flex;
+      gap: 0.75rem;
+      padding: 0.75rem 0.5rem;
+      border-bottom: 1px solid rgba(255, 159, 26, 0.06);
+      font-size: 0.85rem;
+      border-radius: 8px;
+      transition: background-color 0.2s;
+    }
+    
+    .chronicle-item:hover {
+      background-color: rgba(255, 159, 26, 0.03);
+    }
+    
+    .chronicle-icon {
+      flex-shrink: 0;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 159, 26, 0.1);
+      border: 1px solid rgba(255, 159, 26, 0.2);
+      color: var(--color-amber);
+      box-shadow: 0 0 8px rgba(255, 159, 26, 0.2);
+    }
+    
+    .chronicle-content {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    
+    .chronicle-title {
+      font-weight: 600;
+      color: #fef08a;
+    }
+    
+    .chronicle-desc {
+      color: #cbd5e1;
+      line-height: 1.35;
+    }
+    
+    .chronicle-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 0.25rem;
+    }
+    
+    .chronicle-badge {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 159, 26, 0.08);
+      border: 1px solid rgba(255, 159, 26, 0.15);
+      color: var(--color-amber);
+      text-transform: uppercase;
+      font-weight: bold;
+      letter-spacing: 0.05em;
     }
   </style>
 </head>
@@ -720,6 +807,22 @@
           </div>
         </div>
       </div>
+
+      <!-- Galactic Chronicle Sidebar Panel (SPEC-096) -->
+      <div class="panel panel-gold" id="panel-chronicle">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title" style="color: var(--color-amber); text-shadow: 0 0 10px rgba(255, 159, 26, 0.3);">Galactic Chronicle</h2>
+            <p class="panel-subtitle">Macro-simulation event ledger & history</p>
+          </div>
+        </div>
+
+        <div class="activity-feed chronicle-feed" id="chronicle-feed">
+          <div class="feed-item empty-state">
+            No chronicle records found. Loading space history...
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -752,6 +855,90 @@
     // Initialize Connection Timestamp
     document.getElementById("connect-time").innerText = new Date().toLocaleTimeString();
 
+    // Galactic Chronicle Rendering & Fetching (SPEC-096)
+    async function fetchChronicle() {
+      try {
+        const response = await fetch('/chronicle');
+        if (!response.ok) throw new Error("HTTP error " + response.status);
+        const events = await response.json();
+        renderChronicle(events);
+      } catch (err) {
+        console.warn("Could not load chronicle metrics.", err.message);
+      }
+    }
+
+    function renderChronicle(events) {
+      const elChronicleFeed = document.getElementById("chronicle-feed");
+      if (!elChronicleFeed) return;
+
+      if (!Array.isArray(events) || events.length === 0) {
+        elChronicleFeed.innerHTML = `
+          <div class="feed-item empty-state">
+            No chronicle records found. Space is quiet.
+          </div>
+        `;
+        return;
+      }
+
+      elChronicleFeed.innerHTML = events.map(e => {
+        const timeStr = new Date(e.timestamp).toLocaleTimeString();
+        let iconMarkup = "";
+        
+        switch (e.category) {
+          case "economy":
+            iconMarkup = `
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-amber)" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+            `;
+            break;
+          case "combat":
+            iconMarkup = `
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-crimson)" stroke-width="2">
+                <path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l2 2 3-3-2-2"></path>
+                <path d="M8.5 14.5L19 4V1h-3L5.5 11.5"></path>
+              </svg>
+            `;
+            break;
+          case "stargate":
+            iconMarkup = `
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-cyan)" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="6"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+              </svg>
+            `;
+            break;
+          default:
+            iconMarkup = `
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            `;
+        }
+
+        return `
+          <div class="chronicle-item">
+            <div class="chronicle-icon">
+              \${iconMarkup}
+            </div>
+            <div class="chronicle-content">
+              <div class="chronicle-title">\${e.title}</div>
+              <div class="chronicle-desc">\${e.description}</div>
+              <div class="chronicle-meta">
+                <span class="chronicle-badge">\${e.category}</span>
+                <span>Sector: <strong>\${e.sector}</strong></span>
+                <span>\${timeStr}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
     // Fetch and Process System Metrics
     async function fetchTelemetry() {
       try {
@@ -760,6 +947,9 @@
         
         const data = await response.json();
         renderTelemetry(data);
+        
+        // Load Galactic Chronicle (SPEC-096)
+        await fetchChronicle();
         
         // System is alive and responsive
         elPulseDot.style.backgroundColor = "var(--color-emerald)";
@@ -957,6 +1147,31 @@
       sandboxHistory.push(mockMem);
       if (sandboxHistory.length > maxHistoryPoints) sandboxHistory.shift();
       drawSparkline("sparkline-sandbox", sandboxHistory, "var(--color-crimson)");
+
+      // Render simulated mock chronicle logs (SPEC-096)
+      renderChronicle([
+        {
+          timestamp: Date.now() - 5000,
+          sector: "public",
+          category: "economy",
+          title: "Shortage: food",
+          description: "MARKET ALERT: Sol reports severe FOOD shortage! Prices soared to 180 CR!",
+        },
+        {
+          timestamp: Date.now() - 25000,
+          sector: "room-2",
+          category: "combat",
+          title: "Faction Conflict Triggered",
+          description: "War fleets from Federation and Pirates have clashed in sector Sector room-2! Sector is now an active combat zone.",
+        },
+        {
+          timestamp: Date.now() - 55000,
+          sector: "public",
+          category: "stargate",
+          title: "Elite Hunter Dispatched",
+          description: "An elite Federation Hunter carrying a Stargate Interdictor Matrix has been scrambled to intercept player Pilot-A!",
+        }
+      ]);
 
       // Render custom mock rooms table
       elRoomsTable.innerHTML = `

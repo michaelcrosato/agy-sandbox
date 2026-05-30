@@ -122,6 +122,7 @@ export class GameInstance {
     this.conflictFactionA = null;
     this.conflictFactionB = null;
     this.galaxyEventsManager = new GalaxyEventsManager();
+    this.chronicle = null;
 
     // Set up engine event handlers
     this.engine.onProjectileFired = (proj, ship) => {
@@ -1419,6 +1420,16 @@ export class GameInstance {
       new Vector2D(Math.cos(angle) * dist, Math.sin(angle) * dist),
     );
 
+    if (this.chronicle) {
+      this.chronicle.recordEvent({
+        sector: this.id,
+        category: "stargate",
+        title: "Elite Hunter Dispatched",
+        description: `An elite ${faction} Hunter carrying a Stargate Interdictor Matrix has been scrambled to intercept player ${playerShip.name || "Unknown"}!`,
+        impactMetrics: { faction, target: playerShip.name },
+      });
+    }
+
     const hunterShip = new Ship({
       name: `${faction} Hunter Elite`,
       position: spawnPos,
@@ -1666,6 +1677,16 @@ export class GameInstance {
     this.isConflictZone = true;
     this.conflictFactionA = factionA;
     this.conflictFactionB = factionB;
+
+    if (this.chronicle) {
+      this.chronicle.recordEvent({
+        sector: this.id,
+        category: "combat",
+        title: "Faction Conflict Triggered",
+        description: `War fleets from ${factionA} and ${factionB} have clashed in sector ${this.name || this.id}! Sector is now an active combat zone.`,
+        impactMetrics: { factionA, factionB },
+      });
+    }
 
     // Spawn Faction A combatants
     for (let i = 0; i < 3; i++) {

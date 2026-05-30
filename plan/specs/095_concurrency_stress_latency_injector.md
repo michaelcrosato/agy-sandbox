@@ -1,6 +1,6 @@
 # SPEC-095 — Adv Evals: High-Concurrency Sandbox Stress-Testing & Network Latency Injector
 
-- **Status:** In Progress
+- **Status:** Done
 - **Wave:** v22 — Phase 0
 - **Priority:** High
 - **Product Pillar:** P7 — Netcode & Scale / P3 — Adv Evals

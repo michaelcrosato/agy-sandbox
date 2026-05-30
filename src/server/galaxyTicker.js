@@ -25,6 +25,16 @@ export function runEconomyTickForRoom(room) {
     if (Math.random() < 0.3) {
       const ev = room.galaxyEventsManager.triggerEvent();
 
+      if (room.chronicle) {
+        room.chronicle.recordEvent({
+          sector: room.id,
+          category: "economy",
+          title: `Dynamic Shock: ${ev.name}`,
+          description: ev.description,
+          impactMetrics: ev.priceModifiers,
+        });
+      }
+
       // Save pre-event market prices so we can restore them exactly upon expiration
       for (const p of room.planets) {
         p.preEventMarket = { ...p.market };
@@ -102,6 +112,22 @@ export function runEconomyTickForRoom(room) {
     formattedMsg,
     event.isShortage ? "error" : "success",
   );
+
+  if (room.chronicle) {
+    room.chronicle.recordEvent({
+      sector: room.id,
+      category: "economy",
+      title: event.isShortage
+        ? `Shortage: ${event.commodity}`
+        : `Surplus: ${event.commodity}`,
+      description: formattedMsg,
+      impactMetrics: {
+        planet: event.planetName,
+        commodity: event.commodity,
+        price: event.newPrice,
+      },
+    });
+  }
 
   const chatPayload = {
     type: "chat",

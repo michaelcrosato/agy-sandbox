@@ -24,6 +24,7 @@ import {
 } from "./server/matchmaking.js";
 import { JsonFileStore } from "./persistence/Store.js";
 import { PersistenceManager } from "./persistence/PersistenceManager.js";
+import { GalacticChronicle } from "./persistence/GalacticChronicle.js";
 import { applyGalaxy, applyPlayer } from "./persistence/serializers.js";
 import { InMemoryPubSub } from "./net/PubSub.js";
 import { applyRepair, applyRefuel } from "./engine/PortServices.js";
@@ -153,6 +154,18 @@ const SHARD_INDEX = Number(process.env.SHARD_INDEX) || 0;
 const server = http.createServer((req, res) => {
   let safeUrl = req.url.split("?")[0];
 
+  // Test only: Induce event loop lag to test backpressure shedding (SPEC-095)
+  if (process.env.NODE_ENV === "test" && safeUrl === "/test/induce-lag") {
+    const ms = Number(req.url.split("ms=")[1] || "60");
+    const start = Date.now();
+    while (Date.now() - start < ms) {
+      // CPU busy-wait
+    }
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ induced: ms }));
+    return;
+  }
+
   // Observability endpoint (spec 010): read-only runtime metrics snapshot.
   if (safeUrl === "/metrics" || safeUrl === "/healthz") {
     res.writeHead(200, { "Content-Type": "application/json" });
@@ -174,6 +187,16 @@ const server = http.createServer((req, res) => {
       })),
     };
     res.end(JSON.stringify(augmented));
+    return;
+  }
+
+  // Observability: The Galactic Chronicle & Dynamic Event Ledger (SPEC-096)
+  if (safeUrl === "/chronicle") {
+    res.writeHead(200, {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    });
+    res.end(JSON.stringify(galacticChronicle.getEvents()));
     return;
   }
 
@@ -288,6 +311,21 @@ const persistenceManager = new PersistenceManager({
     },
   },
 });
+
+const galacticChronicle = new GalacticChronicle({
+  store: {
+    async save(key, obj) {
+      return storeInstance.save(key, obj);
+    },
+    async load(key) {
+      return storeInstance.load(key);
+    },
+    async has(key) {
+      return storeInstance.has(key);
+    },
+  },
+});
+await galacticChronicle.load();
 
 // Setup multi-room ticker loops
 const TICK_RATE = 30;
@@ -868,6 +906,7 @@ async function joinRoom(clientObj, roomId, nickname) {
     );
     if (ownerNodeId === `node-${SHARD_INDEX}`) {
       room = new GameInstance(roomId, `Sector ${roomId}`);
+      room.chronicle = galacticChronicle;
       instances.set(roomId, room);
       console.log(
         `🌌 Dynamically instantiated custom sector on owning shard: [${room.name}] (${roomId})`,
@@ -1439,6 +1478,7 @@ wss.on("connection", (ws) => {
           qRoomId,
           (msg.name || "Quick Match").trim().substring(0, 20) || "Quick Match",
         );
+        created.chronicle = galacticChronicle;
         if (typeof msg.mode === "string") created.mode = msg.mode;
         if (Number.isFinite(msg.maxPlayers))
           created.maxPlayers = msg.maxPlayers;
@@ -1481,6 +1521,7 @@ wss.on("connection", (ws) => {
         attempts < 100
       );
       const newRoomInstance = new GameInstance(newRoomId, name);
+      newRoomInstance.chronicle = galacticChronicle;
       instances.set(newRoomId, newRoomInstance);
       console.log(`🌌 Created custom sector: [${name}] (${newRoomId})`);
 
@@ -2596,6 +2637,7 @@ export async function startServer({
   // 2. Create Default permanent Public Arena Room ONLY if this shard owns it
   if (workers === 1 || assignShard("public", workers) === shardIndex) {
     const publicInstance = new GameInstance("public", "Public Arena");
+    publicInstance.chronicle = galacticChronicle;
     instances.set("public", publicInstance);
 
     // Restore any saved galaxy state

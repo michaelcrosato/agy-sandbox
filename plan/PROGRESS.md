@@ -28,10 +28,10 @@ _**v21 re-audit baseline (2026-05-31, ENTIRE v21 sandbox blueprint shipped): 953
 ## v22 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Adv Evals & Load Scaling
-- [~] `095` High-Concurrency Sandbox Stress-Testing & Simulated Network Latency Injector (build application-level latency/drop injector and concurrent headless load runner simulating 50+ concurrent pilots clashing in sectors)
+- [x] `095` High-Concurrency Sandbox Stress-Testing & Simulated Network Latency Injector (build application-level latency/drop injector and concurrent headless load runner simulating 50+ concurrent pilots clashing in sectors) — **done** (files: `src/net/NetworkLatencyInjector.js`, `src/net/NetworkLatencyInjector.test.js`, `scripts/agent/stress-test.js`, `src/server/stressConcurrency.integration.test.js`, `src/server.js`; created a highly configurable socket decorator to delay and drop packages, engineered an async spawner spawning 25+ pilots clashing concurrently under clean teardowns, and verified event-loop lag induced backpressure shedding end-to-end; 955 Jest tests green)
 
 ### Phase 1 — Observability & Universe History
-- [ ] `096` The Galactic Chronicle & Dynamic persistent simulation history logs (record major econ spikes and faction stand-off results in pruned JSON store and display on neon timeline sidebar)
+- [x] `096` The Galactic Chronicle & Dynamic persistent simulation history logs (record major econ spikes and faction stand-off results in pruned JSON store and display on neon timeline sidebar) — **done** (files: `src/persistence/GalacticChronicle.js`, `src/persistence/GalacticChronicle.test.js`, `dashboard.html`, `src/server/dashboard.integration.test.js`, `src/server/galaxyTicker.js`, `src/server.js`, `src/engine/GameInstance.js`; created a highly optimized persistent simulation ledger recording shortages/surpluses, dynamic sector shocks, faction clashes, and interdictions; exposed GET /chronicle HTTP JSON endpoint and drew a futuristic neon-gold glassmorphic timeline sidebar inside dashboard.html; 968 Jest tests green)
 
 ### Phase 2 — Security & Cost Sentinel
 - [ ] `097` Sandboxed Outbound API Rate Limiter & Network Domain Sentinel (protect host budgets via sliding-window limiters wrapping external AI prompts, returning warning mocks and blocking non-allowlisted egress domains)

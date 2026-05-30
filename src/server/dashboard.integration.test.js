@@ -65,6 +65,28 @@ describe("Dashboard and Metrics HTTP Integration Tests (spec 044)", () => {
     });
   });
 
+  test("GET /chronicle returns 200, application/json, and valid array body (SPEC-096)", () => {
+    return new Promise((resolve, reject) => {
+      http.get(`http://localhost:${port}/chronicle`, (res) => {
+        expect(res.statusCode).toBe(200);
+        expect(res.headers["content-type"]).toContain("application/json");
+
+        let body = "";
+        res.on("data", (chunk) => {
+          body += chunk;
+        });
+
+        res.on("end", () => {
+          const data = JSON.parse(body);
+          expect(Array.isArray(data)).toBe(true);
+          resolve();
+        });
+
+        res.on("error", reject);
+      });
+    });
+  });
+
   test("GET /dashboard.html returns 200 and text/html Content-Type", () => {
     return new Promise((resolve, reject) => {
       http.get(`http://localhost:${port}/dashboard.html`, (res) => {
@@ -84,6 +106,9 @@ describe("Dashboard and Metrics HTTP Integration Tests (spec 044)", () => {
           expect(body).toContain('id="sparkline-bandwidth"');
           expect(body).toContain('id="sparkline-queue"');
           expect(body).toContain('id="val-queue"');
+          // SPEC-096: verify chronicle elements are present in output
+          expect(body).toContain('id="panel-chronicle"');
+          expect(body).toContain('id="chronicle-feed"');
           resolve();
         });
 

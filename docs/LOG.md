@@ -38,7 +38,33 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - Entries **SHOULD** target 150–350 words, and **MUST NOT** exceed 500 words unless labeled an `INCIDENT` or `ROLLBACK`.
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
- 
+
+## 2026-05-31T00:45 · iter-0105 · GREEN · cycle-22-spec-096-galactic-chronicle
+- **Baseline:** `6782496` on `feat/procedural-missions`; 961 Jest green.
+- **Move:** Implement the persistent GalacticChronicle ledger and neon-gold timeline sidebar (SPEC-096).
+- **Changed:**
+  - Created `src/persistence/GalacticChronicle.js` to record, load, save, and prune macro-simulation events (max 200 events). Designed an asynchronous sequential write queue to prevent concurrent I/O race conditions.
+  - Wired `GalacticChronicle` hooks into `spawnEliteHunter` and `triggerConflictZone` inside `src/engine/GameInstance.js` to log interdictions and faction battles.
+  - Wired `GalacticChronicle` hooks into `runEconomyTickForRoom` inside `src/server/galaxyTicker.js` to log sector-wide dynamic shocks and individual planet shortages/surpluses.
+  - Exposed `GET /chronicle` JSON API endpoint inside `src/server.js` using dynamic store evaluations for clustering/Redis support.
+  - Designed a premium, neon-gold glassmorphic timeline sidebar inside `dashboard.html` rendering real-time SVG icons per category, with robust simulation mocks for offline demo use.
+  - Added new backend unit tests `src/persistence/GalacticChronicle.test.js` and dashboard integration tests in `src/server/dashboard.integration.test.js`.
+- **Decisions:** Integrated the chronicle dynamically into `GameInstance` instances inside `server.js` to keep the simulation engine pure and decoupled from persistence storage mechanisms.
+- **Validation:** Executed `npm test` successfully passing 968 Jest tests, `npm run test:client` passing 57 Vitest tests, and typechecked green.
+- **Next:** Proceed to SPEC-097 (Sandboxed Outbound API Rate Limiter & Network Domain Sentinel).
+
+## 2026-05-31T00:15 · iter-0104 · GREEN · cycle-22-spec-095-concurrency-stress-latency
+- **Baseline:** `0f7de03` on `feat/procedural-missions`; 953 Jest green.
+- **Move:** Implement Concurrency Stress-Testing load spawner and Network Latency Injector (SPEC-095).
+- **Changed:**
+  - Coded `src/net/NetworkLatencyInjector.js` defining lightweight socket wrappers that delay or drop inbound and outbound WebSocket frames dynamically based on configurable delay thresholds and probability rates.
+  - Developed `scripts/agent/stress-test.js` spawning multiple parallel pilots flying, trading, and broadcasting in the same sector at 10Hz to benchmark connection loads.
+  - Wired a secure, test-only HTTP endpoint `GET /test/induce-lag` in `server.js` (strictly active under `NODE_ENV === "test"`) to busy-wait the server worker and simulate actual event-loop lag.
+  - Wrote Jest unit suite `src/net/NetworkLatencyInjector.test.js` and socket integration suite `src/server/stressConcurrency.integration.test.js` validating induced backpressure load-shedding and concurrent spawns.
+  - Fixed empty-block ESLint syntax errors in all catch blocks.
+- **Decisions:** Used a 510ms induced lag busy-wait in integration tests to mathematically guarantee the 10-sample rolling average crosses the critical load-shedding threshold (>50ms).
+- **Validation:** `npm run agent:check` → 955 Jest tests + 57 Vitest client tests green with 0 ESLint errors and typecheck green.
+
 ## 2026-05-31T00:00 · iter-0103 · GREEN · cycle-21-spec-094-observability-sandbox-telemetry
 - **Baseline:** `1e6a9ea` on `feat/procedural-missions`; 947 Jest green.
 - **Move:** Implement Sandbox Resource Telemetry Recorder & observabilty dashboard integrations (SPEC-094).

@@ -49,6 +49,14 @@ describe("Dashboard and Metrics HTTP Integration Tests (spec 044)", () => {
           expect(data).toHaveProperty("ts");
           expect(data).toHaveProperty("counters");
           expect(data).toHaveProperty("gauges");
+          // SPEC-073: verify augmented dashboard properties
+          expect(data).toHaveProperty("clients_active");
+          expect(data).toHaveProperty("rooms_active");
+          expect(data).toHaveProperty("tick_ms_avg");
+          expect(data).toHaveProperty("broadcast_bytes_total");
+          expect(data).toHaveProperty("matchmaking_queue_size");
+          expect(data).toHaveProperty("rooms");
+          expect(Array.isArray(data.rooms)).toBe(true);
           resolve();
         });
 
@@ -71,6 +79,11 @@ describe("Dashboard and Metrics HTTP Integration Tests (spec 044)", () => {
         res.on("end", () => {
           expect(body).toContain("<!DOCTYPE html>");
           expect(body).toContain("STARFALL GALAXY");
+          // SPEC-073: verify canvas selectors and new elements are present in output
+          expect(body).toContain('id="sparkline-tick"');
+          expect(body).toContain('id="sparkline-bandwidth"');
+          expect(body).toContain('id="sparkline-queue"');
+          expect(body).toContain('id="val-queue"');
           resolve();
         });
 

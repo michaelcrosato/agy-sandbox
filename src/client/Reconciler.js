@@ -127,7 +127,10 @@ export class Reconciler {
       if (speed > 0.01) {
         const brakeDirection = velocity.normalize().multiply(-1);
         const maxDecelForce = (speed * this.mass) / dt;
-        const actualBrakeForceMagnitude = Math.min(this.brakePower, maxDecelForce);
+        const actualBrakeForceMagnitude = Math.min(
+          this.brakePower,
+          maxDecelForce,
+        );
         force = force.add(brakeDirection.multiply(actualBrakeForceMagnitude));
       }
     }

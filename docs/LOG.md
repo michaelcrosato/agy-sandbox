@@ -39,6 +39,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T18:16 · iter-0091 · GREEN · cycle-14-reconciler-delta-sparklines
+- **Baseline:** `c48a616` on `feat/procedural-missions`; 897 Jest tests green.
+- **Move:** Implement lightweight glowing vector sparkline line-graph charts on dashboard.html showing tick rates, egress bandwidth, and matchmaking queue size telemetry.
+- **Changed:**
+  - Augmented the `/metrics` JSON endpoint with dashboard-friendly top-level fields (clients_active, rooms_active, tick_ms_avg, broadcast_bytes_total, matchmaking_queue_size) and the active rooms list compiled with players and shard metadata.
+  - Implemented the `"matchmaking_queue"` gauge inside `src/server.js`'s tick execution loop.
+  - Added canvas elements inside the Server Tick Time, Egress Bandwidth, and the new Matchmaking Queue telemetry cards in `dashboard.html`.
+  - Wrote a pure client-side `drawSparkline` canvas drawer in `dashboard.html` plotting beautiful, grid-less, glowing, vector-based line path sparklines with matching fade-out under-gradients.
+  - Extended dashboard integration test assertions to verify `/dashboard.html` serves sparkline canvas elements and `/metrics` returns the new augmented fields.
+- **Decisions:** Implemented a dependency-free, lightweight HTML5 `<canvas>` drawing helper directly in dashboard.html to avoid introducing heavy client-side JavaScript bundling or charting frameworks (e.g. Chart.js), maintaining dashboard loading speed and zero runtime package bloating.
+- **Validation:** `npm run agent:check` -> green (901 Jest tests / 73 suites + 26 client logic + 3 client browser tests pass green; Prettier/ESLint clean).
+- **Next:** Start Cycle 15 Phase R (Replenish) to author the next wave of specifications and roadmaps on disk.
+
 ## 2026-05-30T18:11 · iter-0090 · GREEN · cycle-13-visual-mmr-sharded
 - **Baseline:** `84534de` on `feat/procedural-missions`; 886 Jest tests green.
 - **Move:** Execute Cycle 13 Phase R (Replenish) promoting backlog items, and successfully implement canvas visual smoke tests, MMR matchmaking progressive queues, and horizontal partitioned database sharding.

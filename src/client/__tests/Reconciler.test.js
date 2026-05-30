@@ -22,7 +22,11 @@ describe("Client-Side Input Prediction & Server Reconciliation (spec 071)", () =
     };
 
     // Apply thrust for 1 second
-    const predicted = reconciler.predict(startState, { isThrusting: true }, 1.0);
+    const predicted = reconciler.predict(
+      startState,
+      { isThrusting: true },
+      1.0,
+    );
 
     // F = 8000 N, m = 2000 kg => a = 4 m/s^2
     // v = 4 m/s
@@ -43,7 +47,11 @@ describe("Client-Side Input Prediction & Server Reconciliation (spec 071)", () =
     };
 
     // Client makes two predictions (sequence 1 and 2)
-    const predicted1 = reconciler.predict(startState, { isThrusting: true }, 0.5);
+    const predicted1 = reconciler.predict(
+      startState,
+      { isThrusting: true },
+      0.5,
+    );
     const predicted2 = reconciler.predict(
       predicted1,
       { isThrusting: true, isTurningRight: true },

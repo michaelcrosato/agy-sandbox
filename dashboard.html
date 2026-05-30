@@ -596,6 +596,7 @@
           </div>
         </div>
         <div class="card-value" id="val-tick">0.00 <span style="font-size: 1rem; color: #64748b;">ms</span></div>
+        <canvas id="sparkline-tick" width="280" height="40" style="width: 100%; height: 40px; border-radius: 4px; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.03); margin-top: 0.5rem;"></canvas>
         <div class="performance-bar-bg">
           <div class="performance-bar-fill" id="tick-fill"></div>
         </div>
@@ -615,8 +616,26 @@
           </div>
         </div>
         <div class="card-value" id="val-bandwidth">0.00 <span style="font-size: 1rem; color: #64748b;">KB</span></div>
+        <canvas id="sparkline-bandwidth" width="280" height="40" style="width: 100%; height: 40px; border-radius: 4px; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.03); margin-top: 0.5rem;"></canvas>
         <div class="card-footer">
           <span>Broadcast state egress volume</span>
+        </div>
+      </div>
+
+      <!-- Matchmaking Queue Card -->
+      <div class="card card-purple" id="card-queue">
+        <div class="card-header">
+          <span class="card-title">Matchmaking Queue</span>
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-purple)" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+        </div>
+        <div class="card-value" id="val-queue">0</div>
+        <canvas id="sparkline-queue" width="280" height="40" style="width: 100%; height: 40px; border-radius: 4px; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.03); margin-top: 0.5rem;"></canvas>
+        <div class="card-footer">
+          <span>Pilots waiting in queue</span>
         </div>
       </div>
     </section>
@@ -683,6 +702,12 @@
     // Live Telemetry Engine Logic
     let pollInterval = null;
     let fallbackCounter = 0;
+
+    // Rolling History Logs for Vector Sparklines (max 50 points, spec 073)
+    const maxHistoryPoints = 50;
+    const tickHistory = [];
+    const bandwidthHistory = [];
+    const queueHistory = [];
     
     // UI Elements mapping
     const elConnections = document.getElementById("val-connections");
@@ -690,6 +715,7 @@
     const elTick = document.getElementById("val-tick");
     const elTickFill = document.getElementById("tick-fill");
     const elBandwidth = document.getElementById("val-bandwidth");
+    const elQueue = document.getElementById("val-queue");
     const elRoomsTable = document.getElementById("rooms-table-body");
     const elEventFeed = document.getElementById("event-feed");
     const elRefreshRate = document.getElementById("refresh-rate");
@@ -723,14 +749,16 @@
     // Render Real Telemetry
     function renderTelemetry(data) {
       // Basic values
-      const connections = data.clients_active ?? 0;
-      const rooms = data.rooms_active ?? 0;
-      const avgTickTime = data.tick_ms_avg ?? data.tick_ms ?? 0;
-      const broadcastBytes = data.broadcast_bytes_total ?? 0;
+      const connections = data.clients_active ?? data.gauges?.clients ?? 0;
+      const rooms = data.rooms_active ?? data.gauges?.rooms ?? 0;
+      const avgTickTime = data.tick_ms_avg ?? data.tick_ms ?? data.observations?.tick_ms?.avg ?? 0;
+      const broadcastBytes = data.broadcast_bytes_total ?? data.counters?.broadcast_bytes ?? 0;
+      const queueVal = data.matchmaking_queue_size ?? data.gauges?.matchmaking_queue ?? 0;
 
       elConnections.innerText = connections;
       elRooms.innerText = rooms;
       elTick.innerHTML = `${avgTickTime.toFixed(2)} <span style="font-size: 1rem; color: #64748b;">ms</span>`;
+      if (elQueue) elQueue.innerText = queueVal;
 
       // Tick gauge color based on latency
       const maxTickTarget = 33.3;
@@ -748,6 +776,21 @@
       // Bandwidth KB calculation
       const kb = (broadcastBytes / 1024);
       elBandwidth.innerHTML = `${kb.toFixed(2)} <span style="font-size: 1rem; color: #64748b;">KB</span>`;
+
+      // Update Sparkline Rolling History Logs
+      tickHistory.push(avgTickTime);
+      if (tickHistory.length > maxHistoryPoints) tickHistory.shift();
+
+      bandwidthHistory.push(kb);
+      if (bandwidthHistory.length > maxHistoryPoints) bandwidthHistory.shift();
+
+      queueHistory.push(queueVal);
+      if (queueHistory.length > maxHistoryPoints) queueHistory.shift();
+
+      // Render Vector Sparklines
+      drawSparkline("sparkline-tick", tickHistory, "var(--color-emerald)");
+      drawSparkline("sparkline-bandwidth", bandwidthHistory, "var(--color-amber)");
+      drawSparkline("sparkline-queue", queueHistory, "var(--color-purple)");
 
       // Build active rooms table
       if (data.rooms && data.rooms.length > 0) {
@@ -810,16 +853,33 @@
       const mockRooms = Math.max(1, Math.floor(mockConns / 4) + 1);
       const mockTick = 4.25 + Math.random() * 0.8;
       const mockBandwidth = 25.4 + Math.sin(fallbackCounter / 5) * 5;
+      const mockQueue = Math.max(0, Math.floor(Math.sin(fallbackCounter / 4) * 3 + 3));
 
       elConnections.innerText = Math.max(0, mockConns);
       elRooms.innerText = mockRooms;
       elTick.innerHTML = `${mockTick.toFixed(2)} <span style="font-size: 1rem; color: #64748b;">ms</span>`;
+      if (elQueue) elQueue.innerText = mockQueue;
       
       const percent = (mockTick / 33.3) * 100;
       elTickFill.style.width = `${percent}%`;
       elTickFill.style.background = "linear-gradient(90deg, var(--color-cyan), var(--color-blue))";
 
       elBandwidth.innerHTML = `${mockBandwidth.toFixed(2)} <span style="font-size: 1rem; color: #64748b;">KB</span>`;
+
+      // Sim histories
+      tickHistory.push(mockTick);
+      if (tickHistory.length > maxHistoryPoints) tickHistory.shift();
+
+      bandwidthHistory.push(mockBandwidth);
+      if (bandwidthHistory.length > maxHistoryPoints) bandwidthHistory.shift();
+
+      queueHistory.push(mockQueue);
+      if (queueHistory.length > maxHistoryPoints) queueHistory.shift();
+
+      // Render mock sparklines
+      drawSparkline("sparkline-tick", tickHistory, "var(--color-emerald)");
+      drawSparkline("sparkline-bandwidth", bandwidthHistory, "var(--color-amber)");
+      drawSparkline("sparkline-queue", queueHistory, "var(--color-purple)");
 
       // Render custom mock rooms table
       elRoomsTable.innerHTML = `
@@ -874,6 +934,87 @@
       if (elEventFeed.children.length > 6) {
         elEventFeed.removeChild(elEventFeed.lastChild);
       }
+    }
+
+    // drawSparkline (spec 073) — vector canvas lightweight graph renderer
+    function drawSparkline(canvasId, dataPoints, colorCode) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const width = canvas.width;
+      const height = canvas.height;
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, width, height);
+
+      if (dataPoints.length < 2) return;
+
+      // Find min & max for scaling
+      let min = Math.min(...dataPoints);
+      let max = Math.max(...dataPoints);
+      
+      // If min and max are equal, pad them
+      if (min === max) {
+        min = Math.max(0, min - 1);
+        max = max + 1;
+      }
+      
+      const range = max - min;
+
+      ctx.beginPath();
+      ctx.strokeStyle = colorCode;
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      // Enable glow effect!
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = colorCode;
+
+      // Draw path
+      for (let i = 0; i < dataPoints.length; i++) {
+        const x = (i / (maxHistoryPoints - 1)) * width;
+        // Normalize y to [0, 1] then scale to canvas height, with a 4px padding at top and bottom
+        const ratio = (dataPoints[i] - min) / range;
+        const y = height - (ratio * (height - 8) + 4);
+        
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.stroke();
+
+      // Reset shadow for subsequent draws
+      ctx.shadowBlur = 0;
+
+      // Draw subtle gradient fill underneath the sparkline for a premium finish!
+      ctx.beginPath();
+      ctx.moveTo(0, height);
+      for (let i = 0; i < dataPoints.length; i++) {
+        const x = (i / (maxHistoryPoints - 1)) * width;
+        const ratio = (dataPoints[i] - min) / range;
+        const y = height - (ratio * (height - 8) + 4);
+        ctx.lineTo(x, y);
+      }
+      const lastX = ((dataPoints.length - 1) / (maxHistoryPoints - 1)) * width;
+      ctx.lineTo(lastX, height);
+      ctx.closePath();
+
+      // Create gradient
+      const grad = ctx.createLinearGradient(0, 0, 0, height);
+      let rgbaColor = "rgba(0, 242, 254, 0.08)";
+      if (colorCode.includes("emerald")) rgbaColor = "rgba(5, 196, 107, 0.08)";
+      if (colorCode.includes("amber")) rgbaColor = "rgba(255, 159, 26, 0.08)";
+      if (colorCode.includes("purple")) rgbaColor = "rgba(161, 140, 209, 0.08)";
+      
+      grad.addColorStop(0, rgbaColor);
+      grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = grad;
+      ctx.fill();
     }
 
     // Polling Setup

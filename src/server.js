@@ -76,7 +76,11 @@ import {
   runGalaxyHeartbeatInterval,
 } from "./server/galaxyTicker.js";
 import { runGcSweep } from "./server/roomGc.js";
-import { broadcastLobbySync, sendLobbyList } from "./server/lobbySync.js";
+import {
+  broadcastLobbySync,
+  sendLobbyList,
+  buildLobbyRoomsList,
+} from "./server/lobbySync.js";
 import {
   assignShard,
   RoomRegistry,
@@ -147,7 +151,21 @@ const server = http.createServer((req, res) => {
   // Observability endpoint (spec 010): read-only runtime metrics snapshot.
   if (safeUrl === "/metrics" || safeUrl === "/healthz") {
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify(metrics.snapshot()));
+    const snap = metrics.snapshot();
+    const augmented = {
+      ...snap,
+      clients_active: wss.clients.size,
+      rooms_active: instances.size,
+      tick_ms_avg: snap.observations.tick_ms?.avg ?? 0,
+      broadcast_bytes_total: snap.counters.broadcast_bytes ?? 0,
+      matchmaking_queue_size: matchmakingQueue.size,
+      rooms: buildLobbyRoomsList(instances).map((r) => ({
+        ...r,
+        players: r.playersCount,
+        shardIndex: SHARD_INDEX,
+      })),
+    };
+    res.end(JSON.stringify(augmented));
     return;
   }
 
@@ -625,6 +643,7 @@ const physicsInterval = setInterval(() => {
   metrics.observe("tick_ms", Date.now() - now);
   metrics.gauge("rooms", instances.size);
   metrics.gauge("clients", wss.clients.size);
+  metrics.gauge("matchmaking_queue", matchmakingQueue.size);
 }, 1000 / TICK_RATE);
 
 // 2. Room Economy Shortage/Surplus events loops (45 seconds)

@@ -999,6 +999,30 @@ export class GameInstance {
               style: "success",
             });
           }
+
+          if (completedBounty.generated) {
+            const alertMsg = `GALAXY NEWS: Threat ${completedBounty.targetName} neutralized by player ${client.nickname}! Bounty of ${completedBounty.reward.toLocaleString()} CR claimed!`;
+            this.broadcastNotification(alertMsg, "success");
+            this.broadcast({
+              type: "chat",
+              channel: "global",
+              sender: "GALAXY-NEWS",
+              text: alertMsg,
+            });
+            if (
+              completedBounty.factionChanges &&
+              completedBounty.factionChanges.length > 0
+            ) {
+              for (const change of completedBounty.factionChanges) {
+                client.send({
+                  type: "notification",
+                  message: `Standing with ${change.faction}: +${change.delta.toFixed(1)} merits!`,
+                  style: "success",
+                });
+              }
+            }
+          }
+
           if (client.fleetName) {
             const fleetSet = this.fleets.get(client.fleetName);
             if (fleetSet && fleetSet.size > 1) {
@@ -1055,6 +1079,7 @@ export class GameInstance {
               style: "success",
             });
           }
+
           client.sendStats();
         }
       }

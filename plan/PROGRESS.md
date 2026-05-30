@@ -20,6 +20,17 @@ _**v13 re-audit baseline (2026-05-30, ENTIRE v12 blueprint shipped): 886 Jest te
 _**v14 re-audit baseline (2026-05-30, ENTIRE v13 blueprint shipped): 897 Jest tests / 72 suites + 24 client green; 0 `npm audit` vulnerabilities; canvas visual regression + MMR progressive queues + sharded storage partitions all DONE.**_
 _**v15 re-audit baseline (2026-05-30, ENTIRE v14 blueprint shipped): 901 Jest tests / 73 suites + 26 client green + 3 Vitest browser tests green; 0 `npm audit` vulnerabilities; client-side prediction reconciler + delta snapshot compression + canvas dashboard sparklines all DONE.**_
 
+## v15 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Quick Wins & Safety
+- [x] `074` Faction Pairwise Standing Propagation & Pairwise Relations (wire canonical alliances and enemies in FactionRegistry, so that standing gains/losses auto-propagate to Allies and Enemies proportionally) — **done** (files: `src/engine/FactionRegistry.js`, `src/engine/FactionRegistry.test.js`; successfully verified pairwise standing propagation for Allies (+50% gain) and Enemies (-50% loss) in FactionRegistry, fully covered by extensive unit tests in the faction suite)
+
+### Phase 1 — Core Upgrades & Feature Delivery
+- [x] `075` Generative Mission Server Consequence Pipeline (connect generative mission completions from checkArrivalCompletions and checkBountyCompletion to mutate planetary market price indices and standing registries) — **done** (files: `src/server.js`, `src/engine/GameInstance.js`, `src/engine/faction.integration.test.js`; successfully wired courier, passenger, smuggling, and bounty mission arrival landing and destruction consequences to authoritative planet markets and FactionRegistry standing merits, broadcasted dynamic GALAXY NEWS price and threat alerts, synced planetary markets over websockets, and fully supported multi-player fleet credit and consequence distribution under extensive integration tests)
+
+### Phase 2 — System Architecture
+- [ ] `076` Wingman Fleet Command Formations & Cockpit HUD Guides (implement relative offset positioning escorts, wire escort_formation message triggers, and draw vector connection guidelines)
+
 ## v14 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety

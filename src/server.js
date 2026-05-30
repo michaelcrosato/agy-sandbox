@@ -1457,6 +1457,36 @@ wss.on("connection", (ws) => {
                 style: "success",
               });
             }
+
+            if (m.generated) {
+              if (m.marketChanges && m.marketChanges.length > 0) {
+                for (const change of m.marketChanges) {
+                  const alertMsg = `GALAXY NEWS: ${clientObj.nickname} delivered cargo to ${change.planetName}. Price of ${change.commodity} shifted from ${change.before.toFixed(0)} to ${change.after.toFixed(0)} CR!`;
+                  room.broadcastNotification(alertMsg, "info");
+                  room.broadcast({
+                    type: "chat",
+                    channel: "global",
+                    sender: "GALAXY-NEWS",
+                    text: alertMsg,
+                  });
+                  room.broadcast({
+                    type: "market_sync",
+                    planetName: change.planetName,
+                    market: targetPlanet.market,
+                  });
+                }
+              }
+              if (m.factionChanges && m.factionChanges.length > 0) {
+                for (const change of m.factionChanges) {
+                  clientObj.send({
+                    type: "notification",
+                    message: `Standing with ${change.faction}: +${change.delta.toFixed(1)} merits!`,
+                    style: "success",
+                  });
+                }
+              }
+            }
+
             if (clientObj.fleetName) {
               const fleetSet = room.fleets.get(clientObj.fleetName);
               if (fleetSet && fleetSet.size > 1) {

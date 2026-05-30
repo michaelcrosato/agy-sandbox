@@ -1346,6 +1346,138 @@ describe("mission + trade faction standings (spec 032)", () => {
       }
     });
 
+    test("Generated hunt mission in a fleet splits credits and still triggers standing and broadcasts", () => {
+      const room = new GameInstance(
+        "room-test-fleet-hunt",
+        "Fleet Hunt Sector",
+      );
+      try {
+        const playerId1 = "fleet-cmdr-1";
+        const playerId2 = "fleet-cmdr-2";
+        const ship1 = new Ship({
+          id: playerId1,
+          position: new Vector2D(0, 0),
+          credits: 1000,
+        });
+        const ship2 = new Ship({
+          id: playerId2,
+          position: new Vector2D(0, 0),
+          credits: 1000,
+        });
+
+        const sentNotifications1 = [];
+        const sentNotifications2 = [];
+        let broadcastedNews = false;
+
+        const clientObj1 = {
+          id: playerId1,
+          nickname: "PlayerOne",
+          ship: ship1,
+          roomId: room.id,
+          fleetName: "alpha-fleet",
+          send(data) {
+            if (data.type === "notification") {
+              sentNotifications1.push(data.message);
+            }
+          },
+          sendStats() {},
+          ws: {
+            readyState: 1,
+            OPEN: 1,
+            send: () => {},
+          },
+        };
+
+        const clientObj2 = {
+          id: playerId2,
+          nickname: "PlayerTwo",
+          ship: ship2,
+          roomId: room.id,
+          fleetName: "alpha-fleet",
+          send(data) {
+            if (data.type === "notification") {
+              sentNotifications2.push(data.message);
+            }
+          },
+          sendStats() {},
+          ws: {
+            readyState: 1,
+            OPEN: 1,
+            send: () => {},
+          },
+        };
+
+        room.clients.set(playerId1, clientObj1);
+        room.clients.set(playerId2, clientObj2);
+        room.fleets.set("alpha-fleet", new Set([clientObj1, clientObj2]));
+
+        // Override broadcast on room to check for GALAXY-NEWS
+        const originalBroadcast = room.broadcast;
+        room.broadcast = (data) => {
+          if (data && data.sender === "GALAXY-NEWS") {
+            broadcastedNews = true;
+          }
+          originalBroadcast.call(room, data);
+        };
+
+        const huntMission = {
+          id: "hunt-fleet-1",
+          type: "hunt",
+          title: "Wanted Outlaw",
+          reward: 4000,
+          targetName: "Outlaw Boss",
+          generated: true,
+          isAccepted: true,
+          isCompleted: false,
+          consequences: {
+            factionDeltas: [
+              {
+                playerId: playerId1,
+                faction: "Federation",
+                delta: 20,
+              },
+            ],
+          },
+        };
+        clientObj1.missionManager = new MissionManager();
+        clientObj1.missionManager.activeMissions = [huntMission];
+        clientObj2.missionManager = new MissionManager();
+
+        // Target ship destroyed by playerId1
+        const targetShip = new Ship({
+          name: "Outlaw Boss",
+          position: new Vector2D(100, 100),
+        });
+        targetShip.destroyedBy = playerId1;
+        targetShip.faction = "Pirates";
+
+        room.handleEntityDestroyed(targetShip);
+
+        // Asserts
+        expect(huntMission.isCompleted).toBe(true);
+        // Credits split: 1000 + 4000 / 2 = 3000
+        expect(ship1.credits).toBe(3000);
+        expect(ship2.credits).toBe(3000);
+
+        // Standing correctly adjusted for playerId1
+        expect(room.factionRegistry.getStanding(playerId1, "Federation")).toBe(
+          22.5,
+        );
+
+        // Notifications sent to clientObj1
+        expect(
+          sentNotifications1.some((m) =>
+            m.includes("Standing with Federation: +20.0 merits"),
+          ),
+        ).toBe(true);
+
+        // GALAXY NEWS broadcasted
+        expect(broadcastedNews).toBe(true);
+      } finally {
+        room.destroy();
+      }
+    });
+
     test("DecayReputations slowly drifts active player standing towards zero", () => {
       const room = new GameInstance("room-test-decay", "Decay Sector");
       try {

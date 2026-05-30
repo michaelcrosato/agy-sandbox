@@ -39,6 +39,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T14:50 · iter-0068 · GREEN · spec-043-matchmaking-queue-lifecycle
+
+- **Baseline:** `0643b47` on `main`; 796 Jest / 65 suites green. Executing `plan/specs/043` — Matchmaking queue disconnect-rejoin lifecycle.
+- **Move:** Integrate disconnection sweeps and room exit/switch lifecycles with the JoinQueue matchmaking core, auto-admitting queued players and notifying them via socket messages, while securing dynamic socket state checks to prevent memory leaks on dead connection drops.
+- **Changed:**
+  - Modified `src/server.js` to instantiate a persistent `JoinQueue` matchmaking queue, wired slot release points (room exit, disconnect timeouts) to trigger auto-admission checks via `processMatchmakingQueueForRoom`, and implemented inline status scanning to clean up dead sockets.
+  - Modified `src/client/NetworkHandler.js` adding handlers for incoming `"match_admitted"` events to facilitate smooth client room transitions.
+  - Modified `src/server/matchmaking.integration.test.js` adding two full integration tests verifying client auto-admission from JoinQueue upon slot free, and verification that inactive socket closures prune queued items correctly.
+- **Decisions:** Performed queue scanning synchronously in slot recovery paths to guarantee immediate admission checks, but kept it headless and pure to prevent UI or thread blocking. Checked socket state (`readyState === 1`) during active sweep rather than relying solely on event listeners, securing high robustness.
+- **Validation:** `npm run agent:check` -> green (**798 Jest tests / 65 suites**). Lints cleanly, compiles green, and formats correctly.
+- **Notes:** Substrate files untouched. This completes the entire v4 lifecycle, draining the /plan/ spec backlog!
+- **Next:** Emit final handoff report; codebase completely green and fully compliant.
+
+
 ## 2026-05-30T14:40 · iter-0067 · GREEN · spec-042-server-monolith-extraction
 
 - **Baseline:** `0643b47` on `main`; 789 Jest / 62 suites green. Executing `plan/specs/042` — Server monolith extraction.

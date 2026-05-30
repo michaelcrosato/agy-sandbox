@@ -234,6 +234,10 @@ export class NetworkHandler {
           if (this.onLobbySync) this.onLobbySync(msg);
           break;
 
+        case "match_admitted":
+          if (this.onMatchAdmitted) this.onMatchAdmitted(msg);
+          break;
+
         case "warp_success":
           if (this.onWarpSuccess) this.onWarpSuccess(msg);
           break;

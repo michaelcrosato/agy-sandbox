@@ -15,7 +15,12 @@ import { nextFrame } from "./net/BroadcastFramer.js";
 import { interestFilter } from "./net/interest.js";
 import { encode as encodeFrame } from "./net/BinaryCodec.js";
 import { perMessageDeflateOption } from "./net/wsCompression.js";
-import { matchRoom } from "./server/matchmaking.js";
+import {
+  matchRoom,
+  JoinQueue,
+  freeSlots,
+  roomMatches,
+} from "./server/matchmaking.js";
 import { JsonFileStore } from "./persistence/Store.js";
 import { PersistenceManager } from "./persistence/PersistenceManager.js";
 import { applyGalaxy, applyPlayer } from "./persistence/serializers.js";
@@ -45,7 +50,7 @@ import { applyOutfitStats } from "./engine/Outfitting.js";
 import { DEFAULT_OUTFITS } from "./engine/outfitCatalog.js";
 import { tradeOne, applyHullPurchase, factionPrice } from "./engine/Trading.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
-import { shouldGcRoom, sanitizeNickname } from "./server/roomLifecycle.js";
+import { sanitizeNickname } from "./server/roomLifecycle.js";
 import {
   runEconomyShortageInterval,
   runEnvironmentalSiegeInterval,
@@ -164,6 +169,55 @@ const server = http.createServer((req, res) => {
 
 // Authoritative World State Instances Directory
 const instances = new Map();
+const matchmakingQueue = new JoinQueue();
+
+/**
+ * Sweeps the matchmaking queue for players waiting to join the specified room.
+ * @param {Object} room
+ */
+function processMatchmakingQueueForRoom(room) {
+  const free = freeSlots(room.metadata());
+  if (free <= 0) return;
+
+  const admitted = [];
+  // Scan the queue for any matching candidates
+  for (let i = 0; i < matchmakingQueue.waiting.length; i++) {
+    const candidate = matchmakingQueue.waiting[i];
+
+    // Prune dead/disconnected client sockets from the queue
+    if (
+      !candidate.clientObj.ws ||
+      candidate.clientObj.ws.readyState !== 1 /* OPEN */
+    ) {
+      matchmakingQueue.waiting.splice(i, 1);
+      i--;
+      continue;
+    }
+
+    if (roomMatches(room.metadata(), candidate.criteria)) {
+      admitted.push(candidate);
+      matchmakingQueue.waiting.splice(i, 1);
+      i--;
+      if (admitted.length >= free) break;
+    }
+  }
+
+  // Admit candidates
+  for (const candidate of admitted) {
+    console.log(
+      `📡 Queue: Admitting queued player ${candidate.nickname} to sector ${room.name} (${room.id})`,
+    );
+    joinRoom(candidate.clientObj, room.id, candidate.nickname);
+    candidate.clientObj.send({
+      type: "match_admitted",
+      roomId: room.id,
+    });
+  }
+
+  if (admitted.length > 0) {
+    broadcastLobbySync(instances, clients);
+  }
+}
 const persistentSessions = new Map(); // sessionToken -> clientObj
 const clients = new Map(); // ws -> clientObj
 
@@ -579,6 +633,9 @@ async function joinRoom(clientObj, roomId, nickname) {
         "info",
       );
       prevRoom.broadcastRosterUpdate();
+
+      // Freed slot inside prevRoom -> scan the matchmaking queue!
+      processMatchmakingQueueForRoom(prevRoom);
     }
   }
 
@@ -1067,6 +1124,12 @@ wss.on("connection", (ws) => {
         broadcastLobbySync(instances, clients);
       } else {
         // Every matching sector is full — the client waits for a freed slot.
+        matchmakingQueue.enqueue({
+          clientObj,
+          criteria,
+          nickname: msg.nickname || clientObj.nickname,
+        });
+
         clientObj.send({
           type: "matchmaking_queued",
           message: "All matching sectors are full. You are in the queue.",
@@ -1815,9 +1878,15 @@ wss.on("connection", (ws) => {
   ws.on("close", () => {
     const activeClient = clients.get(ws) || clientObj;
 
+    // Prune this client from the matchmaking queue immediately on disconnect
+    matchmakingQueue.remove(activeClient);
+    matchmakingQueue.waiting = matchmakingQueue.waiting.filter(
+      (c) => c.clientObj !== activeClient && c.clientObj.ws !== ws,
+    );
+
     activeClient.cleanupTimeout = setTimeout(() => {
       const currentRoom = instances.get(activeClient.roomId);
-      // Persist the player's final state before evicting their session from
+      // Persist the player's final state before evicting session from
       // memory; this is the only chance to capture credits/cargo/missions for
       // a returning pilot who reconnects after the server restarts.
       persistenceManager.savePlayer(
@@ -1855,6 +1924,9 @@ wss.on("connection", (ws) => {
           "info",
         );
         currentRoom.broadcastRosterUpdate();
+
+        // Freed slot inside currentRoom -> scan the matchmaking queue!
+        processMatchmakingQueueForRoom(currentRoom);
       }
       broadcastLobbySync(instances, clients);
     }, 30000);

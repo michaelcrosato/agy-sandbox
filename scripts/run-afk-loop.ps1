@@ -7,7 +7,7 @@
     autonomous agent ticks, and keeping the filesystem-based state clean and compact.
 #>
 param (
-    [string]$AgentCommand = "antigravity run"
+    [string]$AgentCommand = "agy"
 )
 
 Write-Host "=========================================================" -ForegroundColor Green

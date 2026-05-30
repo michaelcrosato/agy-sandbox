@@ -38,9 +38,9 @@ while true; do
     fi
 
     # 3. Fire up the Agent Engine
-    echo -e "${CYAN}[ENGINE] Executing Agent Core Command: antigravity run${NC}"
+    echo -e "${CYAN}[ENGINE] Executing Agent Core Command: agy${NC}"
     # Change command if running another agent runner locally
-    antigravity run
+    agy
     AgentExitCode=$?
     echo -e "${GRAY}[ENGINE] Cycle complete. Exit Code: $AgentExitCode${NC}"
 

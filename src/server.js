@@ -25,6 +25,10 @@ import {
 import { JsonFileStore } from "./persistence/Store.js";
 import { PersistenceManager } from "./persistence/PersistenceManager.js";
 import { GalacticChronicle } from "./persistence/GalacticChronicle.js";
+import {
+  ApiRateLimiter,
+  activateOutboundSentinel,
+} from "./net/ApiRateLimiter.js";
 import { applyGalaxy, applyPlayer } from "./persistence/serializers.js";
 import { InMemoryPubSub } from "./net/PubSub.js";
 import { applyRepair, applyRefuel } from "./engine/PortServices.js";
@@ -180,6 +184,10 @@ const server = http.createServer((req, res) => {
       event_loop_latency_ms: latencyMonitor.getLatency(),
       event_loop_status: latencyMonitor.getStatus(),
       sandbox_telemetry: sandboxTelemetry.getMetrics(),
+      api_limiter: {
+        block_count: apiRateLimiter.blockCount,
+        expended_tokens: apiRateLimiter.expendedTokens,
+      },
       rooms: buildLobbyRoomsList(instances).map((r) => ({
         ...r,
         players: r.playersCount,
@@ -326,6 +334,20 @@ const galacticChronicle = new GalacticChronicle({
   },
 });
 await galacticChronicle.load();
+
+const apiRateLimiter = new ApiRateLimiter({
+  maxPerMinute: Number(process.env.API_LIMIT_MINUTE) || 10,
+  maxPerHour: Number(process.env.API_LIMIT_HOUR) || 200,
+  allowlistDomains: [
+    "google.com",
+    "api.google.com",
+    "openai.com",
+    "api.openai.com",
+    "localhost",
+    "127.0.0.1",
+  ],
+});
+activateOutboundSentinel(apiRateLimiter);
 
 // Setup multi-room ticker loops
 const TICK_RATE = 30;

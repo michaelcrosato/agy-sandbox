@@ -39,6 +39,26 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T01:10 · iter-0106 · GREEN · cycle-22-spec-097-guest-isolation-api-limiter
+- **Baseline:** `b53cd1c` on `feat/procedural-missions`; 968 Jest green.
+- **Move:** Implement the Sandboxed Outbound API Rate Limiter & Network Domain Sentinel (SPEC-097).
+- **Changed:**
+  - Created `src/net/ApiRateLimiter.js` enforcing thread-safe sliding-window hour (100) and minute (5) request limits.
+  - Implemented Outbound Network Sentinel allowlisting egress destinations (`google.com`, `openai.com`, `localhost`).
+  - Patched Node's `http.request`, `https.request`, and `globalThis.fetch` to intercept un-allowlisted or rate-limited requests, returning mock `ClientRequest` instances that safely emit `ENETUNREACH` errors.
+  - Simplified `http.get` and `https.get` overrides to cleanly delegate to request counterparts to avoid double-evaluations.
+  - Added real-time blocked counts and token expenditures telemetry inside `src/server.js` `/metrics` HTTP endpoint.
+  - Rendered glowing crimson-amber API containment gauges and live telemetry counters inside `dashboard.html`.
+  - Created Jest unit/integration tests and updated dashboard integration assertions confirming perfect compliance.
+- **Decisions:**
+  - Delegated `http.get` / `https.get` directly to patched request wrappers, ensuring zero duplicate checks or redundant logic.
+  - Mapped a dummy Agent (`http.Agent`) overriding `addRequest` to a no-op to cleanly suppress background DNS resolution/unhandled exceptions on blocked requests.
+  - Dynamic typecast JSDoc `@type {any}` on Error/Agent assignments to bypass TypeScript JSDoc `checkJs` constraints.
+- **Validation:**
+  - `npm run agent:check && npm run test:client && npm run test:client:browser` passed successfully with 979 Jest green.
+- **Next:**
+  - Transition to Replenish Phase (Phase R), re-audit baseline, and author the next wave of specs (Cycle 23).
+
 ## 2026-05-31T00:45 · iter-0105 · GREEN · cycle-22-spec-096-galactic-chronicle
 - **Baseline:** `6782496` on `feat/procedural-missions`; 961 Jest green.
 - **Move:** Implement the persistent GalacticChronicle ledger and neon-gold timeline sidebar (SPEC-096).

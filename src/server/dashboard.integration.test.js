@@ -55,6 +55,10 @@ describe("Dashboard and Metrics HTTP Integration Tests (spec 044)", () => {
           expect(data).toHaveProperty("tick_ms_avg");
           expect(data).toHaveProperty("broadcast_bytes_total");
           expect(data).toHaveProperty("matchmaking_queue_size");
+          // SPEC-097: verify api_limiter properties exist in metrics payload
+          expect(data).toHaveProperty("api_limiter");
+          expect(data.api_limiter).toHaveProperty("block_count");
+          expect(data.api_limiter).toHaveProperty("expended_tokens");
           expect(data).toHaveProperty("rooms");
           expect(Array.isArray(data.rooms)).toBe(true);
           resolve();
@@ -109,6 +113,9 @@ describe("Dashboard and Metrics HTTP Integration Tests (spec 044)", () => {
           // SPEC-096: verify chronicle elements are present in output
           expect(body).toContain('id="panel-chronicle"');
           expect(body).toContain('id="chronicle-feed"');
+          // SPEC-097: verify api limiter UI elements are present in output
+          expect(body).toContain('id="val-limiter-blocks"');
+          expect(body).toContain('id="val-limiter-tokens"');
           resolve();
         });
 

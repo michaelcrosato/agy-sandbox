@@ -34,13 +34,13 @@ Send the generated `https://…trycloudflare.com` URL. Other players need only a
 
 ### Controls
 
-| Action | Keys |
-| --- | --- |
-| Thrust | `W` / `↑` |
-| Brake | `S` / `↓` |
-| Turn | `A` `D` / `←` `→` |
-| Fire | `Space` |
-| Afterburner | `Shift` |
+| Action      | Keys              |
+| ----------- | ----------------- |
+| Thrust      | `W` / `↑`         |
+| Brake       | `S` / `↓`         |
+| Turn        | `A` `D` / `←` `→` |
+| Fire        | `Space`           |
+| Afterburner | `Shift`           |
 
 Approach a planet slowly to land, then use the spaceport UI to trade, outfit, buy ships, and take missions.
 
@@ -64,16 +64,16 @@ Do not claim a change is green unless the relevant command actually ran and pass
 
 ## Canonical docs
 
-| File | Purpose |
-| --- | --- |
-| [`AGENTS.md`](AGENTS.md) | Canonical operating manual for agents and humans. Read first. |
-| [`docs/AXIOMS.md`](docs/AXIOMS.md) | Immutable constitution; substrate, read-only. |
-| [`docs/AGENT-LOOP.md`](docs/AGENT-LOOP.md) | Compliance protocol; substrate, read-only. |
-| [`docs/GOAL.md`](docs/GOAL.md) | Product blueprint and architecture intent. |
-| [`plan/PROGRESS.md`](plan/PROGRESS.md) | Live work queue and resume anchor. |
-| [`plan/specs/`](plan/specs/) | Atomic implementation specs. |
-| [`docs/ai/REPO_MAP.md`](docs/ai/REPO_MAP.md) | Repo navigation map for agents. |
-| [`docs/LOG.md`](docs/LOG.md) | Reverse-chronological operational ledger. |
+| File                                         | Purpose                                                       |
+| -------------------------------------------- | ------------------------------------------------------------- |
+| [`AGENTS.md`](AGENTS.md)                     | Canonical operating manual for agents and humans. Read first. |
+| [`docs/AXIOMS.md`](docs/AXIOMS.md)           | Immutable constitution; substrate, read-only.                 |
+| [`docs/AGENT-LOOP.md`](docs/AGENT-LOOP.md)   | Compliance protocol; substrate, read-only.                    |
+| [`docs/GOAL.md`](docs/GOAL.md)               | Product blueprint and architecture intent.                    |
+| [`plan/PROGRESS.md`](plan/PROGRESS.md)       | Live work queue and resume anchor.                            |
+| [`plan/specs/`](plan/specs/)                 | Atomic implementation specs.                                  |
+| [`docs/ai/REPO_MAP.md`](docs/ai/REPO_MAP.md) | Repo navigation map for agents.                               |
+| [`docs/LOG.md`](docs/LOG.md)                 | Reverse-chronological operational ledger.                     |
 
 `tickets/` is legacy history unless a launch context explicitly says otherwise. The live queue is `plan/PROGRESS.md` plus `plan/specs/`.
 

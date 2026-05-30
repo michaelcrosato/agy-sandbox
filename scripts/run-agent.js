@@ -95,10 +95,16 @@ async function fetchIssueDetails(issueNumber) {
     },
   );
   if (!response.ok) {
-    throw new Error(`Failed to fetch issue: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `Failed to fetch issue: ${response.status} ${response.statusText}`,
+    );
   }
   const issue = await response.json();
-  return { title: issue.title, body: issue.body || "", commentsUrl: issue.comments_url };
+  return {
+    title: issue.title,
+    body: issue.body || "",
+    commentsUrl: issue.comments_url,
+  };
 }
 
 async function fetchIssueComments(commentsUrl) {
@@ -150,7 +156,9 @@ async function createPullRequest(branchName, title, body) {
     },
   );
   if (!response.ok) {
-    throw new Error(`Failed to create PR: ${response.status} ${await response.text()}`);
+    throw new Error(
+      `Failed to create PR: ${response.status} ${await response.text()}`,
+    );
   }
   const pr = await response.json();
   return pr.html_url;
@@ -191,7 +199,11 @@ function getContextPack() {
 
 function normalizePath(relativePath) {
   const normalized = path.normalize(relativePath).replaceAll("\\", "/");
-  if (normalized.startsWith("../") || normalized === ".." || path.isAbsolute(normalized)) {
+  if (
+    normalized.startsWith("../") ||
+    normalized === ".." ||
+    path.isAbsolute(normalized)
+  ) {
     throw new Error(`Unsafe path outside workspace: ${relativePath}`);
   }
   return normalized;
@@ -210,7 +222,10 @@ function applyFileOperations(operations) {
   for (const operation of operations) {
     const target = assertWritablePath(operation.path);
     if (!originals.has(target)) {
-      originals.set(target, fs.existsSync(target) ? fs.readFileSync(target, "utf-8") : null);
+      originals.set(
+        target,
+        fs.existsSync(target) ? fs.readFileSync(target, "utf-8") : null,
+      );
     }
 
     if (operation.action === "create" || operation.action === "modify") {
@@ -237,7 +252,11 @@ function restoreOriginals(originals) {
 }
 
 function checkoutTaskBranch(issueNumber, title) {
-  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 30);
+  const slug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 30);
   const branchName = `auto/issue-${issueNumber}-${slug || "task"}-${Date.now()}`;
   const checkout = runCommand(`git checkout -b ${branchName}`);
   if (!checkout.success) throw new Error(checkout.output);
@@ -293,7 +312,9 @@ Return only a JSON array of file operations with complete file content.`;
     }
 
     const originals = applyFileOperations(operations);
-    const gate = runCommand("npm run agent:check", { maxBuffer: 1024 * 1024 * 30 });
+    const gate = runCommand("npm run agent:check", {
+      maxBuffer: 1024 * 1024 * 30,
+    });
     if (gate.success) {
       runCommand("git add .");
       const commitMessage = `feat: autonomously resolve issue #${issueNumber}\n\nResolves issue #${issueNumber}: ${issue.title}`;
@@ -314,7 +335,10 @@ Return only a JSON array of file operations with complete file content.`;
         `[AUTO] Resolve: ${issue.title}`,
         `Autonomous solution for #${issueNumber}.\n\nValidation: \`npm run agent:check\` passed.\n\nCloses #${issueNumber}.`,
       );
-      await addIssueComment(issueNumber, `Autonomous solution proposed: ${prUrl}`);
+      await addIssueComment(
+        issueNumber,
+        `Autonomous solution proposed: ${prUrl}`,
+      );
       return;
     }
 

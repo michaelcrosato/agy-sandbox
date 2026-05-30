@@ -295,8 +295,8 @@ Body: ${issue.body}
 Comments:
 ${comments.join("\n")}`;
 
-    // Use gemini-1.5-pro for high quality software engineering reasoning
-    const modelName = "gemini-2.5-pro";
+    // Default to gemini-2.5-flash for high quota and speed, allow customization via GEMINI_MODEL
+    const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
     console.log(`Calling LLM (${modelName}) to plan and generate changes...`);
     const generationConfig = {
       responseMimeType: "application/json",

@@ -45,6 +45,7 @@ import { selectDeadSockets, DEFAULT_HEARTBEAT_MS } from "./net/heartbeat.js";
 import { sendDecision } from "./net/backpressure.js";
 import { createRegistry } from "./net/metrics.js";
 import { createLogger } from "./net/logger.js";
+import { LatencyMonitor } from "./net/LatencyMonitor.js";
 import { applyOutfitStats } from "./engine/Outfitting.js";
 import { DEFAULT_OUTFITS } from "./engine/outfitCatalog.js";
 import {
@@ -106,6 +107,8 @@ const BINARY_PROTOCOL = process.env.BINARY_PROTOCOL !== "0";
 // GET /metrics, plus a leveled JSON logger for structured events.
 const metrics = createRegistry();
 const logger = createLogger({ level: process.env.LOG_LEVEL || "info" });
+const latencyMonitor = new LatencyMonitor();
+latencyMonitor.start();
 
 // ws inbound hardening (spec 002): cap inbound frame size to blunt memory-DoS,
 // and accept only same-origin upgrades + an optional ALLOWED_ORIGINS allowlist
@@ -158,6 +161,8 @@ const server = http.createServer((req, res) => {
       tick_ms_avg: snap.observations.tick_ms?.avg ?? 0,
       broadcast_bytes_total: snap.counters.broadcast_bytes ?? 0,
       matchmaking_queue_size: matchmakingQueue.size,
+      event_loop_latency_ms: latencyMonitor.getLatency(),
+      event_loop_status: latencyMonitor.getStatus(),
       rooms: buildLobbyRoomsList(instances).map((r) => ({
         ...r,
         players: r.playersCount,
@@ -633,7 +638,7 @@ const physicsInterval = setInterval(() => {
         }
       }
 
-      const visible =
+      let visible =
         INTEREST_ENABLED && viewer && viewer.position
           ? interestFilter(
               allEntities,
@@ -646,6 +651,13 @@ const physicsInterval = setInterval(() => {
               },
             )
           : allEntities;
+
+      // Event-Loop Latency Backpressure load-shedding (SPEC-090):
+      if (latencyMonitor.shouldShed("optional")) {
+        visible = visible.filter(
+          (ent) => ent.type !== "asteroid" && ent.type !== "projectile",
+        );
+      }
 
       const frame = nextFrame({
         entities: visible,
@@ -703,6 +715,9 @@ const economyNormalizationInterval = setInterval(() => {
 // 4b. Galaxy Heartbeat: age the economy and diffuse prices across trade lanes
 // even when nobody is in the sector (8 seconds).
 const galaxyHeartbeatInterval = setInterval(() => {
+  if (latencyMonitor.shouldShed("cosmetic")) {
+    return; // Pause cosmetic/non-essential heartbeat updates when loop is degraded/critical
+  }
   runGalaxyHeartbeatInterval(instances);
 }, 8000);
 
@@ -1045,6 +1060,18 @@ wss.on("connection", (ws) => {
     roomId: null,
     send(data) {
       if (ws.readyState === ws.OPEN) {
+        // Dynamic Load-Shedding (SPEC-090):
+        if (data) {
+          if (data.type === "chat" && latencyMonitor.shouldShed("chat")) {
+            return; // Drop non-essential chat message
+          }
+          if (
+            data.type === "notification" &&
+            latencyMonitor.shouldShed("chat")
+          ) {
+            return; // Drop verbose system notifications
+          }
+        }
         ws.send(JSON.stringify(data));
       }
     },
@@ -2358,6 +2385,7 @@ let activeTunnel = null;
 
 const shutdown = async () => {
   console.log("\n🔌 Shutting down server gracefully...");
+  latencyMonitor.stop();
 
   // Clear all heartbeat and simulation intervals immediately to prevent race conditions during teardown (spec 019f)
   clearInterval(physicsInterval);

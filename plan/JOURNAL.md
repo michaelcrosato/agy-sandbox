@@ -7,8 +7,8 @@ It records cycle transitions, key milestones, and precise next steps.
 
 ## Cycle 21 — 2026-05-30
 - **Status:** GREEN
-- **Summary:** Transitioned to Cycle 21 Phase R (Replenish) with a new Prime Directive from the host: transform `agy-sandbox` into a hyper-secure, deterministic agent laboratory. Audited host vs. guest execution boundaries, state-leakage, and zombie processes. Formulated three secure infrastructure specifications: SPEC-092 (Automated Zombie Process Reaper & Orphan Port Cleanup), SPEC-093 (State Leakage Defender & Workspace Isolation Sandbox), and SPEC-094 (LLM Observability & Sandbox Resource Telemetry Recorder). Extended dynamic ROADMAP waves and PROGRESS checklists on disk.
-- **Next Action:** Isolate SPEC-092 (Automated Zombie Process Reaper & Orphan Port Cleanup Subsystem) on a dedicated branch, build the ProcessReaper class and cleanup powershell utility, and verify with new tests.
+- **Summary:** Transitioned to Cycle 21 and successfully completed SPEC-092 (Automated Zombie Process Reaper & Orphan Port Cleanup Subsystem). Developed the `ProcessReaper.js` module tracking, spawning, and force-killing background worker threads and subprocesses. Created the PowerShell teardown utility `scripts/agent/cleanup-orphans.ps1` that scans Windows `Get-NetTCPConnection` ports 18000–18200 and terminates locking PIDs. Wired worker registration inside supervisor integration test suites, verifying 100% clean process teardown. All 936 Jest tests and 57 client Vitest tests are 100% green.
+- **Next Action:** Isolate SPEC-093 (State Leakage Defender & Workspace Isolation Sandbox) on a dedicated branch, build the workspace sanitize script, and verify with unit tests.
 
 ## Cycle 20 — 2026-05-30
 - **Status:** GREEN

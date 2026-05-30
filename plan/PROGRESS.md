@@ -28,8 +28,8 @@ _**v20 re-audit baseline (2026-05-30, new sandbox prime directive): 933 Jest tes
 ## v21 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Security & Teardown Lifecycle
-- [ ] `092` Automated Zombie Process Reaper & Orphan Port Cleanup Subsystem (build a modular ProcessReaper class tracking worker threads/child processes and a PowerShell teardown script to kill orphaned tasks and free locked socket ports)
-- [ ] `093` State Leakage Defender & Workspace Isolation Sandbox (develop an automatic workspace sanitizing script to detect and sweep untracked test directories and local temp logs while preserving planning ledgers)
+- [x] `092` Automated Zombie Process Reaper & Orphan Port Cleanup Subsystem (build a modular ProcessReaper class tracking worker threads/child processes and a PowerShell teardown script to kill orphaned tasks and free locked socket ports) — **done** (files: `src/net/ProcessReaper.js`, `src/net/ProcessReaper.test.js`, `scripts/agent/cleanup-orphans.ps1`, `src/server/supervisor.integration.test.js`; created a robust process tracking reaper class and host-side PowerShell process sweep script to force-kill zombie tasks and free bound socket ports under Windows developer hosts, fully verified with mock worker and subprocess testing; 936 Jest tests green)
+- [x] `093` State Leakage Defender & Workspace Isolation Sandbox (develop an automatic workspace sanitizing script to detect and sweep untracked test directories and local temp logs while preserving planning ledgers) — **done** (files: `scripts/agent/workspace-sanitize.ps1`, `src/net/WorkspaceSanitizer.test.js`, `.gitignore`; implemented a recursive workspace sanitizing powershell script that removes untracked test directories and local temp logs while preserving critical ledgers and planning directories, automatically registered under git hooks to verify clean/predictable sandbox states; 937 Jest tests green)
 
 ### Phase 2 — Observability & Telemetry
 - [ ] `094` LLM Observability & Sandbox Resource Telemetry Recorder (implement sandbox-level memory, CPU, and disk utilization recording to log resource leaks and plot peak footprints on the telemetry dashboard)

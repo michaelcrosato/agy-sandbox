@@ -44,3 +44,6 @@ night-queue/
 data/
 # Test-only persistence scratch dirs (RedisStore/multinode/restart integration)
 data-test-*/
+
+# Vitest browser visual testing attachments
+.vitest-attachments/

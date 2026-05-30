@@ -39,6 +39,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
  
+## 2026-05-30T23:15 · iter-0100 · GREEN · cycle-21-spec-092-zombie-process-reaper
+- **Baseline:** `0cc5d78` on `feat/procedural-missions`; 933 Jest + 57 Vitest client tests green.
+- **Move:** Implement Automated Zombie Process Reaper & Orphan Port Cleanup Subsystem (SPEC-092).
+- **Changed:**
+  - Coded `src/net/ProcessReaper.js` implementing a process lifecycle tracker managing workers and child processes.
+  - Developed PowerShell host script `scripts/agent/cleanup-orphans.ps1` querying `Get-NetTCPConnection` to stop locked port PIDs.
+  - Wired worker tracking registers inside `src/server/supervisor.integration.test.js` to assert absolute teardown.
+  - Developed Jest unit suite `src/net/ProcessReaper.test.js` asserting registrations, reaps, and automated removals on exit.
+  - Prettified all new files and updated checklists, state anchors, and journals on disk.
+- **Decisions:** Used clean data eval options within ProcessReaper tests to verify worker reaps programmatically without auxiliary test files.
+- **Validation:** `npm run agent:check` -> green (936 Jest tests green); `npm run test:client` -> green (57 tests green); `npm run test:client:browser` -> green (3 tests green).
+- **Next:** Claim and execute SPEC-093 state leakage sanitizer to completely clean local filesystem untracked noise.
+
 ## 2026-05-30T23:10 · iter-0099 · GREEN · cycle-21-replenish-sandbox-architecture-sec
 - **Baseline:** `44e6030` on `feat/procedural-missions`; 933 Jest + 57 Vitest client + 3 Vitest browser tests green.
 - **Move:** Initiate Cycle 21 Phase R (Replenish) targeting hyper-secure, deterministic agent sandbox infrastructure.

@@ -2,6 +2,7 @@ import { Worker } from "worker_threads";
 import WebSocket from "ws";
 import fs from "fs";
 import { assignShard } from "../net/roomRouter.js";
+import { ProcessReaper } from "../net/ProcessReaper.js";
 
 describe("Supervisor process model integration (spec 019c)", () => {
   let worker0;
@@ -24,26 +25,30 @@ describe("Supervisor process model integration (spec 019c)", () => {
     }
 
     // Boot Worker 0 on port0 (Shard index 0, Shard count 2)
-    worker0 = new Worker(new URL("../server.js", import.meta.url), {
-      env: {
-        NODE_ENV: "test",
-        PORT: String(port0),
-        SHARD_INDEX: "0",
-        WORKERS: "2",
-        PERSISTENCE_DIR: "./data-test-shared",
-      },
-    });
+    worker0 = ProcessReaper.registerWorker(
+      new Worker(new URL("../server.js", import.meta.url), {
+        env: {
+          NODE_ENV: "test",
+          PORT: String(port0),
+          SHARD_INDEX: "0",
+          WORKERS: "2",
+          PERSISTENCE_DIR: "./data-test-shared",
+        },
+      }),
+    );
 
     // Boot Worker 1 on port1 (Shard index 1, Shard count 2)
-    worker1 = new Worker(new URL("../server.js", import.meta.url), {
-      env: {
-        NODE_ENV: "test",
-        PORT: String(port1),
-        SHARD_INDEX: "1",
-        WORKERS: "2",
-        PERSISTENCE_DIR: "./data-test-shared",
-      },
-    });
+    worker1 = ProcessReaper.registerWorker(
+      new Worker(new URL("../server.js", import.meta.url), {
+        env: {
+          NODE_ENV: "test",
+          PORT: String(port1),
+          SHARD_INDEX: "1",
+          WORKERS: "2",
+          PERSISTENCE_DIR: "./data-test-shared",
+        },
+      }),
+    );
 
     // Wait for both worker threads to bind to their ports
     await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -51,8 +56,7 @@ describe("Supervisor process model integration (spec 019c)", () => {
 
   afterAll(async () => {
     // Terminate both worker threads cleanly
-    await worker0.terminate();
-    await worker1.terminate();
+    await ProcessReaper.reap();
   });
 
   test("asserts a room routes to and runs only on the owning shard worker", async () => {

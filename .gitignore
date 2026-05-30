@@ -42,3 +42,5 @@ night-queue/
 
 # Runtime persistence (P1 JSON snapshots of galaxy + players)
 data/
+# Test-only persistence scratch dirs (RedisStore/multinode/restart integration)
+data-test-*/

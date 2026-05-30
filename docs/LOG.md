@@ -41,6 +41,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-30T12:10 · iter-0058 · GREEN · spec-019c-worker-process-model-and-supervisor
+
+- **Baseline:** `2c985df` on `main`; 730 Jest / 54 suites + 18 client JSDOM + 2 browser green. Executing `plan/specs/019c` — Worker process model.
+- **Move:** Implement supervisor worker planning logic, clustered process fork supervisor daemon, and assert correct multi-port sharded boundaries in integration testing.
+- **Changed:**
+  - Wrapped global authoritative startup block in `server.js` inside an exported `startServer` method that handles lazy RedisStore connection, sharded public room startup, autosave, and port binding.
+  - Implemented `src/server/supervisor.js` containing pure `planWorkers` rebalance and self-healing worker process decisions, plus a thin supervisor clustered process forker.
+  - Implemented `src/server/supervisor.test.js` covering unit-level worker spawn/terminate/rebalance decisions.
+  - Implemented `src/server/supervisor.integration.test.js` spawning two separate Authoritative Shard Worker servers inside isolated worker threads, verifying correct routing boundary and client join errors.
+  - Added deterministic `newRoomId` assignment loop ensuring dynamically created custom sectors map to their creator's shard index.
+- **Decisions:** Wrapped standard `server.js` startup in a clean `startServer` interface, enabling optional configuration overrides (port/shard/workers). Used Node `worker_threads` inside the integration test to simulate multiple isolated process workers in-process, bypassing module-level global state pollution.
+- **Validation:** `npm run agent:check` -> green (**736 Jest tests / 56 suites**). Both JSDOM and headless browser client test jobs pass cleanly with 0 warnings.
+- **Notes:** Substrate files untouched. No push/merge. Progressed directly into stateless routing entry point.
+- **Next:** Spec `019d` Sticky routing / load balancer front door.
+
 ## 2026-05-30T12:05 · iter-0057 · GREEN · spec-019b-redis-store-shared-backend
 
 - **Baseline:** `78ae0fa` on `main`; 720 Jest / 53 suites + 18 client JSDOM + 2 browser green. Executing `plan/specs/019b` — RedisStore behind Store.

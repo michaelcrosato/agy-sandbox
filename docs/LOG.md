@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-29T22:35 · iter-0041 · GREEN · spec-020-salvage-outfit-dedup
+
+- **Baseline:** `03a90c3` on `main`; 614 tests / 42 suites green. Executing `plan/specs/020` (Wave A).
+- **Move:** Remove the outfit-catalogue duplication between `Planet` and the server salvage handler, and fix the latent bug where salvaged newer outfits applied no stats.
+- **Changed:** New `src/engine/outfitCatalog.js` exporting a frozen `DEFAULT_OUTFITS` (the canonical 16-outfit catalogue) — the single source. `Planet.js` now uses it as its default outfitter (inline array removed). `server.js` salvage branch: deleted its inline `defaultCatalog` (a stale 12-outfit subset) and its inline stat switch, and now does `applyOutfitStats(ship, DEFAULT_OUTFITS.find(...))`. This fixes a real bug — the old salvage catalogue was missing Ion Disruptor / Ramscoop / Auxiliary Fuel Cells / Mining Laser, so salvaging them applied no stats. `server.js` dropped 107 lines (2,086 → 1,979). +5 tests (`outfitCatalog.test.js`: frozen/shape, Planet single-source, EW outfits now apply, all stat-bearing outfits apply).
+- **Decisions:** Made `DEFAULT_OUTFITS` frozen so the shared reference can't be mutated across planets. Noted (BACKLOG) that the stat-less `tractor` type doesn't add hull mass via `applyOutfitStats` (an incidental spec-007 change) — buy and salvage are now *consistent*, which is the DoD ("same result as buying"), so left as-is.
+- **Validation:** `npm run agent:check` → green (619 tests / 43 suites, prettier clean). `PORT=18211 NODE_ENV=test node src/server.js` → boots and listens. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 020 done; `plan/BACKLOG.md` created.
+- **Next:** `plan/specs/022` (CI Node LTS matrix) + `023` (dotenv 17) — fast safe wins, then `025`/`024`/`021`.
+
 ## 2026-05-29T22:20 · iter-0040 · GREEN · plan-v2-reaudit-blueprint
 
 - **Baseline:** `9bb7098` on `main`; 614 tests / 42 suites green; `npm audit` 0. Planning/direction artifact (no product code changed) — a re-audit of the now-hardened repo to refresh the `/plan/` blueprint.

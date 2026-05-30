@@ -466,6 +466,36 @@ export class AIController {
       return;
     }
 
+    // Focus Intercept Command - break off and intercept flagship's locked target
+    if (this.escortMode === "intercept") {
+      let currentTarget = this.flagship.target;
+
+      if (currentTarget && !currentTarget.isDestroyed) {
+        this.target = currentTarget;
+        this.ship.target = currentTarget;
+        this.steerTowards(currentTarget.position);
+        const dist = this.ship.position.distance(currentTarget.position);
+        if (dist < 500) {
+          this.ship.controls.isThrusting = dist > 120;
+          const angle = Math.atan2(
+            currentTarget.position.y - this.ship.position.y,
+            currentTarget.position.x - this.ship.position.x,
+          );
+          const headingDiff = Math.abs(
+            this.normalizeAngle(angle - this.ship.heading),
+          );
+          if (headingDiff < 0.25) {
+            this.ship.controls.isFiring = true;
+          }
+        } else {
+          this.ship.controls.isThrusting = true;
+        }
+      } else {
+        this.escortMode = "follow";
+      }
+      return;
+    }
+
     // 2. Focus Attack Command - find and intercept hostile target
     if (this.escortMode === "attack") {
       let currentTarget = this.target;

@@ -240,7 +240,7 @@ export function handleEscortCommand(clientObj, msg, room) {
   if (!clientObj || !clientObj.ship || !room || !msg) return;
 
   const command = msg.command;
-  if (command === "attack" && msg.targetId) {
+  if ((command === "attack" || command === "intercept") && msg.targetId) {
     const target = room.engine.getEntity(msg.targetId);
     if (target && !target.isDestroyed) {
       clientObj.ship.target = target;

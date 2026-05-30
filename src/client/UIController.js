@@ -70,6 +70,10 @@ export class UIController {
     // Squad / Co-op Party Management Panel (SPEC-059)
     this.squadPanel = document.getElementById("squad-panel");
     this.squadMembersList = document.getElementById("squad-members-list");
+
+    // Wingman Telemetry Panel (SPEC-079)
+    this.wingmanPanel = document.getElementById("wingman-panel");
+    this.wingmanList = document.getElementById("wingman-list");
   }
 
   /**
@@ -426,6 +430,77 @@ export class UIController {
               </div>
             `;
             this.squadMembersList.appendChild(memberCard);
+          }
+        }
+      }
+    }
+
+    // 8. Update Wingman Telemetry HUD (SPEC-079)
+    if (this.wingmanPanel) {
+      // Find active wingmen (role is "escort" and flagshipId matches player.id)
+      const wingmen = entities.filter(
+        (ent) =>
+          ent &&
+          !ent.isDestroyed &&
+          (ent.role === "escort" ||
+            (ent.type === "ship" && ent.role === "escort")) &&
+          (ent.flagshipId === player.id || ent["flagshipId"] === player.id),
+      );
+
+      if (wingmen.length === 0) {
+        this.wingmanPanel.style.display = "none";
+      } else {
+        this.wingmanPanel.style.display = "block";
+        if (this.wingmanList) {
+          this.wingmanList.innerHTML = "";
+          for (const wm of wingmen) {
+            const card = document.createElement("div");
+            card.className = "fleet-member-card wingman-card";
+
+            const shieldRatio = Math.max(
+              0,
+              Math.min(100, ((wm.shield || 0) / (wm.maxShield || 1)) * 100),
+            );
+            const armorRatio = Math.max(
+              0,
+              Math.min(100, ((wm.armor || 0) / (wm.maxArmor || 1)) * 100),
+            );
+
+            // Get target information
+            let targetText = "NO TARGET";
+            if (wm.target) {
+              targetText = `TARGET: ${wm.target.name || wm.target.type || "UNKNOWN"}`;
+            } else if (wm.targetId) {
+              const locked = entities.find((e) => e.id === wm.targetId);
+              targetText = locked
+                ? `TARGET: ${locked.name || locked.type || "UNKNOWN"}`
+                : `TARGET: [ID ${wm.targetId}]`;
+            }
+
+            card.innerHTML = `
+              <div class="fleet-member-header">
+                <span class="fleet-member-name" style="color: var(--color-gold); text-shadow: 0 0 4px rgba(212, 175, 55, 0.4);">${wm.name || "Wingman Escort"}</span>
+                <span class="fleet-member-status" style="font-size: 8px; color: #a0a5b5;">ACTIVE ESCORT</span>
+              </div>
+              <div class="fleet-bars-container">
+                <div class="fleet-bar-row">
+                  <span class="fleet-bar-label">SHIELD</span>
+                  <div class="fleet-mini-bar">
+                    <div class="fleet-mini-bar-fill" style="width: ${shieldRatio}%; background: #00f2fe; box-shadow: 0 0 4px #00f2fe;"></div>
+                  </div>
+                </div>
+                <div class="fleet-bar-row">
+                  <span class="fleet-bar-label">ARMOR</span>
+                  <div class="fleet-mini-bar">
+                    <div class="fleet-mini-bar-fill" style="width: ${armorRatio}%; background: #ff3b30;"></div>
+                  </div>
+                </div>
+                <div class="wingman-target" style="font-size: 8px; color: var(--color-gold); margin-top: 2px; font-family: var(--font-display); text-transform: uppercase;">
+                  ${targetText}
+                </div>
+              </div>
+            `;
+            this.wingmanList.appendChild(card);
           }
         }
       }

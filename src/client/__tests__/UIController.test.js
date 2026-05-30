@@ -22,6 +22,8 @@ function mountHud() {
     <div id="bounty-radar-telemetry"></div>
     <div id="squad-panel" style="display: none;"></div>
     <div id="squad-members-list"></div>
+    <div id="wingman-panel" style="display: none;"></div>
+    <div id="wingman-list"></div>
   `;
   return new UIController();
 }
@@ -324,6 +326,60 @@ describe("UIController combat-feedback HUD transitions", () => {
       expect(card.innerHTML).toContain("Wingman-One");
       expect(card.innerHTML).toContain("X: 150, Y: -250");
       expect(card.innerHTML).toContain("TARGET: Pirate Raider");
+    });
+  });
+
+  describe("Wingman Telemetry HUD (SPEC-079)", () => {
+    it("hides the wingman panel when there are no active wingmen", () => {
+      const player = {
+        id: "player-1",
+        shield: 100,
+        maxShield: 100,
+        armor: 100,
+        maxArmor: 100,
+        credits: 5000,
+        cargoCapacity: 20,
+        getCargoWeight: () => 0,
+        velocity: { magnitude: () => 0 },
+        position: { x: 0, y: 0 },
+      };
+      ui.update(player, null, [], [], [], []);
+      expect(ui.wingmanPanel.style.display).toBe("none");
+    });
+
+    it("renders wingman cards with shield, armor and target status when active wingmen are present", () => {
+      const player = {
+        id: "player-1",
+        shield: 100,
+        maxShield: 100,
+        armor: 100,
+        maxArmor: 100,
+        credits: 5000,
+        cargoCapacity: 20,
+        getCargoWeight: () => 0,
+        velocity: { magnitude: () => 0 },
+        position: { x: 0, y: 0 },
+      };
+      const activeWingman = {
+        id: "wingman-1",
+        name: "Valerie Guard",
+        role: "escort",
+        flagshipId: "player-1",
+        shield: 75,
+        maxShield: 100,
+        armor: 85,
+        maxArmor: 100,
+        target: { name: "Hostile Raider" },
+        isDestroyed: false,
+      };
+
+      ui.update(player, null, [], [], [activeWingman], []);
+
+      expect(ui.wingmanPanel.style.display).toBe("block");
+      expect(ui.wingmanList.children.length).toBe(1);
+      const card = ui.wingmanList.children[0];
+      expect(card.innerHTML).toContain("Valerie Guard");
+      expect(card.innerHTML).toContain("TARGET: Hostile Raider");
     });
   });
 });

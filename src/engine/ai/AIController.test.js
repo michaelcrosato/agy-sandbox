@@ -443,6 +443,24 @@ describe("AIController escort behaviour", () => {
     // orbitAngle should be incremented: 0 + 0.8 * 0.5 = 0.4
     expect(ctrl.orbitAngle).toBeCloseTo(0.4, 5);
   });
+
+  test("in intercept mode, targets the flagship's active target and falls back to follow if flagship has no target", () => {
+    const ctrl = new AIController(shipAt("Escort", 0, 0), "escort");
+    ctrl.flagship = shipAt("Flagship", 0, 0);
+    const mockTarget = shipAt("Hostile Target", 150, 0);
+    ctrl.escortMode = "intercept";
+
+    // 1. With flagship target locked: targets and attacks it
+    ctrl.flagship.target = mockTarget;
+    ctrl.executeEscortAI(0.1, [ctrl.ship, ctrl.flagship, mockTarget]);
+    expect(ctrl.target).toBe(mockTarget);
+    expect(ctrl.ship.controls.isFiring).toBe(true);
+
+    // 2. With no flagship target: falls back to follow mode
+    ctrl.flagship.target = null;
+    ctrl.executeEscortAI(0.1, [ctrl.ship, ctrl.flagship]);
+    expect(ctrl.escortMode).toBe("follow");
+  });
 });
 
 describe("AIController.executeCaravanAI (caravan behavior)", () => {

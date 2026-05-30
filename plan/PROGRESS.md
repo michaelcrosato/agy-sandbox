@@ -9,6 +9,18 @@ _v2 re-audit baseline (2026-05-29, after Phase 0+1): 614 tests / 42 suites; 0 CV
 _v3 re-audit baseline (2026-05-30, ENTIRE v2 blueprint shipped): 696 Jest tests / 51 suites + 17 client green; 0 `npm audit` vulnerabilities; `npm outdated` empty; typecheck gate + CI LTS matrix live._
 _v4 re-audit baseline (2026-05-30, ENTIRE v3 blueprint shipped): 775 Jest tests / 61 suites + 18 client green; 0 `npm audit` vulnerabilities; matchmaking queue + compression + schema codec all DONE._
 _**v5 re-audit baseline (2026-05-30, ENTIRE v4 blueprint shipped): 798 Jest tests / 65 suites + 18 client green; 0 `npm audit` vulnerabilities; dynamic refining + matchmaking disconnect auto-admit + glassmorphic dashboard all DONE.** Remaining = v5 Phase 0 (045) + Phase 1 (046) + Phase 2 (047)._
+_**v6 re-audit baseline (2026-05-30, ENTIRE v5 blueprint shipped): 811 Jest tests / 66 suites + 18 client green; 0 `npm audit` vulnerabilities; contraband jammers + modular port handlers + dynamic reputation spawns all DONE.** Remaining = v6 Phase 0 (050) + Phase 1 (049) + Phase 2 (048)._
+
+## v6 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Quick Wins & Safety
+- [ ] `050` Wingman Tactical Formation & Targeting Controls (fleet depth) — **todo** (files: `src/server/portHandlers.js`, `src/server/portHandlers.test.js`, `src/server.js`, `src/engine/ai/AIController.js`, `src/engine/ai/AIController.test.js`; extract inline `"escort_command"` message handler into `portHandlers.js` and add comprehensive tests, extend AIController so escorts in `"attack"` mode actively lock onto the flagship's active combat target).
+
+### Phase 1 — Core Upgrades & Debt Paydown
+- [ ] `049` Interest Management Grid Optimizations (performance scaling) — **todo** (files: `src/net/interest.js`, `src/net/interest.test.js`; optimize the AoI filter culling complexity using a high-performance 2D spatial grid/bucket hashing index, achieving $O(N + M)$ query scaling while preserving 100% array ordering and culling behavior).
+
+### Phase 2 — Scale-Out & Premium Features
+- [ ] `048` Contraband Space Patrol Scans & Hails (immersive smuggling) — **todo** (files: `src/engine/GameInstance.js`, `src/engine/faction.integration.test.js`; add real-time remote contraband scans in space when smuggling players fly close to sector faction patrols, utilizing jammers to bypass scans, and triggering faction standing penalties and immediate aggressive AI guard locking on failure).
 
 ## v5 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

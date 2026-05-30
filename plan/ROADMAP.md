@@ -114,18 +114,18 @@ flowchart TD
 
 ---
 
-## EXECUTION WAVES (v5)
+## EXECUTION WAVES (v6)
 
-Completed waves (`001–044`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
+Completed waves (`001–047`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
 
-### Phase 0 — Quick Wins & Safety — `045`
-`045` Shielded Cargo Holds & Decoy Jammers (smuggling bypass).
+### Phase 0 — Quick Wins & Safety — `050`
+`050` Wingman Tactical Formation & Targeting Controls (fleet depth).
 
-### Phase 1 — Core Upgrades & Debt Paydown — `046`
-`046` Modularize Port & Mission Handlers (tech debt reduction).
+### Phase 1 — Core Upgrades & Debt Paydown — `049`
+`049` Interest Management Grid Optimizations (performance culling scalability).
 
-### Phase 2 — Scale-Out & Premium Features — `047`
-`047` Dynamic Reputation & Patrol Spawns (immersive responsive gameplay).
+### Phase 2 — Scale-Out & Premium Features — `048`
+`048` Contraband Space Patrol Scans & Hails (immersive smuggling interactions).
 
 ---
 
@@ -135,11 +135,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 045 | Shielded Cargo Holds & Decoy Jammers | 0 | 4 | 5 | 5 | 5 | 19 |
-| 047 | Dynamic Reputation & Patrol Spawns | 2 | 5 | 4 | 4 | 5 | 18 |
-| 046 | Modularize Port & Mission Handlers | 1 | 3 | 5 | 4 | 5 | 17 |
+| 050 | Wingman Tactical Formation & Targeting Controls | 0 | 4 | 5 | 5 | 5 | 19 |
+| 049 | Interest Management Grid Optimizations | 1 | 5 | 4 | 4 | 5 | 18 |
+| 048 | Contraband Space Patrol Scans & Hails | 2 | 5 | 4 | 3 | 5 | 17 |
 
-**Recommended start:** `045` (Σ19 — safety/smuggling features, high feasibility, safe) to introduce lead-shielded cargo holds and active decoys, then proceed to `047` (Σ18) to build responsive faction patrol ships hunting hostile players. Complete the wave with `046` (Σ17) message handler extraction to keep the server code clean and unit-tested.
+**Recommended start:** `050` (Σ19 — fleet tactical depth, high feasibility, extremely safe) to modularize wingman controls and deepen cooperative targeting AI, then proceed to `049` (Σ18) to implement the grid-based $O(N + M)$ spatial culling optimizations. Complete the wave with `048` (Σ17) to wire up real-time remote security culls and hails for smugglers.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

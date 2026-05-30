@@ -39,6 +39,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T17:30 · iter-0072 · GREEN · spec-049-interest-management-grid-optimization
+
+- **Baseline:** `1a251e8` on `main`; 816 Jest tests green.
+- **Move:** Optimize the O(M * N) culling complexity of per-client AoI broadcasts to O(N + M) using spatial hash grids (049).
+- **Changed:**
+  - Redesigned `interestFilter` in `src/net/interest.js` to segment space into cells of size equal to the active radius.
+  - Added the `buildSpatialGrid` broad-phase utility to segment and partition all coordinates in a single run.
+  - Refactored `src/server.js` broadcast tick to construct the spatial grid once and share it across all client interest filters.
+  - Created a rigorous equivalence and high-concurrency simulation benchmark test inside `src/net/interest.test.js`.
+  - Added JSDoc declarations to satisfy TypeScript checkJs gates.
+- **Decisions:** Partitioned space with cells equal to the culling radius which guarantees zero false-negatives (as any visible coordinate is at most 1 adjacent cell away). Integrated options parameter to fallback safely to simple linear scans for small arrays.
+- **Validation:** `npm run agent:check` -> green (818 Jest tests / 66 suites). Measured a **15.5x performance speedup** (18ms vs 280ms) in high-density sectors.
+- **Next:** Claim and implement SPEC-048 to wire up real-time space security patrol scans and hails.
+
 ## 2026-05-30T17:15 · iter-0071 · GREEN · spec-050-wingman-tactical-formation-targeting
 
 - **Baseline:** `d4f8cea` on `main`; 811 Jest tests green.

@@ -34,6 +34,7 @@ export const DEFAULT_INTEREST_RADIUS = 3000;
  * @param {number} [options.radius=DEFAULT_INTEREST_RADIUS] - Inclusion radius.
  * @param {string|number} [options.alwaysIncludeId] - An id always kept (the viewer's ship).
  * @param {Set<*>|Array<*>} [options.alwaysIncludeIds] - Additional ids always kept.
+ * @param {Map<string, Array<Object>>} [options.spatialGrid] - Optional pre-built spatial grid map.
  * @returns {Array<Object>} The in-interest subset.
  */
 export function interestFilter(entities, viewer, options = {}) {
@@ -53,19 +54,91 @@ export function interestFilter(entities, viewer, options = {}) {
         ? new Set(options.alwaysIncludeIds)
         : null;
 
+  // Fallback to simple scan for tiny array sizes to avoid grid building overhead
+  if (entities.length < 15) {
+    const out = [];
+    for (const ent of entities) {
+      if (!ent) continue;
+      if (
+        (alwaysId !== undefined && ent.id === alwaysId) ||
+        (alwaysSet && alwaysSet.has(ent.id))
+      ) {
+        out.push(ent);
+        continue;
+      }
+      const dx = (Number.isFinite(ent.x) ? ent.x : 0) - viewer.x;
+      const dy = (Number.isFinite(ent.y) ? ent.y : 0) - viewer.y;
+      if (dx * dx + dy * dy <= r2) out.push(ent);
+    }
+    return out;
+  }
+
+  // 1. Segment space using a 2D spatial grid (bucket hash) with cell size = radius
+  const cellSize = radius;
+  const grid = options.spatialGrid || buildSpatialGrid(entities, cellSize);
+
+  // 2. Query viewer cell plus its 8 neighbors
+  const vcx = Math.floor(viewer.x / cellSize);
+  const vcy = Math.floor(viewer.y / cellSize);
+  const visibleIds = new Set();
+
+  for (let dx = -1; dx <= 1; dx++) {
+    for (let dy = -1; dy <= 1; dy++) {
+      const cellKey = `${vcx + dx}_${vcy + dy}`;
+      const bucket = grid.get(cellKey);
+      if (!bucket) continue;
+
+      for (const ent of bucket) {
+        const ex = Number.isFinite(ent.x) ? ent.x : 0;
+        const ey = Number.isFinite(ent.y) ? ent.y : 0;
+        const dist2 =
+          (ex - viewer.x) * (ex - viewer.x) + (ey - viewer.y) * (ey - viewer.y);
+        if (dist2 <= r2) {
+          visibleIds.add(ent.id);
+        }
+      }
+    }
+  }
+
+  // 3. Filter the original array to preserve exact ordering
   const out = [];
   for (const ent of entities) {
     if (!ent) continue;
     if (
       (alwaysId !== undefined && ent.id === alwaysId) ||
-      (alwaysSet && alwaysSet.has(ent.id))
+      (alwaysSet && alwaysSet.has(ent.id)) ||
+      visibleIds.has(ent.id)
     ) {
       out.push(ent);
-      continue;
     }
-    const dx = (Number.isFinite(ent.x) ? ent.x : 0) - viewer.x;
-    const dy = (Number.isFinite(ent.y) ? ent.y : 0) - viewer.y;
-    if (dx * dx + dy * dy <= r2) out.push(ent);
   }
   return out;
+}
+
+/**
+ * Builds a 2D spatial grid (bucket hash) from a list of entities.
+ * @param {Array<Object>} entities - List of entities.
+ * @param {number} cellSize - Segmentation cell dimension.
+ * @returns {Map<string, Array<Object>>} Spatial cell mapping.
+ */
+export function buildSpatialGrid(entities, cellSize) {
+  const grid = new Map();
+  if (!Array.isArray(entities)) return grid;
+
+  for (const ent of entities) {
+    if (!ent) continue;
+    const ex = Number.isFinite(ent.x) ? ent.x : 0;
+    const ey = Number.isFinite(ent.y) ? ent.y : 0;
+    const cx = Math.floor(ex / cellSize);
+    const cy = Math.floor(ey / cellSize);
+    const cellKey = `${cx}_${cy}`;
+
+    let bucket = grid.get(cellKey);
+    if (!bucket) {
+      bucket = [];
+      grid.set(cellKey, bucket);
+    }
+    bucket.push(ent);
+  }
+  return grid;
 }

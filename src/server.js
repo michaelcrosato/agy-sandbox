@@ -12,7 +12,7 @@ import { MissionManager } from "./engine/MissionManager.js";
 import { NEBULAE } from "./engine/Nebulae.js";
 import { GameInstance } from "./engine/GameInstance.js";
 import { nextFrame } from "./net/BroadcastFramer.js";
-import { interestFilter } from "./net/interest.js";
+import { interestFilter, buildSpatialGrid } from "./net/interest.js";
 import { encode as encodeFrame } from "./net/BinaryCodec.js";
 import { perMessageDeflateOption } from "./net/wsCompression.js";
 import {
@@ -446,6 +446,9 @@ const physicsInterval = setInterval(() => {
     // with room size. Entities entering/leaving the AOI surface as natural
     // add/remove deltas via StateCodec, so nothing lingers client-side.
     const allEntities = room.serializeEntities();
+    const spatialGrid = INTEREST_ENABLED
+      ? buildSpatialGrid(allEntities, INTEREST_RADIUS)
+      : null;
     const roomForceKeyframe = !!room.needsKeyframe;
     room.needsKeyframe = false;
     for (const client of room.clients.values()) {
@@ -457,7 +460,11 @@ const physicsInterval = setInterval(() => {
           ? interestFilter(
               allEntities,
               { x: viewer.position.x, y: viewer.position.y },
-              { radius: INTEREST_RADIUS, alwaysIncludeId: client.id },
+              {
+                radius: INTEREST_RADIUS,
+                alwaysIncludeId: client.id,
+                spatialGrid,
+              },
             )
           : allEntities;
 

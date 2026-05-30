@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-29T23:58 · iter-0047 · GREEN · spec-017-goal-driven-npc-runtime
+
+- **Baseline:** `c7770ac` on `main`; 628 tests / 44 suites (Jest) + 17 client green. `UtilityAI` (goal scorer) was built+tested but never consulted — NPCs were pure role-FSMs. Executing `plan/specs/017` (Phase 2).
+- **Move:** Wire the advisory goal layer into live NPCs so an agent demonstrably changes its plan when the world changes (GOAL P5).
+- **Changed:** New pure `src/engine/ai/buildPerception.js` — the missing bridge from live engine state to the `UtilityAI` snapshot: scans entities within `sensorRange` of a ship and buckets them into `threats`/`prey`/`trades` (with distance + a [0,1] magnitude) via role-aware default classifiers (pirates threaten non-pirates; guards threaten pirates; only pirates hunt soft non-allied ships; non-pirates trade at planets). Every classifier is overridable so a future `factionPolicy`-aware caller (spec 016) drops in without touching the plumbing; no `AIController` import (no cycle), no `Math.random`. `AIController` gains `useUtilityAdvisor` (**default off** → the 36 legacy FSM tests are byte-identical and every existing call site unaffected); when on, `update()` consults `selectGoal(buildPerception(...))`, records `currentGoal`, and lets **FLEE** pre-empt the role FSM via new `executeFlee` (steer directly away from the nearest threat and burn). Other goals fall through to the legacy role behaviour (ENGAGE→pirate attack, etc.). `GameInstance` opts every merchant/guard/pirate spawn into the advisor. +20 tests: `buildPerception.test.js` (14, incl. the `selectGoal` showcase) + `AIController.advisor.test.js` (6).
+- **Decisions:** Kept the integration to a single override (FLEE) rather than a full goal→action rewrite — it's the cross-role plan change the FSMs can't express (a merchant has no combat state), so it delivers the DoD showcase with minimal blast radius and zero legacy regression. Default-off protects the existing suite; the server enables it at spawn. Wider rollout (server boss/escort + main.js spawns; REGROUP/TRADE/ENGAGE mapping; live-market `tradeProfit`) is documented in `plan/BACKLOG.md`, not crammed in here.
+- **Validation:** `npm run agent:check` → green (prettier + eslint + typecheck + **648 tests / 46 suites**). AI suite alone: 86 passed (legacy 36 + UtilityAI + buildPerception 14 + advisor 6). `timeout 6 node src/server.js` → boots and listens on 8080 (GameInstance tests already tick the engine with advisor-on NPCs, so the live path is exercised). `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 017 done. Showcase: a merchant flees a pirate then patrols when clear; a wounded pirate breaks off a guard instead of hunting.
+- **Next:** Continue Phase 2 — `plan/specs/016` (faction runtime wiring, synergizes with this), `018` (production chains + ore), `015` (binary wire protocol), `014` (interest management), `019` (horizontal scaling epic).
+
 ## 2026-05-29T23:45 · iter-0046 · GREEN · spec-021-client-test-harness
 
 - **Baseline:** `2cedfb1` on `main`; 628 tests / 44 suites (Jest) green; `src/client/*` had zero automated coverage — the last Wave A item. Executing `plan/specs/021`.

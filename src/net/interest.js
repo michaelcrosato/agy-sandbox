@@ -35,6 +35,7 @@ export const DEFAULT_INTEREST_RADIUS = 3000;
  * @param {string|number} [options.alwaysIncludeId] - An id always kept (the viewer's ship).
  * @param {Set<*>|Array<*>} [options.alwaysIncludeIds] - Additional ids always kept.
  * @param {Map<string, Array<Object>>} [options.spatialGrid] - Optional pre-built spatial grid map.
+ * @param {Array<Object>} [options.squadmates] - Coordinates of active squadmates to share sensor sweeps.
  * @returns {Array<Object>} The in-interest subset.
  */
 export function interestFilter(entities, viewer, options = {}) {
@@ -66,9 +67,23 @@ export function interestFilter(entities, viewer, options = {}) {
         out.push(ent);
         continue;
       }
+      let nearAny = false;
       const dx = (Number.isFinite(ent.x) ? ent.x : 0) - viewer.x;
       const dy = (Number.isFinite(ent.y) ? ent.y : 0) - viewer.y;
-      if (dx * dx + dy * dy <= r2) out.push(ent);
+      if (dx * dx + dy * dy <= r2) {
+        nearAny = true;
+      } else if (Array.isArray(options.squadmates)) {
+        for (const sm of options.squadmates) {
+          if (!sm || !Number.isFinite(sm.x) || !Number.isFinite(sm.y)) continue;
+          const smdx = (Number.isFinite(ent.x) ? ent.x : 0) - sm.x;
+          const smdy = (Number.isFinite(ent.y) ? ent.y : 0) - sm.y;
+          if (smdx * smdx + smdy * smdy <= r2) {
+            nearAny = true;
+            break;
+          }
+        }
+      }
+      if (nearAny) out.push(ent);
     }
     return out;
   }
@@ -77,24 +92,34 @@ export function interestFilter(entities, viewer, options = {}) {
   const cellSize = radius;
   const grid = options.spatialGrid || buildSpatialGrid(entities, cellSize);
 
-  // 2. Query viewer cell plus its 8 neighbors
-  const vcx = Math.floor(viewer.x / cellSize);
-  const vcy = Math.floor(viewer.y / cellSize);
+  // 2. Query viewpoints: viewer plus all squadmates
+  const viewPoints = [viewer];
+  if (Array.isArray(options.squadmates)) {
+    for (const sm of options.squadmates) {
+      if (sm && Number.isFinite(sm.x) && Number.isFinite(sm.y)) {
+        viewPoints.push(sm);
+      }
+    }
+  }
+
   const visibleIds = new Set();
+  for (const vp of viewPoints) {
+    const vcx = Math.floor(vp.x / cellSize);
+    const vcy = Math.floor(vp.y / cellSize);
 
-  for (let dx = -1; dx <= 1; dx++) {
-    for (let dy = -1; dy <= 1; dy++) {
-      const cellKey = `${vcx + dx}_${vcy + dy}`;
-      const bucket = grid.get(cellKey);
-      if (!bucket) continue;
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        const cellKey = `${vcx + dx}_${vcy + dy}`;
+        const bucket = grid.get(cellKey);
+        if (!bucket) continue;
 
-      for (const ent of bucket) {
-        const ex = Number.isFinite(ent.x) ? ent.x : 0;
-        const ey = Number.isFinite(ent.y) ? ent.y : 0;
-        const dist2 =
-          (ex - viewer.x) * (ex - viewer.x) + (ey - viewer.y) * (ey - viewer.y);
-        if (dist2 <= r2) {
-          visibleIds.add(ent.id);
+        for (const ent of bucket) {
+          const ex = Number.isFinite(ent.x) ? ent.x : 0;
+          const ey = Number.isFinite(ent.y) ? ent.y : 0;
+          const dist2 = (ex - vp.x) * (ex - vp.x) + (ey - vp.y) * (ey - vp.y);
+          if (dist2 <= r2) {
+            visibleIds.add(ent.id);
+          }
         }
       }
     }

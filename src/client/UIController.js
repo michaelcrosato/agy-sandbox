@@ -66,6 +66,10 @@ export class UIController {
     this.eventTitle = document.getElementById("galaxy-event-title");
     this.eventDesc = document.getElementById("galaxy-event-desc");
     this.eventTimer = document.getElementById("galaxy-event-timer");
+
+    // Squad / Co-op Party Management Panel (SPEC-059)
+    this.squadPanel = document.getElementById("squad-panel");
+    this.squadMembersList = document.getElementById("squad-members-list");
   }
 
   /**
@@ -367,6 +371,62 @@ export class UIController {
         }
         if (this.bountyRadarTelemetry) {
           this.bountyRadarTelemetry.innerHTML = `No Active Bounty Targets in Sector`;
+        }
+      }
+    }
+
+    // 7. Update Squad HUD overlay (SPEC-059)
+    if (this.squadPanel) {
+      const squad = player.squad || [];
+      if (squad.length === 0) {
+        this.squadPanel.style.display = "none";
+      } else {
+        this.squadPanel.style.display = "block";
+        if (this.squadMembersList) {
+          this.squadMembersList.innerHTML = "";
+          for (const member of squad) {
+            const memberCard = document.createElement("div");
+            memberCard.className = "fleet-member-card";
+
+            const shieldRatio = Math.max(
+              0,
+              Math.min(100, (member.shield / member.maxShield) * 100),
+            );
+            const armorRatio = Math.max(
+              0,
+              Math.min(100, (member.armor / member.maxArmor) * 100),
+            );
+
+            const targetText = member.targetName
+              ? `TARGET: ${member.targetName}`
+              : "NO TARGET";
+            const posText = `X: ${Math.round(member.x)}, Y: ${Math.round(member.y)}`;
+
+            memberCard.innerHTML = `
+              <div class="fleet-member-header">
+                <span class="fleet-member-name" style="color: #00f2fe; text-shadow: 0 0 4px rgba(0, 242, 254, 0.4);">${member.nickname}</span>
+                <span class="fleet-member-status" style="font-size: 8px;">${posText}</span>
+              </div>
+              <div class="fleet-bars-container">
+                <div class="fleet-bar-row">
+                  <span class="fleet-bar-label">SHIELD</span>
+                  <div class="fleet-mini-bar">
+                    <div class="fleet-mini-bar-fill" style="width: ${shieldRatio}%; background: #00f2fe; box-shadow: 0 0 4px #00f2fe;"></div>
+                  </div>
+                </div>
+                <div class="fleet-bar-row">
+                  <span class="fleet-bar-label">ARMOR</span>
+                  <div class="fleet-mini-bar">
+                    <div class="fleet-mini-bar-fill" style="width: ${armorRatio}%; background: #ff3b30;"></div>
+                  </div>
+                </div>
+                <div style="font-size: 8px; color: var(--color-text-secondary); margin-top: 2px; font-family: var(--font-display);">
+                  ${targetText}
+                </div>
+              </div>
+            `;
+            this.squadMembersList.appendChild(memberCard);
+          }
         }
       }
     }

@@ -15,6 +15,7 @@ import { nextFrame } from "./net/BroadcastFramer.js";
 import { interestFilter, buildSpatialGrid } from "./net/interest.js";
 import { encode as encodeFrame } from "./net/BinaryCodec.js";
 import { perMessageDeflateOption } from "./net/wsCompression.js";
+import { squadManager } from "./server/SquadManager.js";
 import {
   matchRoom,
   JoinQueue,
@@ -507,6 +508,23 @@ const physicsInterval = setInterval(() => {
       if (client.ws.readyState !== client.ws.OPEN) continue;
 
       const viewer = client.ship;
+      let squadmates = [];
+      if (viewer) {
+        const squad = squadManager.getSquadForPlayer(client.id);
+        if (squad) {
+          for (const memberId of squad.memberIds) {
+            if (memberId === client.id) continue;
+            const smClient = room.clients.get(memberId);
+            if (smClient && smClient.ship && smClient.ship.position) {
+              squadmates.push({
+                x: smClient.ship.position.x,
+                y: smClient.ship.position.y,
+              });
+            }
+          }
+        }
+      }
+
       const visible =
         INTEREST_ENABLED && viewer && viewer.position
           ? interestFilter(
@@ -516,6 +534,7 @@ const physicsInterval = setInterval(() => {
                 radius: INTEREST_RADIUS,
                 alwaysIncludeId: client.id,
                 spatialGrid,
+                squadmates,
               },
             )
           : allEntities;
@@ -923,7 +942,22 @@ wss.on("connection", (ws) => {
     sendStats() {
       const room = instances.get(this.roomId);
       const registry = room ? room.factionRegistry : null;
-      const payload = buildStatsPayload(this, registry);
+
+      let squadMembers = [];
+      const squad = squadManager.getSquadForPlayer(this.id);
+      if (squad) {
+        for (const memberId of squad.memberIds) {
+          if (memberId === this.id) continue;
+          const smClient = Array.from(wss.clients)
+            .map((w) => w.clientObj)
+            .find((c) => c && c.id === memberId);
+          if (smClient) {
+            squadMembers.push(smClient);
+          }
+        }
+      }
+
+      const payload = buildStatsPayload(this, registry, squadMembers);
       if (payload) this.send(payload);
     },
   };
@@ -1635,6 +1669,84 @@ wss.on("connection", (ws) => {
       );
     } else if (msg.type === "ship_buy") {
       handleShipBuy(clientObj, msg.shipName, clientObj.planetLandedOn, room);
+    } else if (msg.type === "squad_invite") {
+      const target = Array.from(wss.clients)
+        .map((ws) => ws.clientObj)
+        .find(
+          (c) =>
+            c &&
+            (c.id === msg.targetId ||
+              (msg.targetNickname && c.nickname === msg.targetNickname)),
+        );
+      if (!target) {
+        clientObj.send({
+          type: "notification",
+          message: "Target player not found!",
+          style: "error",
+        });
+        return;
+      }
+      let squad = squadManager.getSquadForPlayer(clientObj.id);
+      if (!squad) {
+        squad = squadManager.createSquad(clientObj.id);
+      }
+      target.send({
+        type: "squad_invite_received",
+        senderId: clientObj.id,
+        senderNickname: clientObj.nickname,
+        squadId: squad.id,
+      });
+      clientObj.send({
+        type: "notification",
+        message: `Sent squad invite to ${target.nickname}!`,
+        style: "success",
+      });
+    } else if (msg.type === "squad_join") {
+      const res = squadManager.joinSquad(msg.squadId, clientObj.id);
+      if (res.success) {
+        const squad = squadManager.getSquadForPlayer(clientObj.id);
+        const squadMembers = Array.from(wss.clients)
+          .map((ws) => ws.clientObj)
+          .filter((c) => c && squad.memberIds.has(c.id));
+        for (const member of squadMembers) {
+          member.send({
+            type: "notification",
+            message: `${clientObj.nickname} joined the squad!`,
+            style: "success",
+          });
+          member.sendStats();
+        }
+      } else {
+        clientObj.send({
+          type: "notification",
+          message: res.reason,
+          style: "error",
+        });
+      }
+    } else if (msg.type === "squad_leave") {
+      const squad = squadManager.getSquadForPlayer(clientObj.id);
+      if (squad) {
+        const squadId = squad.id;
+        squadManager.leaveSquad(clientObj.id);
+        clientObj.send({
+          type: "notification",
+          message: "You left the squad.",
+          style: "info",
+        });
+        clientObj.sendStats();
+
+        const remainingMembers = Array.from(wss.clients)
+          .map((ws) => ws.clientObj)
+          .filter((c) => c && squadManager.getSquadId(c.id) === squadId);
+        for (const member of remainingMembers) {
+          member.send({
+            type: "notification",
+            message: `${clientObj.nickname} left the squad.`,
+            style: "info",
+          });
+          member.sendStats();
+        }
+      }
     } else if (msg.type === "port_redeem_vouchers") {
       handleVoucherRedeem(clientObj, room);
     } else if (msg.type === "mission_accept") {
@@ -1691,7 +1803,39 @@ wss.on("connection", (ws) => {
       const text = (msg.text || "").trim().substring(0, 100);
       if (!text) return;
 
-      if (channel === "fleet" && room) {
+      let isSquadMsg = channel === "squad";
+      let squadText = text;
+      if (text.startsWith("/squad ")) {
+        isSquadMsg = true;
+        squadText = text.substring(7).trim();
+      }
+
+      if (isSquadMsg) {
+        const squad = squadManager.getSquadForPlayer(clientObj.id);
+        if (!squad) {
+          clientObj.send({
+            type: "notification",
+            message:
+              "You are not in a squad! Invite someone using /squad invite or join a squad.",
+            style: "error",
+          });
+          return;
+        }
+
+        const chatPayload = {
+          type: "chat",
+          channel: "squad",
+          sender: clientObj.nickname,
+          text: squadText,
+        };
+
+        for (const ws of wss.clients) {
+          const c = ws.clientObj;
+          if (c && squad.memberIds.has(c.id)) {
+            c.send(chatPayload);
+          }
+        }
+      } else if (channel === "fleet" && room) {
         if (!clientObj.fleetName) {
           clientObj.send({
             type: "notification",

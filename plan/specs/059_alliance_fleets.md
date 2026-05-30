@@ -10,11 +10,11 @@ This spec introduces **multiplayer alliance squads** that allow players to form 
 5. Support a dedicated `/squad <msg>` command in the chat channel that broadcasts messages exclusively to squad members.
 
 ## Definition of Done (DoD)
-- [ ] Create `SquadManager` inside `src/server/SquadManager.js` to manage membership and lifecycle.
-- [ ] Rework `GameInstance.js` handleEntityDestroyed to distribute vouchers and standing among sector squadmates.
-- [ ] Integrate shared visual sensors within AoI culling configurations.
-- [ ] Create teammate HUD panels showing vital stats and target indicators.
-- [ ] Write integration tests verifying squad joining, co-op voucher splitting, and correct target sync.
+- [x] Create `SquadManager` inside `src/server/SquadManager.js` to manage membership and lifecycle.
+- [x] Rework `GameInstance.js` handleEntityDestroyed to distribute vouchers and standing among sector squadmates.
+- [x] Integrate shared visual sensors within AoI culling configurations.
+- [x] Create teammate HUD panels showing vital stats and target indicators.
+- [x] Write integration tests verifying squad joining, co-op voucher splitting, and correct target sync.
 
 ## Implementation Approach
 - Manage squad ID mappings inside the server process memory/Redis registry.

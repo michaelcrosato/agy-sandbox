@@ -1215,6 +1215,18 @@ h1, h2, h3, h4 {
   pointer-events: auto;
 }
 
+#squad-panel {
+  position: absolute;
+  top: 390px;
+  left: 20px;
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  max-height: 250px;
+  z-index: 15;
+  pointer-events: auto;
+}
+
 .fleet-input-group {
   display: flex;
   flex-direction: column;
@@ -1389,6 +1401,15 @@ h1, h2, h3, h4 {
 
 .chat-msg.fleet-msg .chat-sender {
   color: #a040fb;
+  font-weight: 600;
+}
+
+.chat-msg.squad-msg {
+  color: #e0faff;
+}
+
+.chat-msg.squad-msg .chat-sender {
+  color: #00f2fe;
   font-weight: 600;
 }
 

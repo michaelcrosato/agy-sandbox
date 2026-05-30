@@ -20,6 +20,8 @@ function mountHud() {
     <div id="bounty-radar"></div>
     <div id="bounty-radar-target"></div>
     <div id="bounty-radar-telemetry"></div>
+    <div id="squad-panel" style="display: none;"></div>
+    <div id="squad-members-list"></div>
   `;
   return new UIController();
 }
@@ -269,6 +271,59 @@ describe("UIController combat-feedback HUD transitions", () => {
         "HDG: <strong>0°</strong>",
       );
       expect(ui.bountyRadarTelemetry.innerHTML).toContain("rotate(-180.0deg)");
+    });
+  });
+
+  describe("Squad HUD overlay (SPEC-059)", () => {
+    it("hides the squad panel when squad is empty", () => {
+      const player = {
+        shield: 100,
+        maxShield: 100,
+        armor: 100,
+        maxArmor: 100,
+        credits: 5000,
+        cargoCapacity: 20,
+        getCargoWeight: () => 0,
+        velocity: { magnitude: () => 0 },
+        position: { x: 0, y: 0 },
+        squad: [],
+      };
+      ui.update(player, null, [], [], [], []);
+      expect(ui.squadPanel.style.display).toBe("none");
+    });
+
+    it("renders squad member cards with shield, armor, target and coordinates when squad is not empty", () => {
+      const player = {
+        shield: 100,
+        maxShield: 100,
+        armor: 100,
+        maxArmor: 100,
+        credits: 5000,
+        cargoCapacity: 20,
+        getCargoWeight: () => 0,
+        velocity: { magnitude: () => 0 },
+        position: { x: 0, y: 0 },
+        squad: [
+          {
+            id: "p2",
+            nickname: "Wingman-One",
+            shield: 80,
+            maxShield: 100,
+            armor: 90,
+            maxArmor: 100,
+            targetName: "Pirate Raider",
+            x: 150,
+            y: -250,
+          },
+        ],
+      };
+      ui.update(player, null, [], [], [], []);
+      expect(ui.squadPanel.style.display).toBe("block");
+      expect(ui.squadMembersList.children.length).toBe(1);
+      const card = ui.squadMembersList.children[0];
+      expect(card.innerHTML).toContain("Wingman-One");
+      expect(card.innerHTML).toContain("X: 150, Y: -250");
+      expect(card.innerHTML).toContain("TARGET: Pirate Raider");
     });
   });
 });

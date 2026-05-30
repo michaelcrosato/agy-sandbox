@@ -9,9 +9,29 @@
  * @param {Object} clientObj - `{ ship, missionManager }`.
  * @returns {Object|null} The `stats` message, or null when there is no ship.
  */
-export function buildStatsPayload(clientObj, factionRegistry = null) {
+export function buildStatsPayload(
+  clientObj,
+  factionRegistry = null,
+  squadMembers = [],
+) {
   const ship = clientObj && clientObj.ship;
   if (!ship) return null;
+
+  const squadData = squadMembers.map((m) => {
+    const s = m.ship;
+    return {
+      id: m.id,
+      nickname: m.nickname,
+      shield: s ? s.shield : 0,
+      maxShield: s ? s.maxShield : 1,
+      armor: s ? s.armor : 0,
+      maxArmor: s ? s.maxArmor : 1,
+      targetName: s && s.target ? s.target.name : null,
+      x: s ? s.position.x : 0,
+      y: s ? s.position.y : 0,
+    };
+  });
+
   return {
     type: "stats",
     credits: ship.credits,
@@ -44,5 +64,6 @@ export function buildStatsPayload(clientObj, factionRegistry = null) {
     isDisabled: ship.isDisabled,
     kills: ship.kills,
     combatRating: ship.combatRating,
+    squad: squadData,
   };
 }

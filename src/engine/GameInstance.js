@@ -14,6 +14,7 @@ import { PLANET_PROFILES } from "./ProductionModel.js";
 import { recordKill, shipBountyValue } from "./CombatRating.js";
 import { mineYield } from "./Mining.js";
 import { shipName, createSeededRng } from "./NameGenerator.js";
+import { squadManager } from "../server/SquadManager.js";
 
 // Which sectors share trade routes (warp-gate connected) for economic diffusion.
 export const SECTOR_ADJACENCY = {
@@ -813,6 +814,16 @@ export class GameInstance {
       );
     }
 
+    let killerSquadMembers = null;
+    if (killerClient) {
+      const squad = squadManager.getSquadForPlayer(killerClient.id);
+      if (squad) {
+        killerSquadMembers = Array.from(this.clients.values()).filter((c) =>
+          squad.memberIds.has(c.id),
+        );
+      }
+    }
+
     // --- Asteroids destroyed ---
     if (ent.type === "generic" || ent.type === "gem_asteroid") {
       const { resource, count } = mineYield(ent.type, Math.random, {
@@ -854,27 +865,63 @@ export class GameInstance {
       }
 
       if (this.factionRegistry && killerClient && ent.faction) {
-        if (
-          this.isConflictZone &&
-          (ent.faction === this.conflictFactionA ||
-            ent.faction === this.conflictFactionB)
-        ) {
-          const friendlyFaction =
-            ent.faction === this.conflictFactionA
-              ? this.conflictFactionB
-              : this.conflictFactionA;
-          this.factionRegistry.adjustStanding(
-            killerClient.id,
-            friendlyFaction,
-            2.0,
-          );
-          this.factionRegistry.adjustStanding(
-            killerClient.id,
-            ent.faction,
-            -2.5,
-          );
+        if (killerSquadMembers && killerSquadMembers.length > 0) {
+          const size = killerSquadMembers.length;
+          for (const member of killerSquadMembers) {
+            if (
+              this.isConflictZone &&
+              (ent.faction === this.conflictFactionA ||
+                ent.faction === this.conflictFactionB)
+            ) {
+              const friendlyFaction =
+                ent.faction === this.conflictFactionA
+                  ? this.conflictFactionB
+                  : this.conflictFactionA;
+              this.factionRegistry.adjustStanding(
+                member.id,
+                friendlyFaction,
+                2.0 / size,
+              );
+              this.factionRegistry.adjustStanding(
+                member.id,
+                ent.faction,
+                -2.5 / size,
+              );
+            } else {
+              this.factionRegistry.adjustStanding(
+                member.id,
+                ent.faction,
+                -5.0 / size,
+              );
+            }
+          }
         } else {
-          this.factionRegistry.adjustStanding(killerClient.id, ent.faction, -5);
+          if (
+            this.isConflictZone &&
+            (ent.faction === this.conflictFactionA ||
+              ent.faction === this.conflictFactionB)
+          ) {
+            const friendlyFaction =
+              ent.faction === this.conflictFactionA
+                ? this.conflictFactionB
+                : this.conflictFactionA;
+            this.factionRegistry.adjustStanding(
+              killerClient.id,
+              friendlyFaction,
+              2.0,
+            );
+            this.factionRegistry.adjustStanding(
+              killerClient.id,
+              ent.faction,
+              -2.5,
+            );
+          } else {
+            this.factionRegistry.adjustStanding(
+              killerClient.id,
+              ent.faction,
+              -5,
+            );
+          }
         }
       }
 
@@ -975,7 +1022,21 @@ export class GameInstance {
         const rewardBase = 1000;
         if (killerClient) {
           const faction = this.getGoverningFaction();
-          if (killerFleetMembers) {
+          if (killerSquadMembers && killerSquadMembers.length > 0) {
+            const share = Math.floor(rewardBase / killerSquadMembers.length);
+            for (const member of killerSquadMembers) {
+              if (!member.ship.bountyVouchers) {
+                member.ship.bountyVouchers = [];
+              }
+              member.ship.bountyVouchers.push({ faction, value: share });
+              member.send({
+                type: "notification",
+                message: `Pirate eliminated by ${killerClient.nickname}! Squad share bounty voucher: +${share} CR (${faction})`,
+                style: "success",
+              });
+              member.sendStats();
+            }
+          } else if (killerFleetMembers) {
             const share = Math.floor(rewardBase / killerFleetMembers.length);
             for (const member of killerFleetMembers) {
               if (!member.ship.bountyVouchers) {

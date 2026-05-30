@@ -94,6 +94,30 @@ describe("interestFilter (spec 014)", () => {
     // The win should be substantial, not marginal, in a spread-out room.
     expect(aoiBytes).toBeLessThan(fullBytes * 0.5);
   });
+
+  test("includes entities within range of squadmates (shared visual sensor range)", () => {
+    const farFromViewerButNearSquadmate = ent("target", 2000, 0);
+    const result = interestFilter([farFromViewerButNearSquadmate], viewer, {
+      radius: 100,
+      squadmates: [{ x: 1950, y: 0 }],
+    });
+    expect(result).toEqual([farFromViewerButNearSquadmate]);
+  });
+
+  test("squadmates shared range works with spatial grid optimized path", () => {
+    const entities = [];
+    for (let i = 0; i < 20; i++) {
+      entities.push(ent(`e${i}`, 99999, 99999));
+    }
+    const target = ent("target", 2000, 0);
+    entities.push(target);
+
+    const result = interestFilter(entities, viewer, {
+      radius: 100,
+      squadmates: [{ x: 1950, y: 0 }],
+    });
+    expect(result).toContain(target);
+  });
 });
 
 describe("interestFilter Spatial Grid Optimization (spec 049)", () => {

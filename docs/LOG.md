@@ -39,6 +39,26 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T10:55 · iter-0082 · GREEN · spec-059-multiplayer-squads-shared-standing
+
+- **Baseline:** `31ea39e` on `main`; 856 Jest tests green.
+- **Move:** Implement multiplayer alliance squads, shared visual sensors, and proportional combat splitting (059).
+- **Changed:**
+  - Implemented `SquadManager` in `src/server/SquadManager.js` to manage co-op squad memberships, invitations, leader re-assignment, and empty squad culling.
+  - Extended AoI interest filtering in `src/net/interest.js` to accept `squadmates` positions, allowing players to share sensor sweeps with in-sector squad members.
+  - Expanded `buildStatsPayload` in `src/net/statsPayload.js` and `sendStats` in `src/server.js` to serialize and synchronize co-op squadmate status lists.
+  - Reworked `handleEntityDestroyed` in `src/engine/GameInstance.js` to divide faction standing adjustments and split govern bounty vouchers proportionally among sector squadmates.
+  - Handled `"squad_invite"`, `"squad_join"`, `"squad_leave"`, and SQUAD channel chat/command WS dispatches in `src/server.js`.
+  - Added the `#squad-panel` and `#squad-members-list` DOM layout elements inside `index.html`.
+  - Configured glassmorphic absolute-position styles for `#squad-panel` and squad message colors inside `index.css`.
+  - Synced `player.squad` in `src/main.js` and wired SQUAD chat channel parsing.
+  - Drew dynamic co-op squad member cards (vitals, positions, targets) inside `src/client/UIController.js`.
+  - Added full client-side jsdom unit tests inside `src/client/__tests__/UIController.test.js` verifying squad display transitions and card content.
+  - Created a comprehensive integration test suite `src/server/squad.integration.test.js` validating voucher splitting, standings propagation splits, and shared sensor ranges.
+- **Decisions:** Shared visual range sweeps within interest culling are resolved both in tiny lists and spatial hash grid paths using viewpoint expansion, keeping culling highly performant.
+- **Validation:** `npm run agent:check` -> green (865 Jest tests / 69 suites) + `npm run test:client` -> green (24 client tests).
+- **Next:** Initiate Cycle 10 Replenish phase: promote backlog, write next wave specifications, and extend the roadmap.
+
 ## 2026-05-30T10:50 · iter-0081 · GREEN · spec-058-outfitting-fittings-presets
 
 - **Baseline:** `31ea39e` on `main`; 849 Jest tests green.

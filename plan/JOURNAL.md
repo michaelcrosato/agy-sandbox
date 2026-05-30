@@ -6,9 +6,9 @@ It records cycle transitions, key milestones, and precise next steps.
 ---
 
 ## Cycle 9 — 2026-05-30 (Current)
-- **Status:** IN_PROGRESS
-- **Summary:** Shipped SPEC-057 (Dynamic Market Events & Sector Economy Shocks) and SPEC-058 (Outfitting Fittings Shop & Loadout Presets). Programmed starship outfitting fittings slots segmenting Weapons (Max 2), Shields (Max 1), and Utilities (Max 1) with active slot verification and Agility mass subtraction/addition. Designed dynamic 90% trade-in refunds based on standing-adjusted costs. Coded player presets save and load transactions, including complete net credit trade calculation, and serialized custom presets to survive restarts. Built a highly visual outfitting slot dashboard in the client spaceport outfitter tab with Dynamic Performance Diagnostics HUD (Agility, speed, shields, weapon stats) and Save/Load hotkey presets. Wrote extensive server-side integration tests validating outfit purchase slot blocks, sale refunds, and preset loading configurations. All 856 Jest + 22 client Vitest tests 100% green.
-- **Next Action:** Claim and begin implementation of SPEC-059 (Multiplayer Squads & Allied Shared Standing).
+- **Status:** GREEN
+- **Summary:** Shipped all Wave v9 features: SPEC-057 (Dynamic Market Events & Sector Economy Shocks), SPEC-058 (Outfitting Fittings Shop & Loadout Presets), and SPEC-059 (Multiplayer Squads & Allied Shared Standing). Programmed economic sector shocks, fitted slots outfitting, 90% trade-in refunds and custom presets persistence. Implemented SquadManager managing dynamic squad membership, invitations, active leaders and empty squad culling. Integrated shared visual sensors inside spatial-grid interest culling, proportionally split faction standings and govern bounty vouchers among sector squadmates, added squad-exclusive WS handlers and chat channel routing, built the HUD `#squad-panel` DOM view, and drew real-time squadmate vitals (shield/armor/target/coords) inside UIController. Wrote extensive Jest unit/integration tests and Vitest jsdom tests verifying all dynamic co-op behaviors. All 865 Jest tests + 24 client Vitest tests 100% green.
+- **Next Action:** Initiate Cycle 10 Replenish phase: promote backlog, write next wave specifications, and extend the roadmap.
 
 ---
 

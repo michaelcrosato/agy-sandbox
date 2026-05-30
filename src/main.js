@@ -1407,6 +1407,7 @@ network.onStatsReceived = (msg) => {
   player.outfits = msg.outfits;
   player.bountyVouchers = msg.bountyVouchers || [];
   player.standings = msg.standings || {};
+  player.squad = msg.squad || [];
   player.weaponDamage = msg.weaponDamage;
   player.weaponCooldown = msg.weaponCooldown;
   player.thrustPower = msg.thrustPower;
@@ -1699,6 +1700,9 @@ network.onChatReceived = (msg) => {
   if (msg.channel === "fleet") {
     msgDiv.className = "chat-msg fleet-msg";
     msgDiv.innerHTML = `<span class="chat-sender">[FLEET] ${escapeHTML(msg.sender)}:</span> ${escapeHTML(msg.text)}`;
+  } else if (msg.channel === "squad") {
+    msgDiv.className = "chat-msg squad-msg";
+    msgDiv.innerHTML = `<span class="chat-sender">[SQUAD] ${escapeHTML(msg.sender)}:</span> ${escapeHTML(msg.text)}`;
   } else {
     msgDiv.className = "chat-msg global-msg";
     msgDiv.innerHTML = `<span class="chat-sender">[GLOBAL] ${escapeHTML(msg.sender)}:</span> ${escapeHTML(msg.text)}`;

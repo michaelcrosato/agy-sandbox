@@ -107,6 +107,14 @@
         </div>
       </div>
 
+      <!-- Squad / Co-op Party Management Panel -->
+      <div id="squad-panel" class="hud-panel glass-panel" style="display: none;">
+        <div class="hud-bar-label tracker-header-line" style="color: var(--color-cyan); text-shadow: 0 0 6px rgba(0, 242, 254, 0.4);">SQUAD COMMAND</div>
+        <div id="squad-members-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto;">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
       <!-- Right Panel: Space Navigation Stats -->
       <div class="hud-panel glass-panel right-hud">
         <div class="stat-row">
@@ -177,6 +185,7 @@
           <select id="chat-channel-select" class="chat-select">
             <option value="global">ALL</option>
             <option value="fleet">FLEET</option>
+            <option value="squad">SQUAD</option>
           </select>
           <input type="text" id="chat-input" placeholder="Type message..." maxlength="80">
       </div>

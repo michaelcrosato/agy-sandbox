@@ -132,5 +132,51 @@ backends.forEach(({ name, makeStore }) => {
         roomB.destroy();
       }
     });
+
+    test("a node crash (expiry of lease) allows another node to claim and restore the room", async () => {
+      const store = makeStore();
+      const pmA = new PersistenceManager({ store, logger: () => {} });
+      const pmB = new PersistenceManager({ store, logger: () => {} });
+
+      // Node A claims "public" with a lease that expires at t=2000
+      let reg = new RoomRegistry();
+      expect(reg.claim("public", "nodeA", 2000, 1000)).toBe(true);
+      await saveRegistry(store, reg);
+
+      // Node A saves the room state
+      const roomA = new GameInstance("public", "Public Arena");
+      try {
+        const sol = roomA.planets.find((p) => p.name === "Sol");
+        sol.market.machinery = 456;
+        await pmA.saveGalaxy("public", roomA);
+      } finally {
+        roomA.destroy();
+      }
+
+      // At t=1500, Node B tries to claim but fails because the lease is still active
+      reg = await loadRegistry(store);
+      expect(reg.claim("public", "nodeB", 3000, 1500)).toBe(false);
+      expect(reg.owner("public")).toBe("nodeA");
+
+      // At t=2500, Node B tries to claim. Since the lease of A expired at 2000, this succeeds!
+      expect(reg.claim("public", "nodeB", 4000, 2500)).toBe(true);
+      expect(reg.owner("public")).toBe("nodeB");
+      await saveRegistry(store, reg);
+
+      // Node B loads and restores the room state successfully
+      const restoredReg = await loadRegistry(store);
+      expect(restoredReg.owner("public")).toBe("nodeB");
+
+      const roomB = new GameInstance("public", "Public Arena");
+      try {
+        const snapshot = await pmB.loadGalaxy("public");
+        applyGalaxy(roomB, snapshot);
+        expect(
+          roomB.planets.find((p) => p.name === "Sol").market.machinery,
+        ).toBe(456);
+      } finally {
+        roomB.destroy();
+      }
+    });
   });
 });

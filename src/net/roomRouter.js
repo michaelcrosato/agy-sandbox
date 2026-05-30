@@ -60,10 +60,10 @@ export function assignShard(roomId, shardCount) {
  */
 export class RoomRegistry {
   /**
-   * @param {Object<string, string>} [initial={}] - roomId → nodeId seed map.
+   * @param {Object<string, string|Object>} [initial={}] - roomId → nodeId or lease object seed map.
    */
   constructor(initial = {}) {
-    /** @type {Map<string, string>} */
+    /** @type {Map<string, string|Object>} */
     this.owners = new Map(
       initial && typeof initial === "object" ? Object.entries(initial) : [],
     );
@@ -75,28 +75,75 @@ export class RoomRegistry {
    */
   owner(roomId) {
     const o = this.owners.get(roomId);
-    return o === undefined ? null : o;
+    if (o === undefined) return null;
+    if (typeof o === "string") return o;
+    if (o && typeof o === "object") return o.nodeId || null;
+    return null;
   }
 
   /**
    * @param {string} roomId
-   * @returns {boolean} True if any node owns the room.
+   * @param {number} [now] - Current time in ms to check expiry.
+   * @returns {boolean} True if any node owns the room and it has not expired.
    */
-  isOwned(roomId) {
-    return this.owners.has(roomId);
+  isOwned(roomId, now = null) {
+    if (!this.owners.has(roomId)) return false;
+    if (now === null) return true;
+    const o = this.owners.get(roomId);
+    if (
+      o &&
+      typeof o === "object" &&
+      o.expiresAt !== null &&
+      o.expiresAt < now
+    ) {
+      return false;
+    }
+    return true;
   }
 
   /**
    * Claims a room for `nodeId`. Succeeds (and is idempotent) when the room is
-   * unowned or already owned by `nodeId`; fails when another node owns it.
+   * unowned, already owned by `nodeId`, or its previous lease has expired;
+   * fails when another node owns it.
    * @param {string} roomId
    * @param {string} nodeId
+   * @param {number} [expiresAt=null] - Absolute expiry timestamp in ms.
+   * @param {number} [now=null] - Current timestamp in ms.
    * @returns {boolean} True if `nodeId` owns the room after the call.
    */
-  claim(roomId, nodeId) {
+  claim(roomId, nodeId, expiresAt = null, now = null) {
     const cur = this.owners.get(roomId);
-    if (cur !== undefined && cur !== nodeId) return false;
-    this.owners.set(roomId, nodeId);
+    if (cur === undefined) {
+      this.owners.set(
+        roomId,
+        expiresAt !== null ? { nodeId, expiresAt } : nodeId,
+      );
+      return true;
+    }
+
+    let curOwner = cur;
+    let curExpiresAt = null;
+    if (cur && typeof cur === "object") {
+      curOwner = cur.nodeId;
+      curExpiresAt = cur.expiresAt;
+    }
+
+    // If lease has expired, any node can claim it
+    if (now !== null && curExpiresAt !== null && curExpiresAt < now) {
+      this.owners.set(
+        roomId,
+        expiresAt !== null ? { nodeId, expiresAt } : nodeId,
+      );
+      return true;
+    }
+
+    if (curOwner !== nodeId) return false;
+
+    // Idempotent lease renewal/update
+    this.owners.set(
+      roomId,
+      expiresAt !== null ? { nodeId, expiresAt } : nodeId,
+    );
     return true;
   }
 
@@ -107,7 +154,8 @@ export class RoomRegistry {
    * @returns {boolean} True if the room was released.
    */
   release(roomId, nodeId) {
-    if (this.owners.get(roomId) !== nodeId) return false;
+    const currentOwner = this.owner(roomId);
+    if (currentOwner !== nodeId) return false;
     this.owners.delete(roomId);
     return true;
   }
@@ -118,11 +166,16 @@ export class RoomRegistry {
    * @param {string} roomId
    * @param {string} fromNode
    * @param {string} toNode
+   * @param {number} [expiresAt=null] - Optional absolute expiry timestamp in ms.
    * @returns {boolean} True if ownership moved.
    */
-  transfer(roomId, fromNode, toNode) {
-    if (this.owners.get(roomId) !== fromNode) return false;
-    this.owners.set(roomId, toNode);
+  transfer(roomId, fromNode, toNode, expiresAt = null) {
+    const currentOwner = this.owner(roomId);
+    if (currentOwner !== fromNode) return false;
+    this.owners.set(
+      roomId,
+      expiresAt !== null ? { nodeId: toNode, expiresAt } : toNode,
+    );
     return true;
   }
 
@@ -133,22 +186,55 @@ export class RoomRegistry {
   roomsForNode(nodeId) {
     const out = [];
     for (const [room, node] of this.owners) {
-      if (node === nodeId) out.push(room);
+      let ownerId = node;
+      if (node && typeof node === "object") {
+        ownerId = node.nodeId;
+      }
+      if (ownerId === nodeId) out.push(room);
     }
     return out.sort();
   }
 
   /**
-   * @returns {Object<string, string>} A plain roomId → nodeId snapshot for the
+   * Reaps all expired leases from the registry.
+   * @param {number} now - Current time in ms.
+   * @returns {number} The count of reaped rooms.
+   */
+  reapExpired(now) {
+    let reapedCount = 0;
+    for (const [roomId, o] of this.owners) {
+      if (
+        o &&
+        typeof o === "object" &&
+        o.expiresAt !== null &&
+        o.expiresAt < now
+      ) {
+        this.owners.delete(roomId);
+        reapedCount++;
+      }
+    }
+    return reapedCount;
+  }
+
+  /**
+   * @returns {Object<string, string|Object>} A roomId → nodeId snapshot for the
    *   shared store.
    */
   serialize() {
-    return Object.fromEntries(this.owners);
+    const out = {};
+    for (const [room, val] of this.owners) {
+      if (val && typeof val === "object") {
+        out[room] = { nodeId: val.nodeId, expiresAt: val.expiresAt };
+      } else {
+        out[room] = val;
+      }
+    }
+    return out;
   }
 
   /**
    * Rebuilds a registry from a {@link serialize} snapshot.
-   * @param {Object<string, string>} [data={}]
+   * @param {Object<string, string|Object>} [data={}]
    * @returns {RoomRegistry}
    */
   static fromJSON(data = {}) {

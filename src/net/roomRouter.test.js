@@ -128,3 +128,58 @@ describe("routeConnection (spec 019d load balancer/router)", () => {
     expect(routeConnection({ roomId: null, shardCount: 4 })).toBe("node-0");
   });
 });
+
+describe("RoomRegistry lease/TTL capabilities (spec 019e)", () => {
+  test("claims room with an active lease and prevents other nodes from claiming", () => {
+    const reg = new RoomRegistry();
+    const now = 1000;
+    // Claim for node-1 expiring at t=2000
+    expect(reg.claim("room-A", "node-1", 2000, now)).toBe(true);
+    expect(reg.owner("room-A")).toBe("node-1");
+
+    // Another node trying to claim before expiry should fail
+    expect(reg.claim("room-A", "node-2", 3000, now)).toBe(false);
+    expect(reg.owner("room-A")).toBe("node-1");
+  });
+
+  test("allows another node to claim if lease has expired", () => {
+    const reg = new RoomRegistry();
+    // Claim for node-1 expiring at t=2000
+    expect(reg.claim("room-A", "node-1", 2000, 1000)).toBe(true);
+
+    // Another node claims at t=2500 (since 2000 < 2500)
+    expect(reg.claim("room-A", "node-2", 4000, 2500)).toBe(true);
+    expect(reg.owner("room-A")).toBe("node-2");
+  });
+
+  test("reaps expired leases while keeping active ones", () => {
+    const reg = new RoomRegistry();
+    reg.claim("room-A", "node-1", 2000); // active
+    reg.claim("room-B", "node-2", 1500); // expired
+    reg.claim("room-C", "node-3"); // eternal / no lease
+
+    const reaped = reg.reapExpired(1800);
+    expect(reaped).toBe(1);
+
+    expect(reg.owner("room-A")).toBe("node-1");
+    expect(reg.owner("room-B")).toBeNull();
+    expect(reg.owner("room-C")).toBe("node-3");
+  });
+
+  test("serializes and restores lease metadata accurately", () => {
+    const reg = new RoomRegistry();
+    reg.claim("room-A", "node-1", 2000);
+    reg.claim("room-B", "node-2");
+
+    const snapshot = reg.serialize();
+    expect(snapshot).toEqual({
+      "room-A": { nodeId: "node-1", expiresAt: 2000 },
+      "room-B": "node-2",
+    });
+
+    const restored = RoomRegistry.fromJSON(snapshot);
+    expect(restored.owner("room-A")).toBe("node-1");
+    expect(restored.owner("room-B")).toBe("node-2");
+    expect(restored.isOwned("room-A", 2500)).toBe(false); // check dynamic expiry works after restore!
+  });
+});

@@ -41,6 +41,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-30T12:30 · iter-0060 · GREEN · spec-019e-cross-process-presence-leases
+
+- **Baseline:** `a3d7463` on `main`; 740 Jest / 56 suites + 18 client green. Executing `plan/specs/019e` — Cross-process presence (Redis pub/sub + leases).
+- **Move:** Implement lease/TTL and reaping support in RoomRegistry, PubSub transport interface with InMemory/Redis/sharded variants, and integrate active heartbeat lease sweeps into server.js.
+- **Changed:**
+  - Upgraded `RoomRegistry` in `src/net/roomRouter.js` to support dynamic `expiresAt` absolute timestamps, claim expiry checks, lease renewal, and a pure `reapExpired` step.
+  - Implemented `src/net/PubSub.js` providing the uniform `PubSub` interface with both `InMemoryPubSub` and `RedisPubSub` classes, supporting standard and sharded pub/sub channels.
+  - Added comprehensive unit tests in `src/net/PubSub.test.js` validating message delivery, async isolation, and sharded/unsubscribe actions.
+  - Added dynamic crash recovery and lease-backed dynamic ownership integration tests to `src/persistence/multinode.integration.test.js` verifying successful failover recovery.
+  - Integrated periodic heartbeat lease renewal, dynamic registry query, and room GC release sweeps into `src/server.js`.
+- **Decisions:** Made `PubSub` methods fully asynchronous to mimic physical networking. Implemented `spublish` and `ssubscribe` in `RedisPubSub` mapping to Redis 7+ sharded pub/sub if available, keeping client communication isolated and efficient on multi-worker configurations.
+- **Validation:** `npm run agent:check` -> green (**756 Jest tests / 58 suites**). ESLint lints cleanly with zero warnings, type safety compiles green, and formatting is 100% compliant.
+- **Notes:** Substrate files untouched.
+- **Next:** Spec `019f` Graceful drain / zero-downtime restart.
+
 ## 2026-05-30T12:20 · iter-0059 · GREEN · spec-019d-sticky-routing-lb-front-door
 
 - **Baseline:** `bf24fae` on `main`; 736 Jest / 56 suites + 18 client green. Executing `plan/specs/019d` — Sticky routing / LB front door.

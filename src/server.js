@@ -40,7 +40,7 @@ import { DEFAULT_OUTFITS } from "./engine/outfitCatalog.js";
 import { tradeOne, applyHullPurchase, factionPrice } from "./engine/Trading.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import { shouldGcRoom, sanitizeNickname } from "./server/roomLifecycle.js";
-import { assignShard } from "./net/roomRouter.js";
+import { assignShard, RoomRegistry } from "./net/roomRouter.js";
 
 const JUMP_FUEL_COST = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost;
 
@@ -455,6 +455,27 @@ setInterval(() => {
   }
 }, 8000);
 
+// Shared presence/registry keys & helpers (spec 019e)
+const REGISTRY_KEY = "presence:registry";
+
+async function loadRegistry() {
+  try {
+    const data = await storeInstance.load(REGISTRY_KEY);
+    return RoomRegistry.fromJSON(data || {});
+  } catch (err) {
+    console.error(`⚠️ Failed to load RoomRegistry from store: ${err.message}`);
+    return new RoomRegistry();
+  }
+}
+
+async function saveRegistry(registry) {
+  try {
+    await storeInstance.save(REGISTRY_KEY, registry.serialize());
+  } catch (err) {
+    console.error(`⚠️ Failed to save RoomRegistry to store: ${err.message}`);
+  }
+}
+
 // 5. Inactive Custom Rooms Garbage Collection (10 seconds)
 setInterval(() => {
   const now = Date.now();
@@ -466,6 +487,15 @@ setInterval(() => {
       room.destroy();
       instances.delete(id);
       broadcastLobbySync();
+
+      // Release dynamic room presence in the shared registry
+      if (WORKERS > 1) {
+        loadRegistry().then((reg) => {
+          if (reg.release(id, `node-${SHARD_INDEX}`)) {
+            saveRegistry(reg);
+          }
+        });
+      }
     }
   }
 }, 10000);
@@ -474,6 +504,35 @@ setInterval(() => {
 setInterval(() => {
   broadcastLobbySync();
 }, 5000);
+
+// 7. Periodic Multi-worker Room Registry Heartbeat, Lease Renewal & Reaping Loop (4 seconds)
+if (WORKERS > 1) {
+  setInterval(async () => {
+    const now = Date.now();
+    const registry = await loadRegistry();
+
+    // 1. Reap any expired rooms hosted by dead workers
+    const reaped = registry.reapExpired(now);
+    if (reaped > 0) {
+      console.log(`🧹 Presence heartbeat: reaped ${reaped} expired rooms.`);
+    }
+
+    // 2. Renew lease/TTL for all active rooms owned by this worker
+    let changed = false;
+    const nodeId = `node-${SHARD_INDEX}`;
+    for (const roomId of instances.keys()) {
+      const leaseTime = 10000; // 10-second lease/TTL
+      const success = registry.claim(roomId, nodeId, now + leaseTime, now);
+      if (success) {
+        changed = true;
+      }
+    }
+
+    if (changed || reaped > 0) {
+      await saveRegistry(registry);
+    }
+  }, 4000);
+}
 
 // Dynamic Event Managers Helpers
 function runEconomyTickForRoom(room) {
@@ -770,6 +829,11 @@ function joinRoom(clientObj, roomId, nickname) {
       console.log(
         `🌌 Dynamically instantiated custom sector on owning shard: [${room.name}] (${roomId})`,
       );
+      // Claim immediately inside the shared RoomRegistry presence
+      loadRegistry().then((reg) => {
+        reg.claim(roomId, `node-${SHARD_INDEX}`, Date.now() + 10000);
+        saveRegistry(reg);
+      });
     } else {
       clientObj.send({
         type: "notification",

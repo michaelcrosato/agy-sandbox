@@ -63,6 +63,14 @@ export class AIController {
     this.isConflictZone = false;
     this.conflictFactionA = null;
     this.conflictFactionB = null;
+
+    // Caravan AI states
+    this.caravanState = null;
+    this.caravanCargo = null;
+    this.producerPlanetName = null;
+    this.consumerPlanetName = null;
+    this.targetPlanetName = null;
+    this.route = [];
   }
 
   /**
@@ -131,6 +139,8 @@ export class AIController {
       this.executeGuardAI(dt);
     } else if (this.role === "escort") {
       this.executeEscortAI(dt, entities);
+    } else if (this.role === "caravan") {
+      this.executeCaravanAI(dt, entities);
     } else {
       this.executeMerchantAI(dt);
     }
@@ -728,5 +738,157 @@ export class AIController {
     } else {
       this.executeWander(dt);
     }
+  }
+
+  /**
+   * Caravan AI state machine behavior for cargo fleets.
+   * @param {number} dt - Frame time step.
+   * @param {Array<any>} entities - All simulated entities.
+   */
+  executeCaravanAI(dt, entities) {
+    if (!this.producerPlanetName || !this.consumerPlanetName) {
+      const planets = entities.filter((e) => e.type === "planet");
+      if (planets.length >= 2) {
+        const prod =
+          planets.find((p) => p.name === "New Polaris") || planets[0];
+        const cons =
+          planets.find((p) => p.name === "Sigma Draconis") || planets[1];
+        this.producerPlanetName = prod.name;
+        this.consumerPlanetName = cons.name;
+        this.targetPlanetName = this.producerPlanetName;
+        this.caravanState = "loading";
+      } else {
+        this.executeWander(dt);
+        return;
+      }
+    }
+
+    const currentSector = this.getCurrentSector();
+
+    if (this.caravanState === "loading") {
+      const planet = entities.find((e) => e.name === this.producerPlanetName);
+      if (planet) {
+        this.destination = planet.position;
+        const dist = this.ship.position.distance(this.destination);
+        const speed = this.ship.velocity.magnitude();
+
+        if (dist < 80 && speed < 5) {
+          // Perform transaction: buy/load ore
+          if (planet.market && planet.market.ore !== undefined) {
+            const available = planet.market.ore;
+            const toBuy = Math.min(20, available);
+            planet.market.ore = Math.max(0, planet.market.ore - toBuy);
+            this.caravanCargo = { item: "ore", amount: toBuy };
+          }
+
+          // Set target to consumer planet and compute route
+          this.targetPlanetName = this.consumerPlanetName;
+          const targetPlanet = entities.find(
+            (e) => e.name === this.targetPlanetName,
+          );
+          const targetSector = targetPlanet ? targetPlanet.sector : "frontier";
+          this.route = this.planRoute(currentSector, targetSector);
+          this.caravanState = "traveling";
+        }
+      }
+    } else if (this.caravanState === "unloading") {
+      const planet = entities.find((e) => e.name === this.consumerPlanetName);
+      if (planet) {
+        this.destination = planet.position;
+        const dist = this.ship.position.distance(this.destination);
+        const speed = this.ship.velocity.magnitude();
+
+        if (dist < 80 && speed < 5) {
+          // Perform transaction: sell/unload ore
+          if (planet.market) {
+            const toSell = this.caravanCargo ? this.caravanCargo.amount : 0;
+            planet.market.ore = (planet.market.ore || 0) + toSell;
+          }
+          this.caravanCargo = null;
+
+          // Set target back to producer planet and compute route
+          this.targetPlanetName = this.producerPlanetName;
+          const targetPlanet = entities.find(
+            (e) => e.name === this.targetPlanetName,
+          );
+          const targetSector = targetPlanet ? targetPlanet.sector : "frontier";
+          this.route = this.planRoute(currentSector, targetSector);
+          this.caravanState = "traveling";
+        }
+      }
+    } else if (this.caravanState === "traveling") {
+      if (this.route && this.route.length > 0) {
+        const nextSector = this.route[0];
+        const gate = entities.find(
+          (e) =>
+            e.type === "warp_gate" &&
+            e.sector === currentSector &&
+            e.targetSector === nextSector,
+        );
+
+        if (gate) {
+          this.destination = gate.position;
+          const dist = this.ship.position.distance(gate.position);
+
+          if (dist < 100) {
+            // Jump stargates!
+            this.ship.position = gate.targetPosition.clone();
+            this.ship.velocity = new Vector2D(0, 0);
+            this.route.shift();
+
+            // Recompute destination for the next tick
+            this.destination = null;
+          }
+        }
+      } else {
+        const targetPlanet = entities.find(
+          (e) => e.name === this.targetPlanetName,
+        );
+        if (targetPlanet) {
+          this.destination = targetPlanet.position;
+          const dist = this.ship.position.distance(this.destination);
+          const speed = this.ship.velocity.magnitude();
+
+          if (dist < 80 && speed < 5) {
+            if (this.caravanCargo && this.caravanCargo.amount > 0) {
+              this.caravanState = "unloading";
+            } else {
+              this.caravanState = "loading";
+            }
+          }
+        }
+      }
+    }
+
+    if (this.destination) {
+      this.steerTowards(this.destination);
+
+      const dist = this.ship.position.distance(this.destination);
+      const isGate = this.route && this.route.length > 0;
+      if (dist < 80 && !isGate) {
+        this.ship.controls.isThrusting = false;
+        this.ship.controls.isBraking = true;
+      } else {
+        this.ship.controls.isThrusting = true;
+      }
+    }
+  }
+
+  getCurrentSector() {
+    const x = this.ship.position.x;
+    if (x > 10000) return "frontier";
+    if (x < -10000) return "rim";
+    return "core";
+  }
+
+  planRoute(startSector, endSector) {
+    if (startSector === endSector) return [];
+    if (startSector === "core" && endSector === "rim") {
+      return ["frontier", "rim"];
+    }
+    if (startSector === "rim" && endSector === "core") {
+      return ["frontier", "core"];
+    }
+    return [endSector];
   }
 }

@@ -937,6 +937,9 @@ export class CanvasRenderer {
     } else if (ship.name.includes("Guard")) {
       strokeColor = "#30d158"; // Emerald defense
       fillColor = "#08220f";
+    } else if (ship.name && ship.name.includes("Caravan")) {
+      strokeColor = "#ffb300"; // Rich Gold caravan
+      fillColor = "#221908"; // Deep Gold theme
     } else if (isOtherPlayer) {
       strokeColor = "#00ffcc"; // Neon cyan other player
       fillColor = "#05181a";
@@ -1512,7 +1515,8 @@ export class CanvasRenderer {
             ent.name.includes("Voyager") ||
             ent.name.includes("Galleon") ||
             ent.name.includes("Atlas") ||
-            ent.name.includes("Hermes"));
+            ent.name.includes("Hermes") ||
+            ent.name.includes("Caravan"));
 
         if (isTeammate) {
           color = `rgba(160, 64, 251, ${alpha})`; // Neon purple teammate

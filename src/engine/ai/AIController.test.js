@@ -405,3 +405,129 @@ describe("AIController escort behaviour", () => {
     expect(ctrl.ship.controls.isFiring).toBe(true); // target within firing arc and close
   });
 });
+
+describe("AIController.executeCaravanAI (caravan behavior)", () => {
+  test("planRoute correctly maps adjacent and multi-hop routes", () => {
+    const ctrl = new AIController(new Ship(), "caravan");
+    expect(ctrl.planRoute("core", "core")).toEqual([]);
+    expect(ctrl.planRoute("core", "frontier")).toEqual(["frontier"]);
+    expect(ctrl.planRoute("core", "rim")).toEqual(["frontier", "rim"]);
+    expect(ctrl.planRoute("rim", "core")).toEqual(["frontier", "core"]);
+    expect(ctrl.planRoute("rim", "frontier")).toEqual(["frontier"]);
+  });
+
+  test("getCurrentSector resolves based on x-coordinate", () => {
+    const ctrl1 = new AIController(
+      new Ship({ position: new Vector2D(0, 0) }),
+      "caravan",
+    );
+    expect(ctrl1.getCurrentSector()).toBe("core");
+
+    const ctrl2 = new AIController(
+      new Ship({ position: new Vector2D(15000, 0) }),
+      "caravan",
+    );
+    expect(ctrl2.getCurrentSector()).toBe("frontier");
+
+    const ctrl3 = new AIController(
+      new Ship({ position: new Vector2D(-15000, 0) }),
+      "caravan",
+    );
+    expect(ctrl3.getCurrentSector()).toBe("rim");
+  });
+
+  test("full caravan cycle: load at Polaris, travel across gates, unload at Draconis", () => {
+    const polaris = new SpaceEntity({
+      id: "p1",
+      type: "planet",
+      position: new Vector2D(22000, 18800),
+    });
+    polaris.name = "New Polaris";
+    polaris.sector = "frontier";
+    polaris.market = { ore: 100 };
+
+    const draconis = new SpaceEntity({
+      id: "p2",
+      type: "planet",
+      position: new Vector2D(17800, 21600),
+    });
+    draconis.name = "Sigma Draconis";
+    draconis.sector = "frontier";
+    draconis.market = { ore: 10 };
+
+    const gate = new SpaceEntity({
+      id: "gate1",
+      type: "warp_gate",
+      position: new Vector2D(22200, 22200),
+    });
+    gate.sector = "frontier";
+    gate.targetSector = "rim";
+    gate.targetPosition = new Vector2D(-19200, -19200);
+
+    const entities = [polaris, draconis, gate];
+
+    // Spawn caravan ship far from Polaris in frontier sector
+    const ship = new Ship({ position: new Vector2D(22000, 18000) }); // dist = 800 > 80
+    const ctrl = new AIController(ship, "caravan");
+
+    // 1. Initial tick triggers planet identification and state init
+    ctrl.update(0.1, entities);
+    expect(ctrl.producerPlanetName).toBe("New Polaris");
+    expect(ctrl.consumerPlanetName).toBe("Sigma Draconis");
+    expect(ctrl.caravanState).toBe("loading");
+    expect(polaris.market.ore).toBe(100);
+    expect(ctrl.caravanCargo).toBeNull();
+
+    // 2. Move ship close to Polaris to trigger transaction
+    ship.position = polaris.position.add(new Vector2D(0, 10)); // dist = 10 < 80
+    ship.velocity = new Vector2D(0, 0); // speed = 0 < 5
+    ctrl.update(0.1, entities);
+
+    expect(polaris.market.ore).toBe(80); // 100 - 20 = 80
+    expect(ctrl.caravanCargo).toEqual({ item: "ore", amount: 20 });
+    expect(ctrl.caravanState).toBe("traveling");
+    expect(ctrl.targetPlanetName).toBe("Sigma Draconis");
+
+    // 3. One more update to resolve destination for traveling state
+    ctrl.update(0.1, entities);
+    expect(ctrl.route).toEqual([]);
+    expect(ctrl.destination).toEqual(draconis.position);
+
+    // 4. Move ship near Draconis to simulate arrival and unload
+    ship.position = draconis.position.add(new Vector2D(0, 10)); // dist = 10 < 80
+    ship.velocity = new Vector2D(0, 0); // speed = 0 < 5
+    ctrl.update(0.1, entities); // Detects arrival, transitions to "unloading"
+    expect(ctrl.caravanState).toBe("unloading");
+
+    ctrl.update(0.1, entities); // Performs transaction, transitions to "traveling"
+
+    // Transition to unloading, complete unload, and change state to traveling back
+    expect(draconis.market.ore).toBe(30); // 10 + 20 = 30
+    expect(ctrl.caravanCargo).toBeNull();
+    expect(ctrl.caravanState).toBe("traveling");
+    expect(ctrl.targetPlanetName).toBe("New Polaris");
+    expect(ctrl.route).toEqual([]);
+
+    // 5. Test stargate pathfinding and jump!
+    // Set target to Kaelis Colony in rim sector
+    const kaelis = new SpaceEntity({
+      id: "p3",
+      type: "planet",
+      position: new Vector2D(-21800, -21800),
+    });
+    kaelis.name = "Kaelis Colony";
+    kaelis.sector = "rim";
+    entities.push(kaelis);
+
+    ctrl.targetPlanetName = "Kaelis Colony";
+    ctrl.route = ctrl.planRoute("frontier", "rim"); // ["rim"]
+
+    // Position ship close to frontier-to-rim gate
+    ship.position = gate.position.add(new Vector2D(0, 10)); // dist = 10 < 100
+    ctrl.update(0.1, entities);
+
+    // Jump should trigger! Teleport to targetPosition and route becomes empty
+    expect(ship.position).toEqual(gate.targetPosition);
+    expect(ctrl.route).toEqual([]);
+  });
+});

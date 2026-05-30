@@ -273,6 +273,8 @@ const physicsInterval = setInterval(() => {
     }
 
     // A. Drive AI merchant itineraries and update active AIs
+    const prevOres = new Map(room.planets.map((p) => [p.name, p.market.ore]));
+
     for (const ai of room.ais) {
       if (ai.ship.isDestroyed) continue;
 
@@ -287,6 +289,17 @@ const physicsInterval = setInterval(() => {
         }
       }
       ai.update(dt, room.engine.entities);
+    }
+
+    for (const p of room.planets) {
+      const prevVal = prevOres.get(p.name);
+      if (prevVal !== undefined && p.market.ore !== prevVal) {
+        room.broadcast({
+          type: "market_sync",
+          planetName: p.name,
+          market: p.market,
+        });
+      }
     }
 
     // B. Apply Solar EMP Events Shield Regen nerfing

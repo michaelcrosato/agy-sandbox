@@ -7,8 +7,8 @@ It records cycle transitions, key milestones, and precise next steps.
 
 ## Cycle 10 — 2026-05-30 (Current)
 - **Status:** GREEN
-- **Summary:** Successfully shipped SPEC-060 (Factional Naval Mission Boards & Rank Campaigns). ties FactionRegistry standing progress with specialized campaign rank campaigns, merit gains, and purchase locks on premium hulls (e.g. Interceptor, Military Destroyer) and outfitting (e.g. Ion Disruptor Array) inside Spaceports. Enforced standing-locked procedural mission generation (reward > 2000 CR locked under standing < 30). Designed an append-only campaign merits and navalRank map saved through the player snapshot persistence and restored seamlessly. Verified the complete end-to-end campaign progression and purchase lockout loop via extensive new integration tests. All 866 Jest tests 100% green.
-- **Next Action:** Claim and begin implementation of SPEC-061 (Dynamic Planetary Stock Caravans & Cargo Convoy AI).
+- **Summary:** Successfully shipped SPEC-060 (Factional Naval Mission Boards & Rank Campaigns) and SPEC-061 (Dynamic Planetary Stock Caravans & Cargo Convoy AI). Ties standing progress with campaign rank campaigns, merit gains, and purchase locks on premium hulls and outfitting. Implemented physical merchant caravans moving across stargates, carrying resources between producers and consumers, and dynamically altering planetary markets upon arrival with strict positive clamps. Automated server broadcasts of `"market_sync"` updates and designed dedicated visual canvas render overlays. All 870 Jest tests 100% green.
+- **Next Action:** Begin design and implementation of SPEC-062 (High-Concurrency Multi-Worker Redis Cluster State Sync).
 
 ---
 

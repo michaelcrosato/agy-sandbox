@@ -5,6 +5,8 @@ import {
   applyProductionPulse,
 } from "./ProductionModel.js";
 import { GalaxyHeartbeat } from "./GalaxyHeartbeat.js";
+import { AIController } from "./ai/AIController.js";
+import { Vector2D } from "../physics/Vector2D.js";
 
 function planet(name, market) {
   return { name, market: { ...market } };
@@ -313,5 +315,46 @@ describe("GalaxyHeartbeat integration with ProductionModel", () => {
 
     expect(a.market.food).toBeLessThan(300);
     expect(b.market.food).toBeGreaterThan(100);
+  });
+});
+
+describe("ProductionModel / Caravan Economy Integration", () => {
+  test("caravan trading transactions correctly mutate planetary market ore inventory safely within positive bounds", () => {
+    const polaris = {
+      name: "New Polaris",
+      market: { ore: 10 },
+      position: new Vector2D(22000, 18800),
+    };
+    const draconis = {
+      name: "Sigma Draconis",
+      market: { ore: 50 },
+      position: new Vector2D(17800, 21600),
+    };
+
+    const ship = {
+      position: new Vector2D(22000, 18810),
+      velocity: new Vector2D(0, 0),
+      controls: { isThrusting: false, isBraking: false },
+      clearControls: () => {},
+    };
+
+    const ctrl = new AIController(ship, "caravan");
+    ctrl.producerPlanetName = "New Polaris";
+    ctrl.consumerPlanetName = "Sigma Draconis";
+    ctrl.caravanState = "loading";
+
+    // Update with New Polaris (ore: 10) -> Should buy 10 ore (capped by 10)
+    ctrl.update(0.1, [polaris, draconis]);
+    expect(polaris.market.ore).toBe(0); // Capped at 0 (strictly positive clamp!)
+    expect(ctrl.caravanCargo).toEqual({ item: "ore", amount: 10 });
+    expect(ctrl.caravanState).toBe("traveling");
+
+    // Move to Draconis, set state to unloading
+    ctrl.caravanState = "unloading";
+    ship.position = draconis.position.add(new Vector2D(0, 10));
+    ctrl.update(0.1, [polaris, draconis]);
+    expect(draconis.market.ore).toBe(60); // 50 + 10 = 60
+    expect(ctrl.caravanCargo).toBeNull();
+    expect(ctrl.caravanState).toBe("traveling");
   });
 });

@@ -5,9 +5,37 @@ you claim/finish a spec. Order = recommended execution order (see [`ROADMAP.md`]
 in [`specs/`](specs/).
 
 _v1 baseline (2026-05-28): 569 tests / 33 suites; 2 high `npm audit` advisories (axios via localtunnel)._
-_**v2 re-audit baseline (2026-05-29, after Phase 0+1 shipped): 614 tests / 42 suites green; 0 `npm audit`
-vulnerabilities; ESLint 10 + Jest 30 + Prettier clean; ws hardened + observability + partial server
-modularization.** Remaining = Wave A (020–025) + Phase 2 (014–019)._
+_v2 re-audit baseline (2026-05-29, after Phase 0+1): 614 tests / 42 suites; 0 CVEs._
+_**v3 re-audit baseline (2026-05-30, ENTIRE v2 blueprint shipped): 696 Jest tests / 51 suites + 17 client
+green; 0 `npm audit` vulnerabilities; `npm outdated` empty; typecheck gate + CI LTS matrix live; AoI +
+binary protocol + factions + goal-driven NPCs + ore chain + scaling first slice all DONE.** Remaining =
+v3 Phase 0 (026–029) + Phase 1 (030–035) + Phase 2 scale-out (019b–f, 036–038)._
+
+## v3 — Next cycle (NEW · Todo) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Quick Wins & Safety
+- [ ] `026` CI Node 22/24/26 matrix + engines floor `>=22` — _blocked by: none_
+- [ ] `027` Pin/document the `ws` CVE-2026-45736 security floor (≥ 8.20.1) — _blocked by: none_
+- [ ] `028` Fix hit-flash armor-branch dead code (real bug, found by 021) — _blocked by: none_
+- [ ] `029` Reputation `decayAll` heartbeat hook — _blocked by: none_
+
+### Phase 1 — Core Upgrades & Debt Paydown
+- [ ] `030` Engine typecheck ratchet (`src/engine` + `persistence`) — _blocked by: none_
+- [ ] `031` `COMMODITIES` centralization — _blocked by: none_
+- [ ] `032` Mission + trade faction standings — _blocked by: none_
+- [ ] `033` UtilityAI advisor wider rollout + goal→action mapping — _blocked by: none_
+- [ ] `034` Continue `server.js` extraction (round 3) — _blocked by: none_
+- [ ] `035` Client visual layer (Vitest Browser Mode + Playwright) — _blocked by: none_
+
+### Phase 2 — Scale-Out & Competitive Features
+- [ ] `019b` RedisStore behind `Store` — _blocked by: none_
+- [ ] `019c` Worker process model — _blocked by: 019b (recommended)_
+- [ ] `019d` Sticky routing / LB front door — _blocked by: 019c (recommended)_
+- [ ] `019e` Cross-process presence (Redis pub/sub + leases) — _blocked by: 019b_
+- [ ] `019f` Graceful drain / zero-downtime restart — _blocked by: 019c, 019e (recommended)_
+- [ ] `036` Matchmaking with room filters + queue — _blocked by: none_
+- [ ] `037` `permessage-deflate` compression eval (benchmark) — _blocked by: none_
+- [ ] `038` Schema-based state encoding eval — _blocked by: 015 (done)_
 
 ## ✅ Phase 0 — Quick Wins & Safety (DONE)
 - [x] `001` Remediate localtunnel/axios CVEs — **done** (files: `src/server.js` dynamic optional import + graceful fallback, removed `localtunnel` from `package.json`/lockfile, `README.md` cloudflared guidance; `npm audit` → 0 vulnerabilities)

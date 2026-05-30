@@ -9,25 +9,28 @@ protocol and does not override the substrate boundary, conventions, or git workf
 | Step | Command | Pass condition |
 | --- | --- | --- |
 | Install | `npm ci` | clean install from lockfile |
-| **Full gate (= CI)** | `npm run agent:check` | prettier --check + eslint + jest all green |
-| Tests only | `npm test` | all suites pass |
+| **Full gate (= CI)** | `npm run agent:check` | prettier --check + eslint + **typecheck** + jest all green |
+| Tests only | `npm test` | all suites pass (Jest) |
+| **Client tests** | `npm run test:client` | Vitest+jsdom client suite (separate runner; client-touching specs) |
 | One suite | `npm test -- src/engine/<X>.test.js` | targeted pass |
 | Lint | `npm run lint` | eslint exits 0 |
 | Format (write) | `npm run format` | — |
-| Type-check | `scripts/agent/typecheck.{sh,ps1}` | skipped (plain JS — no tsconfig) |
+| **Type-check** | `npm run typecheck` (`tsc --noEmit`) | exit 0 over `net\|physics\|server`; engine ratchet = `specs/030` |
 | **Build** | _none_ | project has no build step (static + node) |
 | Server smoke | `PORT=18190 NODE_ENV=test node src/server.js` | prints "LISTENING", no crash (Ctrl-C) |
 | Security | `npm audit` | track high/critical; see `specs/001` |
 | LOG compliance | `python scripts/validate-log-compliance.py` | PASS before committing a LOG entry |
 
-Baseline to preserve or improve (v2 · 2026-05-29, after Phase 0+1): **614 tests / 42 suites green;
-ESLint 10 + Jest 30 + Prettier clean; `npm audit` 0 vulnerabilities.** Toolchain is current
-(`ws` 8.21, ESLint 10, Jest 30, `@google/genai`); runtime `dependencies` is just `ws`.
+Baseline to preserve or improve (v3 · 2026-05-30, ENTIRE v2 blueprint shipped): **696 Jest tests / 51
+suites + 17 client tests green; typecheck (`tsc --noEmit`) green; `npm audit` 0; `npm outdated` empty.**
+Toolchain is current (`ws` 8.21, ESLint 10, Jest 30, TypeScript 6, Vitest+jsdom, `@google/genai`); runtime
+`dependencies` is just `ws`.
 
 > **Ledger safety (learned the hard way, iter-0037):** a rogue writer once clobbered the entire
 > `docs/LOG.md` history by matching the `== LOG-ANCHOR ==` *substring in the Rules text*. Always prepend
-> below the **standalone** `== LOG-ANCHOR ==` line (around line 42), never the first match, and serialize
-> ledger edits — do not run parallel writers against the same tree.
+> below the **standalone** `== LOG-ANCHOR ==` line (NOT the first `== LOG-ANCHOR ==` substring inside the
+> Rules text near the top), never the first match, and serialize ledger edits — do not run parallel writers
+> against the same tree.
 
 ## Per-spec execution loop
 

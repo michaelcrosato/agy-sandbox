@@ -2,10 +2,10 @@
 
 To remain token-efficient, this file represents the absolute minimum context required for any downstream agent to resume the execution loop cleanly.
 
-- **CYCLE:** v15 (Current)
+- **CYCLE:** v19 (Current)
 - **CURRENT_TASK:** REPLENISH
-- **SPEC_FILE:** plan/specs/074_faction_pairwise_propagation.md
-- **STATUS:** IN_PROGRESS
-- **VERIFY_COMMAND:** npm run agent:check
-- **LAST_VERIFIED:** 901 tests green (iter-0091)
-- **IMMEDIATE_OBJECTIVE:** Implement SPEC-074 (Faction Pairwise Standing Propagation) to automatically propagate standing shifts to Allies and Enemies.
+- **SPEC_FILE:** plan/specs/088_stargate_navigation_overlay.md
+- **STATUS:** COMPLETED
+- **VERIFY_COMMAND:** npm run agent:check && npm run test:client && npm run test:client:browser
+- **LAST_VERIFIED:** 921 Jest backend tests green, 57 client Vitest tests green, 3 browser tests green (iter-0096)
+- **IMMEDIATE_OBJECTIVE:** All Wave v19 specifications (SPEC-086, SPEC-087, SPEC-088) are 100% implemented, verified, and committed. Initiate Cycle 20.

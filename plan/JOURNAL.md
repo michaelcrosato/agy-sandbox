@@ -5,10 +5,15 @@ It records cycle transitions, key milestones, and precise next steps.
 
 ---
 
+## Cycle 21 — 2026-05-30
+- **Status:** GREEN
+- **Summary:** Transitioned to Cycle 21 Phase R (Replenish) with a new Prime Directive from the host: transform `agy-sandbox` into a hyper-secure, deterministic agent laboratory. Audited host vs. guest execution boundaries, state-leakage, and zombie processes. Formulated three secure infrastructure specifications: SPEC-092 (Automated Zombie Process Reaper & Orphan Port Cleanup), SPEC-093 (State Leakage Defender & Workspace Isolation Sandbox), and SPEC-094 (LLM Observability & Sandbox Resource Telemetry Recorder). Extended dynamic ROADMAP waves and PROGRESS checklists on disk.
+- **Next Action:** Isolate SPEC-092 (Automated Zombie Process Reaper & Orphan Port Cleanup Subsystem) on a dedicated branch, build the ProcessReaper class and cleanup powershell utility, and verify with new tests.
+
 ## Cycle 20 — 2026-05-30
 - **Status:** GREEN
 - **Summary:** Transitioned to Cycle 20 and successfully completed SPEC-089 (Zero-Trust WebSocket Input Schema Validation). Built the zero-dependency `SchemaValidator.js` class defining strict schema, format, and property controls for all inbound WebSocket commands. Wired it directly into the server's WS message dispatch loop to intercept, sanitize, and automatically strip undeclared parameters (defending against prototype pollution and illegal arguments). Added exhaustive Jest unit tests and a network-level socket integration suite verifying all rejections and sanitizations. All 933 Jest tests and 57 client Vitest tests are 100% green.
-- **Next Action:** Isolate SPEC-090 (Event-Loop Latency Monitoring & Backpressure Load-Shedding) on a dedicated branch, construct the LatencyMonitor, wire it into server metrics and broadcast loops, and verify with unit tests.
+- **Next Action:** Transition to Cycle 21 Phase R (Replenish) to focus on Sandbox Infrastructure.
 
 ## Cycle 19 — 2026-05-30
 - **Status:** GREEN

@@ -39,6 +39,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
  
+## 2026-05-30T23:10 · iter-0099 · GREEN · cycle-21-replenish-sandbox-architecture-sec
+- **Baseline:** `44e6030` on `feat/procedural-missions`; 933 Jest + 57 Vitest client + 3 Vitest browser tests green.
+- **Move:** Initiate Cycle 21 Phase R (Replenish) targeting hyper-secure, deterministic agent sandbox infrastructure.
+- **Changed:**
+  - Audited the guest workspace, host vs. guest execution boundaries, state-leakage, and zombie process timeout leakage.
+  - Performed deep web searches on E2B microVMs, Modal gVisor, SWE-bench evaluators, CVE-2025-55131 memory leaks, and sandbox escapes.
+  - Formulated SPEC-092 (Automated Zombie Process Reaper & Orphan Port Cleanup) to mitigate worker/socket resource leaks.
+  - Formulated SPEC-093 (State Leakage Defender & Workspace Isolation Sandbox) to sanitize the repository workspace volume.
+  - Formulated SPEC-094 (LLM Observability & Sandbox Resource Telemetry Recorder) to gather CPU, memory, and disk footprints.
+  - Extended dynamic ROADMAP priorities, PROGRESS checklist targets, and active STATE anchors on disk.
+- **Decisions:** Shifted current backlog focus directly to sandbox lifecycle integrity to satisfy the host's AI/Infrastructure Engineer mandate.
+- **Validation:** `npm run agent:check` -> green (933 Jest tests green); `npm run test:client` -> green (57 tests green); `npm run test:client:browser` -> green (3 tests green).
+- **Next:** Claim and execute SPEC-092 to build the ProcessReaper and powershell cleanup reapers.
+
 ## 2026-05-30T23:05 · iter-0098 · GREEN · cycle-20-spec-089-zero-trust-websocket-validation
 - **Baseline:** `847e565` on `feat/procedural-missions`; 921 Jest + 57 Vitest client tests green.
 - **Move:** Implement Zero-Trust WebSocket Input Schema Validation (SPEC-089) with performant parameters sanitation.

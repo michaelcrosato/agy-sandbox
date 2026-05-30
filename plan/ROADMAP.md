@@ -127,17 +127,32 @@ Completed waves (`001–088`) are recorded DONE in `PROGRESS.md`. The live work 
 
 ---
 
+## EXECUTION WAVES (v21)
+
+Completed waves (`001–089`) are recorded DONE in `PROGRESS.md`. The sandbox infrastructure wave:
+
+### Phase 0 — Security & Teardown Lifecycle — `092`, `093`
+- `092` Automated Zombie Process Reaper & Orphan Port Cleanup Subsystem (build a modular ProcessReaper class tracking worker threads/child processes and a PowerShell teardown script to kill orphaned tasks and free locked socket ports).
+- `093` State Leakage Defender & Workspace Isolation Sandbox (develop an automatic workspace sanitizing script to detect and sweep untracked test directories and local temp logs while preserving planning ledgers).
+
+### Phase 2 — Observability & Telemetry — `094`
+- `094` LLM Observability & Sandbox Resource Telemetry Recorder (implement sandbox-level memory, CPU, and disk utilization recording to log resource leaks and plot peak footprints on the telemetry dashboard).
+
+---
+
 ## MASTER PRIORITIZATION TABLE (next-cycle work)
 
 Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + Fit.
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 089 | Zero-Trust WebSocket Validation | 0 | 5 | 5 | 5 | 5 | 20 |
 | 090 | Event-Loop Latency Monitoring | 0 | 4 | 5 | 5 | 5 | 19 |
 | 091 | Game Invariant Self-Healing Verifier | 1 | 5 | 5 | 4 | 5 | 19 |
+| 092 | Automated Zombie Reaper & Clean | 0 | 5 | 5 | 5 | 5 | 20 |
+| 093 | State Leakage Workspace Sanitizer | 0 | 5 | 5 | 5 | 5 | 20 |
+| 094 | Sandbox Observability Telemetry | 2 | 4 | 5 | 5 | 5 | 19 |
 
-**Recommended start:** `089` (Σ20 — security validation boundaries), then proceed to `090` (Σ19) for load-shedding performance, and finally `091` (Σ19) for state-integrity verification.
+**Recommended start:** `092` (Σ20 — Automated zombie reaper & clean teardown), then proceed to `093` (Σ20 — state isolation sanitizer), followed by `090` (Σ19) and `091` (Σ19), and finally `094` (Σ19).
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

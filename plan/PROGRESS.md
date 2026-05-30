@@ -23,8 +23,19 @@ _**v16 re-audit baseline (2026-05-30, ENTIRE v15 blueprint shipped): 904 Jest te
 _**v17 re-audit baseline (2026-05-30, ENTIRE v16 blueprint shipped): 909 Jest tests / 73 suites + 28 client green; 0 npm audit vulnerabilities; spaceport ore refining + reputation decay heartbeat hook + wingman FSM intercept and telemetry panel HUD all DONE.**_
 _**v18 re-audit baseline (2026-05-30, ENTIRE v17 blueprint shipped): 912 Jest tests / 73 suites + 30 client green; 0 npm audit vulnerabilities; tractor outfit mass + black market spaceports + standing-aware trade advisor HUD all DONE.**_
 _**v19 re-audit baseline (2026-05-30, ENTIRE v19 blueprint shipped): 921 Jest tests / 73 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; dynamic trade profit metric + NPC smuggler fleets + stargate nav overlay all DONE.**_
+_**v20 re-audit baseline (2026-05-30, new sandbox prime directive): 933 Jest tests / 75 suites green; Zero-Trust WebSocket Validation (089) DONE. Remaining = 090, 091, 092, 093, 094.**_
 
-## v20 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
+## v21 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Security & Teardown Lifecycle
+- [ ] `092` Automated Zombie Process Reaper & Orphan Port Cleanup Subsystem (build a modular ProcessReaper class tracking worker threads/child processes and a PowerShell teardown script to kill orphaned tasks and free locked socket ports)
+- [ ] `093` State Leakage Defender & Workspace Isolation Sandbox (develop an automatic workspace sanitizing script to detect and sweep untracked test directories and local temp logs while preserving planning ledgers)
+
+### Phase 2 — Observability & Telemetry
+- [ ] `094` LLM Observability & Sandbox Resource Telemetry Recorder (implement sandbox-level memory, CPU, and disk utilization recording to log resource leaks and plot peak footprints on the telemetry dashboard)
+
+## v20 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
+
 
 ### Phase 0 — Quick Wins & Safety
 - [x] `089` zero-trust WebSocket input schema validation (construct a performant zero-dependency schema validation utility for all inbound socket payloads to prevent prototype pollution and overflow injections) — **done** (files: `src/net/SchemaValidator.js`, `src/net/SchemaValidator.test.js`, `src/server.js`, `src/server/schemaValidation.integration.test.js`; implemented pure, zero-dependency validation schemas and stripped unknown keys to prevent prototype pollution across all inbound socket payloads, fully verified by unit and socket-level integration tests; 933 Jest tests green)

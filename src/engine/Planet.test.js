@@ -19,7 +19,7 @@ describe("Planet construction", () => {
     expect(p.services).toEqual({ repair: true, refuel: true });
   });
 
-  test("fills the full six-commodity market with defaults", () => {
+  test("fills the full seven-commodity market with defaults", () => {
     const p = new Planet({ name: "X" });
     expect(p.market).toEqual({
       food: 100,
@@ -28,6 +28,7 @@ describe("Planet construction", () => {
       luxuries: 500,
       contraband: 250,
       machinery: 200,
+      ore: 80,
     });
   });
 

@@ -28,6 +28,7 @@ export const BASE_MARKETS = {
     luxuries: 600,
     contraband: 250,
     machinery: 100,
+    ore: 90,
   },
   "New Polaris": {
     food: 220,
@@ -36,6 +37,7 @@ export const BASE_MARKETS = {
     luxuries: 650,
     contraband: 300,
     machinery: 220,
+    ore: 55,
   },
   "Sigma Draconis": {
     food: 120,
@@ -44,6 +46,7 @@ export const BASE_MARKETS = {
     luxuries: 500,
     contraband: 200,
     machinery: 160,
+    ore: 130,
   },
   "Kaelis Colony": {
     food: 40,
@@ -52,6 +55,7 @@ export const BASE_MARKETS = {
     luxuries: 550,
     contraband: 280,
     machinery: 190,
+    ore: 85,
   },
   "Aurelia Mining Hub": {
     food: 150,
@@ -60,6 +64,7 @@ export const BASE_MARKETS = {
     luxuries: 580,
     contraband: 260,
     machinery: 150,
+    ore: 50,
   },
   "Tenebris Prime": {
     food: 160,
@@ -68,6 +73,7 @@ export const BASE_MARKETS = {
     luxuries: 220,
     contraband: 400,
     machinery: 240,
+    ore: 95,
   },
   "Valkyrie Depot": {
     food: 110,
@@ -76,6 +82,7 @@ export const BASE_MARKETS = {
     luxuries: 520,
     contraband: 220,
     machinery: 80,
+    ore: 125,
   },
   "Rogue's Hollow": {
     food: 250,
@@ -84,6 +91,7 @@ export const BASE_MARKETS = {
     luxuries: 450,
     contraband: 60,
     machinery: 180,
+    ore: 80,
   },
 };
 

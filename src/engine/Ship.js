@@ -103,6 +103,7 @@ export class Ship extends SpaceEntity {
       luxuries: 0,
       contraband: 0,
       machinery: 0,
+      ore: 0,
     };
 
     // Weapon & Outfit Loadouts

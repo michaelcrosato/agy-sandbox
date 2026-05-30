@@ -242,6 +242,7 @@ describe("serializePlayer / applyPlayer", () => {
       luxuries: 0,
       contraband: 0,
       machinery: 0,
+      ore: 0,
     });
     expect(snap.ship.outfits).toEqual(["Basic Laser", "Heavy Shields"]);
     expect(snap.ship.weaponShieldPierce).toBe(0.5);

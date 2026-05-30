@@ -28,19 +28,25 @@ export const PLANET_PROFILES = {
     consumes: { luxuries: 1, food: 0.4 },
   },
   "Valkyrie Depot": {
+    // Industrial: refines ore into heavy machinery.
     produces: { machinery: 1 },
-    consumes: { electronics: 1, minerals: 0.5 },
+    consumes: { ore: 1, electronics: 1 },
+    refines: { machinery: "ore" },
   },
   "New Polaris": {
-    produces: { minerals: 1 },
+    // Mining hub (spec 018): extracts raw ore (was a direct minerals producer).
+    produces: { ore: 1 },
     consumes: { food: 1, machinery: 0.5 },
   },
   "Sigma Draconis": {
-    produces: { electronics: 1 },
-    consumes: { minerals: 1, food: 0.4 },
+    // Industrial refinery: refines ore into minerals and builds electronics.
+    produces: { electronics: 1, minerals: 0.8 },
+    consumes: { ore: 1, food: 0.4 },
+    refines: { minerals: "ore" },
   },
   "Aurelia Mining Hub": {
-    produces: { minerals: 1, machinery: 0.4 },
+    // Mining hub: raw ore plus some on-site machinery fabrication.
+    produces: { ore: 1, machinery: 0.4 },
     consumes: { food: 1 },
   },
   "Kaelis Colony": {
@@ -70,6 +76,12 @@ export const DEFAULT_PRODUCTION_OPTIONS = Object.freeze({
   consumptionRate: 0.02,
   minFactor: 0.4,
   maxFactor: 2.5,
+  // Chain coupling (spec 018): how strongly a refined output's production
+  // scales with its input commodity's availability, and the cap on that boost.
+  // A `refineGain` of 1 means input at half-baseline price boosts the output's
+  // production strength by 50%; input at double-baseline zeroes it out.
+  refineGain: 1.0,
+  maxRefineBoost: 2.0,
 });
 
 /**
@@ -126,6 +138,7 @@ export function applyProductionPulse(
 
   const produces = profile.produces || {};
   const consumes = profile.consumes || {};
+  const refines = profile.refines || {};
   const touched = new Set([...Object.keys(produces), ...Object.keys(consumes)]);
 
   const changed = [];
@@ -133,11 +146,30 @@ export function applyProductionPulse(
     if (planet.market[commodity] === undefined) continue;
     if (baseline[commodity] === undefined) continue;
 
+    let produceStrength = produces[commodity] || 0;
+    // Chain coupling (spec 018): a refined output's production scales with how
+    // cheap/abundant its input commodity is — cheap ore boosts the minerals it
+    // refines into, scarce ore throttles it — so an upstream supply shock
+    // propagates to downstream prices over successive pulses.
+    const input = refines[commodity];
+    if (
+      produceStrength > 0 &&
+      input &&
+      baseline[input] > 0 &&
+      planet.market[input] !== undefined
+    ) {
+      const availability = planet.market[input] / baseline[input];
+      let factor = 1 + options.refineGain * (1 - availability);
+      if (factor < 0) factor = 0;
+      if (factor > options.maxRefineBoost) factor = options.maxRefineBoost;
+      produceStrength *= factor;
+    }
+
     const next = Math.round(
       computeCommodityPressure(
         planet.market[commodity],
         baseline[commodity],
-        produces[commodity] || 0,
+        produceStrength,
         consumes[commodity] || 0,
         options,
       ),

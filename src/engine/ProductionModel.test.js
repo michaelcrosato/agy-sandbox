@@ -125,6 +125,55 @@ describe("ProductionModel.applyProductionPulse", () => {
   });
 });
 
+describe("ProductionModel chain coupling (spec 018)", () => {
+  const opts = DEFAULT_PRODUCTION_OPTIONS;
+  // An industrial refinery: produces minerals, refined from raw ore input.
+  const refinery = {
+    produces: { minerals: 1 },
+    consumes: { ore: 1 },
+    refines: { minerals: "ore" },
+  };
+  const baseline = { ore: 100, minerals: 200 };
+
+  test("cheap input ore boosts the refined output's downward pressure", () => {
+    const cheap = planet("Cheap", { ore: 50, minerals: 200 });
+    const scarce = planet("Scarce", { ore: 150, minerals: 200 });
+    applyProductionPulse(cheap, refinery, baseline, opts);
+    applyProductionPulse(scarce, refinery, baseline, opts);
+    // Abundant ore → stronger minerals production → minerals price falls further
+    // than when ore is scarce. This is the upstream→downstream propagation.
+    expect(cheap.market.minerals).toBeLessThan(scarce.market.minerals);
+  });
+
+  test("a sustained ore surplus drags refined minerals well below baseline", () => {
+    const p = planet("Refinery", { ore: 40, minerals: 200 });
+    for (let i = 0; i < 25; i++) {
+      p.market.ore = 40; // external supply keeps ore abundant each pulse
+      applyProductionPulse(p, refinery, baseline, opts);
+    }
+    expect(p.market.minerals).toBeLessThan(180);
+  });
+
+  test("scarce input ore throttles refined production (no boost below baseline)", () => {
+    // With the input pinned far above baseline, the refine factor clamps to 0,
+    // so the output sees no production pressure (only its own consumes, here none).
+    const p = planet("Starved", { ore: 300, minerals: 200 });
+    const before = p.market.minerals;
+    p.market.ore = 300;
+    applyProductionPulse(p, refinery, baseline, opts);
+    expect(p.market.minerals).toBe(before); // production zeroed → no change
+  });
+
+  test("refines is inert when the profile omits it (back-compat)", () => {
+    const p = planet("Plain", { minerals: 200, ore: 50 });
+    const plain = { produces: { minerals: 1 }, consumes: { ore: 1 } };
+    applyProductionPulse(p, plain, baseline, opts);
+    // Without a refines edge, cheap ore does NOT amplify minerals: a unit
+    // producer drops it by exactly rate * baseline (200 * 0.02 = 4).
+    expect(p.market.minerals).toBe(196);
+  });
+});
+
 describe("PLANET_PROFILES table", () => {
   test("covers every seeded planet name once with at least one pressure", () => {
     const expectedNames = [

@@ -93,6 +93,7 @@ export function applyHullPurchase(ship, hull) {
     luxuries: 0,
     contraband: 0,
     machinery: 0,
+    ore: 0,
   };
   return { ok: true, reason: "purchased" };
 }

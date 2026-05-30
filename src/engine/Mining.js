@@ -10,7 +10,7 @@
 /** Default mining tuning. Frozen; override per-call. */
 export const DEFAULT_MINING_OPTIONS = Object.freeze({
   gemResource: "luxuries",
-  oreResource: "minerals",
+  oreResource: "ore",
   gemBaseMin: 2,
   gemBaseMax: 3,
   oreBaseMin: 1,

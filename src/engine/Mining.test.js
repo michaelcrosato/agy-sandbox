@@ -24,10 +24,10 @@ describe("Mining (EW9)", () => {
     }
   });
 
-  test("generic asteroids yield 1-2 minerals", () => {
+  test("generic asteroids yield 1-2 raw ore", () => {
     for (const seed of [1, 2, 3, 50, 999]) {
       const y = mineYield("generic", createSeededRng(seed));
-      expect(y.resource).toBe("minerals");
+      expect(y.resource).toBe("ore");
       expect(y.count).toBeGreaterThanOrEqual(1);
       expect(y.count).toBeLessThanOrEqual(2);
     }

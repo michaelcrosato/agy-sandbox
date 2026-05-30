@@ -53,3 +53,13 @@ Items noticed mid-spec that are out of the current spec's scope. Triage into `sp
   missions means first connecting that pipeline, then feeding `factionChanges` into
   `room.factionRegistry.adjustStanding`. Also: `decayAll` (reputation healing over time) isn't called from
   the galaxy heartbeat yet — hook it for slow reputation recovery. Medium priority.
+
+- **Centralize the commodity list into a `COMMODITIES` constant (from spec 018):** spec 018 added the 7th
+  commodity `ore` by extending each hardcoded literal directly (`Ship.cargo`, `Trading.applyHullPurchase`
+  reset, `Planet` default market, the 8 `BASE_MARKETS`). The spec suggested (optional) a single
+  `COMMODITIES` names array to drive the zero-init cargo maps and prevent future drift — the priced maps
+  (per-planet markets) still need per-commodity values, but the cargo/reset maps could be built from
+  `COMMODITIES.reduce(...)`. Low priority (pure refactor; current state is consistent and green). When done,
+  add a table-invariant test asserting every `BASE_MARKETS` entry and `Ship.cargo` covers exactly
+  `COMMODITIES`. Also nice: a `refinePort`/Mining-Laser config so players can refine carried `ore` → minerals
+  at an industrial dock (today ore only refines via the planet production profiles, not player action).

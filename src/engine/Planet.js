@@ -54,6 +54,8 @@ export class Planet extends SpaceEntity {
       luxuries: market.luxuries || 500,
       contraband: market.contraband || 250,
       machinery: market.machinery || 200,
+      // ore (spec 018): raw mining output that refines into minerals.
+      ore: market.ore || 80,
     };
 
     // Store Outfitter Catalog

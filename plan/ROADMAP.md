@@ -114,18 +114,18 @@ flowchart TD
 
 ---
 
-## EXECUTION WAVES (v7)
+## EXECUTION WAVES (v8)
 
-Completed waves (`001–050`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
+Completed waves (`001–053`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
 
-### Phase 0 — Quick Wins & Safety — `051`
-`051` Collision Kinetic Damage & Shield Absorption (dynamic collision physics and damage models).
+### Phase 0 — Quick Wins & Safety — `055`
+`055` Naval Command Decks & Faction Bounty Vouchers (collect dynamic bounty vouchers from combat; redeem at faction Naval Command Decks for credits + standing; enforce faction-based Hull/Outfit lockouts).
 
-### Phase 1 — Core Upgrades & Debt Paydown — `052`
-`052` Stargate Warp Tolls & Port Transaction Taxes (reputation standings tied to space travel and economy tariffs).
+### Phase 1 — Core Upgrades & Debt Paydown — `056`
+`056` Hyperspace Warp Lane Interdiction (project interdiction fields from specialized outfits or security patrols; block warp drive engagement when active; render cyan gravitational rings).
 
-### Phase 2 — Scale-Out & Premium Features — `053`
-`053` Faction Bounty Locator Radar (real-time in-sector directional and range locator telemetry).
+### Phase 2 — Scale-Out & Premium Features — `054`
+`054` Faction Conflict Battlegrounds (emergent sector warzones; spawn clashing faction fleets; choose sides dynamically to shift battles and earn merits).
 
 ---
 
@@ -135,11 +135,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 051 | Collision Kinetic Damage & Shield Absorption | 0 | 4 | 5 | 4 | 5 | 18 |
-| 052 | Stargate Warp Tolls & Port Transaction Taxes | 1 | 5 | 4 | 4 | 5 | 18 |
-| 053 | Faction Bounty Locator Radar | 2 | 5 | 4 | 3 | 5 | 17 |
+| 055 | Naval Command Decks & Faction Bounty Vouchers | 0 | 5 | 5 | 4 | 5 | 19 |
+| 056 | Hyperspace Warp Lane Interdiction | 1 | 5 | 4 | 4 | 5 | 18 |
+| 054 | Faction Conflict Battlegrounds | 2 | 5 | 4 | 3 | 5 | 17 |
 
-**Recommended start:** `051` (Σ18 — dynamic collision physics, high impact, safe and self-contained) to compute relative momentum impact damage under a minimum speed limit, then proceed to `052` (Σ18) to connect reputation standings to warp gate and spaceport tariffs. Complete the wave with `053` (Σ17) to design real-time tracking radar for bounty hunter professions.
+**Recommended start:** `055` (Σ19 — faction progression service, high impact, safe and self-contained) to transition immediate combat credits to dynamic vouchers and build progression blocks, then proceed to `056` (Σ18) to introduce tactical hyperspace interdictors. Complete the wave with `054` (Σ17) to design real-time fleet conflict zones.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.
@@ -147,3 +147,4 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 - A parallel/rogue writer corrupted `docs/LOG.md` once — **serialize ledger edits** and always anchor on the standalone `== LOG-ANCHOR ==` line, never the first substring match.
 - Scale-out specs touch the hot broadcast path — gate each behind a flag so single-process stays the default and is never regressed.
 - Every spec lands behind a green `npm run agent:check` (+ `npm run test:client` where client-touching); nothing pushed without authorization.
+

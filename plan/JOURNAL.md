@@ -5,10 +5,17 @@ It records cycle transitions, key milestones, and precise next steps.
 
 ---
 
-## Cycle 7 — 2026-05-30 (Current)
+## Cycle 8 — 2026-05-30 (Current)
 - **Status:** IN_PROGRESS
-- **Summary:** Initiated Cycle 7. Formulated specs `051`, `052`, and `053`. Completed implementation of `051` (Collision Kinetic Damage) and `052` (Stargate Warp Tolls & Port Transaction Taxes), mapping dynamic stargate warp tolls and docking/trade tariffs (5%/0%/15%) to player standings. Added full integration tests; all 826 Jest tests green.
-- **Next Action:** Claim and begin implementation of SPEC-053 to design and implement the military-grade Bounty Locator Radar tracking outfit.
+- **Summary:** Initiated Cycle 8 replenishment. Promoted backlog features and formulated specs `054` (Faction Conflict Battlegrounds), `055` (Naval Command Decks & Faction Bounty Vouchers), and `056` (Hyperspace Warp Lane Interdiction). Formulated full specifications and staged the roadmap for Wave v8.
+- **Next Action:** Claim and begin implementation of SPEC-055 to transition immediate combat credit awards to collectible bounty vouchers and design the Naval Command Deck spaceport service.
+
+---
+
+## Cycle 7 — 2026-05-30
+- **Status:** GREEN
+- **Summary:** Successfully shipped the entire v7 blueprint wave: `051` (Collision Kinetic Damage), `052` (Stargate Warp Tolls & Port Transaction Taxes), and `053` (Faction Bounty Locator Radar). Added relative distance, absolute compass heading, and relative CSS-rotated arrow calculations to the HUD UIController for smooth 30Hz bounty boss tracking; fully covered by unit tests. All 827 Jest + 15 client Vitest tests 100% green.
+- **Next Action:** Initiate Cycle 8 Replenish phase: promote backlog, write Cycle 8 specifications, and extend the roadmap.
 
 ---
 

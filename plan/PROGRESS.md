@@ -11,8 +11,20 @@ _v4 re-audit baseline (2026-05-30, ENTIRE v3 blueprint shipped): 775 Jest tests 
 _**v5 re-audit baseline (2026-05-30, ENTIRE v4 blueprint shipped): 798 Jest tests / 65 suites + 18 client green; 0 `npm audit` vulnerabilities; dynamic refining + matchmaking disconnect auto-admit + glassmorphic dashboard all DONE.** Remaining = v5 Phase 0 (045) + Phase 1 (046) + Phase 2 (047)._
 _**v6 re-audit baseline (2026-05-30, ENTIRE v5 blueprint shipped): 811 Jest tests / 66 suites + 18 client green; 0 `npm audit` vulnerabilities; contraband jammers + modular port handlers + dynamic reputation spawns all DONE.** Remaining = v6 Phase 0 (050) + Phase 1 (049) + Phase 2 (048)._
 _**v7 re-audit baseline (2026-05-30, ENTIRE v6 blueprint shipped): 821 Jest tests / 66 suites + 18 client green; 0 `npm audit` vulnerabilities; contraband space scans + spatial interest grid + wingman formations all DONE.** Remaining = v7 Phase 0 (051) + Phase 1 (052) + Phase 2 (053)._
+_**v8 re-audit baseline (2026-05-30, ENTIRE v7 blueprint shipped): 827 Jest tests / 66 suites + 15 client green; 0 `npm audit` vulnerabilities; kinetic damage + warp tolls + bounty radar HUD all DONE.** Remaining = v8 Phase 0 (055) + Phase 1 (056) + Phase 2 (054)._
 
-## v7 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+## v8 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Quick Wins & Safety
+- [ ] `055` Naval Command Decks & Faction Bounty Vouchers (reputation progression) — **todo** (files: `src/engine/Ship.js`, `src/engine/PortServices.js`, `src/server/portHandlers.js`, `src/client/SpaceportUI.js`, `index.html`; collect dynamic bounty vouchers from combat, redeem at Naval Command Decks for credits + standing; enforce rank-based lockout).
+
+### Phase 1 — Core Upgrades & Debt Paydown
+- [ ] `056` Hyperspace Warp Lane Interdiction (tactical gravity fields) — **todo** (files: `src/engine/outfitCatalog.js`, `src/engine/Hyperdrive.js`, `src/engine/ai/AIController.js`, `src/client/CanvasRenderer.js`; project warp interdiction wells from modules/patrols, disrupting and blocking nearby stargate warp jumps).
+
+### Phase 2 — Scale-Out & Premium Features
+- [ ] `054` Faction Conflict Battlegrounds (emergent sector wars) — **todo** (files: `src/engine/GameInstance.js`, `src/engine/ai/AIController.js`, `src/engine/ai/buildPerception.js`; spawn clashing faction fleets; choose sides dynamically to swing local battles and standing merits).
+
+## v7 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
 - [x] `051` Collision Kinetic Damage & Shield Absorption (fleet tactical safety) — **done** (files: `src/engine/SpaceEngine.js`, `src/engine/SpaceEngine.test.js`; implemented relative-momentum kinetic damage calculations for both dynamic-to-dynamic collisions of variable masses and dynamic-to-static planet collisions, with full backward-compatibility for standard 2000kg ship configurations; all 823 Jest tests green).

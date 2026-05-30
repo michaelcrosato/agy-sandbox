@@ -267,3 +267,37 @@ export function routeConnection({ roomId, registry, shardCount }) {
   const shardIdx = assignShard(roomId, shardCount);
   return `node-${shardIdx}`;
 }
+
+/**
+ * Stateless rebalancing planner for worker graceful draining (spec 019f).
+ *
+ * @param {Object} params
+ * @param {string} params.drainingNodeId - The node ID of the worker process being drained (e.g. "node-0").
+ * @param {RoomRegistry} params.registry - The current room presence registry.
+ * @param {Array<string>} params.activeNodeIds - The array of all active worker node IDs (e.g. ["node-0", "node-1"]).
+ * @returns {Array<{ roomId: string, fromNode: string, toNode: string }>} The list of planned transfers.
+ */
+export function planDrain({ drainingNodeId, registry, activeNodeIds }) {
+  const transfers = [];
+  const rooms = registry.roomsForNode(drainingNodeId);
+
+  // Filter out the draining node to find viable target nodes
+  const targets = activeNodeIds.filter((id) => id !== drainingNodeId);
+  if (targets.length === 0) {
+    // No other nodes to transfer to!
+    return [];
+  }
+
+  // Deterministically assign each room to a target node
+  for (const roomId of rooms) {
+    const idx = assignShard(roomId, targets.length);
+    const toNode = targets[idx];
+    transfers.push({
+      roomId,
+      fromNode: drainingNodeId,
+      toNode,
+    });
+  }
+
+  return transfers;
+}

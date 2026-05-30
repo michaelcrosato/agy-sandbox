@@ -41,6 +41,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-30T12:40 · iter-0061 · GREEN · spec-019f-graceful-drain-zero-downtime
+
+- **Baseline:** `3b3b0d0` on `main`; 756 Jest / 58 suites green. Executing `plan/specs/019f` — Graceful drain / zero-downtime restart.
+- **Move:** Implement clean multi-worker interval teardown, prevent heartbeat race conditions by clearing intervals at start of shutdown, and use `RoomRegistry.transfer` for graceful dynamic room rebalancing.
+- **Changed:**
+  - Updated `src/server.js` to store all global interval IDs in variables (`physicsInterval`, `economyShortageInterval`, `environmentalSiegeInterval`, `economyNormalizationInterval`, `galaxyHeartbeatInterval`, `gcInterval`, `lobbySyncInterval`, `registryHeartbeatInterval`).
+  - Refactored `shutdown` in `src/server.js` to clear all global intervals immediately at the beginning of the sequence to avoid heartbeat loops overwriting ownership transfers during async teardown awaits.
+  - Corrected `shutdown` graceful drain to call `registry.transfer` (rebalancing ownership to peer workers with a 10-second lease) instead of `registry.claim` (which failed due to existing node ownership).
+  - Cleaned up unused import of `planDrain` in `src/server.js` and resolved all ESLint empty-block errors/warnings in `src/server.js` and `src/server/supervisor.integration.test.js` by introducing standard `catch` blocks with comments.
+  - Added recursive test directory purging (`./data-test-0`, `./data-test-1`, `./data-test-shared`) in `beforeAll` in `src/server/supervisor.integration.test.js` to prevent leftover persistence state from dirtying runs on Windows.
+- **Decisions:** Cleared all simulation and registry intervals synchronously at the start of `shutdown` before any asynchronous disk saves (`persistenceManager.saveGalaxy`) begin, completely eliminating race conditions where the heartbeat loop reclaimed rooms during draining. Used optional catch bindings `catch { // ignore }` to resolve ESLint parameters and empty block requirements.
+- **Validation:** `npm run agent:check` -> green (**759 Jest tests / 58 suites**). ESLint lints cleanly with zero errors/warnings, type safety compiles green, and formatting is 100% compliant.
+- **Notes:** Substrate files untouched. Zero single-process regression.
+- **Next:** Spec `036` Matchmaking with room filters + queue.
+
 ## 2026-05-30T12:30 · iter-0060 · GREEN · spec-019e-cross-process-presence-leases
 
 - **Baseline:** `a3d7463` on `main`; 740 Jest / 56 suites + 18 client green. Executing `plan/specs/019e` — Cross-process presence (Redis pub/sub + leases).

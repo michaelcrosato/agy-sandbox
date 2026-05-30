@@ -1,5 +1,6 @@
 import { Worker } from "worker_threads";
 import WebSocket from "ws";
+import fs from "fs";
 import { assignShard } from "../net/roomRouter.js";
 
 describe("Supervisor process model integration (spec 019c)", () => {
@@ -9,6 +10,19 @@ describe("Supervisor process model integration (spec 019c)", () => {
   const port1 = 18083;
 
   beforeAll(async () => {
+    // Purge test directories to avoid leftover registry or sector files dirtying the state (spec 019f)
+    for (const dir of [
+      "./data-test-0",
+      "./data-test-1",
+      "./data-test-shared",
+    ]) {
+      try {
+        fs.rmSync(dir, { recursive: true, force: true });
+      } catch {
+        // ignore
+      }
+    }
+
     // Boot Worker 0 on port0 (Shard index 0, Shard count 2)
     worker0 = new Worker(new URL("../server.js", import.meta.url), {
       env: {
@@ -16,7 +30,7 @@ describe("Supervisor process model integration (spec 019c)", () => {
         PORT: String(port0),
         SHARD_INDEX: "0",
         WORKERS: "2",
-        PERSISTENCE_DIR: "./data-test-0",
+        PERSISTENCE_DIR: "./data-test-shared",
       },
     });
 
@@ -27,7 +41,7 @@ describe("Supervisor process model integration (spec 019c)", () => {
         PORT: String(port1),
         SHARD_INDEX: "1",
         WORKERS: "2",
-        PERSISTENCE_DIR: "./data-test-1",
+        PERSISTENCE_DIR: "./data-test-shared",
       },
     });
 
@@ -65,11 +79,15 @@ describe("Supervisor process model integration (spec 019c)", () => {
       });
 
       wsNonOwner.on("message", (data) => {
-        const msg = JSON.parse(data.toString());
-        if (msg.type === "notification" && msg.style === "error") {
-          clearTimeout(timeout);
-          resolve(msg);
-          wsNonOwner.close();
+        try {
+          const msg = JSON.parse(data.toString());
+          if (msg.type === "notification" && msg.style === "error") {
+            clearTimeout(timeout);
+            resolve(msg);
+            wsNonOwner.close();
+          }
+        } catch {
+          // ignore
         }
       });
 
@@ -100,11 +118,15 @@ describe("Supervisor process model integration (spec 019c)", () => {
       });
 
       wsOwner.on("message", (data) => {
-        const msg = JSON.parse(data.toString());
-        if (msg.type === "init") {
-          clearTimeout(timeout);
-          resolve(msg);
-          wsOwner.close();
+        try {
+          const msg = JSON.parse(data.toString());
+          if (msg.type === "init") {
+            clearTimeout(timeout);
+            resolve(msg);
+            wsOwner.close();
+          }
+        } catch {
+          // ignore
         }
       });
 
@@ -148,11 +170,15 @@ describe("Supervisor process model integration (spec 019c)", () => {
       });
 
       wsFail.on("message", (data) => {
-        const msg = JSON.parse(data.toString());
-        if (msg.type === "notification" && msg.style === "error") {
-          clearTimeout(timeout);
-          resolve(msg);
-          wsFail.close();
+        try {
+          const msg = JSON.parse(data.toString());
+          if (msg.type === "notification" && msg.style === "error") {
+            clearTimeout(timeout);
+            resolve(msg);
+            wsFail.close();
+          }
+        } catch {
+          // ignore
         }
       });
 
@@ -182,11 +208,15 @@ describe("Supervisor process model integration (spec 019c)", () => {
       });
 
       wsSuccess.on("message", (data) => {
-        const msg = JSON.parse(data.toString());
-        if (msg.type === "init") {
-          clearTimeout(timeout);
-          resolve(msg);
-          wsSuccess.close();
+        try {
+          const msg = JSON.parse(data.toString());
+          if (msg.type === "init") {
+            clearTimeout(timeout);
+            resolve(msg);
+            wsSuccess.close();
+          }
+        } catch {
+          // ignore
         }
       });
 
@@ -197,4 +227,106 @@ describe("Supervisor process model integration (spec 019c)", () => {
     });
     expect(okRes.roomId).toBe(roomForShard0);
   });
+
+  test("asserts a worker gracefully drains its sectors to a peer on shutdown", async () => {
+    // 1. We determine which room hashes to Shard 0. We know "room-98" (roomForShard0) hashes to 0.
+    const testRoom = "room-98";
+
+    // 2. Connect a client to Worker 0 (port0), dynamically creating and joining room-98.
+    const wsClient = new WebSocket(`ws://localhost:${port0}`);
+    const initRes = await new Promise((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error("Timeout joining room")),
+        4000,
+      );
+      wsClient.on("open", () => {
+        wsClient.send(
+          JSON.stringify({
+            type: "join_room",
+            roomId: testRoom,
+            nickname: "Drainee",
+          }),
+        );
+      });
+      wsClient.on("message", (data) => {
+        try {
+          const msg = JSON.parse(data.toString());
+          if (msg.type === "init") {
+            clearTimeout(timeout);
+            resolve(msg);
+          }
+        } catch {
+          // ignore
+        }
+      });
+      wsClient.on("error", (err) => {
+        clearTimeout(timeout);
+        reject(err);
+      });
+    });
+    expect(initRes.roomId).toBe(testRoom);
+
+    // 3. We trigger a graceful shutdown on Worker 0 by posting "shutdown" message
+    worker0.postMessage("shutdown");
+
+    // 4. We listen for a "reconnect" signal from Worker 0
+    const reconnectMsg = await new Promise((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error("Timeout waiting for reconnect signal")),
+        4000,
+      );
+      wsClient.on("message", (data) => {
+        try {
+          const msg = JSON.parse(data.toString());
+          if (msg.type === "reconnect") {
+            clearTimeout(timeout);
+            resolve(msg);
+          }
+        } catch {
+          // ignore
+        }
+      });
+    });
+    expect(reconnectMsg.type).toBe("reconnect");
+    wsClient.close();
+
+    // Give the worker time to persist the galaxy state to disk and transfer the registry ownership
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    // 5. Try to join testRoom on Worker 1 (port1). Since Worker 0 has shut down and transferred the room,
+    // Worker 1 should now host the dynamically transferred room and load its persisted state!
+    const wsClientPeer = new WebSocket(`ws://localhost:${port1}`);
+    const peerRes = await new Promise((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error("Timeout joining transferred room on peer")),
+        4000,
+      );
+      wsClientPeer.on("open", () => {
+        wsClientPeer.send(
+          JSON.stringify({
+            type: "join_room",
+            roomId: testRoom,
+            nickname: "DraineePeer",
+          }),
+        );
+      });
+      wsClientPeer.on("message", (data) => {
+        try {
+          const msg = JSON.parse(data.toString());
+          if (msg.type === "init") {
+            clearTimeout(timeout);
+            resolve(msg);
+            wsClientPeer.close();
+          }
+        } catch {
+          // ignore
+        }
+      });
+      wsClientPeer.on("error", (err) => {
+        clearTimeout(timeout);
+        reject(err);
+      });
+    });
+    expect(peerRes.roomId).toBe(testRoom);
+  }, 10000);
 });

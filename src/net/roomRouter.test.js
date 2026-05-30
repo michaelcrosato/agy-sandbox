@@ -3,6 +3,7 @@ import {
   hashString,
   RoomRegistry,
   routeConnection,
+  planDrain,
 } from "./roomRouter.js";
 
 describe("assignShard (spec 019 router)", () => {
@@ -181,5 +182,46 @@ describe("RoomRegistry lease/TTL capabilities (spec 019e)", () => {
     expect(restored.owner("room-A")).toBe("node-1");
     expect(restored.owner("room-B")).toBe("node-2");
     expect(restored.isOwned("room-A", 2500)).toBe(false); // check dynamic expiry works after restore!
+  });
+});
+
+describe("planDrain stateless rebalancing (spec 019f)", () => {
+  test("plans transfers of all rooms owned by draining node to active peers", () => {
+    const reg = new RoomRegistry();
+    reg.claim("room-A", "node-0");
+    reg.claim("room-B", "node-0");
+    reg.claim("room-C", "node-1"); // shouldn't move, hosted on peer node-1
+
+    const transfers = planDrain({
+      drainingNodeId: "node-0",
+      registry: reg,
+      activeNodeIds: ["node-0", "node-1", "node-2"],
+    });
+
+    // Transfers should move room-A and room-B to either node-1 or node-2
+    expect(transfers).toHaveLength(2);
+    expect(transfers[0].fromNode).toBe("node-0");
+    expect(["node-1", "node-2"]).toContain(transfers[0].toNode);
+    expect(transfers[1].fromNode).toBe("node-0");
+    expect(["node-1", "node-2"]).toContain(transfers[1].toNode);
+
+    // Assert that the room C remains untouched on node-1
+    const movingRoomIds = transfers.map((t) => t.roomId);
+    expect(movingRoomIds).toContain("room-A");
+    expect(movingRoomIds).toContain("room-B");
+    expect(movingRoomIds).not.toContain("room-C");
+  });
+
+  test("returns empty list if there are no peer targets", () => {
+    const reg = new RoomRegistry();
+    reg.claim("room-A", "node-0");
+
+    const transfers = planDrain({
+      drainingNodeId: "node-0",
+      registry: reg,
+      activeNodeIds: ["node-0"],
+    });
+
+    expect(transfers).toEqual([]);
   });
 });

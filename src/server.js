@@ -40,7 +40,11 @@ import { DEFAULT_OUTFITS } from "./engine/outfitCatalog.js";
 import { tradeOne, applyHullPurchase, factionPrice } from "./engine/Trading.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import { shouldGcRoom, sanitizeNickname } from "./server/roomLifecycle.js";
-import { assignShard, RoomRegistry } from "./net/roomRouter.js";
+import {
+  assignShard,
+  RoomRegistry,
+  routeConnection,
+} from "./net/roomRouter.js";
 
 const JUMP_FUEL_COST = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost;
 
@@ -173,7 +177,7 @@ const TICK_RATE = 30;
 const dt = 1 / TICK_RATE;
 
 // 1. Authoritative Room Physics Updates Loop (30Hz)
-setInterval(() => {
+const physicsInterval = setInterval(() => {
   const now = Date.now();
   for (const room of instances.values()) {
     if (room.clients.size > 0) {
@@ -414,21 +418,21 @@ setInterval(() => {
 }, 1000 / TICK_RATE);
 
 // 2. Room Economy Shortage/Surplus events loops (45 seconds)
-setInterval(() => {
+const economyShortageInterval = setInterval(() => {
   for (const room of instances.values()) {
     runEconomyTickForRoom(room);
   }
 }, 45000);
 
 // 3. Room Environmental Siege/EMP events loops (90 seconds)
-setInterval(() => {
+const environmentalSiegeInterval = setInterval(() => {
   for (const room of instances.values()) {
     runSectorEventTickForRoom(room);
   }
 }, 90000);
 
 // 4. Room Economy Normalization drift loops (6 seconds)
-setInterval(() => {
+const economyNormalizationInterval = setInterval(() => {
   for (const room of instances.values()) {
     runEconomyNormalizationForRoom(room);
   }
@@ -436,7 +440,7 @@ setInterval(() => {
 
 // 4b. Galaxy Heartbeat: age the economy and diffuse prices across trade lanes
 // even when nobody is in the sector (8 seconds).
-setInterval(() => {
+const galaxyHeartbeatInterval = setInterval(() => {
   for (const room of instances.values()) {
     const changedNames = room.galaxyHeartbeat.pulse();
     // spec 029: heal reputations a little each heartbeat so standings drift back
@@ -469,15 +473,26 @@ async function loadRegistry() {
 }
 
 async function saveRegistry(registry) {
-  try {
-    await storeInstance.save(REGISTRY_KEY, registry.serialize());
-  } catch (err) {
-    console.error(`⚠️ Failed to save RoomRegistry to store: ${err.message}`);
+  let attempts = 0;
+  while (attempts < 5) {
+    try {
+      await storeInstance.save(REGISTRY_KEY, registry.serialize());
+      return;
+    } catch (err) {
+      attempts++;
+      if (attempts >= 5) {
+        console.error(
+          `⚠️ Failed to save RoomRegistry to store after 5 attempts: ${err.message}`,
+        );
+      } else {
+        await new Promise((resolve) => setTimeout(resolve, 50 * attempts));
+      }
+    }
   }
 }
 
 // 5. Inactive Custom Rooms Garbage Collection (10 seconds)
-setInterval(() => {
+const gcInterval = setInterval(() => {
   const now = Date.now();
   for (const [id, room] of instances.entries()) {
     if (shouldGcRoom(room, { now })) {
@@ -501,13 +516,14 @@ setInterval(() => {
 }, 10000);
 
 // 6. Periodic Lobby Sync Refresh for clients still on the lobby screen (5 seconds)
-setInterval(() => {
+const lobbySyncInterval = setInterval(() => {
   broadcastLobbySync();
 }, 5000);
 
 // 7. Periodic Multi-worker Room Registry Heartbeat, Lease Renewal & Reaping Loop (4 seconds)
+let registryHeartbeatInterval = null;
 if (WORKERS > 1) {
-  setInterval(async () => {
+  registryHeartbeatInterval = setInterval(async () => {
     const now = Date.now();
     const registry = await loadRegistry();
 
@@ -778,7 +794,7 @@ function sendLobbyList(clientObj) {
   });
 }
 
-function joinRoom(clientObj, roomId, nickname) {
+async function joinRoom(clientObj, roomId, nickname) {
   // 1. Clean up from previous room if switching
   if (clientObj.roomId) {
     const prevRoom = instances.get(clientObj.roomId);
@@ -823,17 +839,40 @@ function joinRoom(clientObj, roomId, nickname) {
 
   let room = instances.get(roomId);
   if (!room && WORKERS > 1 && roomId) {
-    if (assignShard(roomId, WORKERS) === SHARD_INDEX) {
+    const registry = await loadRegistry();
+    const ownerNodeId = routeConnection({
+      roomId,
+      registry,
+      shardCount: WORKERS,
+    });
+    console.log(
+      `[DEBUG] Shard ${SHARD_INDEX} check for ${roomId}: ownerNodeId=${ownerNodeId}, registry=${JSON.stringify(registry.serialize())}`,
+    );
+    if (ownerNodeId === `node-${SHARD_INDEX}`) {
       room = new GameInstance(roomId, `Sector ${roomId}`);
       instances.set(roomId, room);
       console.log(
         `🌌 Dynamically instantiated custom sector on owning shard: [${room.name}] (${roomId})`,
       );
+
+      // Restore any saved dynamic room galaxy state from store
+      try {
+        const snapshot = await persistenceManager.loadGalaxy(roomId);
+        if (snapshot) {
+          applyGalaxy(room, snapshot);
+          console.log(
+            `💾 Restored galaxy state for dynamic sector [${room.name}]`,
+          );
+        }
+      } catch (err) {
+        console.error(
+          `⚠️ Failed to restore dynamic room galaxy: ${err.message}`,
+        );
+      }
+
       // Claim immediately inside the shared RoomRegistry presence
-      loadRegistry().then((reg) => {
-        reg.claim(roomId, `node-${SHARD_INDEX}`, Date.now() + 10000);
-        saveRegistry(reg);
-      });
+      registry.claim(roomId, `node-${SHARD_INDEX}`, Date.now() + 10000);
+      await saveRegistry(registry);
     } else {
       clientObj.send({
         type: "notification",
@@ -1994,6 +2033,81 @@ let activeTunnel = null;
 const shutdown = async () => {
   console.log("\n🔌 Shutting down server gracefully...");
 
+  // Clear all heartbeat and simulation intervals immediately to prevent race conditions during teardown (spec 019f)
+  clearInterval(physicsInterval);
+  clearInterval(economyShortageInterval);
+  clearInterval(environmentalSiegeInterval);
+  clearInterval(economyNormalizationInterval);
+  clearInterval(galaxyHeartbeatInterval);
+  clearInterval(gcInterval);
+  clearInterval(lobbySyncInterval);
+  if (registryHeartbeatInterval) {
+    clearInterval(registryHeartbeatInterval);
+  }
+  clearInterval(heartbeatInterval);
+
+  // Graceful Drain (spec 019f)
+  if (WORKERS > 1) {
+    console.log(
+      "🌊 Gracefully draining worker presence and transferring rooms...",
+    );
+    try {
+      const registry = await loadRegistry();
+      const activeNodes = [];
+      for (let i = 0; i < WORKERS; i++) {
+        activeNodes.push(`node-${i}`);
+      }
+      const drainingNodeId = `node-${SHARD_INDEX}`;
+      const targets = activeNodes.filter((id) => id !== drainingNodeId);
+
+      if (targets.length > 0) {
+        const rooms = Array.from(instances.keys());
+        if (rooms.length > 0) {
+          console.log(
+            `🌊 Graceful drain: transferring ${rooms.length} room(s) to peers.`,
+          );
+          for (const roomId of rooms) {
+            const idx = assignShard(roomId, targets.length);
+            const toNode = targets[idx];
+            const room = instances.get(roomId);
+            if (room) {
+              // 1. Save room galaxy state
+              await persistenceManager.saveGalaxy(roomId, room);
+
+              // 2. Transfer registry ownership with a 10s lease
+              registry.transfer(
+                roomId,
+                drainingNodeId,
+                toNode,
+                Date.now() + 10000,
+              );
+
+              // 3. Notify clients in this room to reconnect
+              for (const client of room.clients.values()) {
+                client.send({
+                  type: "reconnect",
+                  message:
+                    "Server is restarting, reconnecting to new sector host...",
+                });
+                // Forcefully close the connection shortly after to trigger reconnect
+                setTimeout(() => {
+                  try {
+                    client.ws.close();
+                  } catch (_) {
+                    // Ignore socket close errors
+                  }
+                }, 100);
+              }
+            }
+          }
+          await saveRegistry(registry);
+        }
+      }
+    } catch (err) {
+      console.error(`⚠️ Graceful drain failed: ${err.message}`);
+    }
+  }
+
   // Snapshot the world (and every connected pilot) to disk before tearing
   // down. The manager swallows errors so a flaky filesystem still lets us
   // proceed with the WS/HTTP teardown.
@@ -2028,7 +2142,6 @@ const shutdown = async () => {
       console.error("Error closing localtunnel:", e.message);
     }
   }
-  clearInterval(heartbeatInterval);
   wss.close(() => {
     console.log("🛑 WebSocket server closed.");
     server.close(() => {
@@ -2046,6 +2159,18 @@ const shutdown = async () => {
 
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
+
+import("worker_threads")
+  .then(({ parentPort }) => {
+    if (parentPort) {
+      parentPort.on("message", (msg) => {
+        if (msg === "shutdown") {
+          shutdown();
+        }
+      });
+    }
+  })
+  .catch(() => {});
 
 /**
  * Parameterized server startup (spec 019c).

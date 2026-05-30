@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-30T01:40 · iter-0050 · GREEN · spec-014-interest-management
+
+- **Baseline:** `f133d93` on `main`; 661 tests / 47 suites green. The world-state broadcast sent **every entity to every client** each tick (one frame, room-wide baseline). Executing `plan/specs/014` (Phase 2, netcode / GOAL P7).
+- **Move:** Add area-of-interest filtering so a client only receives entities near its ship — bandwidth scales with what a player can see, not room size.
+- **Changed:** New pure `src/net/interest.js` — `interestFilter(entities, viewer, { radius, alwaysIncludeId, alwaysIncludeIds })` keeps entities within a radius of the viewer plus always-included ids (the viewer's own ship; caller-supplied ids like a locked target); fail-open for an invalid viewer, order-preserving, no mutation. Reworked the `server.js` broadcast loop from one-frame-for-all to **per-client**: serialize the room's entities once, then for each client AOI-filter against its ship position and frame via `BroadcastFramer.nextFrame` against that client's **own** keyframe/delta baseline (`client.broadcastState`, replacing the room-wide `room.broadcastState`). The baseline advances **only on a successful send**, so a backpressure-skipped client's next delta is computed against the state it actually holds — no desync. `joinRoom` seeds the per-client baseline. Entities entering/leaving the AOI become natural add/remove deltas via `StateCodec`, so nothing lingers client-side. `INTEREST_MANAGEMENT=0` restores send-all; `INTEREST_RADIUS` tunes range (default 3000). +9 tests (`interest.test.js`), incl. the DoD 50-entity/8-viewer bandwidth-reduction harness.
+- **Decisions:** Did 014 before its recommended-blocker `015` (binary protocol) — the filter operates on the JSON frame and is independent; binary will compound later. Accepted the documented tradeoff that framing moves from O(clients) to O(clients·entities) per tick (the spec calls this out); the bandwidth/CPU win on the client + socket layer dominates for spread-out rooms. The "always include the viewer's own ship" is wired; richer always-include (combat targets) is a follow-up. Could not headlessly verify the browser **render**, so validated the data path with a live `ws` smoke instead.
+- **Validation:** `npm run agent:check` → green (prettier + eslint + typecheck (server.js in scope) + **670 tests / 48 suites**). Live integration smoke: booted `PORT=18080 node src/server.js`, connected a real `ws` client → received `init` + `state_snapshot` (40 in-AOI entities, i.e. a filtered subset of the ~50+ room entities) + `state_delta` (exit 0). `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 014 done. The temp ws smoke client was removed; tree clean.
+- **Next:** Continue Phase 2 — `plan/specs/015` (binary wire protocol; compounds with 014) and the `019` horizontal-scaling epic.
+
 ## 2026-05-30T01:05 · iter-0049 · GREEN · spec-018-production-chains-ore
 
 - **Baseline:** `d3afa74` on `main`; 657 tests / 47 suites green. The economy had producer/consumer pulses but **no multi-stage chains** and no raw `ore` (mining yielded `minerals` directly). Executing `plan/specs/018` (Phase 2, GOAL P2).

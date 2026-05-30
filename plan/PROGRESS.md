@@ -23,7 +23,18 @@ _**v16 re-audit baseline (2026-05-30, ENTIRE v15 blueprint shipped): 904 Jest te
 _**v17 re-audit baseline (2026-05-30, ENTIRE v16 blueprint shipped): 909 Jest tests / 73 suites + 28 client green; 0 npm audit vulnerabilities; spaceport ore refining + reputation decay heartbeat hook + wingman FSM intercept and telemetry panel HUD all DONE.**_
 _**v18 re-audit baseline (2026-05-30, ENTIRE v17 blueprint shipped): 912 Jest tests / 73 suites + 30 client green; 0 npm audit vulnerabilities; tractor outfit mass + black market spaceports + standing-aware trade advisor HUD all DONE.**_
 
-## v18 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
+## v19 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Quick Wins & Safety
+- [x] `087` dynamic trade profit metric in AI perception (calculate price spreads across docked ports in sector, apply standings discounts, and feed normalized profitability score directly to buildPerception's tradeProfit perception value) — **done** (files: `src/engine/ai/buildPerception.js`, `src/engine/ai/buildPerception.test.js`, `src/engine/GameInstance.js`, `src/engine/ai/AIController.js`; implemented standings-aware, black-market and transaction-tax aware dynamic price spread calculations, factoring them into NPC merchant profit scoring and updating AIController initialization/update routes; 917 Jest tests green)
+
+### Phase 1 — Core Upgrades & Feature Delivery
+- [ ] `086` NPC smuggler fleets & underworld trader AI (design smuggler merchant AI loading contraband cargo, pathing through outlaw ports, and activating decoy radar jammers to escape security space patrols)
+
+### Phase 2 — System Architecture
+- [ ] `088` stargate navigation NAV-computer overlay (construct slide-out gold glassmorphic HUD nav-computer card, calculate shortest path BFS gate routes to hud target sector, and draw neon-purple holographic visual gates brackets)
+
+## v18 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
 - [x] `083` client-side entity interpolation & remote ship smoothing (implement smooth LERP/SLERP interpolation buffer caching for remote entities inside CanvasRenderer to eliminate movement stuttering) — **done** (files: `src/client/Interpolator.js`, `src/client/__tests__/Interpolator.test.js`, `src/main.js`; designed rolling history buffers with short-arc angular LERP/LERP calculations, capped extrapolation to prevent drift, wired pushing to `EntityInterpolator` on server snapshot receipts in `syncEntitiesFromServer`, cleared on warp/initialization, pruned stale entries in `gameLoop`, and wrapped drawing with smooth interpolated position/heading mappings and restorations; 54 Vitest client tests and 3 Vitest browser tests pass 100% green)

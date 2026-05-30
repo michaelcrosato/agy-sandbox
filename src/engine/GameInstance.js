@@ -377,6 +377,9 @@ export class GameInstance {
       mShip.faction = "Independents";
       const controller = new AIController(mShip, "merchant", {
         useUtilityAdvisor: true,
+        factionPolicy: this.factionRegistry.factionPolicy(),
+        standingPolicy: this.factionRegistry.standingPolicy(),
+        factionRegistry: this.factionRegistry,
       });
       this.engine.addEntity(mShip);
       this.ais.push(controller);
@@ -423,6 +426,7 @@ export class GameInstance {
         useUtilityAdvisor: true,
         factionPolicy: this.factionRegistry.factionPolicy(),
         standingPolicy: this.factionRegistry.standingPolicy(),
+        factionRegistry: this.factionRegistry,
       });
       this.engine.addEntity(gShip);
       this.ais.push(controller);
@@ -574,6 +578,8 @@ export class GameInstance {
     const controller = new AIController(pShip, "pirate", {
       useUtilityAdvisor: true,
       factionPolicy: this.factionRegistry.factionPolicy(),
+      standingPolicy: this.factionRegistry.standingPolicy(),
+      factionRegistry: this.factionRegistry,
     });
     this.engine.addEntity(pShip);
     this.ais.push(controller);
@@ -638,6 +644,7 @@ export class GameInstance {
           useUtilityAdvisor: true,
           factionPolicy: this.factionRegistry.factionPolicy(),
           standingPolicy: this.factionRegistry.standingPolicy(),
+          factionRegistry: this.factionRegistry,
         });
         this.engine.addEntity(gShip);
         this.ais.push(controller);
@@ -663,6 +670,9 @@ export class GameInstance {
         mShip.faction = "Independents";
         const controller = new AIController(mShip, "merchant", {
           useUtilityAdvisor: true,
+          factionPolicy: this.factionRegistry.factionPolicy(),
+          standingPolicy: this.factionRegistry.standingPolicy(),
+          factionRegistry: this.factionRegistry,
         });
         this.engine.addEntity(mShip);
         this.ais.push(controller);
@@ -1335,6 +1345,7 @@ export class GameInstance {
       useUtilityAdvisor: true,
       factionPolicy: this.factionRegistry.factionPolicy(),
       standingPolicy: this.factionRegistry.standingPolicy(),
+      factionRegistry: this.factionRegistry,
     });
 
     // Make the patrol aggressively target the hostile player ship
@@ -1427,6 +1438,7 @@ export class GameInstance {
       useUtilityAdvisor: true,
       factionPolicy: this.factionRegistry.factionPolicy(),
       standingPolicy: this.factionRegistry.standingPolicy(),
+      factionRegistry: this.factionRegistry,
     });
     controller.target = playerShip;
 
@@ -1500,6 +1512,7 @@ export class GameInstance {
         useUtilityAdvisor: true,
         factionPolicy: this.factionRegistry.factionPolicy(),
         standingPolicy: this.factionRegistry.standingPolicy(),
+        factionRegistry: this.factionRegistry,
       });
       controller.target = transport; // Target the fragile transport!
 
@@ -1672,6 +1685,7 @@ export class GameInstance {
         useUtilityAdvisor: true,
         factionPolicy: this.factionRegistry.factionPolicy(),
         standingPolicy: this.factionRegistry.standingPolicy(),
+        factionRegistry: this.factionRegistry,
       });
       controller.isConflictZone = true;
       controller.conflictFactionA = factionA;
@@ -1698,6 +1712,7 @@ export class GameInstance {
         useUtilityAdvisor: true,
         factionPolicy: this.factionRegistry.factionPolicy(),
         standingPolicy: this.factionRegistry.standingPolicy(),
+        factionRegistry: this.factionRegistry,
       });
       controller.isConflictZone = true;
       controller.conflictFactionA = factionA;

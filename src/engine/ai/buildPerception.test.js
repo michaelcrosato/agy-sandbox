@@ -151,3 +151,94 @@ describe("buildPerception → selectGoal integration (the showcase)", () => {
     expect(danger.goal).toBe(Goals.FLEE);
   });
 });
+
+describe("buildPerception — SPEC-087 Standings-Aware Dynamic Trade Profit spreads", () => {
+  it("factors FactionRegistry price modifiers, taxes, and black market premiums into dynamic spreads", () => {
+    const mockRegistry = {
+      priceModifier(playerId, faction, mode) {
+        if (faction === "Allies") {
+          return mode === "buy" ? 0.8 : 1.2;
+        }
+        if (faction === "Enemies") {
+          return mode === "buy" ? 1.3 : 0.7;
+        }
+        return 1.0;
+      },
+      getStanding(playerId, faction) {
+        if (faction === "Allies") return 80;
+        if (faction === "Enemies") return -50;
+        return 0;
+      },
+    };
+
+    const originPlanet = planet({
+      name: "Sol Prime",
+      faction: "Allies",
+      market: { food: 100 },
+    });
+
+    const destPlanet = planet({
+      id: "pl2",
+      name: "Draconis",
+      faction: "Enemies",
+      market: { food: 200 },
+    });
+
+    // Case A: Default calculation without faction registry (flat absolute price difference)
+    // maxSpread = |200 - 100| = 100.
+    const pNormal = buildPerception(ship(), [originPlanet, destPlanet]);
+    const scoreNormal = pNormal.opportunities.trades[0].profit;
+
+    // Case B: With faction registry (standings-aware)
+    // buyPrice at Allies: 100 * 0.8 = 80
+    // sellPrice at Enemies: 200 * 0.7 = 140
+    // Enemies tax rate: standing is -50 <= -16, so 15% transaction tax applies.
+    // sellPrice net: 140 * 0.85 = 119
+    // maxSpread = 119 - 80 = 39.
+    // Since 39 < 100, the margin is smaller, so the score should be lower than Case A!
+    const pRegistry = buildPerception(
+      ship({ id: "s1" }),
+      [originPlanet, destPlanet],
+      {
+        factionRegistry: mockRegistry,
+      },
+    );
+    const scoreRegistry = pRegistry.opportunities.trades[0].profit;
+    expect(scoreRegistry).toBeLessThan(scoreNormal);
+
+    // Case C: Contraband at Black Market premium (1.5x)
+    const blackMarketPlanet = planet({
+      id: "pl3",
+      name: "Rogue's Hollow",
+      faction: "Independents",
+      services: { blackMarket: true },
+      market: { contraband: 200 },
+    });
+
+    const originContraband = planet({
+      name: "Kaelis",
+      faction: "Independents",
+      market: { contraband: 50 },
+    });
+
+    // Without black market premium: spread = 200 - 50 = 150
+    const pNoPremium = buildPerception(ship(), [
+      originContraband,
+      planet({
+        id: "pl4",
+        faction: "Independents",
+        market: { contraband: 200 },
+      }),
+    ]);
+    const scoreNoPremium = pNoPremium.opportunities.trades[0].profit;
+
+    // With black market premium: sellPrice = 200 * 1.5 = 300. spread = 300 - 50 = 250!
+    // Since spread is larger, tradeProfit should be higher!
+    const pPremium = buildPerception(ship(), [
+      originContraband,
+      blackMarketPlanet,
+    ]);
+    const scorePremium = pPremium.opportunities.trades[0].profit;
+    expect(scorePremium).toBeGreaterThan(scoreNoPremium);
+  });
+});

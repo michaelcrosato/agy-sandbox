@@ -30,6 +30,7 @@ export class AIController {
     {
       factionPolicy = null,
       standingPolicy = null,
+      factionRegistry = null,
       useUtilityAdvisor = false,
       perceptionOptions = null,
     } = {},
@@ -40,6 +41,7 @@ export class AIController {
     // Per-player standing view (spec 016) — lets a guard target a player whose
     // standing with the guard's faction is hostile. Null ⇒ legacy targeting.
     this.standingPolicy = standingPolicy;
+    this.factionRegistry = factionRegistry;
     this.useUtilityAdvisor = useUtilityAdvisor;
     this.perceptionOptions = perceptionOptions;
 
@@ -119,6 +121,7 @@ export class AIController {
       const perception = buildPerception(this.ship, entities, {
         factionPolicy: this.factionPolicy,
         standingPolicy: this.standingPolicy,
+        factionRegistry: this.factionRegistry,
         isConflictZone: this.isConflictZone,
         conflictFactionA: this.conflictFactionA,
         conflictFactionB: this.conflictFactionB,

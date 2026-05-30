@@ -5,6 +5,11 @@ It records cycle transitions, key milestones, and precise next steps.
 
 ---
 
+## Cycle 19 — 2026-05-30
+- **Status:** GREEN
+- **Summary:** Transitioned to Cycle 19 Phase D (Execute) and completed SPEC-087 (Standings-Aware Dynamic Trade Profit AI Perception). Refactored `defaultTradeProfit` calculation to dynamically evaluate price spreads across docked ports in the sector, factoring in standings price modifiers (discounts/surcharges), black market premiums, and transaction taxes. Wired `factionRegistry` throughout `AIController` and `GameInstance` setups, and added comprehensive unit test suites. All 917 Jest tests are 100% green.
+- **Next Action:** Implement SPEC-086 (NPC Smuggler Fleets & Underworld Trader AI) with smuggling merchant FSM, security evasion, and decoy radar jammers.
+
 ## Cycle 18 — 2026-05-30
 - **Status:** GREEN
 - **Summary:** Transitioned to Cycle 18 Phase D (Execute) and successfully implemented SPEC-085 (Underworld Smuggling Contracts), SPEC-084 (Emergency Distress Beacons), and SPEC-083 (Client-Side Entity Interpolation). Designed the EntityInterpolator with ring history buffers, LERP/angular LERP calculations, capped extrapolation, and periodic pruning, wiring it seamlessly into syncEntitiesFromServer and gameLoop drawing overlays in main.js. Configured Rogue's Hollow smuggling boards and distress beacon server listener, spawning refuel tankers or pirate raiders dynamically based on standings. All 916 Jest + 54 Vitest client + 3 Vitest browser tests are 100% green.

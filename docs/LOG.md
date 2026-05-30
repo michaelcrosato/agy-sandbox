@@ -39,6 +39,18 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T22:40 · iter-0094 · GREEN · cycle-19-dynamic-trade-profit-perception
+- **Baseline:** `b1d0b43` on `feat/procedural-missions`; 912 Jest tests green.
+- **Move:** Implement standings-aware dynamic trade profit metric in AI perception (SPEC-087).
+- **Changed:**
+  - Refactored `defaultTradeProfit` in `src/engine/ai/buildPerception.js` to dynamically compute price spreads by factoring in standings price modifiers (buy/sell multipliers), black market premiums (1.5x for contraband), and transaction taxes.
+  - Updated `AIController` constructor and update methods to accept and pass `factionRegistry` to the perception phase.
+  - Wired `factionRegistry: this.factionRegistry` into all 10 `AIController` instantiations in `src/engine/GameInstance.js`.
+  - Added comprehensive unit tests in `src/engine/ai/buildPerception.test.js` validating modifiers, taxes, and black market pricing calculations.
+- **Decisions:** Integrated faction registry directly into perception options to keep AI FSM pure and testable, decoupling standing checks from global scope.
+- **Validation:** `npm run agent:check` -> green (all 917 Jest tests / 73 suites pass; ESLint, Prettier, checkJs green; client tests green).
+- **Next:** Proceed with implementing SPEC-086 (NPC Smuggler Fleets & Underworld Trader AI) and SPEC-088 (Stargate Navigation Overlay HUD).
+
 ## 2026-05-30T14:35 · iter-0093 · GREEN · cycle-18-client-side-entity-interpolation
 - **Baseline:** `49e61c4` on `feat/procedural-missions`; 916 Jest + 54 Vitest tests green.
 - **Move:** Implement client-side entity interpolation (SPEC-083) to smooth remote ship positions and heading rotations under network updates.

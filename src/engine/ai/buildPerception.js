@@ -204,6 +204,9 @@ export function defaultTradeProfit(ent, self, opts = {}) {
   );
   if (otherPlanets.length === 0) return 0.6;
 
+  const registry = opts.factionRegistry;
+  const shipId = self.id || "ship";
+
   const commodities = [
     "food",
     "electronics",
@@ -216,14 +219,64 @@ export function defaultTradeProfit(ent, self, opts = {}) {
   let maxSpread = 0;
 
   for (const item of commodities) {
-    const priceHere = ent.market[item];
-    if (typeof priceHere !== "number") continue;
+    const baseBuyPrice = ent.market[item];
+    if (typeof baseBuyPrice !== "number") continue;
+
+    // Apply standings price modifier on buy if registry is present
+    let buyPrice = baseBuyPrice;
+    if (
+      registry &&
+      ent.faction &&
+      typeof registry.priceModifier === "function"
+    ) {
+      const modifier = registry.priceModifier(shipId, ent.faction, "buy");
+      buyPrice = Math.max(1, Math.round(baseBuyPrice * modifier));
+    }
 
     for (const other of otherPlanets) {
-      const priceThere = other.market[item];
-      if (typeof priceThere !== "number") continue;
+      const baseSellPrice = other.market[item];
+      if (typeof baseSellPrice !== "number") continue;
 
-      const diff = Math.abs(priceHere - priceThere);
+      // Contraband 1.5x premium at black markets
+      let priceThere = baseSellPrice;
+      if (
+        item === "contraband" &&
+        other.services &&
+        other.services.blackMarket
+      ) {
+        priceThere = Math.round(baseSellPrice * 1.5);
+      }
+
+      // Apply standings price modifier on sell if registry is present
+      let sellPrice = priceThere;
+      if (
+        registry &&
+        other.faction &&
+        typeof registry.priceModifier === "function"
+      ) {
+        const modifier = registry.priceModifier(shipId, other.faction, "sell");
+        sellPrice = Math.max(1, Math.round(priceThere * modifier));
+      }
+
+      // Apply transaction tax rate deduction if registry is present
+      if (
+        registry &&
+        other.faction &&
+        typeof registry.getStanding === "function"
+      ) {
+        const standing = registry.getStanding(shipId, other.faction);
+        let taxRate = 0.05; // default neutral tax
+        if (other.faction === "Independents") {
+          taxRate = 0.0;
+        } else if (standing >= 50) {
+          taxRate = 0.0;
+        } else if (standing <= -16) {
+          taxRate = 0.15;
+        }
+        sellPrice = Math.max(1, Math.round(sellPrice * (1 - taxRate)));
+      }
+
+      const diff = sellPrice - buyPrice;
       if (diff > maxSpread) {
         maxSpread = diff;
       }

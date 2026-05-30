@@ -21,7 +21,7 @@ _**v10 re-audit baseline (2026-05-30, ENTIRE v9 blueprint shipped): 866 Jest tes
 - [x] `060` Factional Naval Mission Boards & Rank Campaigns (tie FactionRegistry standing progress with specialized rank-locked commendations, premium faction starships, and advanced weaponry) — **done** (files: `src/engine/Ship.js`, `src/engine/MissionManager.js`, `src/engine/PortServices.js`, `src/persistence/serializers.js`, `src/server.js`, `src/server/portHandlers.js`, `src/engine/faction.integration.test.js`; implemented player naval merit tracking and rank promotions triggered on completing high-reward faction campaign missions, enforced purchase unlocks on premium starships and weaponry based on explicit naval campaign ranks, integrated authoritative standing-restricted procedural mission board filtering, and verified the entire merit progression and acquisition lockout loop via comprehensive integration tests; 866 Jest tests 100% green).
 
 ### Phase 1 — Core Upgrades & Debt Paydown
-- [ ] `061` Dynamic Planetary Stock Caravans & Cargo Convoy AI (physical cargo transport AI fleets flying across sector warp gates to load and unload goods, modifying planetary stock levels dynamically upon arrival) — **todo**.
+- [~] `061` Dynamic Planetary Stock Caravans & Cargo Convoy AI (physical cargo transport AI fleets flying across sector warp gates to load and unload goods, modifying planetary stock levels dynamically upon arrival) — **in progress**.
 
 ### Phase 2 — Scale-Out & Premium Features
 - [ ] `062` High-Concurrency Multi-Worker Redis Cluster State Sync (fully wire supervisor processes and consistent load balancing to run clustered sharded Redis Pub/Sub networks behind a flag) — **todo**.

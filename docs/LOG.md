@@ -41,6 +41,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-30T11:54 · iter-0055 · GREEN · v3-phase1-core-upgrades-and-server-extraction
+
+- **Baseline:** `23302c1` on `main`; 705 Jest / 53 suites + 17 client green.
+- **Move:** Land specs `030`, `032`, `033`, and `034` covering engine JSDoc typechecking, standings consequences, UtilityAI advisor rollout, and server monolith extraction.
+- **Changed:**
+  - `030` Engine typechecking: Resolved JSDoc/type compilation errors across `src/engine` and `src/persistence` under `tsc --noEmit`, making the typecheck gate 100% green without using any `@ts-ignore` or `@ts-nocheck` comments.
+  - `032` Mission + Trade standings: Connected courier, smuggler, passenger, and bounty contract completions to the faction consequence pipeline to adjust player reputations authoritatively. Added +0.5 standings nudge per successful trade transaction.
+  - `033` UtilityAI advisor rollout: Enabled UtilityAI advisor on NPC spawn sites (raiders, dreadnoughts, bounty targets, hired escorts) and offline client pilots. Mapped `Goals.REGROUP` to retreat/recharge, `Goals.TRADE` to route and land at safe planets. Upgraded targeting to choose the highest-weakness target first.
+  - `034` server.js extraction: Extracted stargate warp jump validation to `Hyperdrive.js` and boarding/salvage/capture math to `Boarding.js`. Upgraded `Ship` constructor to accept an initial `outfits` array to fix modular boarding/salvaging test mocks.
+- **Decisions:** Restructured the `Ship` constructor to destructure and assign the initial `outfits` array (defaulting to `["Basic Laser"]`), solving the strict-mode/mock override issue in boarding integration tests. Retained simple, pure JS spy closures for ESM-friendly test environments, bypassing global jest mock binding issues.
+- **Validation:** `npm run agent:check` -> green (**720 Jest tests / 53 suites**). All tests passed, lints passed, typechecks passed, formats passed perfectly.
+- **Notes:** Substrate files untouched. No push/merge. Updated `plan/PROGRESS.md` to check off spec `034` as done.
+- **Next:** Spec `035` Client visual layer (Vitest Browser Mode + Playwright config).
+
 ## 2026-05-30T04:30 · iter-0054 · GREEN · v3-phase0-quick-wins-safety
 
 - **Baseline:** `e103964` on `main`; 696 Jest / 51 suites + 17 client green. Executing v3 **Phase 0** (`026`–`029`) — the quick-win safety + bug-fix wave from the re-audit blueprint.

@@ -28,7 +28,7 @@ v3 Phase 0 (026–029) + Phase 1 (030–035) + Phase 2 scale-out (019b–f, 036�
 - [x] `035` Client visual layer (Vitest Browser Mode + Playwright) — **done** (files: `package.json`, `package-lock.json`, `vitest.config.js`, new `vitest.browser.config.js`, new `src/client/__tests/CanvasRenderer.browser.test.js`, new `src/client/__tests/InputHandler.browser.test.js`; set up a dedicated browser testing configuration using Vitest Browser Mode and Playwright; implemented a deterministic visual-regression smoke test for `CanvasRenderer` and a comprehensive DOM event keyboard/blur test for `InputHandler`; all tests green).
 
 ### Phase 2 — Scale-Out & Competitive Features
-- [ ] `019b` RedisStore behind `Store` — _blocked by: none_
+- [x] `019b` RedisStore behind `Store` — **done** (files: `src/persistence/RedisStore.js`, `src/persistence/RedisStore.test.js`, `src/persistence/multinode.integration.test.js`; implemented the Store key-value contract subclassing `Store` to target a Redis client; verified all async round-trip and isolation capabilities against a fake in-memory client; refactored the multi-node integration suite to assert identical, seamless behavior on both `InMemoryStore` and `RedisStore` backends).
 - [ ] `019c` Worker process model — _blocked by: 019b (recommended)_
 - [ ] `019d` Sticky routing / LB front door — _blocked by: 019c (recommended)_
 - [ ] `019e` Cross-process presence (Redis pub/sub + leases) — _blocked by: 019b_

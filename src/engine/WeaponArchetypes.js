@@ -29,7 +29,7 @@
 /**
  * Stable identifiers for the four supported archetypes. Frozen so the
  * set is immutable and safe to use as object keys / switch cases.
- * @type {Readonly<{KINETIC: string, ENERGY: string, BEAM: string, MISSILE: string}>}
+ * @type {Readonly<{KINETIC: string, ENERGY: string, BEAM: string, MISSILE: string, FLAK: string}>}
  */
 export const WeaponArchetype = Object.freeze({
   KINETIC: "KINETIC",

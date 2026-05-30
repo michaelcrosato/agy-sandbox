@@ -31,7 +31,7 @@ modularization.** Remaining = Wave A (020–025) + Phase 2 (014–019)._
 - [ ] `021` Client test harness (Vitest Browser Mode / Playwright) — _blocked by: none_
 - [x] `022` CI Node LTS matrix (20/22/24) + version alignment — **done** (files: `.github/workflows/ci.yml` `strategy.matrix.node-version: [20,22,24]` + `${{ matrix.node-version }}`, `fail-fast: false`; `.nvmrc` → 22 (Maintenance LTS). Local gate green on Node 24; CI runs 20/22 on push.)
 - [x] `023` dotenv 16→17 bump — **done** (files: `package.json` dotenv ^17.4; `scripts/run-agent.js` `dotenv.config({ quiet: true })` to suppress the new v17 banner; no-key smoke clean; `npm outdated` now empty; audit 0)
-- [ ] `024` JSDoc typecheck gate (`tsc --noEmit` over checkJs) — _blocked by: none_
+- [x] `024` JSDoc typecheck gate (`tsc --noEmit` over checkJs) — **done** (files: `tsconfig.json` (checkJs, phase-1 scope = net/physics/server, green); `typescript`+`@types/node` devDeps; `typecheck` npm script now in `agent:check` + `ci.yml`; fixed a real stale `@type` in `WeaponArchetypes.js` (missing FLAK). Engine ratchet (~70 JSDoc findings) → BACKLOG.)
 - [x] `025` Continue server.js extraction (message handlers) — **done** (files: new `src/engine/Trading.js` (`tradeOne` + `applyHullPurchase`) + `.test.js` (9); `server.js` `trade` + `ship_buy` handlers route through them, behavior-identical, boots; server.js → 1938 LOC)
 
 ## Phase 2 — Major Features

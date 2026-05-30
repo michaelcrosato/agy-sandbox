@@ -1,3 +1,5 @@
+import { applyRefine, refineCost } from "../engine/PortServices.js";
+
 /**
  * Manages the interactive glassmorphic spaceport menu, handling trading, ship upgrades, and purchases.
  */
@@ -20,11 +22,13 @@ export class SpaceportUI {
     this.tabMissions = document.getElementById("tab-missions");
     this.tabOutfitter = document.getElementById("tab-outfitter");
     this.tabShipyard = document.getElementById("tab-shipyard");
+    this.tabRefinery = document.getElementById("tab-refinery");
 
     this.paneTrade = document.getElementById("pane-trade");
     this.paneMissions = document.getElementById("pane-missions");
     this.paneOutfitter = document.getElementById("pane-outfitter");
     this.paneShipyard = document.getElementById("pane-shipyard");
+    this.paneRefinery = document.getElementById("pane-refinery");
 
     this.btnLaunch = document.getElementById("btn-launch");
 
@@ -50,6 +54,9 @@ export class SpaceportUI {
     this.tabShipyard?.addEventListener("click", () =>
       this.switchTab("shipyard"),
     );
+    this.tabRefinery?.addEventListener("click", () =>
+      this.switchTab("refinery"),
+    );
 
     this.btnLaunch?.addEventListener("click", () => {
       if (window.network) {
@@ -65,21 +72,19 @@ export class SpaceportUI {
     });
   }
 
-  /**
-   * Changes the visible menu pane.
-   * @param {string} pane - "trade", "missions", "outfitter", or "shipyard".
-   */
   switchTab(pane) {
     // Reset active indicators
     this.tabTrade?.classList.remove("active");
     this.tabMissions?.classList.remove("active");
     this.tabOutfitter?.classList.remove("active");
     this.tabShipyard?.classList.remove("active");
+    this.tabRefinery?.classList.remove("active");
 
     this.paneTrade?.classList.remove("active");
     this.paneMissions?.classList.remove("active");
     this.paneOutfitter?.classList.remove("active");
     this.paneShipyard?.classList.remove("active");
+    this.paneRefinery?.classList.remove("active");
 
     if (pane === "trade") {
       this.tabTrade?.classList.add("active");
@@ -97,15 +102,13 @@ export class SpaceportUI {
       this.tabShipyard?.classList.add("active");
       this.paneShipyard?.classList.add("active");
       this.renderShipyard();
+    } else if (pane === "refinery") {
+      this.tabRefinery?.classList.add("active");
+      this.paneRefinery?.classList.add("active");
+      this.renderRefinery();
     }
   }
 
-  /**
-   * Displays the spaceport deck window.
-   * @param {Ship} player - Player entity.
-   * @param {Planet} planet - Planet entity.
-   * @param {Array<Planet>} allPlanets - List of all planets.
-   */
   open(player, planet, allPlanets = []) {
     this.player = player;
     this.planet = planet;
@@ -117,6 +120,15 @@ export class SpaceportUI {
 
     if (this.title) this.title.innerText = planet.name.toUpperCase();
     if (this.desc) this.desc.innerText = planet.description;
+
+    // Show/hide refinery services tab based on planet configuration
+    if (this.tabRefinery) {
+      if (planet.services && planet.services.refinery) {
+        this.tabRefinery.style.display = "block";
+      } else {
+        this.tabRefinery.style.display = "none";
+      }
+    }
 
     // Default to Trade Commodities pane
     this.switchTab("trade");
@@ -642,6 +654,315 @@ export class SpaceportUI {
   }
 
   /**
+   * Renders the interactive refinery panel.
+   */
+  renderRefinery() {
+    if (!this.paneRefinery || !this.player || !this.planet) return;
+
+    this.paneRefinery.innerHTML = "";
+
+    const oreQty = (this.player.cargo && this.player.cargo.ore) || 0;
+    const playerCredits = this.player.credits || 0;
+
+    // Default target commodity state
+    if (this._refineryTarget === undefined) {
+      this._refineryTarget = "minerals";
+    }
+    const target = this._refineryTarget;
+    const ratio = target === "minerals" ? 2 : 4;
+
+    // Calculate maximum raw ore we can refine based on inventory and ratio constraints
+    const maxRefine = Math.floor(oreQty / ratio) * ratio;
+
+    // Initialize or clamp chosen quantity
+    if (this._refineryQty === undefined || this._refineryQty > maxRefine) {
+      this._refineryQty = maxRefine;
+    }
+    // Make sure it is at least 0, and a multiple of ratio
+    if (this._refineryQty < 0) {
+      this._refineryQty = 0;
+    } else if (this._refineryQty > 0 && this._refineryQty % ratio !== 0) {
+      this._refineryQty = Math.floor(this._refineryQty / ratio) * ratio;
+    }
+
+    const qty = this._refineryQty;
+    const produced = qty / ratio;
+    const baseFee = refineCost(qty, {}, null, null, null);
+
+    // Build glassmorphic container layout
+    const container = document.createElement("div");
+    container.className = "refinery-container";
+    container.style.cssText = `
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding: 15px;
+      color: #e0e5f5;
+      font-family: var(--font-body);
+    `;
+
+    // Left Column: Interactive Inputs
+    const leftCol = document.createElement("div");
+    leftCol.className = "refinery-inputs glass-panel";
+    leftCol.style.cssText = `
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+    `;
+
+    // Title
+    const titleSec = document.createElement("div");
+    titleSec.innerHTML = `
+      <h3 style="font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--color-cyan); margin: 0 0 5px 0;">REFINERY BAY</h3>
+      <p style="font-size: 10px; color: #a0a5b5; margin: 0; line-height: 1.4;">
+        Convert raw ore mined from asteroids into refined materials. Valkyrie Depot and major industrial planets provide high-efficiency refinery systems.
+      </p>
+    `;
+    leftCol.appendChild(titleSec);
+
+    // Target Selection Cards
+    const targetLabel = document.createElement("label");
+    targetLabel.innerText = "SELECT REFINED OUTPUT:";
+    targetLabel.style.cssText =
+      "font-size: 10px; font-weight: 600; color: var(--color-gold); letter-spacing: 1px;";
+    leftCol.appendChild(targetLabel);
+
+    const cardsContainer = document.createElement("div");
+    cardsContainer.style.cssText =
+      "display: grid; grid-template-columns: 1fr 1fr; gap: 10px;";
+
+    // Minerals Card
+    const mineralsCard = document.createElement("div");
+    mineralsCard.className = `refinery-card ${target === "minerals" ? "active" : ""}`;
+    mineralsCard.style.cssText = `
+      padding: 12px;
+      background: ${target === "minerals" ? "rgba(0, 242, 254, 0.1)" : "rgba(255, 255, 255, 0.02)"};
+      border: 1px solid ${target === "minerals" ? "var(--color-cyan)" : "rgba(255, 255, 255, 0.08)"};
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    `;
+    mineralsCard.innerHTML = `
+      <div style="font-weight: 600; font-size: 12px; color: ${target === "minerals" ? "var(--color-cyan)" : "#e0e5f5"};">MINERALS</div>
+      <div style="font-size: 9px; color: #a0a5b5; margin-top: 4px;">2:1 Ore Ratio</div>
+    `;
+    mineralsCard.addEventListener("click", () => {
+      this._refineryTarget = "minerals";
+      this._refineryQty = 0; // reset/clamp on target change
+      this.renderRefinery();
+    });
+    cardsContainer.appendChild(mineralsCard);
+
+    // Machinery Card
+    const machineryCard = document.createElement("div");
+    machineryCard.className = `refinery-card ${target === "machinery" ? "active" : ""}`;
+    machineryCard.style.cssText = `
+      padding: 12px;
+      background: ${target === "machinery" ? "rgba(0, 242, 254, 0.1)" : "rgba(255, 255, 255, 0.02)"};
+      border: 1px solid ${target === "machinery" ? "var(--color-cyan)" : "rgba(255, 255, 255, 0.08)"};
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    `;
+    machineryCard.innerHTML = `
+      <div style="font-weight: 600; font-size: 12px; color: ${target === "machinery" ? "var(--color-cyan)" : "#e0e5f5"};">MACHINERY</div>
+      <div style="font-size: 9px; color: #a0a5b5; margin-top: 4px;">4:1 Ore Ratio</div>
+    `;
+    machineryCard.addEventListener("click", () => {
+      this._refineryTarget = "machinery";
+      this._refineryQty = 0; // reset/clamp on target change
+      this.renderRefinery();
+    });
+    cardsContainer.appendChild(machineryCard);
+
+    leftCol.appendChild(cardsContainer);
+
+    // Quantity Selector
+    const qtySec = document.createElement("div");
+    qtySec.style.cssText =
+      "display: flex; flex-direction: column; gap: 8px; margin-top: 5px;";
+    qtySec.innerHTML = `
+      <div style="display: flex; justify-content: space-between; font-size: 10px; font-weight: 600;">
+        <span style="color: var(--color-gold); letter-spacing: 1px;">QUANTITY TO PROCESS:</span>
+        <span style="color: #e0e5f5;">Cargo Ore: <strong style="color: var(--color-cyan);">${oreQty} t</strong></span>
+      </div>
+    `;
+
+    const controlsRow = document.createElement("div");
+    controlsRow.style.cssText = "display: flex; gap: 8px; align-items: center;";
+
+    const btnMin = document.createElement("button");
+    btnMin.className = "btn-sm";
+    btnMin.innerText = "MIN";
+    btnMin.style.cssText = "min-width: 45px; border-radius: 4px;";
+    btnMin.disabled = maxRefine <= 0;
+    btnMin.addEventListener("click", () => {
+      this._refineryQty = maxRefine > 0 ? ratio : 0;
+      this.renderRefinery();
+    });
+
+    const btnDec = document.createElement("button");
+    btnDec.className = "btn-sm";
+    btnDec.innerText = "-";
+    btnDec.style.cssText =
+      "min-width: 35px; font-weight: bold; border-radius: 4px;";
+    btnDec.disabled = qty <= ratio;
+    btnDec.addEventListener("click", () => {
+      this._refineryQty = Math.max(ratio, qty - ratio);
+      this.renderRefinery();
+    });
+
+    const qtyDisplay = document.createElement("div");
+    qtyDisplay.style.cssText = `
+      flex: 1;
+      padding: 6px 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 14px;
+      color: var(--color-cyan);
+    `;
+    qtyDisplay.innerText = `${qty} t`;
+
+    const btnInc = document.createElement("button");
+    btnInc.className = "btn-sm";
+    btnInc.innerText = "+";
+    btnInc.style.cssText =
+      "min-width: 35px; font-weight: bold; border-radius: 4px;";
+    btnInc.disabled = qty + ratio > maxRefine;
+    btnInc.addEventListener("click", () => {
+      this._refineryQty = Math.min(maxRefine, qty + ratio);
+      this.renderRefinery();
+    });
+
+    const btnMax = document.createElement("button");
+    btnMax.className = "btn-sm";
+    btnMax.innerText = "MAX";
+    btnMax.style.cssText = "min-width: 45px; border-radius: 4px;";
+    btnMax.disabled = maxRefine <= 0 || qty === maxRefine;
+    btnMax.addEventListener("click", () => {
+      this._refineryQty = maxRefine;
+      this.renderRefinery();
+    });
+
+    controlsRow.appendChild(btnMin);
+    controlsRow.appendChild(btnDec);
+    controlsRow.appendChild(qtyDisplay);
+    controlsRow.appendChild(btnInc);
+    controlsRow.appendChild(btnMax);
+    qtySec.appendChild(controlsRow);
+    leftCol.appendChild(qtySec);
+    container.appendChild(leftCol);
+
+    // Right Column: Summary Card
+    const rightCol = document.createElement("div");
+    rightCol.className = "refinery-summary glass-panel";
+    rightCol.style.cssText = `
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 15px;
+      background: rgba(0, 242, 254, 0.02);
+      border: 1px solid rgba(0, 242, 254, 0.1);
+      border-radius: 8px;
+    `;
+
+    const sumTop = document.createElement("div");
+    sumTop.innerHTML = `
+      <h4 style="font-family: var(--font-display); font-size: 12px; font-weight: 700; color: var(--color-gold); margin: 0 0 12px 0; letter-spacing: 1px;">TRANSACTION SUMMARY</h4>
+      <div style="display: flex; flex-direction: column; gap: 8px; font-size: 11px;">
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: #a0a5b5;">Raw Ore Consumed:</span>
+          <span style="color: var(--color-red); font-weight: 600;">-${qty} t</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: #a0a5b5;">Refined ${target.toUpperCase()} Yield:</span>
+          <span style="color: var(--color-green); font-weight: 600;">+${produced} t</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 8px; margin-top: 4px;">
+          <span style="color: #a0a5b5;">Est. Processing Fee:</span>
+          <span style="color: var(--color-cyan); font-weight: bold;">${baseFee} CR</span>
+        </div>
+      </div>
+      <div style="font-size: 9px; color: #8a90a0; margin-top: 15px; line-height: 1.4; border-left: 2px solid var(--color-cyan); padding-left: 8px;">
+        Friendly faction standings will automatically reduce processing fees up to 20%. Hostile factions apply a surcharge.
+      </div>
+    `;
+    rightCol.appendChild(sumTop);
+
+    // Primary action button
+    const btnRefine = document.createElement("button");
+    btnRefine.className = "btn-primary btn-block";
+    btnRefine.style.cssText =
+      "margin-top: 15px; padding: 10px; border-radius: 6px; font-weight: bold;";
+
+    // Check afford and inventory conditions
+    const canAfford = playerCredits >= baseFee;
+    const hasOre = qty > 0;
+
+    if (!hasOre) {
+      btnRefine.disabled = true;
+      btnRefine.innerText = "NO ORE IN HOLD";
+    } else if (!canAfford) {
+      btnRefine.disabled = true;
+      btnRefine.innerText = `INSUFFICIENT CREDITS (NEEDS ${baseFee} CR)`;
+    } else {
+      btnRefine.innerText = "EXECUTE REFINING PROCESS";
+      btnRefine.addEventListener("click", () => {
+        if (window.network) {
+          if (window.network.connected) {
+            window.network.requestRefine(qty, target);
+          } else {
+            this.ui.notify(
+              "Neural link offline! Cannot perform transactions.",
+              "error",
+            );
+          }
+          return;
+        }
+
+        // Offline logic
+        const res = applyRefine(
+          this.player,
+          this.planet,
+          qty,
+          {},
+          null,
+          null,
+          target,
+        );
+
+        if (res.ok) {
+          this.ui.notify(
+            `Refined ${res.refined} t of raw ore into ${res.produced} t of ${target} for ${res.cost} CR.`,
+            "success",
+          );
+          this._refineryQty = 0; // reset
+          this.refreshUI();
+          this.renderRefinery();
+        } else {
+          this.ui.notify(
+            `Refinement failed: ${res.reason.replace(/_/g, " ")}`,
+            "error",
+          );
+        }
+      });
+    }
+
+    rightCol.appendChild(btnRefine);
+    container.appendChild(rightCol);
+    this.paneRefinery.appendChild(container);
+  }
+
+  /**
    * Triggers refreshing UI statistics on HUD overlays.
    */
   refreshUI() {
@@ -664,5 +985,7 @@ export class SpaceportUI {
       this.renderShipyard();
     else if (this.tabMissions?.classList.contains("active"))
       this.renderMissions();
+    else if (this.tabRefinery?.classList.contains("active"))
+      this.renderRefinery();
   }
 }

@@ -99,3 +99,179 @@ export function applyRefuel(ship, options = {}) {
   ship.credits -= cost;
   return { refueled: deficit, cost, ok: true };
 }
+
+/**
+ * Credit cost to refine a quantity of raw ore.
+ * @param {number} quantity - Quantity of raw ore to refine.
+ * @param {Object} [options] - Options with baseFeePerOre.
+ * @param {Object|null} [registry] - FactionRegistry instance.
+ * @param {string|null} [playerId] - The player's ID.
+ * @param {string|null} [faction] - The planet's faction.
+ * @returns {number} Non-negative integer cost.
+ */
+export function refineCost(
+  quantity,
+  options = {},
+  registry = null,
+  playerId = null,
+  faction = null,
+) {
+  const baseFee =
+    options.baseFeePerOre !== undefined ? options.baseFeePerOre : 10;
+  let feeRate = baseFee;
+  if (registry && faction && playerId != null) {
+    feeRate = feeRate * registry.priceModifier(playerId, faction, "buy");
+  }
+  return Math.max(0, Math.ceil(quantity * feeRate));
+}
+
+/**
+ * Manually refines raw ore carried in ship cargo into minerals or machinery.
+ *
+ * Ratio:
+ * - ore -> minerals: 2:1
+ * - ore -> machinery: 4:1 (or as configured)
+ *
+ * @param {Object} ship - The ship being modified.
+ * @param {Object} planet - The docked planet.
+ * @param {number} quantity - Quantity of raw 'ore' to refine.
+ * @param {Object} [options] - Pricing and ratio options.
+ * @param {Object|null} [registry] - FactionRegistry instance.
+ * @param {string|null} [playerId] - The player's ID.
+ * @param {string} [targetCommodity="minerals"] - The target refined commodity.
+ * @returns {{ok: boolean, reason: string, refined: number, produced: number, cost: number}}
+ */
+export function applyRefine(
+  ship,
+  planet,
+  quantity,
+  options = {},
+  registry = null,
+  playerId = null,
+  targetCommodity = "minerals",
+) {
+  if (!ship || !planet) {
+    return { ok: false, reason: "invalid", refined: 0, produced: 0, cost: 0 };
+  }
+
+  // Verify planet has refinery services
+  if (!planet.services || !planet.services.refinery) {
+    return {
+      ok: false,
+      reason: "no_refinery_services",
+      refined: 0,
+      produced: 0,
+      cost: 0,
+    };
+  }
+
+  // Validate target commodity is valid
+  if (targetCommodity !== "minerals" && targetCommodity !== "machinery") {
+    return {
+      ok: false,
+      reason: "invalid_target_commodity",
+      refined: 0,
+      produced: 0,
+      cost: 0,
+    };
+  }
+
+  // Check quantity is positive and integer
+  if (!Number.isInteger(quantity) || quantity <= 0) {
+    return {
+      ok: false,
+      reason: "invalid_quantity",
+      refined: 0,
+      produced: 0,
+      cost: 0,
+    };
+  }
+
+  // Determine ratio and base fee
+  const defaultOpts = {
+    oreToMineralsRatio: 2,
+    oreToMachineryRatio: 4,
+    baseFeePerOre: 10,
+  };
+  const o = { ...defaultOpts, ...options };
+
+  const ratio =
+    targetCommodity === "minerals"
+      ? o.oreToMineralsRatio
+      : o.oreToMachineryRatio;
+
+  // Check that the quantity is a multiple of the ratio
+  if (quantity % ratio !== 0) {
+    return {
+      ok: false,
+      reason: `quantity_must_be_multiple_of_${ratio}`,
+      refined: 0,
+      produced: 0,
+      cost: 0,
+    };
+  }
+
+  // Check if ship has enough raw ore
+  const currentOre = (ship.cargo && ship.cargo.ore) || 0;
+  if (currentOre < quantity) {
+    return {
+      ok: false,
+      reason: "insufficient_ore",
+      refined: 0,
+      produced: 0,
+      cost: 0,
+    };
+  }
+
+  // Calculate fee
+  const cost = refineCost(quantity, o, registry, playerId, planet.faction);
+
+  // Check if ship has enough credits
+  if (!Number.isFinite(ship.credits) || ship.credits < cost) {
+    return {
+      ok: false,
+      reason: "insufficient_credits",
+      refined: 0,
+      produced: 0,
+      cost,
+    };
+  }
+
+  const producedQty = quantity / ratio;
+
+  // Execute cargo transaction
+  const removed = ship.removeCargo("ore", quantity);
+  if (!removed) {
+    return {
+      ok: false,
+      reason: "insufficient_ore",
+      refined: 0,
+      produced: 0,
+      cost: 0,
+    };
+  }
+
+  const added = ship.addCargo(targetCommodity, producedQty);
+  if (!added) {
+    // Rollback
+    ship.addCargo("ore", quantity);
+    return {
+      ok: false,
+      reason: "cargo_full",
+      refined: 0,
+      produced: 0,
+      cost: 0,
+    };
+  }
+
+  // Deduct fee
+  ship.credits -= cost;
+
+  return {
+    ok: true,
+    reason: "refined",
+    refined: quantity,
+    produced: producedQty,
+    cost,
+  };
+}

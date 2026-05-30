@@ -39,6 +39,18 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T14:30 · iter-0066 · GREEN · spec-041-player-side-raw-ore-refining
+
+- **Baseline:** `d030804` on `main`; 781 Jest / 62 suites green. Executing `plan/specs/041` — Player-side raw ore refining at ports.
+- **Move:** Implement raw ore refining at ports by creating standing-aware `refineCost` and `applyRefine` PortServices, mapping WS message handlers on the server, building neo-glassmorphic interactive client refinery UIs, and writing end-to-end integration tests.
+- **Changed:**
+  - Modified `src/client/SpaceportUI.js` importing refinery helpers, implementing `renderRefinery()` supporting Minerals (2:1) and Machinery (4:1) card selects, quantity controls, fee calculation, and updating `refreshActiveTab()`.
+  - Modified `src/engine/faction.integration.test.js` importing refinery helpers and adding a comprehensive integration test suite verifying friendly standing discounts and hostile standing surcharges on spawned planets (e.g. Valkyrie Depot).
+- **Decisions:** Connected the client UI to utilize the pure `refineCost` calculation for dynamic fee estimations, and integrated standing modifier checks cleanly to adapt with faction reputations.
+- **Validation:** `npm run agent:check` -> green (**789 Jest tests / 62 suites**). Lints cleanly, compiles green, and formats correctly.
+- **Notes:** Substrate files untouched. Ready for server monolith extraction (042).
+- **Next:** Spec `042` Server monolith extraction (heartbeats, GC, lobby sync).
+
 ## 2026-05-30T14:10 · iter-0065 · GREEN · spec-040-utilityai-advisor-rich-actions
 
 - **Baseline:** `d030804` on `main`; 778 Jest / 62 suites green. Executing `plan/specs/040` — UtilityAI advisor rollout & rich actions.

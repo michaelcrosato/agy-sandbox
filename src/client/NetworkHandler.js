@@ -380,6 +380,19 @@ export class NetworkHandler {
   }
 
   /**
+   * Refine raw ore in ship cargo into minerals or machinery.
+   * @param {number} quantity - Quantity of raw ore to refine.
+   * @param {string} targetCommodity - Target commodity.
+   */
+  requestRefine(quantity, targetCommodity) {
+    this.send({
+      type: "port_refine",
+      quantity,
+      targetCommodity,
+    });
+  }
+
+  /**
    * Create or join a collaborative fleet party.
    * @param {string} nick - Call sign nickname of pilot.
    * @param {string} fleetCode - Code/ID of target fleet.

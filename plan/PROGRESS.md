@@ -16,7 +16,7 @@ _**v4 re-audit baseline (2026-05-30, ENTIRE v3 blueprint shipped): 775 Jest test
 
 ### Phase 1 — Core Upgrades & Debt Paydown
 - [x] `040` UtilityAI advisor rollout + rich action mapping — **done** (files: `src/engine/ai/buildPerception.js`, `src/engine/ai/AIController.js`, `src/engine/ai/AIController.advisor.test.js`; fed live faction standings and relations into buildPerception; upgraded scanSensors to evaluate combined target weaknesses across shields, armor, and heat; implemented REGROUP retreat-and-recharge behavior, TRADE market-spread planet routing, and ENGAGE target locking actions; added 3 new unit tests; all 781 Jest tests green).
-- [ ] `041` Player-side raw ore refining at ports
+- [x] `041` Player-side raw ore refining at ports — **done** (files: `src/engine/PortServices.js`, `src/engine/PortServices.test.js`, `src/engine/GameInstance.js`, `src/server.js`, `index.html`, `src/client/NetworkHandler.js`, `src/client/SpaceportUI.js`, `src/engine/faction.integration.test.js`; implemented pure `applyRefine`/`refineCost` helpers, hooked the `"port_refine"` socket client message handler on the server, enabled refinery services on mining/industrial worlds, added custom UI controls and dynamic active refresh logic, and implemented comprehensive unit + standing integration tests; all 789 Jest tests green).
 - [ ] `042` Server monolith extraction (heartbeats, GC, lobby sync)
 
 ### Phase 2 — Scale-Out & Premium Features

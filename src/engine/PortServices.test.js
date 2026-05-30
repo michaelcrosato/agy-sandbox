@@ -6,6 +6,8 @@ import {
   refuelCost,
   applyRepair,
   applyRefuel,
+  refineCost,
+  applyRefine,
 } from "./PortServices.js";
 
 describe("PortServices (EW5)", () => {
@@ -95,6 +97,163 @@ describe("PortServices (EW5)", () => {
       const ship = { hyperFuel: 100, maxHyperFuel: 100, credits: 1000 };
       expect(applyRefuel(ship).ok).toBe(false);
       expect(ship.credits).toBe(1000);
+    });
+  });
+
+  describe("refinery services", () => {
+    test("refineCost calculates correct fees with and without standing modifiers", () => {
+      // Base fee = 10 per raw ore, quantity 20 => cost 200
+      expect(refineCost(20)).toBe(200);
+
+      // With custom baseFeePerOre = 5
+      expect(refineCost(20, { baseFeePerOre: 5 })).toBe(100);
+
+      // With mock FactionRegistry and friendly standing (discount)
+      const mockRegistry = {
+        priceModifier: (playerId, faction, mode) => 0.8, // 20% discount
+      };
+      expect(refineCost(20, {}, mockRegistry, "player1", "Federation")).toBe(
+        160,
+      );
+    });
+
+    test("applyRefine refines ore into minerals with 2:1 ratio", () => {
+      const ship = {
+        credits: 1000,
+        cargo: { ore: 20, minerals: 0 },
+        cargoCapacity: 100,
+        getCargoWeight() {
+          return this.cargo.ore + this.cargo.minerals;
+        },
+        removeCargo(item, amount) {
+          if (this.cargo[item] >= amount) {
+            this.cargo[item] -= amount;
+            return true;
+          }
+          return false;
+        },
+        addCargo(item, amount) {
+          if (this.getCargoWeight() + amount <= this.cargoCapacity) {
+            this.cargo[item] += amount;
+            return true;
+          }
+          return false;
+        },
+      };
+      const planet = {
+        services: { refinery: true },
+        faction: "Federation",
+      };
+
+      const r = applyRefine(ship, planet, 20, {}, null, null, "minerals");
+      expect(r).toEqual({
+        ok: true,
+        reason: "refined",
+        refined: 20,
+        produced: 10,
+        cost: 200,
+      });
+      expect(ship.credits).toBe(800);
+      expect(ship.cargo.ore).toBe(0);
+      expect(ship.cargo.minerals).toBe(10);
+    });
+
+    test("applyRefine refines ore into machinery with 4:1 ratio", () => {
+      const ship = {
+        credits: 1000,
+        cargo: { ore: 20, machinery: 0 },
+        cargoCapacity: 100,
+        getCargoWeight() {
+          return this.cargo.ore + this.cargo.machinery;
+        },
+        removeCargo(item, amount) {
+          if (this.cargo[item] >= amount) {
+            this.cargo[item] -= amount;
+            return true;
+          }
+          return false;
+        },
+        addCargo(item, amount) {
+          if (this.getCargoWeight() + amount <= this.cargoCapacity) {
+            this.cargo[item] += amount;
+            return true;
+          }
+          return false;
+        },
+      };
+      const planet = {
+        services: { refinery: true },
+        faction: "Federation",
+      };
+
+      const r = applyRefine(ship, planet, 20, {}, null, null, "machinery");
+      expect(r).toEqual({
+        ok: true,
+        reason: "refined",
+        refined: 20,
+        produced: 5,
+        cost: 200,
+      });
+      expect(ship.credits).toBe(800);
+      expect(ship.cargo.ore).toBe(0);
+      expect(ship.cargo.machinery).toBe(5);
+    });
+
+    test("applyRefine rejects if planet does not offer refinery services", () => {
+      const ship = { credits: 1000, cargo: { ore: 20 } };
+      const planet = { services: { repair: true } }; // no refinery
+
+      const r = applyRefine(ship, planet, 20);
+      expect(r.ok).toBe(false);
+      expect(r.reason).toBe("no_refinery_services");
+    });
+
+    test("applyRefine rejects if quantity is not a multiple of the ratio", () => {
+      const ship = { credits: 1000, cargo: { ore: 20 }, cargoCapacity: 100 };
+      const planet = { services: { refinery: true } };
+
+      const r = applyRefine(ship, planet, 3, {}, null, null, "minerals"); // ratio 2, 3 is not multiple
+      expect(r.ok).toBe(false);
+      expect(r.reason).toBe("quantity_must_be_multiple_of_2");
+    });
+
+    test("applyRefine rejects if insufficient raw ore", () => {
+      const ship = {
+        credits: 1000,
+        cargo: { ore: 10 },
+        cargoCapacity: 100,
+        getCargoWeight() {
+          return 10;
+        },
+      };
+      const planet = { services: { refinery: true } };
+
+      const r = applyRefine(ship, planet, 20); // needs 20
+      expect(r.ok).toBe(false);
+      expect(r.reason).toBe("insufficient_ore");
+    });
+
+    test("applyRefine rejects if insufficient credits", () => {
+      const ship = {
+        credits: 50, // needs 200
+        cargo: { ore: 20, minerals: 0 },
+        cargoCapacity: 100,
+        getCargoWeight() {
+          return 20;
+        },
+        removeCargo() {
+          return true;
+        },
+        addCargo() {
+          return true;
+        },
+      };
+      const planet = { services: { refinery: true } };
+
+      const r = applyRefine(ship, planet, 20);
+      expect(r.ok).toBe(false);
+      expect(r.reason).toBe("insufficient_credits");
+      expect(ship.credits).toBe(50); // unchanged
     });
   });
 });

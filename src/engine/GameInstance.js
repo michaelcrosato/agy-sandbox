@@ -182,6 +182,7 @@ export class GameInstance {
       radius: 62,
       market: { ...BASE_MARKETS["Valkyrie Depot"] },
       sector: "core",
+      services: { repair: true, refuel: true, refinery: true },
     });
     this.planets.push(valkyriePlanet);
     this.engine.addEntity(valkyriePlanet);
@@ -196,6 +197,7 @@ export class GameInstance {
       radius: 55,
       market: { ...BASE_MARKETS["New Polaris"] },
       sector: "frontier",
+      services: { repair: true, refuel: true, refinery: true },
     });
     this.planets.push(polarisPlanet);
     this.engine.addEntity(polarisPlanet);
@@ -209,6 +211,7 @@ export class GameInstance {
       radius: 60,
       market: { ...BASE_MARKETS["Sigma Draconis"] },
       sector: "frontier",
+      services: { repair: true, refuel: true, refinery: true },
     });
     this.planets.push(draconisPlanet);
     this.engine.addEntity(draconisPlanet);
@@ -222,6 +225,7 @@ export class GameInstance {
       radius: 58,
       market: { ...BASE_MARKETS["Aurelia Mining Hub"] },
       sector: "frontier",
+      services: { repair: true, refuel: true, refinery: true },
     });
     this.planets.push(aureliaPlanet);
     this.engine.addEntity(aureliaPlanet);

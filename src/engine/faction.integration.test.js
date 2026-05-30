@@ -4,6 +4,7 @@ import { AIController } from "./ai/AIController.js";
 import { factionPrice } from "./Trading.js";
 import { serializeGalaxy, applyGalaxy } from "../persistence/serializers.js";
 import { MissionManager } from "./MissionManager.js";
+import { applyRefine, refineCost } from "./PortServices.js";
 
 // Spec 016 — faction runtime wiring. The pure FactionRegistry math is covered
 // in FactionRegistry.test.js; these assert the LIVE wiring: a GameInstance owns
@@ -286,5 +287,96 @@ describe("mission + trade faction standings (spec 032)", () => {
     } finally {
       room.destroy();
     }
+  });
+
+  describe("Refinery Services Standing Integration (spec 041)", () => {
+    it("applies friendly standing discounts and hostile standing surcharges to refining costs", () => {
+      const room = new GameInstance("room-refine-test", "Refine Test");
+      try {
+        const planet = room.planets.find((p) => p.name === "Valkyrie Depot");
+        expect(planet.services.refinery).toBe(true);
+        expect(planet.faction).toBe("Federation");
+
+        // Spawn a mock ship
+        const ship = {
+          id: "refine-pilot",
+          credits: 1000,
+          cargo: { ore: 20, minerals: 0 },
+          cargoCapacity: 100,
+          getCargoWeight() {
+            return this.cargo.ore + this.cargo.minerals;
+          },
+          removeCargo(item, amount) {
+            if (this.cargo[item] >= amount) {
+              this.cargo[item] -= amount;
+              return true;
+            }
+            return false;
+          },
+          addCargo(item, amount) {
+            if (this.getCargoWeight() + amount <= this.cargoCapacity) {
+              this.cargo[item] += amount;
+              return true;
+            }
+            return false;
+          },
+        };
+
+        // 1. Baseline: neutral standing (multiplier = 1.0)
+        // cost should be 20 * 10 = 200 credits
+        const costNeutral = refineCost(
+          20,
+          {},
+          room.factionRegistry,
+          ship.id,
+          planet.faction,
+        );
+        expect(costNeutral).toBe(200);
+
+        // 2. Friendly standing (+100 standing gives 20% discount => multiplier = 0.8)
+        // cost should be 20 * 10 * 0.8 = 160 credits
+        room.factionRegistry.adjustStanding(ship.id, planet.faction, 100);
+        const costFriendly = refineCost(
+          20,
+          {},
+          room.factionRegistry,
+          ship.id,
+          planet.faction,
+        );
+        expect(costFriendly).toBe(160);
+
+        // 3. Hostile standing (-100 standing gives 20% surcharge => multiplier = 1.2)
+        // room.factionRegistry.setStanding directly clamps to Options
+        room.factionRegistry.setStanding(ship.id, planet.faction, -100);
+        const costHostile = refineCost(
+          20,
+          {},
+          room.factionRegistry,
+          ship.id,
+          planet.faction,
+        );
+        expect(costHostile).toBe(240);
+
+        // 4. Test applyRefine with hostile standing
+        // Execute the refine transaction at Valkyrie Depot
+        const r = applyRefine(
+          ship,
+          planet,
+          20,
+          {},
+          room.factionRegistry,
+          ship.id,
+          "minerals",
+        );
+
+        expect(r.ok).toBe(true);
+        expect(r.cost).toBe(240); // because standing is currently hostile (-100 => 240 CR)
+        expect(ship.credits).toBe(1000 - 240);
+        expect(ship.cargo.ore).toBe(0);
+        expect(ship.cargo.minerals).toBe(10);
+      } finally {
+        room.destroy();
+      }
+    });
   });
 });

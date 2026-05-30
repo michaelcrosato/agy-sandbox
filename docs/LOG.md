@@ -39,6 +39,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
  
+## 2026-05-30T23:05 · iter-0098 · GREEN · cycle-20-spec-089-zero-trust-websocket-validation
+- **Baseline:** `847e565` on `feat/procedural-missions`; 921 Jest + 57 Vitest client tests green.
+- **Move:** Implement Zero-Trust WebSocket Input Schema Validation (SPEC-089) with performant parameters sanitation.
+- **Changed:**
+  - Built pure zero-dependency `src/net/SchemaValidator.js` defining strict declarative validation schemas and strip limits for all WS commands.
+  - Wired `validateMessage` check directly into the entry of `ws.on("message")` in `src/server.js`.
+  - Sanctified and returned stripped payload values to the main WS router, blocking malformed, overflow, or injected keys.
+  - Created `src/net/SchemaValidator.test.js` with 9 exhaustive unit tests verifying types, integers, and length limits.
+  - Created `src/server/schemaValidation.integration.test.js` with real multi-threaded socket-level integration suites.
+  - Updated progress, active state resume anchors, and append-only execution journals on disk.
+- **Decisions:** Used client-back channel notifications directly within the network validator to inform developers and testers immediately of malformed commands.
+- **Validation:** `npm run agent:check` -> green (933 Jest tests green); `npm run test:client` -> green (57 tests green); `npm run test:client:browser` -> green (3 tests green).
+- **Next:** Claim and implement SPEC-090 to monitor event-loop latency and trigger dynamic packet-shedding backpressures.
+
 ## 2026-05-30T23:00 · iter-0097 · GREEN · cycle-20-replenish-zero-trust-latency-invariants
 - **Baseline:** `515e672` on `feat/procedural-missions`; 921 Jest + 57 Vitest client + 3 Vitest browser tests green.
 - **Move:** Initiate Cycle 20 Phase R (Replenish): audit stack, search 2026 guidelines, and author SPEC-089, SPEC-090, and SPEC-091.

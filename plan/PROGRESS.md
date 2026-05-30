@@ -27,7 +27,7 @@ _**v19 re-audit baseline (2026-05-30, ENTIRE v19 blueprint shipped): 921 Jest te
 ## v20 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
-- [ ] `089` zero-trust WebSocket input schema validation (construct a performant zero-dependency schema validation utility for all inbound socket payloads to prevent prototype pollution and overflow injections)
+- [x] `089` zero-trust WebSocket input schema validation (construct a performant zero-dependency schema validation utility for all inbound socket payloads to prevent prototype pollution and overflow injections) — **done** (files: `src/net/SchemaValidator.js`, `src/net/SchemaValidator.test.js`, `src/server.js`, `src/server/schemaValidation.integration.test.js`; implemented pure, zero-dependency validation schemas and stripped unknown keys to prevent prototype pollution across all inbound socket payloads, fully verified by unit and socket-level integration tests; 933 Jest tests green)
 - [ ] `090` event-loop latency monitoring & backpressure load-shedding (monitor process tick lag dynamically and implement automatic broadcast shedding of optional frames under critical loop load)
 
 ### Phase 1 — Core Upgrades & Feature Delivery

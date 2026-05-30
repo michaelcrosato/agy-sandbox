@@ -66,6 +66,7 @@ import {
   getTransactionTaxRate,
 } from "./engine/Trading.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
+import { validateMessage } from "./net/SchemaValidator.js";
 import { sanitizeNickname } from "./server/roomLifecycle.js";
 import {
   runEconomyShortageInterval,
@@ -1228,12 +1229,24 @@ wss.on("connection", (ws) => {
   clients.set(ws, clientObj);
 
   ws.on("message", async (msgStr) => {
-    let msg;
+    let rawMsg;
     try {
-      msg = JSON.parse(msgStr);
+      rawMsg = JSON.parse(msgStr);
     } catch {
       return;
     }
+
+    const validation = validateMessage(rawMsg);
+    if (!validation.valid) {
+      clientObj.send({
+        type: "notification",
+        message: "Invalid network payload: " + validation.error,
+        style: "error",
+      });
+      return;
+    }
+
+    const msg = validation.sanitized;
 
     const room = clientObj.roomId ? instances.get(clientObj.roomId) : null;
 

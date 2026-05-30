@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-29T22:42 · iter-0042 · GREEN · spec-022-ci-node-lts-matrix
+
+- **Baseline:** `9bbf7fb` on `main`; 619 tests / 43 suites green; CI ran on Node 20 only. Executing `plan/specs/022` (Wave A).
+- **Move:** Run the CI gate across the supported LTS line so version-specific breakage is caught before it ships.
+- **Changed:** `.github/workflows/ci.yml` — added `strategy.matrix.node-version: ['20','22','24']` with `fail-fast: false`, and the setup-node step now uses `${{ matrix.node-version }}`. `.nvmrc` bumped `20 → 22` (Maintenance LTS; `engines.node` floor stays `>=20`).
+- **Decisions:** Matrix covers Node 20 (floor), 22 (Maintenance LTS), and 24 (2026 Active LTS, recommended). `fail-fast: false` so one version's failure still reports the others. Kept the gate steps (prettier → eslint → jest) unchanged.
+- **Validation:** YAML is well-formed standard Actions matrix syntax. `npm run agent:check` → green on the local runtime **Node 24.15** (619 tests / 43 suites) — i.e. the suite already passes on the highest matrix entry; CI verifies 20 and 22 on the next push (cannot switch Node versions locally without nvm). `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge — so the matrix run itself is pending the next push. `ci.yml` is not in the prettier/lint scope, so the local gate is unaffected by this edit.
+- **Next:** `plan/specs/023` (dotenv 16→17), then `025` (server extraction), `024` (typecheck), `021` (client tests).
+
 ## 2026-05-29T22:35 · iter-0041 · GREEN · spec-020-salvage-outfit-dedup
 
 - **Baseline:** `03a90c3` on `main`; 614 tests / 42 suites green. Executing `plan/specs/020` (Wave A).

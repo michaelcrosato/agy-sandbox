@@ -23,9 +23,20 @@ _**v16 re-audit baseline (2026-05-30, ENTIRE v15 blueprint shipped): 904 Jest te
 _**v17 re-audit baseline (2026-05-30, ENTIRE v16 blueprint shipped): 909 Jest tests / 73 suites + 28 client green; 0 npm audit vulnerabilities; spaceport ore refining + reputation decay heartbeat hook + wingman FSM intercept and telemetry panel HUD all DONE.**_
 _**v18 re-audit baseline (2026-05-30, ENTIRE v17 blueprint shipped): 912 Jest tests / 73 suites + 30 client green; 0 npm audit vulnerabilities; tractor outfit mass + black market spaceports + standing-aware trade advisor HUD all DONE.**_
 _**v19 re-audit baseline (2026-05-30, ENTIRE v19 blueprint shipped): 921 Jest tests / 73 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; dynamic trade profit metric + NPC smuggler fleets + stargate nav overlay all DONE.**_
-_**v20 re-audit baseline (2026-05-30, new sandbox prime directive): 933 Jest tests / 75 suites green; Zero-Trust WebSocket Validation (089) DONE. Remaining = 090, 091, 092, 093, 094.**_
+_**v21 re-audit baseline (2026-05-31, ENTIRE v21 sandbox blueprint shipped): 953 Jest tests / 82 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; Invariant Verifier self-healing + Sandbox resource peak telemetry + Process reaper + Workspace isolation defender all DONE. Remaining = 095, 096, 097.**_
 
-## v21 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
+## v22 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Adv Evals & Load Scaling
+- [ ] `095` High-Concurrency Sandbox Stress-Testing & Simulated Network Latency Injector (build application-level latency/drop injector and concurrent headless load runner simulating 50+ concurrent pilots clashing in sectors)
+
+### Phase 1 — Observability & Universe History
+- [ ] `096` The Galactic Chronicle & Dynamic persistent simulation history logs (record major econ spikes and faction stand-off results in pruned JSON store and display on neon timeline sidebar)
+
+### Phase 2 — Security & Cost Sentinel
+- [ ] `097` Sandboxed Outbound API Rate Limiter & Network Domain Sentinel (protect host budgets via sliding-window limiters wrapping external AI prompts, returning warning mocks and blocking non-allowlisted egress domains)
+
+## v21 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Security & Teardown Lifecycle
 - [x] `092` Automated Zombie Process Reaper & Orphan Port Cleanup Subsystem (build a modular ProcessReaper class tracking worker threads/child processes and a PowerShell teardown script to kill orphaned tasks and free locked socket ports) — **done** (files: `src/net/ProcessReaper.js`, `src/net/ProcessReaper.test.js`, `scripts/agent/cleanup-orphans.ps1`, `src/server/supervisor.integration.test.js`; created a robust process tracking reaper class and host-side PowerShell process sweep script to force-kill zombie tasks and free bound socket ports under Windows developer hosts, fully verified with mock worker and subprocess testing; 936 Jest tests green)

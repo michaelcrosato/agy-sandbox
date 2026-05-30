@@ -4,6 +4,7 @@ import { Planet } from "./Planet.js";
 import { SpaceEngine } from "./SpaceEngine.js";
 import { SpaceEntity } from "./SpaceEntity.js";
 import { AIController } from "./ai/AIController.js";
+import { DEFAULT_OUTFITS } from "./outfitCatalog.js";
 import { CargoPod } from "./CargoPod.js";
 import { EconomyManager } from "./EconomyManager.js";
 import { FactionRegistry } from "./FactionRegistry.js";
@@ -1153,5 +1154,127 @@ export class GameInstance {
       message: `Warning: Hostile ${faction} Interceptor scrambled to your location!`,
       style: "error",
     });
+  }
+
+  /**
+   * Scans active players carrying contraband in space.
+   * Remote security sweeps are executed when a player flies near a faction patrol.
+   * @param {number} dt - Time delta in seconds.
+   */
+  checkContrabandSpaceScans(dt) {
+    if (!this.spaceScanAccumulator) this.spaceScanAccumulator = 0;
+    this.spaceScanAccumulator += dt;
+    if (this.spaceScanAccumulator < 5) return; // Evaluate every 5 seconds
+    this.spaceScanAccumulator = 0;
+
+    // 1. Identify governing faction of this room
+    let governingFaction = "Independents";
+    for (const planet of this.planets) {
+      if (
+        planet.faction === "Federation" ||
+        planet.faction === "Frontier League" ||
+        planet.faction === "Pirates"
+      ) {
+        governingFaction = planet.faction;
+        break;
+      }
+    }
+    if (governingFaction === "Independents") return;
+
+    // 2. Scan players carrying contraband
+    for (const ent of this.engine.entities) {
+      if (
+        ent.type !== "ship" ||
+        ent.isDestroyed ||
+        !ent.cargo ||
+        !(ent.cargo.contraband > 0)
+      ) {
+        continue;
+      }
+
+      const isPlayer =
+        Array.from(this.clients.values()).some((c) => c.ship === ent) ||
+        ent.isPlayerMock;
+      if (!isPlayer) continue;
+
+      // Handle cooldown using a simple delta subtraction
+      if (!ent.spaceScanCooldown) ent.spaceScanCooldown = 0;
+      if (ent.spaceScanCooldown > 0) {
+        ent.spaceScanCooldown -= 5; // We ran after a 5s accumulator pulse
+        continue;
+      }
+
+      // 3. Find any close guard belonging to the governing faction within 600 units
+      let closeGuard = null;
+      for (const guard of this.engine.entities) {
+        if (
+          guard.type === "ship" &&
+          !guard.isDestroyed &&
+          guard.role === "guard" &&
+          guard.faction === governingFaction
+        ) {
+          const dist = ent.position.distance(guard.position);
+          if (dist <= 600) {
+            closeGuard = guard;
+            break;
+          }
+        }
+      }
+
+      if (closeGuard) {
+        // Trigger space scan check!
+        ent.spaceScanCooldown = 30; // 30 seconds cooldown
+
+        let bestJammerValue = 0;
+        if (ent.outfits) {
+          for (const outfitName of ent.outfits) {
+            const spec = DEFAULT_OUTFITS.find((o) => o.name === outfitName);
+            if (spec && spec.type === "jammer") {
+              if (spec.value > bestJammerValue) {
+                bestJammerValue = spec.value;
+              }
+            }
+          }
+        }
+
+        let scanDetected = true;
+        if (bestJammerValue > 0) {
+          const rng = ent.rng || Math.random;
+          if (rng() < bestJammerValue) {
+            scanDetected = false;
+          }
+        }
+
+        this.broadcast({
+          type: "notification",
+          message: `[${closeGuard.name}]: 'Security sweep in progress! Stand by for scan.'`,
+          style: "info",
+        });
+
+        if (scanDetected) {
+          // Confiscate and fine or standings penalty
+          this.factionRegistry.adjustStanding(ent.id, governingFaction, -15);
+
+          this.broadcast({
+            type: "notification",
+            message: `[${closeGuard.name}]: 'Contraband detected! Faction standing reduced. Stand by for security intervention.'`,
+            style: "error",
+          });
+
+          // Set the guard AI to aggressively lock target
+          const guardCtrl = this.ais.find((ai) => ai.ship === closeGuard);
+          if (guardCtrl) {
+            guardCtrl.target = ent;
+            guardCtrl.ship.target = ent;
+          }
+        } else {
+          this.broadcast({
+            type: "notification",
+            message: `[${closeGuard.name}]: 'Scan clear. Carry on, pilot.'`,
+            style: "success",
+          });
+        }
+      }
+    }
   }
 }

@@ -425,4 +425,141 @@ describe("mission + trade faction standings (spec 032)", () => {
       }
     });
   });
+
+  describe("Contraband Space Patrol Scans (spec 048)", () => {
+    it("skips scan if player has no contraband or is not in governing faction space", () => {
+      const room = new GameInstance("room-scan-skip", "Scan Skip Test");
+      try {
+        const playerShip = {
+          id: "player-cmdr-scan-skip",
+          type: "ship",
+          outfits: [],
+          cargo: { contraband: 0 },
+          position: new Vector2D(0, 0),
+          isPlayerMock: true,
+        };
+        room.engine.addEntity(playerShip);
+
+        // Spawn a guard
+        const guard = {
+          id: "guard-1",
+          type: "ship",
+          role: "guard",
+          faction: "Federation",
+          position: new Vector2D(100, 100),
+        };
+        room.engine.addEntity(guard);
+
+        // Trigger scan check
+        room.checkContrabandSpaceScans(5);
+        expect(playerShip.spaceScanCooldown).toBeUndefined();
+      } finally {
+        room.destroy();
+      }
+    });
+
+    it("triggers scan and successfully bypasses it using a jammer with a seeded RNG", () => {
+      const room = new GameInstance("room-scan-bypass", "Scan Bypass Test");
+      try {
+        const playerShip = {
+          id: "player-cmdr-scan-bypass",
+          type: "ship",
+          outfits: ["Security Decoy Jammer"],
+          cargo: { contraband: 5 },
+          position: new Vector2D(0, 0),
+          isPlayerMock: true,
+          // 90% bypass rate. Seed RNG so it returns < 0.90
+          rng: () => 0.5,
+        };
+        room.engine.addEntity(playerShip);
+
+        const guard = {
+          id: "guard-2",
+          type: "ship",
+          role: "guard",
+          faction: "Federation",
+          position: new Vector2D(100, 100),
+        };
+        room.engine.addEntity(guard);
+
+        // We must have the correct sector faction (by having a planet with Federation faction)
+        room.planets.push({
+          name: "Test Federation Planet",
+          faction: "Federation",
+        });
+
+        // Trigger scan check
+        room.checkContrabandSpaceScans(5);
+
+        // Scan triggered: cooldown should be set to 30
+        expect(playerShip.spaceScanCooldown).toBe(30);
+
+        // Standing should NOT be reduced since we bypassed it successfully
+        const standing = room.factionRegistry.getStanding(
+          playerShip.id,
+          "Federation",
+        );
+        expect(standing).toBe(0);
+      } finally {
+        room.destroy();
+      }
+    });
+
+    it("triggers scan and fails scanning sweep, resulting in standing reduction and hostile guard targeting", () => {
+      const room = new GameInstance("room-scan-fail", "Scan Fail Test");
+      try {
+        const playerShip = {
+          id: "player-cmdr-scan-fail",
+          type: "ship",
+          outfits: ["Shielded Cargo Holds"], // 60% bypass rate
+          cargo: { contraband: 5 },
+          position: new Vector2D(0, 0),
+          isPlayerMock: true,
+          // Seed RNG so it returns > 0.60, causing a failed bypass
+          rng: () => 0.8,
+        };
+        room.engine.addEntity(playerShip);
+
+        const guard = {
+          id: "guard-3",
+          type: "ship",
+          role: "guard",
+          faction: "Federation",
+          position: new Vector2D(100, 100),
+        };
+        room.engine.addEntity(guard);
+
+        // Add a mock guard AI controller
+        const guardCtrl = new AIController(guard, "guard", {
+          standingPolicy: room.factionRegistry.standingPolicy(),
+        });
+        room.ais.push(guardCtrl);
+
+        // Add Federation planet to set governing faction
+        room.planets.push({
+          name: "Test Federation Planet",
+          faction: "Federation",
+        });
+
+        // Trigger scan check
+        room.checkContrabandSpaceScans(5);
+
+        // Scan triggered: cooldown should be set to 30
+        expect(playerShip.spaceScanCooldown).toBe(30);
+
+        // Standing should be reduced by 15 points
+        const standing = room.factionRegistry.getStanding(
+          playerShip.id,
+          "Federation",
+        );
+        expect(standing).toBe(-15);
+
+        // Verify guard controller target is set to the player ship
+        expect(guardCtrl.target).toBe(playerShip);
+        expect(guard.target).toBe(playerShip);
+      } finally {
+        room.destroy();
+      }
+    });
+  });
 });

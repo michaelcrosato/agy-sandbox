@@ -412,6 +412,7 @@ const physicsInterval = setInterval(() => {
 
     // F. Scramble aggressive interceptor patrols for hostile players
     room.checkReputationPatrolSpawns(dt);
+    room.checkContrabandSpaceScans(dt);
 
     // G. Update local room physical kinematics
     room.engine.update(dt);

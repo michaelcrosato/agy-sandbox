@@ -39,6 +39,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T17:40 · iter-0073 · GREEN · spec-048-contraband-space-patrol-scans
+
+- **Baseline:** `726874b` on `main`; 818 Jest tests green.
+- **Move:** Implement real-time remote contraband security scans in space when smuggling players fly near patrols (048).
+- **Changed:**
+  - Added the `checkContrabandSpaceScans(dt)` culling method in `src/engine/GameInstance.js` to evaluate active players carrying contraband.
+  - Linked the security scan method in `src/server.js` update loop.
+  - Implemented 30-second security sweep cooldown, 600-unit patrol scan distance, and jammer bypass evaluation using catalog values (60% Shielded Cargo holds, 90% Decoy Jammer).
+  - Wired FactionRegistry standing deduction (-15 points) and AIController target locking for hostile intervention on scan failure.
+  - Added comprehensive integration tests in `src/engine/faction.integration.test.js` validating skip, bypass, and failure targeting paths.
+- **Decisions:** Made player space scan loop fully null-safe for entities lacking cargo blocks (e.g. projectiles, partial mock entities, pods). Used seeded/injected PRNG in test models to ensure 100% deterministic test execution.
+- **Validation:** `npm run agent:check` -> green (821 Jest tests / 66 suites).
+- **Next:** Proceed to the perpetual loop Replenish phase (R) to promote backlog ideas and begin Cycle 7 planning.
+
 ## 2026-05-30T17:30 · iter-0072 · GREEN · spec-049-interest-management-grid-optimization
 
 - **Baseline:** `1a251e8` on `main`; 816 Jest tests green.

@@ -20,7 +20,7 @@ _**v6 re-audit baseline (2026-05-30, ENTIRE v5 blueprint shipped): 811 Jest test
 - [x] `049` Interest Management Grid Optimizations (performance scaling) — **done** (files: `src/net/interest.js`, `src/net/interest.test.js`, `src/server.js`; refactored `interestFilter` to segment entities using a high-performance 2D spatial grid hash map; pre-built grid once per broadcast frame in `server.js` loop; added high-concurrency simulation benchmark test confirming a 13.7x performance speedup (18ms vs 247ms); all 818 Jest tests green).
 
 ### Phase 2 — Scale-Out & Premium Features
-- [ ] `048` Contraband Space Patrol Scans & Hails (immersive smuggling) — **todo** (files: `src/engine/GameInstance.js`, `src/engine/faction.integration.test.js`; add real-time remote contraband scans in space when smuggling players fly close to sector faction patrols, utilizing jammers to bypass scans, and triggering faction standing penalties and immediate aggressive AI guard locking on failure).
+- [x] `048` Contraband Space Patrol Scans & Hails (immersive smuggling) — **done** (files: `src/engine/GameInstance.js`, `src/engine/faction.integration.test.js`, `src/server.js`; added real-time remote contraband scans in space when smuggling players fly close to sector faction patrols, utilizing jammers to bypass scans, and triggering faction standing penalties and immediate aggressive AI guard locking on failure; added comprehensive integration tests covering skip, bypass, and failure targeting scenarios; all 821 Jest tests green).
 
 ## v5 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

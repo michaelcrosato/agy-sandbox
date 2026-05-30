@@ -39,6 +39,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T13:20 · iter-0064 · GREEN · feat-unattended-afk-loop-grid
+
+- **Baseline:** `4614626` on `main`; 778 Jest / 62 suites green. Executing setup of high-efficiency AFK loop grid.
+- **Move:** Setup an extremely token-efficient, fully-unattended AFK coding loop leveraging filesystem-based state tracking and compaction, backed by cross-platform daemon scripts.
+- **Changed:**
+  - Created `plan/GOAL_PROMPT.md` containing the exhaustive autonomous prompt directive to recover context easily.
+  - Created `plan/STATE.md` to serve as a high-compression dynamic state resume anchor (minimizes context bloat).
+  - Created `plan/AFK_INSTRUCTIONS.md` detailing the multi-session context compaction protocol.
+  - Created `scripts/run-afk-loop.ps1` and `scripts/run-afk-loop.sh` headless looping substrates.
+  - Updated `plan/PROGRESS.md` claiming Spec `040` (UtilityAI Rollout).
+- **Decisions:** Decoupled loop state into a tiny `STATE.md` to prevent downstream agents from ingesting huge history trails, maintaining high speed and lowering token cost.
+- **Validation:** `npm run agent:check` -> green (**778 Jest tests / 62 suites**). Spot checks and log validation clean.
+- **Notes:** Substrate files untouched. Fully ready for offline loop runs.
+- **Next:** Spec `040` UtilityAI advisor rollout + rich action mapping.
+
 ## 2026-05-30T13:10 · iter-0063 · GREEN · spec-044-observability-dashboard
 
 - **Baseline:** `4699028` on `main`; 776 Jest / 61 suites green. Executing `plan/specs/044` — Interactive Observability Dashboard.

@@ -38,7 +38,7 @@ modularization.** Remaining = Wave A (020–025) + Phase 2 (014–019)._
 - [ ] `014` Interest management (viewport/proximity delta filtering) — _blocked by: 015 (recommended)_
 - [ ] `015` Binary wire protocol for broadcasts — _blocked by: none_
 - [ ] `016` Faction runtime wiring (P3) — _blocked by: none_
-- [ ] `017` Goal-driven NPC runtime (UtilityAI→AIController, P5) — _blocked by: none_
+- [x] `017` Goal-driven NPC runtime (UtilityAI→AIController, P5) — **done** (files: new `src/engine/ai/buildPerception.js` (pure live-state→perception adapter: threats/prey/trades classifiers, all overridable) + `.test.js` (14, incl. the selectGoal showcase); `AIController` gains `useUtilityAdvisor` (default **off** so the 36 legacy tests are byte-identical) — when on it consults `selectGoal(buildPerception(...))`, stores `currentGoal`, and lets **FLEE** pre-empt the role FSM via new `executeFlee` (evade nearest threat); new `AIController.advisor.test.js` (6); `GameInstance` enables the advisor at all merchant/guard/pirate spawns. Delivers GOAL P5 "changes its plan": a merchant flees a pirate then patrols when clear; a wounded pirate breaks off a guard. 648 tests / 46 suites green; server boots. Wider rollout (server boss/escort, REGROUP/TRADE/ENGAGE mapping) → BACKLOG.)
 - [ ] `018` Production chains + ore commodity (P2) — _blocked by: none_
 - [ ] `019` Horizontal scaling (multi-process/Redis, P7) — _blocked by: 007, 010, 015 (recommended)_
 

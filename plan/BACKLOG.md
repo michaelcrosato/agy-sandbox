@@ -31,3 +31,14 @@ Items noticed mid-spec that are out of the current spec's scope. Triage into `sp
   `{import("./X.js").X}`); FactionRegistry/Boarding init `{}` then index it (annotate
   `@type {Record<string, number>}`); GenerativeMissions/PersistenceManager have `{}`-vs-required-field call
   sites. Ratchet up dir-by-dir by widening `tsconfig.json` `include`, fixing JSDoc — never `@ts-nocheck`.
+
+- **Widen the UtilityAI advisor rollout + goal→action mapping (from spec 017):** the `useUtilityAdvisor`
+  flag is enabled only at the `GameInstance` merchant/guard/pirate spawns, and only the FLEE goal currently
+  overrides the role FSM (with an evade). Two follow-ups: (1) opt the remaining NPC spawns in —
+  `server.js` raider/boss (≈566/909/947) and escort (≈1712), and `main.js` single-player spawns — so every
+  agent gets the advisory layer; (2) map the other goals to richer actions instead of falling through to
+  the legacy FSM: REGROUP→break-off-and-recharge, TRADE→pick a profitable destination planet (today a
+  merchant with the advisor still wanders when not fleeing), ENGAGE→prefer the highest-`weakness` prey
+  rather than the nearest target. Also consider feeding live market spreads into `buildPerception`'s
+  `tradeProfit` (currently a flat 0.6) and `factionPolicy` into `isThreat` once spec 016 lands. Medium
+  priority — the FLEE slice already delivers the GOAL P5 "changes its plan" showcase.

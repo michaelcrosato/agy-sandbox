@@ -333,7 +333,9 @@ export class GameInstance {
         turnRate: isHeavy ? 1.2 : 1.5,
       });
 
-      const controller = new AIController(mShip, "merchant");
+      const controller = new AIController(mShip, "merchant", {
+        useUtilityAdvisor: true,
+      });
       this.engine.addEntity(mShip);
       this.ais.push(controller);
     }
@@ -374,7 +376,9 @@ export class GameInstance {
         weaponCooldown: isDestroyer ? 0.3 : 0.25,
       });
 
-      const controller = new AIController(gShip, "guard");
+      const controller = new AIController(gShip, "guard", {
+        useUtilityAdvisor: true,
+      });
       this.engine.addEntity(gShip);
       this.ais.push(controller);
     }
@@ -439,7 +443,9 @@ export class GameInstance {
     // name-independent (procedurally-named pirates are still recognised).
     pShip.role = "pirate";
 
-    const controller = new AIController(pShip, "pirate");
+    const controller = new AIController(pShip, "pirate", {
+      useUtilityAdvisor: true,
+    });
     this.engine.addEntity(pShip);
     this.ais.push(controller);
   }
@@ -497,7 +503,9 @@ export class GameInstance {
           weaponDamage: 25,
           weaponCooldown: 0.25,
         });
-        const controller = new AIController(gShip, "guard");
+        const controller = new AIController(gShip, "guard", {
+          useUtilityAdvisor: true,
+        });
         this.engine.addEntity(gShip);
         this.ais.push(controller);
       } else if (role === "merchant") {
@@ -519,7 +527,9 @@ export class GameInstance {
           thrustPower: 11000,
           turnRate: 1.5,
         });
-        const controller = new AIController(mShip, "merchant");
+        const controller = new AIController(mShip, "merchant", {
+          useUtilityAdvisor: true,
+        });
         this.engine.addEntity(mShip);
         this.ais.push(controller);
       }

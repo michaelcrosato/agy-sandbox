@@ -1,3 +1,6 @@
+import { buildPerception, defaultIsThreat } from "./buildPerception.js";
+import { selectGoal, Goals } from "./UtilityAI.js";
+
 /**
  * AIController manages NPC behavior states (wander, chase, patrol, trade) and maps them into ship controls.
  */
@@ -12,11 +15,32 @@ export class AIController {
    *   self ship and a candidate target carry a `faction` tag, target
    *   selection uses faction relations; otherwise the legacy name-based
    *   classifier (`isPirateShip`) is used unchanged.
+   * @param {boolean} [options.useUtilityAdvisor=false] - When true, a pure
+   *   `UtilityAI` goal (from a `buildPerception` snapshot) is consulted each
+   *   tick and can override the role FSM (currently FLEE pre-empts with an
+   *   evade). Default off so existing call sites/tests keep exact legacy
+   *   behaviour; new server spawns opt in.
+   * @param {Object} [options.perceptionOptions] - Optional overrides for
+   *   `buildPerception` (e.g. faction-aware `isThreat`).
    */
-  constructor(ship, role = "merchant", { factionPolicy = null } = {}) {
+  constructor(
+    ship,
+    role = "merchant",
+    {
+      factionPolicy = null,
+      useUtilityAdvisor = false,
+      perceptionOptions = null,
+    } = {},
+  ) {
     this.ship = ship;
     this.role = role;
     this.factionPolicy = factionPolicy;
+    this.useUtilityAdvisor = useUtilityAdvisor;
+    this.perceptionOptions = perceptionOptions;
+
+    // Advisory goal selected on the last update (null until first tick / when
+    // the advisor is disabled). Exposed for observability and tests.
+    this.currentGoal = null;
 
     // AI target tracking
     this.target = null;
@@ -43,6 +67,25 @@ export class AIController {
 
     // 1. Scan for targets if necessary
     this.scanSensors(entities);
+
+    // 1b. Advisory goal layer (spec 017): when enabled, a UtilityAI goal can
+    // pre-empt the role FSM. Only FLEE overrides today — a pressured agent
+    // breaks off and evades regardless of role, which is the cross-role plan
+    // change the role FSMs can't express (a merchant has no combat state at
+    // all). Every other goal falls through to the legacy role behaviour, which
+    // already maps ENGAGE→attack / TRADE→route / PATROL→wander.
+    if (this.useUtilityAdvisor) {
+      const perception = buildPerception(
+        this.ship,
+        entities,
+        this.perceptionOptions || undefined,
+      );
+      this.currentGoal = selectGoal(perception).goal;
+      if (this.currentGoal === Goals.FLEE) {
+        this.executeFlee(entities);
+        return;
+      }
+    }
 
     // 2. Perform state machine navigation
     if (this.role === "pirate") {
@@ -275,6 +318,44 @@ export class AIController {
       // Gently cruise forward
       this.ship.controls.isThrusting = Math.random() > 0.3;
     }
+  }
+
+  /**
+   * Evasion maneuver for the advisory FLEE goal: steer directly away from the
+   * nearest threatening ship and burn. Uses the same hostility predicate that
+   * drove the FLEE decision (the perception override if set, else the default),
+   * so the ship flees what the scorer feared. If no threat can be located
+   * (edge case), it coasts rather than thrusting blindly.
+   * @param {Array<SpaceEntity>} entities - All entities.
+   */
+  executeFlee(entities) {
+    const isThreat =
+      (this.perceptionOptions && this.perceptionOptions.isThreat) ||
+      defaultIsThreat;
+
+    let nearest = null;
+    let best = Infinity;
+    for (const ent of entities) {
+      if (!ent || ent === this.ship || ent.type !== "ship" || ent.isDestroyed) {
+        continue;
+      }
+      if (!isThreat(ent, this.ship)) continue;
+      const d = this.ship.position.distance(ent.position);
+      if (d < best) {
+        best = d;
+        nearest = ent;
+      }
+    }
+
+    if (!nearest) return; // nothing to flee from; coast
+
+    // Aim at a point directly opposite the threat and accelerate away.
+    const fleeTarget = {
+      x: this.ship.position.x + (this.ship.position.x - nearest.position.x),
+      y: this.ship.position.y + (this.ship.position.y - nearest.position.y),
+    };
+    this.steerTowards(fleeTarget);
+    this.ship.controls.isThrusting = true;
   }
 
   /**

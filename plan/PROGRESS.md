@@ -4,10 +4,12 @@ State for downstream agents. Legend: `[ ]` Todo · `[~]` In Progress · `[x]` Do
 you claim/finish a spec. Order = recommended execution order (see [`ROADMAP.md`](ROADMAP.md)). Specs are
 in [`specs/`](specs/).
 
-_Baseline at blueprint generation (2026-05-28): 569 tests / 33 suites green; ESLint + Prettier clean;
-2 high `npm audit` advisories (axios via localtunnel)._
+_v1 baseline (2026-05-28): 569 tests / 33 suites; 2 high `npm audit` advisories (axios via localtunnel)._
+_**v2 re-audit baseline (2026-05-29, after Phase 0+1 shipped): 614 tests / 42 suites green; 0 `npm audit`
+vulnerabilities; ESLint 10 + Jest 30 + Prettier clean; ws hardened + observability + partial server
+modularization.** Remaining = Wave A (020–025) + Phase 2 (014–019)._
 
-## Phase 0 — Quick Wins & Safety
+## ✅ Phase 0 — Quick Wins & Safety (DONE)
 - [x] `001` Remediate localtunnel/axios CVEs — **done** (files: `src/server.js` dynamic optional import + graceful fallback, removed `localtunnel` from `package.json`/lockfile, `README.md` cloudflared guidance; `npm audit` → 0 vulnerabilities)
 - [x] `002` Harden ws inbound (maxPayload + Origin verifyClient) — **done** (files: new `src/net/originPolicy.js` + `.test.js`; `src/server.js` WSS sets `maxPayload: 256KB` + `verifyClient` same-origin/allowlist check)
 - [x] `003` ws connection heartbeat / dead-socket reaper — **done** (files: new `src/net/heartbeat.js` + `.test.js`; `src/server.js` 30s ping/terminate sweep, per-connection `isAlive`+pong, cleared on shutdown)
@@ -15,7 +17,7 @@ _Baseline at blueprint generation (2026-05-28): 569 tests / 33 suites green; ESL
 - [x] `005` Dependency hygiene (ws 8.21, http-server, engines, .nvmrc) — **done** (files: `package.json` ws@^8.21.0 + http-server devDep + `engines.node>=20` + `dev` uses local binary; `.nvmrc`; lockfile. Supersedes TICKET001)
 - [x] `006` Economy NaN self-heal + heartbeat diffusion guard — **done** (files: `src/engine/EconomyManager.js` self-heals non-finite price→baseline; `src/engine/GalaxyHeartbeat.js` skips/guards non-finite operands; +3 tests. Closes TICKET003 follow-up)
 
-## Phase 1 — Core Upgrades
+## ✅ Phase 1 — Core Upgrades (DONE)
 - [x] `007` Modularize server.js (extract tested units) — **done** (files: new `src/engine/Outfitting.js` (applyOutfitStats), `src/net/statsPayload.js` (buildStatsPayload), `src/server/roomLifecycle.js` (shouldGcRoom + sanitizeNickname) + tests; `src/server.js` routes through them, behavior-identical, boots. Supersedes TICKET005)
 - [x] `008` Persistence kill→restart→rejoin integration test — **done** (file: new `src/persistence/restart.integration.test.js` — real JsonFileStore round-trip, fresh manager/instance, asserts markets+pulses+full player ledger. Supersedes TICKET004)
 - [x] `009` Decouple threat detection from ship names; wire seeded names — **done** (files: `AIController.isPirateShip` role-precedence + null-safe; `GameInstance` loot branch routes through it; `spawnNPCPirate` sets `role="pirate"` + procedural `NameGenerator` names; +3 tests)
@@ -23,6 +25,14 @@ _Baseline at blueprint generation (2026-05-28): 569 tests / 33 suites green; ESL
 - [x] `011` ESLint 9→10 migration — **done** (files: `package.json` eslint ^10 + explicit `@eslint/js`/`globals` devDeps; fixed 3 real `no-useless-assignment` findings in `CanvasRenderer.js`/`UIController.js`; flat config unchanged; lint exit 0)
 - [x] `012` Jest 29→30 migration — **done** (files: `package.json` jest ^30.4; suite passes unchanged (614/42) under the existing ESM invocation; no config/source changes; no open handles, no flakiness over 2 runs)
 - [x] `013` Migrate @google/generative-ai → @google/genai — **done** (files: `scripts/run-agent.js` new unified SDK — `GoogleGenAI({apiKey})`, `models.generateContent`, `Type.*` schema, `result.text`, model `gemini-2.5-pro`; `package.json` swap to devDependency `@google/genai`; runtime `dependencies` now just `ws`; no-key path exits with a clear message, no stack trace)
+
+## Wave A — Continued hardening & 2026 modernization (NEW · v2 re-audit)
+- [ ] `020` Salvage outfit dedup (→ applyOutfitStats) — _blocked by: none_
+- [ ] `021` Client test harness (Vitest Browser Mode / Playwright) — _blocked by: none_
+- [ ] `022` CI Node LTS matrix (20/22/24) + version alignment — _blocked by: none_
+- [ ] `023` dotenv 16→17 bump — _blocked by: none_
+- [ ] `024` JSDoc typecheck gate (`tsc --noEmit` over checkJs) — _blocked by: none_
+- [ ] `025` Continue server.js extraction (message handlers) — _blocked by: none (continues 007)_
 
 ## Phase 2 — Major Features
 - [ ] `014` Interest management (viewport/proximity delta filtering) — _blocked by: 015 (recommended)_

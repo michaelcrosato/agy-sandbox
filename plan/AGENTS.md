@@ -20,7 +20,14 @@ protocol and does not override the substrate boundary, conventions, or git workf
 | Security | `npm audit` | track high/critical; see `specs/001` |
 | LOG compliance | `python scripts/validate-log-compliance.py` | PASS before committing a LOG entry |
 
-Baseline to preserve or improve: **569 tests / 33 suites green; ESLint + Prettier clean; 0 unexplained `npm audit` highs after `specs/001`.**
+Baseline to preserve or improve (v2 · 2026-05-29, after Phase 0+1): **614 tests / 42 suites green;
+ESLint 10 + Jest 30 + Prettier clean; `npm audit` 0 vulnerabilities.** Toolchain is current
+(`ws` 8.21, ESLint 10, Jest 30, `@google/genai`); runtime `dependencies` is just `ws`.
+
+> **Ledger safety (learned the hard way, iter-0037):** a rogue writer once clobbered the entire
+> `docs/LOG.md` history by matching the `== LOG-ANCHOR ==` *substring in the Rules text*. Always prepend
+> below the **standalone** `== LOG-ANCHOR ==` line (around line 42), never the first match, and serialize
+> ledger edits — do not run parallel writers against the same tree.
 
 ## Per-spec execution loop
 

@@ -4,8 +4,8 @@ To remain token-efficient, this file represents the absolute minimum context req
 
 - **CYCLE:** v21 (Active)
 - **CURRENT_TASK:** EXECUTE
-- **SPEC_FILE:** plan/specs/090_event_loop_latency_backpressure.md
-- **STATUS:** In Progress
+- **SPEC_FILE:** plan/specs/091_game_invariant_verifier.md
+- **STATUS:** Todo
 - **VERIFY_COMMAND:** npm run agent:check && npm run test:client && npm run test:client:browser
-- **LAST_VERIFIED:** 937 Jest backend tests green, 57 client Vitest tests green, 3 browser tests green (iter-0101)
-- **IMMEDIATE_OBJECTIVE:** Implement SPEC-090: Event-Loop Latency Monitoring & Dynamic Backpressure Shedding.
+- **LAST_VERIFIED:** 943 Jest backend tests green, 57 client Vitest tests green, 3 browser tests green (iter-0102)
+- **IMMEDIATE_OBJECTIVE:** Implement SPEC-091: Authoritative Game Invariant Verifier & Heartbeat Self-Healing Loop.

@@ -7,8 +7,8 @@ It records cycle transitions, key milestones, and precise next steps.
 
 ## Cycle 21 — 2026-05-30
 - **Status:** GREEN
-- **Summary:** Transitioned to Cycle 21 and successfully completed SPEC-092 (Automated Zombie Process Reaper & Orphan Port Cleanup Subsystem). Developed the `ProcessReaper.js` module tracking, spawning, and force-killing background worker threads and subprocesses. Created the PowerShell teardown utility `scripts/agent/cleanup-orphans.ps1` that scans Windows `Get-NetTCPConnection` ports 18000–18200 and terminates locking PIDs. Wired worker registration inside supervisor integration test suites, verifying 100% clean process teardown. All 936 Jest tests and 57 client Vitest tests are 100% green.
-- **Next Action:** Isolate SPEC-093 (State Leakage Defender & Workspace Isolation Sandbox) on a dedicated branch, build the workspace sanitize script, and verify with unit tests.
+- **Summary:** Successfully shipped the entire sandbox security and execution hardening wave: SPEC-092 (Automated Zombie Process Reaper & Orphan Port Cleanup), SPEC-093 (State Leakage Defender & Workspace Isolation), and SPEC-090 (Event-Loop Latency Monitoring & dynamic backpressure shedding). Developed `ProcessReaper.js` and `cleanup-orphans.ps1` to automatically track and force-kill leaked child processes and free locked socket ports on Windows hosts. Developed `workspace-sanitize.ps1` to detect and recursively clean untracked test directories (`data-test-*`, `.vitest-attachments`) while keeping critical plan files intact, automatically wired into git hooks (`pre-commit`, `post-checkout`, `pre-push`). Built the `LatencyMonitor.js` engine to actively measure event-loop lag and dynamically trigger client-level backpressure (shedding chat, system alerts, asteroid state updates, and environmental heartbeats under lag), exposed via `/metrics` HTTP endpoint. Fully covered all systems with custom integration and unit test suites.
+- **Next Action:** Transition to SPEC-091 (Game Invariant Verifier & Heartbeat Self-Healing Loop).
 
 ## Cycle 20 — 2026-05-30
 - **Status:** GREEN

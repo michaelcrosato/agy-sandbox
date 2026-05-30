@@ -39,6 +39,17 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
  
+## 2026-05-30T23:30 · iter-0101 · GREEN · cycle-21-spec-093-workspace-sanitize-latency-monitor
+- **Baseline:** `0cc5d78` on `feat/procedural-missions`; 936 Jest green.
+- **Move:** Implement State Leakage Defender (SPEC-093) and Event-Loop Latency Monitoring (SPEC-090).
+- **Changed:**
+  - Coded `scripts/agent/workspace-sanitize.ps1` to programmatically detect and clean untracked test directories (`data-test-*`, `.vitest-attachments`) while preserving plans.
+  - Registered the sanitizer into git hooks (`pre-commit`, `post-checkout`, `pre-push`) for perfect, predictable workspaces.
+  - Coded `src/net/LatencyMonitor.js` to track event-loop delays and dynamically drop non-essential chat, notifications, and asteroid updates during process lag.
+  - Wired latency metrics to the HTTP `/metrics` API endpoint.
+  - Created Jest suites `src/net/WorkspaceSanitizer.test.js` and `src/net/LatencyMonitor.test.js` along with server-level integration tests.
+- **Decisions:** Made sanitization run by default in Git lifecycle hooks to prevent untracked state drift; isolated all temp visual artifacts in `.gitignore`.
+- **Validation:** `npm run agent:check` → 943 Jest tests + 57 Vitest client + 3 Vitest browser tests completely green.
 ## 2026-05-30T23:15 · iter-0100 · GREEN · cycle-21-spec-092-zombie-process-reaper
 - **Baseline:** `0cc5d78` on `feat/procedural-missions`; 933 Jest + 57 Vitest client tests green.
 - **Move:** Implement Automated Zombie Process Reaper & Orphan Port Cleanup Subsystem (SPEC-092).

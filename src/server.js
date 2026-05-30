@@ -14,6 +14,7 @@ import { GameInstance } from "./engine/GameInstance.js";
 import { nextFrame } from "./net/BroadcastFramer.js";
 import { interestFilter } from "./net/interest.js";
 import { encode as encodeFrame } from "./net/BinaryCodec.js";
+import { perMessageDeflateOption } from "./net/wsCompression.js";
 import { JsonFileStore } from "./persistence/Store.js";
 import { PersistenceManager } from "./persistence/PersistenceManager.js";
 import { applyGalaxy, applyPlayer } from "./persistence/serializers.js";
@@ -71,6 +72,9 @@ const logger = createLogger({ level: process.env.LOG_LEVEL || "info" });
 // and accept only same-origin upgrades + an optional ALLOWED_ORIGINS allowlist
 // (defends against Cross-Site WebSocket Hijacking).
 const WS_MAX_PAYLOAD = 256 * 1024; // 256 KB — far above any legit client message
+// spec 037: permessage-deflate is opt-in (off by default; AoI + binary already
+// shrink the broadcast, and zlib costs CPU/memory at high concurrency).
+const WS_COMPRESSION = process.env.WS_COMPRESSION === "1";
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
   .split(",")
   .map((s) => s.trim())
@@ -981,6 +985,7 @@ async function joinRoom(clientObj, roomId, nickname) {
 const wss = new WebSocketServer({
   server,
   maxPayload: WS_MAX_PAYLOAD,
+  perMessageDeflate: perMessageDeflateOption(WS_COMPRESSION),
   verifyClient: (info) => {
     const allowed = isAllowedOrigin(info.origin, {
       host: info.req && info.req.headers ? info.req.headers.host : "",

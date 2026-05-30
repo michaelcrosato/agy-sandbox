@@ -11,7 +11,7 @@ param (
 )
 
 Write-Host "=========================================================" -ForegroundColor Green
-Write-Host "      STARFALL GALAXY — UNATTENDED AFK DAEMON LOOP       " -ForegroundColor Green
+Write-Host "      STARFALL GALAXY - UNATTENDED AFK DAEMON LOOP       " -ForegroundColor Green
 Write-Host "=========================================================" -ForegroundColor Green
 Write-Host "[INIT] Awaking loop grid..." -ForegroundColor Cyan
 
@@ -26,7 +26,7 @@ while ($true) {
     # Clear the host console to keep terminal presentation completely clean and token-efficient (spec /clear)
     Clear-Host
     Write-Host "---------------------------------------------------------" -ForegroundColor DarkCyan
-    Write-Host "   CYCLE RUN TICK #$IterationCount — $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Cyan
+    Write-Host "   CYCLE RUN TICK #$IterationCount - $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Cyan
     Write-Host "---------------------------------------------------------" -ForegroundColor DarkCyan
 
     # 1. Read current dynamic state anchor

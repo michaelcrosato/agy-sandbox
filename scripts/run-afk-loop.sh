@@ -10,7 +10,7 @@ GRAY='\033[1;30m'
 NC='\033[0;0m'
 
 echo -e "${GREEN}=========================================================${NC}"
-echo -e "${GREEN}      STARFALL GALAXY — UNATTENDED AFK DAEMON LOOP       ${NC}"
+echo -e "${GREEN}      STARFALL GALAXY - UNATTENDED AFK DAEMON LOOP       ${NC}"
 echo -e "${GREEN}=========================================================${NC}"
 echo -e "${CYAN}[INIT] Awaking loop grid...${NC}"
 
@@ -25,7 +25,7 @@ while true; do
     # Clear the console screen to keep terminal presentation completely clean and token-efficient (spec /clear)
     clear
     echo -e "${CYAN}---------------------------------------------------------${NC}"
-    echo -e "${CYAN}   CYCLE RUN TICK #$IterationCount — $(date +'%H:%M:%S')   ${NC}"
+    echo -e "${CYAN}   CYCLE RUN TICK #$IterationCount - $(date +'%H:%M:%S')   ${NC}"
     echo -e "${CYAN}---------------------------------------------------------${NC}"
 
     # 1. Read current dynamic state anchor

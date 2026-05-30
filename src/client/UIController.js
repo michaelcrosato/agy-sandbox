@@ -23,6 +23,9 @@ export class UIController {
     // Tracks the previous combined shield+armor total so we can detect a hit
     // landing even in multiplayer where `timeSinceLastHit` ticks server-side.
     this._lastShieldTotal = null;
+    // Previous-frame shield, tracked separately so a hit is classified as a
+    // shield vs armor hit by the actual per-pool delta (not the combined total).
+    this._lastShield = null;
     this._hitFlashTimerMs = 0;
     this._hitFlashKind = null; // "shield" | "armor"
     this._shieldLockoutMs = 0; // local countdown matching engine shieldRegenDelay
@@ -267,15 +270,17 @@ export class UIController {
       this._lastShieldTotal !== null &&
       currentTotal < this._lastShieldTotal - 0.5
     ) {
-      const shieldDropped =
-        (player.shield || 0) <
-        this._lastShieldTotal - (player.armor || 0) - 0.5;
+      // Classify off the actual shield delta: if shield itself dropped it is a
+      // shield hit (blue), otherwise armor absorbed it (red). `_lastShield` is
+      // non-null here because the hit branch requires a prior frame.
+      const shieldDropped = (player.shield || 0) < this._lastShield - 0.5;
       this._hitFlashTimerMs = 320;
       this._hitFlashKind = shieldDropped ? "shield" : "armor";
       // Combat lockout matches the engine's shieldRegenDelay (default 3s).
       this._shieldLockoutMs = (player.shieldRegenDelay || 3) * 1000;
     }
     this._lastShieldTotal = currentTotal;
+    this._lastShield = player.shield || 0;
 
     if (this._hitFlashTimerMs > 0) {
       this._hitFlashTimerMs = Math.max(0, this._hitFlashTimerMs - dtMs);

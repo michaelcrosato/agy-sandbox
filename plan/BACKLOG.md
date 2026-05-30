@@ -10,17 +10,6 @@ Items noticed mid-spec that are out of the current spec's scope. Triage into `sp
   *should* add mass, add `case "tractor": break;` to `applyOutfitStats` (so `applied` is true and the mass
   branch runs) and add a regression test. Low priority.
 
-- **Hit-flash kind is always "shield" — armor branch is dead (found by spec 021):**
-  `client/UIController._updateCombatFeedback` only enters its hit branch when
-  `currentTotal < this._lastShieldTotal - 0.5`, then computes
-  `shieldDropped = player.shield < this._lastShieldTotal - player.armor - 0.5`. That inequality is
-  algebraically the *same* condition (`shield + armor < _lastShieldTotal - 0.5`), so `shieldDropped` is
-  always true inside the branch and `_hitFlashKind` is never `"armor"` — armor hits flash the blue
-  shield-hit vignette instead of red. Root cause: only the *combined* shield+armor total is remembered
-  between frames, so a shield-vs-armor split can't be recovered. Fix: store the previous `shield` (and/or
-  `armor`) separately and classify off the actual per-pool delta, then assert the `"armor"` path in
-  `UIController.test.js` (the test currently avoids pinning the kind for armor hits). Low priority (cosmetic
-  feedback only), but it's a clear logic bug a future combat-feel pass should clean up.
 
 - **Typecheck rollout to the engine (from spec 024):** the `checkJs` gate (`tsc --noEmit`) currently
   covers the import-isolated `src/net/**`, `src/physics/**`, `src/server/**` (green, in `agent:check` + CI).

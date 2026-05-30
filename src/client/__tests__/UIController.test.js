@@ -75,15 +75,26 @@ describe("UIController combat-feedback HUD transitions", () => {
     expect(ui.shieldBar.classList.contains("shield-locked")).toBe(true);
   });
 
-  it("registers a hit when armor is stripped with shields already down", () => {
+  it("flashes an ARMOR hit (red) when armor is stripped with shields already down", () => {
     ui._updateCombatFeedback(ship({ shield: 0, armor: 100 }), 0, 100, 0);
     ui._updateCombatFeedback(ship({ shield: 0, armor: 70 }), 0, 100, 0);
 
-    // The hit is detected and the vignette fires; we intentionally do NOT pin
-    // _hitFlashKind here — the shield/armor classifier has a known defect (the
-    // "armor" branch is unreachable, see plan/BACKLOG.md).
+    // spec 028: shield didn't move (0→0), so this is an armor hit — the red
+    // vignette, NOT the shield-tinted one.
     expect(ui._hitFlashTimerMs).toBeGreaterThan(0);
+    expect(ui._hitFlashKind).toBe("armor");
     expect(ui.hitFlashOverlay.classList.contains("flash-active")).toBe(true);
+    expect(ui.hitFlashOverlay.classList.contains("shield-hit")).toBe(false);
+  });
+
+  it("flashes an ARMOR hit even with shields full when only armor drops", () => {
+    // Shield stays full (100→100); armor takes the damage (100→80).
+    ui._updateCombatFeedback(ship({ shield: 100, armor: 100 }), 100, 100, 0);
+    ui._updateCombatFeedback(ship({ shield: 100, armor: 80 }), 100, 100, 0);
+
+    expect(ui._hitFlashTimerMs).toBeGreaterThan(0);
+    expect(ui._hitFlashKind).toBe("armor");
+    expect(ui.hitFlashOverlay.classList.contains("shield-hit")).toBe(false);
   });
 
   it("clears the hit-flash overlay when no hit is active", () => {

@@ -32,7 +32,7 @@ modularization.** Remaining = Wave A (020–025) + Phase 2 (014–019)._
 - [x] `022` CI Node LTS matrix (20/22/24) + version alignment — **done** (files: `.github/workflows/ci.yml` `strategy.matrix.node-version: [20,22,24]` + `${{ matrix.node-version }}`, `fail-fast: false`; `.nvmrc` → 22 (Maintenance LTS). Local gate green on Node 24; CI runs 20/22 on push.)
 - [x] `023` dotenv 16→17 bump — **done** (files: `package.json` dotenv ^17.4; `scripts/run-agent.js` `dotenv.config({ quiet: true })` to suppress the new v17 banner; no-key smoke clean; `npm outdated` now empty; audit 0)
 - [ ] `024` JSDoc typecheck gate (`tsc --noEmit` over checkJs) — _blocked by: none_
-- [ ] `025` Continue server.js extraction (message handlers) — _blocked by: none (continues 007)_
+- [x] `025` Continue server.js extraction (message handlers) — **done** (files: new `src/engine/Trading.js` (`tradeOne` + `applyHullPurchase`) + `.test.js` (9); `server.js` `trade` + `ship_buy` handlers route through them, behavior-identical, boots; server.js → 1938 LOC)
 
 ## Phase 2 — Major Features
 - [ ] `014` Interest management (viewport/proximity delta filtering) — _blocked by: 015 (recommended)_

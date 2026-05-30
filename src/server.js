@@ -30,6 +30,7 @@ import { createRegistry } from "./net/metrics.js";
 import { createLogger } from "./net/logger.js";
 import { applyOutfitStats } from "./engine/Outfitting.js";
 import { DEFAULT_OUTFITS } from "./engine/outfitCatalog.js";
+import { tradeOne, applyHullPurchase } from "./engine/Trading.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import { shouldGcRoom, sanitizeNickname } from "./server/roomLifecycle.js";
 
@@ -1255,60 +1256,38 @@ wss.on("connection", (ws) => {
         const price = p.market[msg.item];
         if (price === undefined) return;
 
-        if (msg.action === "buy") {
-          if (clientObj.ship.credits < price) {
-            clientObj.send({
-              type: "notification",
-              message: "Insufficient credits!",
-              style: "error",
-            });
-            return;
-          }
-          if (clientObj.ship.addCargo(msg.item, 1)) {
-            clientObj.ship.credits -= price;
+        const result = tradeOne(clientObj.ship, msg.item, msg.action, price);
+        if (result.ok) {
+          if (msg.action === "buy") {
             room.economyManager.registerBuy(p.name, msg.item);
-
-            clientObj.send({
-              type: "notification",
-              message: `Purchased 1 ton of ${msg.item} for ${price} CR`,
-              style: "success",
-            });
-            clientObj.sendStats();
-            room.broadcast({
-              type: "market_sync",
-              planetName: p.name,
-              market: p.market,
-            });
           } else {
-            clientObj.send({
-              type: "notification",
-              message: "Cargo hold is full!",
-              style: "error",
-            });
-          }
-        } else if (msg.action === "sell") {
-          if (clientObj.ship.removeCargo(msg.item, 1)) {
-            clientObj.ship.credits += price;
             room.economyManager.registerSell(p.name, msg.item);
-
-            clientObj.send({
-              type: "notification",
-              message: `Sold 1 ton of ${msg.item} for ${price} CR`,
-              style: "success",
-            });
-            clientObj.sendStats();
-            room.broadcast({
-              type: "market_sync",
-              planetName: p.name,
-              market: p.market,
-            });
-          } else {
-            clientObj.send({
-              type: "notification",
-              message: `No ${msg.item} in cargo bay!`,
-              style: "error",
-            });
           }
+          clientObj.send({
+            type: "notification",
+            message:
+              result.reason === "bought"
+                ? `Purchased 1 ton of ${msg.item} for ${price} CR`
+                : `Sold 1 ton of ${msg.item} for ${price} CR`,
+            style: "success",
+          });
+          clientObj.sendStats();
+          room.broadcast({
+            type: "market_sync",
+            planetName: p.name,
+            market: p.market,
+          });
+        } else if (result.reason !== "unknown_action") {
+          clientObj.send({
+            type: "notification",
+            message:
+              result.reason === "insufficient_credits"
+                ? "Insufficient credits!"
+                : result.reason === "cargo_full"
+                  ? "Cargo hold is full!"
+                  : `No ${msg.item} in cargo bay!`,
+            style: "error",
+          });
         }
       }
     } else if (msg.type === "port_service") {
@@ -1409,41 +1388,21 @@ wss.on("connection", (ws) => {
         const s = p.shipyard.find((sh) => sh.name === msg.shipName);
         if (!s) return;
 
-        if (clientObj.ship.credits < s.cost) {
+        const result = applyHullPurchase(clientObj.ship, s);
+        if (result.ok) {
+          clientObj.send({
+            type: "notification",
+            message: `Acquired new ship: ${s.name}!`,
+            style: "success",
+          });
+          clientObj.sendStats();
+        } else {
           clientObj.send({
             type: "notification",
             message: "Insufficient credits for ship purchase!",
             style: "error",
           });
-          return;
         }
-
-        clientObj.ship.credits -= s.cost;
-        clientObj.ship.name = s.name;
-
-        clientObj.ship.maxShield = s.maxShield;
-        clientObj.ship.shield = s.maxShield;
-        clientObj.ship.maxArmor = s.maxArmor;
-        clientObj.ship.armor = s.maxArmor;
-        clientObj.ship.cargoCapacity = s.cargoCapacity;
-        clientObj.ship.thrustPower = s.thrustPower;
-        clientObj.ship.turnRate = s.turnRate;
-
-        clientObj.ship.cargo = {
-          food: 0,
-          electronics: 0,
-          minerals: 0,
-          luxuries: 0,
-          contraband: 0,
-          machinery: 0,
-        };
-
-        clientObj.send({
-          type: "notification",
-          message: `Acquired new ship: ${s.name}!`,
-          style: "success",
-        });
-        clientObj.sendStats();
       }
     } else if (msg.type === "mission_accept") {
       if (

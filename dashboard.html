@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Starfall Galaxy — Live System Dashboard</title>
+  
+  <!-- Premium Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* Premium CSS Custom Variables for Neo-Glassmorphism System */
+    :root {
+      --bg-dark: #0a0b10;
+      --bg-card: rgba(18, 20, 29, 0.65);
+      --border-card: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(0, 242, 254, 0.4);
+      --font-main: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      
+      /* Vibrant HSL Color Tokens */
+      --color-cyan: #00f2fe;
+      --color-blue: #4facfe;
+      --color-purple: #a18cd1;
+      --color-emerald: #05c46b;
+      --color-amber: #ff9f1a;
+      --color-crimson: #ff4d4d;
+      
+      --glow-cyan: 0 0 20px rgba(0, 242, 254, 0.25);
+      --glow-emerald: 0 0 20px rgba(5, 196, 107, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 10% 20%, rgba(79, 172, 254, 0.05) 0px, transparent 50%),
+        radial-gradient(at 90% 80%, rgba(161, 140, 209, 0.05) 0px, transparent 50%);
+      color: #e2e8f0;
+      font-family: var(--font-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding: 2.5rem 1.5rem;
+    }
+
+    /* Core Container Layout */
+    .dashboard-wrapper {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* Header with Live Pulser & Controls */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-card);
+      border-radius: 16px;
+      padding: 1.5rem 2rem;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo-container {
+      background: linear-gradient(135deg, var(--color-cyan), var(--color-blue));
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--glow-cyan);
+    }
+
+    .logo-container svg {
+      width: 24px;
+      height: 24px;
+      fill: #fff;
+    }
+
+    .title-area h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #fff, #a3b8cc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .title-area p {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 2px;
+    }
+
+    .pulse-indicator {
+      width: 8px;
+      height: 8px;
+      background-color: var(--color-emerald);
+      border-radius: 50%;
+      box-shadow: var(--glow-emerald);
+      animation: heartbeat 2s infinite ease-in-out;
+    }
+
+    .pulse-text {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .controls-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .poll-selector {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid var(--border-card);
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-family: var(--font-main);
+      font-size: 0.9rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .poll-selector:focus {
+      border-color: var(--color-cyan);
+      box-shadow: 0 0 10px rgba(0, 242, 254, 0.15);
+    }
+
+    .force-btn {
+      background: linear-gradient(135deg, rgba(0, 242, 254, 0.1), rgba(79, 172, 254, 0.1));
+      border: 1px solid rgba(0, 242, 254, 0.2);
+      border-radius: 8px;
+      color: var(--color-cyan);
+      font-family: var(--font-main);
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.5rem 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .force-btn:hover {
+      background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(79, 172, 254, 0.2));
+      border-color: var(--color-cyan);
+      box-shadow: var(--glow-cyan);
+      transform: translateY(-1px);
+    }
+
+    .force-btn:active {
+      transform: translateY(1px);
+    }
+
+    /* Core Stats Grid layout */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-card);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: transparent;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px) scale(1.01);
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.25);
+    }
+
+    /* Vibrant Card Accent Tops */
+    .card-cyan:hover::before { background: var(--color-cyan); }
+    .card-purple:hover::before { background: var(--color-purple); }
+    .card-emerald:hover::before { background: var(--color-emerald); }
+    .card-amber:hover::before { background: var(--color-amber); }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #94a3b8;
+    }
+
+    .card-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .card-icon svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .card-value {
+      font-family: var(--font-mono);
+      font-size: 2.25rem;
+      font-weight: 700;
+      letter-spacing: -1px;
+      line-height: 1;
+      margin-top: 0.5rem;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 0.5rem;
+    }
+
+    .card-footer strong {
+      color: #cbd5e1;
+    }
+
+    /* Custom visual bar gauges inside stats */
+    .performance-bar-bg {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      height: 8px;
+      width: 100%;
+      overflow: hidden;
+      margin-top: 0.5rem;
+      position: relative;
+    }
+
+    .performance-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--color-cyan), var(--color-blue));
+      border-radius: 4px;
+      transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Sub-Layout: Matchmaking & Shard details */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 1024px) {
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-card);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 1rem;
+    }
+
+    .panel-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .panel-subtitle {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    /* Table styles for active sectors */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #64748b;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    td {
+      padding: 1rem;
+      font-size: 0.9rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .room-id-badge {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      color: #94a3b8;
+    }
+
+    .shard-badge {
+      background: linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(161, 140, 209, 0.1));
+      border: 1px solid rgba(79, 172, 254, 0.2);
+      color: var(--color-blue);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .tag-badge {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      margin-right: 0.25rem;
+    }
+
+    .capacity-ratio {
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    .capacity-bar {
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.05);
+      overflow: hidden;
+      margin-top: 4px;
+      width: 80px;
+    }
+
+    .capacity-bar-fill {
+      height: 100%;
+      background: var(--color-cyan);
+    }
+
+    /* Right Sidebar styling */
+    .activity-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+    }
+
+    .feed-item {
+      display: flex;
+      gap: 0.75rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      padding: 0.75rem;
+      border-radius: 8px;
+    }
+
+    .feed-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .feed-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .feed-text {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+    }
+
+    .feed-time {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: #64748b;
+    }
+
+    /* Keyframe Animations */
+    @keyframes heartbeat {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 10px rgba(5, 196, 107, 0.2);
+        opacity: 0.8;
+      }
+      50% {
+        transform: scale(1.2);
+        box-shadow: 0 0 20px rgba(5, 196, 107, 0.6);
+        opacity: 1;
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.01);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #64748b;
+      padding: 2rem;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard-wrapper">
+    <!-- Premium Header -->
+    <header>
+      <div class="brand-section">
+        <div class="logo-container">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2L2 22h20L12 2zm0 3.8L18.8 19H5.2L12 5.8z"/>
+          </svg>
+        </div>
+        <div class="title-area">
+          <h1>STARFALL GALAXY</h1>
+          <p>
+            <span class="pulse-indicator" id="pulse-dot"></span>
+            <span class="pulse-text" id="pulse-status">Telemetry Active</span>
+          </p>
+        </div>
+      </div>
+      
+      <div class="controls-section">
+        <select class="poll-selector" id="refresh-rate">
+          <option value="2000">Refresh: 2s</option>
+          <option value="5000">Refresh: 5s</option>
+          <option value="10000">Refresh: 10s</option>
+          <option value="0">Manual Only</option>
+        </select>
+        <button class="force-btn" id="refresh-btn">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+          </svg>
+          Refresh Now
+        </button>
+      </div>
+    </header>
+
+    <!-- Visual Metrics Grid -->
+    <section class="metrics-grid">
+      <!-- Active Connections Card -->
+      <div class="card card-cyan">
+        <div class="card-header">
+          <span class="card-title">Galaxy Population</span>
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-cyan)" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+        </div>
+        <div class="card-value" id="val-connections">0</div>
+        <div class="card-footer">
+          <span>Active pilots currently in-flight</span>
+        </div>
+      </div>
+
+      <!-- Active Rooms Card -->
+      <div class="card card-purple">
+        <div class="card-header">
+          <span class="card-title">Active Sectors</span>
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-purple)" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+        </div>
+        <div class="card-value" id="val-rooms">0</div>
+        <div class="card-footer">
+          <span>Operational space sector instances</span>
+        </div>
+      </div>
+
+      <!-- CPU Performance (Tick MS) Card -->
+      <div class="card card-emerald">
+        <div class="card-header">
+          <span class="card-title">Server Tick Time</span>
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-emerald)" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+        </div>
+        <div class="card-value" id="val-tick">0.00 <span style="font-size: 1rem; color: #64748b;">ms</span></div>
+        <div class="performance-bar-bg">
+          <div class="performance-bar-fill" id="tick-fill"></div>
+        </div>
+        <div class="card-footer">
+          <span>Sim CPU latency (Target < 33.3ms)</span>
+        </div>
+      </div>
+
+      <!-- Egress Bandwidth Card -->
+      <div class="card card-amber">
+        <div class="card-header">
+          <span class="card-title">Egress Bandwidth</span>
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-amber)" stroke-width="2">
+              <path d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+            </svg>
+          </div>
+        </div>
+        <div class="card-value" id="val-bandwidth">0.00 <span style="font-size: 1rem; color: #64748b;">KB</span></div>
+        <div class="card-footer">
+          <span>Broadcast state egress volume</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Detail Grid: Active Rooms Table & System Events -->
+    <div class="detail-grid">
+      <!-- Active Rooms Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Active Sector Registry</h2>
+            <p class="panel-subtitle">Real-time room routing status & shards</p>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Sector Name</th>
+                <th>Shard Node</th>
+                <th>Play Mode</th>
+                <th>Sector Tags</th>
+                <th>Capacity</th>
+              </tr>
+            </thead>
+            <tbody id="rooms-table-body">
+              <tr>
+                <td colspan="5" class="empty-state">No sectors active. Space is quiet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- System Events log -->
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Telemetry Stream</h2>
+            <p class="panel-subtitle">Key performance events & reaps</p>
+          </div>
+        </div>
+
+        <div class="activity-feed" id="event-feed">
+          <div class="feed-item">
+            <div class="feed-icon" style="background: rgba(5, 196, 107, 0.1);">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-emerald)" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </div>
+            <div class="feed-content">
+              <span class="feed-text">Dashboard connected to Galaxy telemetry.</span>
+              <span class="feed-time" id="connect-time">--:--:--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Live Telemetry Engine Logic
+    let pollInterval = null;
+    let fallbackCounter = 0;
+    
+    // UI Elements mapping
+    const elConnections = document.getElementById("val-connections");
+    const elRooms = document.getElementById("val-rooms");
+    const elTick = document.getElementById("val-tick");
+    const elTickFill = document.getElementById("tick-fill");
+    const elBandwidth = document.getElementById("val-bandwidth");
+    const elRoomsTable = document.getElementById("rooms-table-body");
+    const elEventFeed = document.getElementById("event-feed");
+    const elRefreshRate = document.getElementById("refresh-rate");
+    const elRefreshBtn = document.getElementById("refresh-btn");
+    const elPulseDot = document.getElementById("pulse-dot");
+    const elPulseStatus = document.getElementById("pulse-status");
+
+    // Initialize Connection Timestamp
+    document.getElementById("connect-time").innerText = new Date().toLocaleTimeString();
+
+    // Fetch and Process System Metrics
+    async function fetchTelemetry() {
+      try {
+        const response = await fetch('/metrics');
+        if (!response.ok) throw new Error("HTTP error " + response.status);
+        
+        const data = await response.json();
+        renderTelemetry(data);
+        
+        // System is alive and responsive
+        elPulseDot.style.backgroundColor = "var(--color-emerald)";
+        elPulseDot.style.boxShadow = "var(--glow-emerald)";
+        elPulseStatus.innerText = "Telemetry Active";
+        
+      } catch (err) {
+        console.warn("Could not load real metrics, entering simulation/fallback mode.", err.message);
+        renderFallbackMockMetrics();
+      }
+    }
+
+    // Render Real Telemetry
+    function renderTelemetry(data) {
+      // Basic values
+      const connections = data.clients_active ?? 0;
+      const rooms = data.rooms_active ?? 0;
+      const avgTickTime = data.tick_ms_avg ?? data.tick_ms ?? 0;
+      const broadcastBytes = data.broadcast_bytes_total ?? 0;
+
+      elConnections.innerText = connections;
+      elRooms.innerText = rooms;
+      elTick.innerHTML = `${avgTickTime.toFixed(2)} <span style="font-size: 1rem; color: #64748b;">ms</span>`;
+
+      // Tick gauge color based on latency
+      const maxTickTarget = 33.3;
+      const percent = Math.min(100, (avgTickTime / maxTickTarget) * 100);
+      elTickFill.style.width = `${percent}%`;
+      
+      if (avgTickTime > 25) {
+        elTickFill.style.background = "var(--color-crimson)";
+      } else if (avgTickTime > 15) {
+        elTickFill.style.background = "var(--color-amber)";
+      } else {
+        elTickFill.style.background = "linear-gradient(90deg, var(--color-cyan), var(--color-blue))";
+      }
+
+      // Bandwidth KB calculation
+      const kb = (broadcastBytes / 1024);
+      elBandwidth.innerHTML = `${kb.toFixed(2)} <span style="font-size: 1rem; color: #64748b;">KB</span>`;
+
+      // Build active rooms table
+      if (data.rooms && data.rooms.length > 0) {
+        elRoomsTable.innerHTML = data.rooms.map(room => {
+          const capPercent = Math.min(100, (room.players / room.maxPlayers) * 100);
+          const shardIdx = room.shardIndex ?? 0;
+          const mode = room.mode ?? "FFA Sector";
+          const tags = room.tags && room.tags.length > 0 ? room.tags : ["galaxy"];
+          
+          return `
+            <tr>
+              <td>
+                <span class="room-id-badge">${room.id}</span>
+              </td>
+              <td>
+                <span class="shard-badge">Node ${shardIdx}</span>
+              </td>
+              <td>
+                <strong style="color: #f1f5f9;">${mode}</strong>
+              </td>
+              <td>
+                ${tags.map(t => `<span class="tag-badge">${t}</span>`).join('')}
+              </td>
+              <td>
+                <span class="capacity-ratio">${room.players} / ${room.maxPlayers}</span>
+                <div class="capacity-bar">
+                  <div class="capacity-bar-fill" style="width: ${capPercent}%;"></div>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        elRoomsTable.innerHTML = `
+          <tr>
+            <td colspan="5" class="empty-state">No sectors active. Shards are resting.</td>
+          </tr>
+        `;
+      }
+
+      // Log drops or GC if they occurred
+      if (data.slow_client_drops > 0) {
+        logEvent(`Warning: ${data.slow_client_drops} slow clients dropped to enforce backpressure.`, "var(--color-amber)");
+      }
+      if (data.heartbeat_reaps > 0) {
+        logEvent(`Notice: Reaped ${data.heartbeat_reaps} dead sockets during cleanup.`, "var(--color-blue)");
+      }
+    }
+
+    // Render simulated/fallback metrics (pure aesthetic presentation)
+    function renderFallbackMockMetrics() {
+      // Mock simulation mode when server isn't serving live JSON (e.g. static viewer)
+      fallbackCounter++;
+      
+      elPulseDot.style.backgroundColor = "var(--color-amber)";
+      elPulseDot.style.boxShadow = "0 0 10px rgba(255, 159, 26, 0.4)";
+      elPulseStatus.innerText = "Demo Sandbox Mode";
+
+      const mockConns = Math.floor(Math.sin(fallbackCounter / 10) * 5 + 8);
+      const mockRooms = Math.max(1, Math.floor(mockConns / 4) + 1);
+      const mockTick = 4.25 + Math.random() * 0.8;
+      const mockBandwidth = 25.4 + Math.sin(fallbackCounter / 5) * 5;
+
+      elConnections.innerText = Math.max(0, mockConns);
+      elRooms.innerText = mockRooms;
+      elTick.innerHTML = `${mockTick.toFixed(2)} <span style="font-size: 1rem; color: #64748b;">ms</span>`;
+      
+      const percent = (mockTick / 33.3) * 100;
+      elTickFill.style.width = `${percent}%`;
+      elTickFill.style.background = "linear-gradient(90deg, var(--color-cyan), var(--color-blue))";
+
+      elBandwidth.innerHTML = `${mockBandwidth.toFixed(2)} <span style="font-size: 1rem; color: #64748b;">KB</span>`;
+
+      // Render custom mock rooms table
+      elRoomsTable.innerHTML = `
+        <tr>
+          <td><span class="room-id-badge">sector-omega</span></td>
+          <td><span class="shard-badge">Node 0</span></td>
+          <td><strong style="color: #f1f5f9;">FFA Combat</strong></td>
+          <td><span class="tag-badge">conflict</span><span class="tag-badge">high-yield</span></td>
+          <td>
+            <span class="capacity-ratio">${Math.max(1, Math.floor(mockConns / 2))} / 16</span>
+            <div class="capacity-bar">
+              <div class="capacity-bar-fill" style="width: ${(Math.floor(mockConns / 2) / 16) * 100}%;"></div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><span class="room-id-badge">sector-polaris</span></td>
+          <td><span class="shard-badge">Node 1</span></td>
+          <td><strong style="color: #f1f5f9;">Trading Hub</strong></td>
+          <td><span class="tag-badge">safe</span><span class="tag-badge">market</span></td>
+          <td>
+            <span class="capacity-ratio">${Math.max(0, Math.floor(mockConns / 3))} / 32</span>
+            <div class="capacity-bar">
+              <div class="capacity-bar-fill" style="width: ${(Math.floor(mockConns / 3) / 32) * 100}%;"></div>
+            </div>
+          </td>
+        </tr>
+      `;
+
+      if (fallbackCounter % 8 === 0) {
+        logEvent(`Simulating event: Faction trade transaction executed.`, "var(--color-cyan)");
+      }
+    }
+
+    // Logger UI utility
+    function logEvent(text, color = "inherit") {
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement("div");
+      div.className = "feed-item";
+      div.innerHTML = `
+        <div class="feed-icon" style="background: rgba(255, 255, 255, 0.03);">
+          <div style="width: 6px; height: 6px; border-radius: 50%; background: ${color}"></div>
+        </div>
+        <div class="feed-content">
+          <span class="feed-text" style="color: ${color === "inherit" ? "#cbd5e1" : color}">${text}</span>
+          <span class="feed-time">${time}</span>
+        </div>
+      `;
+      elEventFeed.prepend(div);
+      
+      // Limit to 5 logs to avoid DOM bloat
+      if (elEventFeed.children.length > 6) {
+        elEventFeed.removeChild(elEventFeed.lastChild);
+      }
+    }
+
+    // Polling Setup
+    function setupPolling() {
+      const val = Number(elRefreshRate.value);
+      if (pollInterval) clearInterval(pollInterval);
+      
+      if (val > 0) {
+        pollInterval = setInterval(fetchTelemetry, val);
+      }
+    }
+
+    // Hook Interactive Actions
+    elRefreshBtn.addEventListener("click", () => {
+      fetchTelemetry();
+      logEvent("Manual telemetry sweep triggered.", "var(--color-purple)");
+    });
+    elRefreshRate.addEventListener("change", setupPolling);
+
+    // Initial Telemetry Sweep
+    fetchTelemetry();
+    setupPolling();
+  </script>
+</body>
+</html>

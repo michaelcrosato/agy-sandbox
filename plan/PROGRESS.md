@@ -21,7 +21,7 @@ _**v4 re-audit baseline (2026-05-30, ENTIRE v3 blueprint shipped): 775 Jest test
 
 ### Phase 2 — Scale-Out & Premium Features
 - [ ] `043` Matchmaking queue disconnect-rejoin lifecycle
-- [ ] `044` Interactive Observability Dashboard (`/dashboard.html`)
+- [x] `044` Interactive Observability Dashboard (`/dashboard.html`) — **done** (files: `dashboard.html`, new `src/server/dashboard.integration.test.js`; designed a premium glassmorphic live telemetry interface polling `/metrics` with sleek dark theme,Outfit typography, progress indicators, system logs, and responsive layout; added integration tests verifying successful HTTP serving of dashboard and JSON metrics; 778 tests green).
 
 ## v3 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

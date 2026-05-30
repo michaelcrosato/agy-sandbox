@@ -209,7 +209,7 @@ export class UIController {
       if (this.nebulaName)
         this.nebulaName.innerText = currentNebula.name.toUpperCase();
 
-      let title = "NEBULA STEALTH ACTIVE";
+      let title; // set by every branch of the hazardType chain below
       let details = `DRAG: ${currentNebula.dragMultiplier}x | `;
       let color = "rgba(192, 128, 255, 0.7)"; // violet
       let glow = "rgba(192, 128, 255, 0.3)";

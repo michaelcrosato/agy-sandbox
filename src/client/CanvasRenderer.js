@@ -1257,9 +1257,9 @@ export class CanvasRenderer {
       if (Math.abs(dx) > halfW || Math.abs(dy) > halfH) {
         const angle = Math.atan2(dy, dx);
 
-        // Project onto screen boundaries
-        let px = 0;
-        let py = 0;
+        // Project onto screen boundaries (both branches below assign px and py).
+        let px;
+        let py;
 
         // Calculate intersection point with screen bounds
         const slope = dy / dx;

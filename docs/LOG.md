@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-29T23:12 · iter-0045 · GREEN · spec-024-jsdoc-typecheck-gate
+
+- **Baseline:** `425a89c` on `main`; 628 tests / 44 suites green; no type verification existed. Executing `plan/specs/024` (Wave A).
+- **Move:** Add a no-emit TypeScript `checkJs` gate over the JSDoc-typed JS — a static safety net catching type bugs the runtime tests miss — starting small and ratcheting up.
+- **Changed:** Added `typescript` + `@types/node` devDeps and `tsconfig.json` (`allowJs`/`checkJs`/`noEmit`, lenient: `strict:false`, `noImplicitAny:false`, `skipLibCheck`, `types:[node]`). A full-graph run surfaced ~72 findings — overwhelmingly TS false-positives from the stateful classes' untyped `{...parentParams}` constructor configs and JSDoc type-name resolution. Per the spec's "start small / ratchet up", scoped the gate to the **import-isolated** `src/net/**`, `src/physics/**`, `src/server/**` modules (no engine deps → green). Added a `typecheck` npm script and wired it into both `agent:check` and `ci.yml` (the existing `scripts/agent/typecheck.*` already run `tsc` when a tsconfig exists). The checker caught a **real bug**: `WeaponArchetypes.js`'s `@type` annotation still listed only the original four archetypes, so `WeaponArchetype.FLAK` (added in EW7) was flagged — fixed the stale JSDoc.
+- **Decisions:** Scoped by import-isolation rather than `exclude` (TS checks imported files regardless of `exclude`). Did NOT use `@ts-nocheck` or weaken any JSDoc to force green — the engine ratchet (giving constructors `@param {Object}` configs, importing JSDoc types via `import("./X.js").X`, annotating `{}` index maps) is documented in `plan/BACKLOG.md` as the next increment.
+- **Validation:** `npm run typecheck` → exit 0 (green over the scoped graph). `npm run agent:check` → green (now prettier + eslint + **typecheck** + 628 tests / 44 suites). `npm audit` → 0. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 024 done; BACKLOG updated.
+- **Next:** `plan/specs/021` (client test harness) — the last Wave A item.
+
 ## 2026-05-29T22:58 · iter-0044 · GREEN · spec-025-server-extraction-trade-shipbuy
 
 - **Baseline:** `19e1e75` on `main`; 619 tests / 43 suites green; `server.js` 1,979 LOC. Executing `plan/specs/025` (Wave A, continues 007).

@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-29T22:00 · iter-0039 · GREEN · spec-012-jest-30-migration
+
+- **Baseline:** `b771b14` on branch `main`; 614 tests / 42 suites green; Jest 29.7. Executing `plan/specs/012` — the last Phase-1 item.
+- **Move:** Move the test runner onto the supported Jest 30 line.
+- **Changed:** `package.json`/lockfile — `jest` `^29.7`→`^30.4` (resolved 30.4.1). No config, no test, and no source changes were required: the suite runs under the existing `node --experimental-vm-modules node_modules/jest/bin/jest.js` ESM invocation exactly as before. The tests avoid fake timers (the ESM `jest` global limitation noted in earlier iters), so Jest 30's timer/matcher tightening did not bite.
+- **Decisions:** Kept determinism; changed nothing to make it pass. Verified stability by running the suite twice — no new flakiness and no open-handle/force-exit warnings under the new major.
+- **Validation:** `npx jest --version` → 30.4.1; `npm test` → 614 passed / 42 suites (twice, clean); `npm run agent:check` → green (prettier + eslint 10 + jest 30); `npm audit` → 0 vulnerabilities.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 012 done. **All seven in-scope Phase-1 specs (007,008,009,010,011,012,013) are complete; the toolchain is now ESLint 10 + Jest 30 with 0 audit advisories.**
+- **Next:** Phase 2 (`plan/specs/014`–`019`) remains for a future run — netcode (interest management, binary protocol), runtime wiring (faction/NPC), production chains, and the horizontal-scaling epic.
+
 ## 2026-05-29T21:55 · iter-0038 · GREEN · spec-011-eslint-10-migration
 
 - **Baseline:** `a23a3d7` on branch `main`; 614 tests / 42 suites green; ESLint 9.39. Executing `plan/specs/011`. (Note: HEAD is on `main` — a parallel process switched branches mid-run; history is linear and intact, see iter-0037.)

@@ -41,6 +41,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-30T12:00 · iter-0056 · GREEN · spec-035-client-visual-browser-testing
+
+- **Baseline:** `1100f83` on `main`; 720 Jest / 53 suites + 18 client JSDOM green. Executing `plan/specs/035` — Client visual layer (Vitest Browser Mode + Playwright config).
+- **Move:** Configure a dedicated Vitest Browser Mode + Playwright headless test runner and add visual regression and DOM event unit tests for client-only components.
+- **Changed:**
+  - Configured `@vitest/browser` and `@vitest/browser-playwright` provider with `vitest.browser.config.js` to run real Chromium tests headlessly.
+  - Excluded `**/*.browser.test.js` from `vitest.config.js` to isolate jsdom and real browser runs.
+  - Added new `test:client:browser` script in `package.json` to execute browser-mode tests.
+  - Implemented `CanvasRenderer.browser.test.js` which performs visual screenshot diffing (`toMatchScreenshot`) over a rendered mock spatial scene. Controlled random determinism via a custom LCG pseudo-random seed on `Math.random`.
+  - Implemented `InputHandler.browser.test.js` which triggers real KeyboardEvents on `window` and checks keyboard control mapping and blur listeners against the `Ship` model controls state.
+- **Decisions:** Used a dedicated `vitest.browser.config.js` config file to avoid interfering with standard fast JSDOM tests. Applied a seeded LCG `Math.random` override in the canvas renderer test to keep stars and nebulae positions completely stable for visual regression tests. Corrected tests to inspect `ship.controls` to align with the core engine's architectural model.
+- **Validation:** `npm run agent:check` -> green (720 Jest tests). `npm run test:client` -> green (18 tests). `npm run test:client:browser` -> green (2 files, 2 browser tests) with established reference screenshots. All gates fully green.
+- **Notes:** Substrate files untouched. No push/merge. Completed the final Core Upgrade specification of the v3 Phase 1 cycle.
+- **Next:** Phase 2 Scale-Out & Competitive Features (beginning with `019b` RedisStore behind `Store`).
+
 ## 2026-05-30T11:54 · iter-0055 · GREEN · v3-phase1-core-upgrades-and-server-extraction
 
 - **Baseline:** `23302c1` on `main`; 705 Jest / 53 suites + 17 client green.

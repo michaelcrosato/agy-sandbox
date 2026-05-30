@@ -24,8 +24,7 @@ _**v14 re-audit baseline (2026-05-30, ENTIRE v13 blueprint shipped): 897 Jest te
 ### Phase 0 — Quick Wins & Safety
 - [x] `071` Client-Side Input Prediction & Server Reconciliation Harness (engineer a pure deterministic reconciler simulating physics vectors, input sequences, and authoritative state snapping under packet lag) — **done** (files: `src/client/Reconciler.js`, `src/client/__tests/Reconciler.test.js`; successfully implemented a pure, deterministic Reconciler class caching sequences of enqueued local input vectors, predicting position/velocity/heading offsets instantly from control keys, and replaying unacknowledged inputs over authoritative server snapshot baselines on demand to reconcile coordinates cleanly under simulated network latency)
 
-### Phase 1 — Core Upgrades & Feature Delivery
-- [ ] `072` Snapshot Delta Compression Network Pipeline (implement client-specific acknowledged frame baseline tracking and field-level dynamic dirty checks to compress broadcast payloads)
+- [x] `072` Snapshot Delta Compression Network Pipeline (implement client-specific acknowledged frame baseline tracking and field-level dynamic dirty checks to compress broadcast payloads) — **done** (files: `src/net/DeltaStateCodec.js`, `src/net/DeltaStateCodec.test.js`; successfully implemented DeltaStateCodec supporting encodeDelta/decodeDelta that performs field-level property dirty checking and deletion scans against acknowledged baseline frames to significantly shrink WebSocket broadcast packets, fully covered by unit tests)
 
 ### Phase 2 — System Architecture
 - [ ] `073` Observability Teleboard Sparkline Chart Extensions (expand visual telemetry dashboard cards with smooth, self-rendering canvas sparkline line graphs visualizing real-time history logs)

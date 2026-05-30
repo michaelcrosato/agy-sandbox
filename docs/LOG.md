@@ -41,6 +41,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-30T04:30 · iter-0054 · GREEN · v3-phase0-quick-wins-safety
+
+- **Baseline:** `e103964` on `main`; 696 Jest / 51 suites + 17 client green. Executing v3 **Phase 0** (`026`–`029`) — the quick-win safety + bug-fix wave from the re-audit blueprint.
+- **Move:** Land the four small, high-Σ Phase 0 specs (CI currency, a security floor, a real bug, a sim-loop gap) before the heavier debt-paydown wave.
+- **Changed:**
+  - `026` CI/runtime currency: `.github/workflows/ci.yml` matrix `['20','22','24']`→`['22','24','26']` (dropped ≈-EOL Node 20, added Current 26) + `client-tests` job → Node 24; `package.json` `engines.node` `>=20`→`>=22`; `.nvmrc` `22`→`24`.
+  - `028` **Real bug fix** (found by 021's tests): `client/UIController._updateCombatFeedback` classified hit-flash kind with a formula algebraically identical to its own hit-branch guard, so the `"armor"` branch was unreachable and armor hits flashed the blue shield vignette. Now tracks `_lastShield` separately and classifies off `shield < _lastShield - 0.5`, so armor hits flash red. `UIController.test.js` pins both kinds (+1 case); removed the fixed `BACKLOG.md` entry.
+  - `027` Security floor: new `src/net/wsVersion.test.js` reads the **resolved** `ws` version and asserts ≥ **8.20.1** (the CVE-2026-45736 uninitialized-memory-disclosure fix) — `ws@8.21.0` already satisfies it; a future downgrade now fails the gate.
+  - `029` Sim loop: `GameInstance.decayReputations()` → `FactionRegistry.decayAll`; the server's 8s galaxy heartbeat calls it per room so standings heal toward neutral over time. +2 tests.
+- **Decisions:** `.nvmrc`→24 (Active LTS) over 22 (Maintenance) for local dev currency. Reputation decay runs on the existing 8s heartbeat with the registry's gentle default `decayRate` (≈30–60 min to neutralize a max standing) rather than adding a new timer. The ws floor is enforced by reading `node_modules/ws/package.json` (what actually ships) not the `package.json` range. No security control weakened.
+- **Validation:** `npm run agent:check` → green (**700 Jest tests / 52 suites**); `npm run test:client` → **18** (+1 from 028); `npm audit` → 0; `npm ls ws` → 8.21.0 (≥ floor); `timeout 6 node src/server.js` → boots (029 heartbeat path). `python scripts/validate-log-compliance.py` → PASS. Committed per-spec: `9f04453`/`2ccdc42`/`3c6527f`/`dad6fd2`.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 026–029 done. CI matrix verifies 22/24/26 on the next push.
+- **Next:** v3 **Phase 1** — `031` COMMODITIES, `030` engine typecheck ratchet, `033` advisor rollout, `032` mission/trade standings, `034` server extraction r3, `035` client visual layer.
+
 ## 2026-05-30T03:45 · iter-0053 · GREEN · plan-v3-reaudit-blueprint
 
 - **Baseline:** `ac7461b` on `main`; 696 Jest tests / 51 suites + 17 client green; 0 CVEs; `npm outdated` empty. The **entire v2 blueprint is shipped** (001–025 + 014–019). Planning/direction artifact (no product code changed) — a re-audit + 2026 web research to refresh `/plan/` for the next cycle.

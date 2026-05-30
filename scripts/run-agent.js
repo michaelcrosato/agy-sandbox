@@ -12,25 +12,25 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_REPOSITORY =
   process.env.GITHUB_REPOSITORY || "michaelcrosato/agy-sandbox";
 
-if (!GEMINI_API_KEY) {
-  console.error("❌ Error: GEMINI_API_KEY environment variable is not set.");
-  process.exit(1);
-}
-
-if (GEMINI_API_KEY.startsWith("ghp_")) {
+if (GEMINI_API_KEY && GEMINI_API_KEY.startsWith("ghp_")) {
   console.error(
     "❌ Error: GEMINI_API_KEY starts with 'ghp_', which is a GitHub Personal Access Token!",
   );
   console.error(
-    "   Please obtain a Gemini API key from Google AI Studio and put it in GEMINI_API_KEY in `.env`.",
+    "   Please set GITHUB_TOKEN in your `.env` to your 'ghp_...' token.",
   );
-  console.error("   Then put your 'ghp_...' token in GITHUB_TOKEN in `.env`.");
+  console.error(
+    "   For GEMINI_API_KEY, you can leave it blank/empty if you are on the Google AI Ultra package.",
+  );
   process.exit(1);
 }
 
 // Set up the Google GenAI client (unified @google/genai SDK).
 import { GoogleGenAI, Type } from "@google/genai";
-const genAI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+const genAI =
+  GEMINI_API_KEY && GEMINI_API_KEY !== "hidden"
+    ? new GoogleGenAI({ apiKey: GEMINI_API_KEY })
+    : new GoogleGenAI();
 
 // Helper to run shell commands safely
 function runCommand(command) {

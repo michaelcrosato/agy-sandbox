@@ -114,18 +114,18 @@ flowchart TD
 
 ---
 
-## EXECUTION WAVES (v12)
+## EXECUTION WAVES (v13)
 
-Completed waves (`001–064`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
+Completed waves (`001–067`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
 
-### Phase 0 — Quick Wins & Safety — `065`
-`065` Procedural Mission Completions & Standing Decay (map delivery/hunt dynamic generated missions, wire successful trade standing merits, and enable global reputation decay heartbeat).
+### Phase 0 — Quick Wins & Safety — `068`
+`068` Playwright Canvas Visual Smoke & Component Interactions (expand Vitest Browser Mode visual infrastructure, implement fully-populated viewport mocks, and verify visual regression stability).
 
-### Phase 1 — Core Upgrades & Feature Delivery — `066`
-`066` UtilityAI Advisor Spawns Rollout & Hardening (enable Goal-Driven UtilityAI on raiders, storyline bosses, escorts, mock bots, and harden threat detection perception).
+### Phase 1 — Core Upgrades & Feature Delivery — `069`
+`069` Matchmaking Room Queues, Ratings & Priority Filters (upgrade matchmaking loop to support Combat Rating MMR matching, dynamic search tolerance expansion over elapsed wait times, and group matchmaking).
 
-### Phase 2 — System Architecture — `067`
-`067` Centralize Commodities & System Invariants (centralize commodities to prevent drift, wire makeEmptyCargo across modules, and build robust economic invariant tests).
+### Phase 2 — System Architecture — `070`
+`070` Sharded Database Storage Backend Partitioning (introduce ShardedStore partitioning keys across multiple storage partition layers, isolating states and ensuring infinite horizontal scale).
 
 ---
 
@@ -135,17 +135,16 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 065 | Procedural Mission Completions & Standing Decay | 0 | 5 | 5 | 5 | 5 | 20 |
-| 066 | UtilityAI Advisor Spawns Rollout & Hardening | 1 | 5 | 5 | 5 | 5 | 20 |
-| 067 | Centralize Commodities & System Invariants | 2 | 4 | 5 | 5 | 5 | 19 |
+| 068 | Playwright Canvas Visual Smoke & Component Interactions | 0 | 5 | 5 | 5 | 5 | 20 |
+| 069 | Matchmaking Room Queues, Ratings & Priority Filters | 1 | 5 | 5 | 5 | 5 | 20 |
+| 070 | Sharded Database Storage Backend Partitioning | 2 | 5 | 5 | 5 | 5 | 20 |
 
-**Recommended start:** `065` (Σ20 — wiring procedural mission completions dynamically on landing or destruction, highly visible and robust faction standing pipeline completion), then proceed to `066` (Σ20) to roll out goal-driven advisor NPCs globally, and finally `067` (Σ19) to enforce strict commodity invariants.
+**Recommended start:** `068` (Σ20 — visual canvas automation checks), then proceed to `069` (Σ20) for dynamic rating-based matchmaking, and finally `070` (Σ20) for partition-sharded database storage scaling.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.
-- Client **canvas/visual** is still not headlessly verifiable without a real browser — `035` adds it; until then verify UI by booting `node src/server.js`.
-- A parallel/rogue writer corrupted `docs/LOG.md` once — **serialize ledger edits** and always anchor on the standalone `== LOG-ANCHOR ==` line, never the first substring match.
-- Scale-out specs touch the hot broadcast path — gate each behind a flag so single-process stays the default and is never regressed.
-- Every spec lands behind a green `npm run agent:check` (+ `npm run test:client` where client-touching); nothing pushed without authorization.
+- Client **canvas/visual** is verified using Vitest Browser Mode; keep screenshot tolerances high enough to avoid font/environment flakiness.
+- Every spec lands behind a green `npm run agent:check` (+ `npm run test:client` and `npm run test:client:browser`); nothing committed without validation.
+
 
 

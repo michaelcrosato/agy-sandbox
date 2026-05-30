@@ -16,8 +16,20 @@ _v9 re-audit baseline (2026-05-30, ENTIRE v8 blueprint shipped): 839 Jest tests 
 _v10 re-audit baseline (2026-05-30, ENTIRE v9 blueprint shipped): 871 Jest tests / 69 suites + 24 client green; 0 `npm audit` vulnerabilities; dynamic market events + fittings loadouts + multiplayer co-op squads all DONE. Remaining = none (ALL v10 blueprint shipped!).**_
 _v11 re-audit baseline (2026-05-30, ENTIRE v10 blueprint shipped): 871 Jest tests / 69 suites + 24 client green; 0 `npm audit` vulnerabilities; naval rank boards + physical trade caravans + multi-worker Redis cluster sync all DONE._
 _**v12 re-audit baseline (2026-05-30, ENTIRE v11 blueprint shipped): 882 Jest tests / 71 suites + 24 client green; 0 `npm audit` vulnerabilities; dynamic cosmic storms + Allied ambassador escorts + elite faction hunters all DONE.**_
+_**v13 re-audit baseline (2026-05-30, ENTIRE v12 blueprint shipped): 886 Jest tests / 71 suites + 24 client green; 0 `npm audit` vulnerabilities; procedural mission completions + UtilityAI global rollout + centralized commodities all DONE.**_
 
-## v12 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+## v13 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Quick Wins & Safety
+- [x] `068` Playwright Canvas Visual Smoke & Component Interactions (expand Vitest Browser Mode visual infrastructure, implement fully-populated viewport mocks, and verify visual regression stability) — **done** (files: `src/client/__tests/CanvasRenderer.browser.test.js`, `src/client/__tests__/__screenshots__/CanvasRenderer.browser.test.js/space-scene-composite-rich-chromium-win32.png`; successfully expanded the Vitest Browser Mode visual regression suite, implemented a fully-populated viewport mock with starfields, engine exhaust flares, target indicators, projectiles, cosmic storm bounds, cargo pods with active tethers, and stargates, and froze the system clock using a `Date.now()` mock to achieve 100% stable, identical screenshot comparisons across runs)
+
+### Phase 1 — Core Upgrades & Feature Delivery
+- [ ] `069` Matchmaking Room Queues, Ratings & Priority Filters (upgrade matchmaking loop to support Combat Rating MMR matching, dynamic search tolerance expansion over elapsed wait times, and group matchmaking)
+
+### Phase 2 — System Architecture
+- [ ] `070` Sharded Database Storage Backend Partitioning (introduce ShardedStore partitioning keys across multiple storage partition layers, isolating states and ensuring infinite horizontal scale)
+
+## v12 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
 - [x] `065` Procedural Mission Completions, Trade Standing Merits, & Standing Decay (map delivery/hunt dynamic generated missions, wire successful trade standing merits, and enable global reputation decay heartbeat) — **done** (files: `src/engine/MissionManager.js`, `src/engine/faction.integration.test.js`; successfully mapped generated delivery and hunt mission completions dynamically to checkArrivalCompletions and checkBountyCompletion, wired applyMissionConsequences dynamically on target landing or destruction to automatically update FactionRegistry standing merits and market commodity stock/prices, verified all behaviors including tradestanding pricing modifier decays and diplomatic relation propagation via robust integration tests; all 33 faction integration tests pass 100% green).

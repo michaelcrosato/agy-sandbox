@@ -15,6 +15,7 @@ import { nextFrame } from "./net/BroadcastFramer.js";
 import { interestFilter } from "./net/interest.js";
 import { encode as encodeFrame } from "./net/BinaryCodec.js";
 import { perMessageDeflateOption } from "./net/wsCompression.js";
+import { matchRoom } from "./server/matchmaking.js";
 import { JsonFileStore } from "./persistence/Store.js";
 import { PersistenceManager } from "./persistence/PersistenceManager.js";
 import { applyGalaxy, applyPlayer } from "./persistence/serializers.js";
@@ -760,10 +761,14 @@ function runEconomyNormalizationForRoom(room) {
 function broadcastLobbySync() {
   const roomsList = [];
   for (const room of instances.values()) {
+    const meta = room.metadata();
     roomsList.push({
-      id: room.id,
-      name: room.name,
-      playersCount: room.clients.size,
+      id: meta.id,
+      name: meta.name,
+      playersCount: meta.players,
+      mode: meta.mode,
+      maxPlayers: meta.maxPlayers,
+      tags: meta.tags,
     });
   }
 
@@ -785,10 +790,14 @@ function broadcastLobbySync() {
 function sendLobbyList(clientObj) {
   const roomsList = [];
   for (const room of instances.values()) {
+    const meta = room.metadata();
     roomsList.push({
-      id: room.id,
-      name: room.name,
-      playersCount: room.clients.size,
+      id: meta.id,
+      name: meta.name,
+      playersCount: meta.players,
+      mode: meta.mode,
+      maxPlayers: meta.maxPlayers,
+      tags: meta.tags,
     });
   }
 
@@ -1286,6 +1295,51 @@ wss.on("connection", (ws) => {
         }
       } else {
         sendLobbyList(clientObj);
+      }
+    } else if (msg.type === "quick_join") {
+      // spec 036: route the client into a room by criteria — join the fullest
+      // matching room with a free slot, create a new one if nothing matches, or
+      // tell the client to wait when every matching room is full.
+      const criteria = {
+        mode: msg.mode,
+        tags: Array.isArray(msg.tags) ? msg.tags : undefined,
+      };
+      const roomsMeta = [];
+      for (const r of instances.values()) roomsMeta.push(r.metadata());
+      const decision = matchRoom(roomsMeta, criteria);
+
+      if (decision.action === "join") {
+        joinRoom(clientObj, decision.roomId, msg.nickname);
+        broadcastLobbySync();
+      } else if (decision.action === "create") {
+        let qRoomId;
+        let qAttempts = 0;
+        do {
+          qRoomId = "room-" + Math.random().toString(36).substring(2, 9);
+          qAttempts++;
+        } while (
+          WORKERS > 1 &&
+          assignShard(qRoomId, WORKERS) !== SHARD_INDEX &&
+          qAttempts < 100
+        );
+        const created = new GameInstance(
+          qRoomId,
+          (msg.name || "Quick Match").trim().substring(0, 20) || "Quick Match",
+        );
+        if (typeof msg.mode === "string") created.mode = msg.mode;
+        if (Number.isFinite(msg.maxPlayers))
+          created.maxPlayers = msg.maxPlayers;
+        if (Array.isArray(msg.tags)) created.tags = msg.tags;
+        instances.set(qRoomId, created);
+        joinRoom(clientObj, qRoomId, msg.nickname);
+        broadcastLobbySync();
+      } else {
+        // Every matching sector is full — the client waits for a freed slot.
+        clientObj.send({
+          type: "matchmaking_queued",
+          message: "All matching sectors are full. You are in the queue.",
+          criteria,
+        });
       }
     } else if (msg.type === "create_room") {
       const name = (msg.name || "").trim().substring(0, 20);

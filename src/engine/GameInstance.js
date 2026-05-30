@@ -99,6 +99,11 @@ export class GameInstance {
   constructor(id, name) {
     this.id = id;
     this.name = name;
+    // Matchmaking metadata (spec 036); overridable per room before/at creation.
+    this.mode = "standard";
+    this.maxPlayers = 50;
+    /** @type {Array<string>} */
+    this.tags = [];
     this.engine = new SpaceEngine({ globalDrag: 0.1, restitution: 0.4 });
     this.planets = [];
     this.ais = [];
@@ -443,6 +448,23 @@ export class GameInstance {
   decayReputations(rate) {
     if (!this.factionRegistry) return {};
     return this.factionRegistry.decayAll(rate);
+  }
+
+  /**
+   * Matchmaking metadata for this room (spec 036): id/name plus mode, capacity,
+   * current population, and tags. `mode`/`maxPlayers`/`tags` default gracefully
+   * so existing rooms work unchanged; a future create-room flow can set them.
+   * @returns {{id:string, name:string, mode:string, maxPlayers:number, players:number, tags:Array<string>}}
+   */
+  metadata() {
+    return {
+      id: this.id,
+      name: this.name,
+      mode: this.mode || "standard",
+      maxPlayers: Number.isFinite(this.maxPlayers) ? this.maxPlayers : 50,
+      players: this.clients ? this.clients.size : 0,
+      tags: Array.isArray(this.tags) ? this.tags : [],
+    };
   }
 
   spawnNewAsteroid(initial = false) {

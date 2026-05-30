@@ -2192,6 +2192,18 @@ window.addEventListener("keydown", (e) => {
     if (network && network.connected) {
       network.send({ type: "escort_command", command: "attack" });
     }
+  } else if (e.code === "F2") {
+    // Delta wing formation
+    e.preventDefault();
+    if (network && network.connected) {
+      network.send({ type: "escort_formation", formation: "delta" });
+    }
+  } else if (e.code === "F3") {
+    // Defensive orbit formation
+    e.preventDefault();
+    if (network && network.connected) {
+      network.send({ type: "escort_formation", formation: "orbit" });
+    }
   }
 });
 

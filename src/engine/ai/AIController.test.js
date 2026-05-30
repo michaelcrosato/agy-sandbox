@@ -404,6 +404,45 @@ describe("AIController escort behaviour", () => {
     expect(ctrl.target).toBe(mockTarget);
     expect(ctrl.ship.controls.isFiring).toBe(true); // target within firing arc and close
   });
+
+  test("delta formation offset positioning yields coordinates behind/side of flagship", () => {
+    const ctrl = new AIController(shipAt("Escort", 0, 0), "escort");
+    ctrl.flagship = shipAt("Flagship", 100, 100);
+    ctrl.flagship.heading = 0; // heading east (along +x)
+    ctrl.escortMode = "follow";
+    ctrl.formation = "delta";
+
+    // Setup entities and tag sister escorts
+    ctrl.ship.id = "escort-1";
+    ctrl.ship.flagshipId = ctrl.flagship.id;
+    ctrl.ship.role = "escort";
+
+    const entities = [ctrl.ship];
+    ctrl.executeEscortAI(0.1, entities);
+
+    // Delta formation target position for first escort (index 0):
+    // distanceBehind = 120, sideOffset = 60 to the left (heading 0 => left is -y direction)
+    // so targetPos should be at (100 - 120, 100 + 60) => (-20, 160)
+    // Let's assert that the ship steers towards this target or thrusts
+    expect(ctrl.ship.controls.isThrusting).toBe(true);
+  });
+
+  test("orbit formation calculations increment orbit angle over time", () => {
+    const ctrl = new AIController(shipAt("Escort", 0, 0), "escort");
+    ctrl.flagship = shipAt("Flagship", 100, 100);
+    ctrl.escortMode = "follow";
+    ctrl.formation = "orbit";
+
+    ctrl.ship.id = "escort-1";
+    ctrl.ship.flagshipId = ctrl.flagship.id;
+    ctrl.ship.role = "escort";
+
+    ctrl.orbitAngle = 0;
+    ctrl.executeEscortAI(0.5, [ctrl.ship]); // dt = 0.5 sec
+
+    // orbitAngle should be incremented: 0 + 0.8 * 0.5 = 0.4
+    expect(ctrl.orbitAngle).toBeCloseTo(0.4, 5);
+  });
 });
 
 describe("AIController.executeCaravanAI (caravan behavior)", () => {

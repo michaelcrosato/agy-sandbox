@@ -243,6 +243,11 @@ export class CanvasRenderer {
       }
     }
 
+    // Draw holographic wingman guiding overlays
+    if (playerShip) {
+      this.drawWingmanGuides(playerShip, entities);
+    }
+
     // Draw target marker
     if (targetEntity && entities.includes(targetEntity)) {
       this.drawTargetIndicator(targetEntity);
@@ -1940,5 +1945,74 @@ export class CanvasRenderer {
     this.ctx.font = "8px 'Inter', sans-serif";
     this.ctx.fillStyle = `rgba(0, 255, 136, ${pulse * 0.7})`;
     this.ctx.fillText(`${dist} u`, labelOffX, labelOffY + 6);
+  }
+
+  drawWingmanGuides(playerShip, entities) {
+    if (!playerShip) return;
+
+    // Find all active, non-destroyed wingmen belonging to our player's flagship
+    const escorts = entities.filter(
+      (e) =>
+        e.type === "ship" &&
+        !e.isDestroyed &&
+        (e["flagshipId"] === playerShip.id ||
+          (e.role === "escort" && e["flagshipId"] === playerShip.id)),
+    );
+
+    if (escorts.length === 0) return;
+
+    this.ctx.save();
+
+    for (const escort of escorts) {
+      // 1. Draw dotted vector projection line linking player to wingman
+      this.ctx.strokeStyle = "rgba(0, 240, 255, 0.4)"; // soft holographic cyan
+      this.ctx.lineWidth = 1;
+      this.ctx.setLineDash([4, 4]); // neat dotted style
+      this.ctx.beginPath();
+      this.ctx.moveTo(playerShip.position.x, playerShip.position.y);
+      this.ctx.lineTo(escort.position.x, escort.position.y);
+      this.ctx.stroke();
+
+      // 2. Draw subtle holographic bounding brackets around the wingman ship
+      const size = escort.radius || 20;
+      const x = escort.position.x;
+      const y = escort.position.y;
+      const bracketSize = size + 6;
+      const armLength = 8;
+
+      this.ctx.strokeStyle = "rgba(0, 240, 255, 0.65)";
+      this.ctx.lineWidth = 1.5;
+      this.ctx.setLineDash([]); // solid line for brackets
+
+      // Top-Left corner bracket
+      this.ctx.beginPath();
+      this.ctx.moveTo(x - bracketSize + armLength, y - bracketSize);
+      this.ctx.lineTo(x - bracketSize, y - bracketSize);
+      this.ctx.lineTo(x - bracketSize, y - bracketSize + armLength);
+      this.ctx.stroke();
+
+      // Top-Right corner bracket
+      this.ctx.beginPath();
+      this.ctx.moveTo(x + bracketSize - armLength, y - bracketSize);
+      this.ctx.lineTo(x + bracketSize, y - bracketSize);
+      this.ctx.lineTo(x + bracketSize, y - bracketSize + armLength);
+      this.ctx.stroke();
+
+      // Bottom-Left corner bracket
+      this.ctx.beginPath();
+      this.ctx.moveTo(x - bracketSize + armLength, y + bracketSize);
+      this.ctx.lineTo(x - bracketSize, y + bracketSize);
+      this.ctx.lineTo(x - bracketSize, y + bracketSize - armLength);
+      this.ctx.stroke();
+
+      // Bottom-Right corner bracket
+      this.ctx.beginPath();
+      this.ctx.moveTo(x + bracketSize - armLength, y + bracketSize);
+      this.ctx.lineTo(x + bracketSize, y + bracketSize);
+      this.ctx.lineTo(x + bracketSize, y + bracketSize - armLength);
+      this.ctx.stroke();
+    }
+
+    this.ctx.restore();
   }
 }

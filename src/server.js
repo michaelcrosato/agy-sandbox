@@ -2228,6 +2228,20 @@ wss.on("connection", (ws) => {
       }
     } else if (msg.type === "escort_command") {
       handleEscortCommand(clientObj, msg, room);
+    } else if (msg.type === "escort_formation") {
+      let count = 0;
+      const formation = msg.formation || "orbit";
+      for (const ai of room.ais) {
+        if (ai.role === "escort" && ai.flagship === clientObj.ship) {
+          ai.formation = formation;
+          count++;
+        }
+      }
+      clientObj.send({
+        type: "notification",
+        message: `Wingmen ordered into [${formation.toUpperCase()}] formation (${count} ships)`,
+        style: "success",
+      });
     } else if (msg.type === "ping") {
       clientObj.send({
         type: "pong",

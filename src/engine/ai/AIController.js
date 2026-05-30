@@ -58,6 +58,8 @@ export class AIController {
     // Escort AI parameters
     this.flagship = null;
     this.escortMode = "follow"; // "follow" (defend), "hold" (stay), "attack" (target lock)
+    /** @type {string} */
+    this.formation = "orbit"; // "orbit" (defensive orbit), "delta" (Delta wing)
 
     // Faction conflict zone states
     this.isConflictZone = false;
@@ -551,15 +553,70 @@ export class AIController {
         this.ship.controls.isThrusting = true;
       }
     } else {
-      // Formation cruising behind flagship
-      const distToFlag = this.ship.position.distance(this.flagship.position);
-      if (distToFlag > 160) {
-        this.steerTowards(this.flagship.position);
-        this.ship.controls.isThrusting = true;
-      } else if (distToFlag < 70) {
-        this.ship.controls.isBraking = true;
+      // Ensure local flagship properties are tagged on the ship so other players/clients see them
+      if (this.flagship) {
+        this.ship["flagshipId"] = this.flagship.id;
+        this.ship.role = "escort";
+      }
+
+      // Filter and sort active sister escorts for the same flagship
+      const sisterEscorts = entities.filter(
+        (e) =>
+          e.type === "ship" &&
+          !e.isDestroyed &&
+          e["flagshipId"] === this.flagship.id,
+      );
+      sisterEscorts.sort((a, b) => (a.id < b.id ? -1 : 1));
+      const escortIndex = Math.max(0, sisterEscorts.indexOf(this.ship));
+      const totalEscorts = Math.max(1, sisterEscorts.length);
+
+      let targetPos;
+      const formation = String(this.formation || "orbit");
+
+      if (formation === "delta") {
+        // Delta Wing (V-formation behind flagship)
+        const distanceBehind = 120 + 60 * Math.floor(escortIndex / 2);
+        const sideOffset = 60 * (Math.floor(escortIndex / 2) + 1);
+        const angle = this.flagship.heading;
+        const forwardX = Math.cos(angle);
+        const forwardY = Math.sin(angle);
+        const leftX = -Math.sin(angle);
+        const leftY = Math.cos(angle);
+
+        const isEven = escortIndex % 2 === 0;
+        const sideSign = isEven ? 1 : -1;
+
+        targetPos = new Vector2D(
+          this.flagship.position.x -
+            distanceBehind * forwardX +
+            sideOffset * leftX * sideSign,
+          this.flagship.position.y -
+            distanceBehind * forwardY +
+            sideOffset * leftY * sideSign,
+        );
       } else {
-        // Gently match flagship heading
+        // Defensive Orbit (rotating circle around flagship)
+        if (this.orbitAngle === undefined) {
+          this.orbitAngle = 0;
+        }
+        this.orbitAngle = (this.orbitAngle + 0.8 * dt) % (2 * Math.PI);
+        const angle =
+          this.orbitAngle + (2 * Math.PI * escortIndex) / totalEscorts;
+        const radius = 150;
+
+        targetPos = new Vector2D(
+          this.flagship.position.x + radius * Math.cos(angle),
+          this.flagship.position.y + radius * Math.sin(angle),
+        );
+      }
+
+      // Cruising to target formation position
+      const distToTarget = this.ship.position.distance(targetPos);
+      if (distToTarget > 15) {
+        this.steerTowards(targetPos);
+        this.ship.controls.isThrusting = true;
+      } else {
+        // Match flagship heading and speed when close to slot
         const angleDiff = this.normalizeAngle(
           this.flagship.heading - this.ship.heading,
         );
@@ -567,11 +624,12 @@ export class AIController {
           if (angleDiff > 0) this.ship.controls.isTurningRight = true;
           else this.ship.controls.isTurningLeft = true;
         }
-        // Match speed relative to target flagship
-        if (
-          this.ship.velocity.magnitude() < this.flagship.velocity.magnitude()
-        ) {
+        const flagshipSpeed = this.flagship.velocity.magnitude();
+        const mySpeed = this.ship.velocity.magnitude();
+        if (mySpeed < flagshipSpeed - 5) {
           this.ship.controls.isThrusting = true;
+        } else if (mySpeed > flagshipSpeed + 5) {
+          this.ship.controls.isBraking = true;
         }
       }
     }

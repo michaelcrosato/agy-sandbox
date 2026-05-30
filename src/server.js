@@ -58,6 +58,7 @@ import {
   handlePresetSave,
   handlePresetLoad,
   handleOreRefine,
+  handleDistressBeacon,
 } from "./server/portHandlers.js";
 import {
   tradeOne,
@@ -295,6 +296,46 @@ const physicsInterval = setInterval(() => {
 
     for (const ai of room.ais) {
       if (ai.ship.isDestroyed) continue;
+
+      if (ai.isRefuelTanker && ai.refuelTargetId) {
+        const targetClient = room.clients.get(ai.refuelTargetId);
+        if (
+          targetClient &&
+          targetClient.ship &&
+          !targetClient.ship.isDestroyed
+        ) {
+          ai.destination = targetClient.ship.position.clone();
+
+          const dist = ai.ship.position.distance(targetClient.ship.position);
+          if (dist < 90) {
+            targetClient.ship.hyperFuel = targetClient.ship.maxHyperFuel;
+            targetClient.send({
+              type: "notification",
+              message:
+                "Rescue Caravan: Allied Refuel Tanker transferred maximum hyperFuel!",
+              style: "success",
+            });
+            targetClient.sendStats();
+
+            const alertMsg = `RESCUE: ${targetClient.nickname} has been refueled by an allied Refuel Tanker.`;
+            room.broadcastNotification(alertMsg, "info");
+            room.broadcast({
+              type: "chat",
+              channel: "global",
+              sender: "GALAXY-NEWS",
+              text: alertMsg,
+            });
+
+            ai.ship.isDestroyed = true;
+            room.engine.removeEntity(ai.ship.id);
+            continue;
+          }
+        } else {
+          ai.ship.isDestroyed = true;
+          room.engine.removeEntity(ai.ship.id);
+          continue;
+        }
+      }
 
       if (ai.role === "merchant" && !ai.destination) {
         const potentialHubs = room.planets.filter(
@@ -2222,6 +2263,8 @@ wss.on("connection", (ws) => {
         message: `Wingmen ordered into [${formation.toUpperCase()}] formation (${count} ships)`,
         style: "success",
       });
+    } else if (msg.type === "distress_beacon") {
+      handleDistressBeacon(clientObj, room);
     } else if (msg.type === "ping") {
       clientObj.send({
         type: "pong",

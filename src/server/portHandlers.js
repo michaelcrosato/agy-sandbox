@@ -14,6 +14,9 @@ import {
   applyHullPurchase,
   getModifiedUpgradePrice,
 } from "../engine/Trading.js";
+import { Vector2D } from "../physics/Vector2D.js";
+import { Ship } from "../engine/Ship.js";
+import { AIController } from "../engine/ai/AIController.js";
 
 /**
  * Handles purchase of an outfit from a planet.
@@ -692,6 +695,132 @@ export function handleOreRefine(clientObj, quantity, targetCommodity, room) {
       type: "notification",
       message: errorMsg,
       style: "error",
+    });
+  }
+}
+
+/**
+ * Handles the distress beacon trigger.
+ * @param {Object} clientObj - The socket client connection object.
+ * @param {Object} room - The Dynamic GameInstance room.
+ */
+export function handleDistressBeacon(clientObj, room) {
+  if (!clientObj || !clientObj.ship || !room) return;
+
+  const hasBeacon =
+    clientObj.ship.outfits &&
+    clientObj.ship.outfits.includes("Emergency Distress Beacon");
+  if (!hasBeacon) {
+    clientObj.send({
+      type: "notification",
+      message: "No Emergency Distress Beacon installed!",
+      style: "error",
+    });
+    return;
+  }
+
+  let governingFaction = "Independents";
+  for (const planet of room.planets) {
+    if (
+      planet.faction === "Federation" ||
+      planet.faction === "Frontier League" ||
+      planet.faction === "Pirates"
+    ) {
+      governingFaction = planet.faction;
+      break;
+    }
+  }
+
+  const standing = room.factionRegistry.getStanding(
+    clientObj.id,
+    governingFaction,
+  );
+  const roomLower = room.name.toLowerCase();
+  const isRimPirateSector =
+    governingFaction === "Pirates" ||
+    /\bpirate\b/.test(roomLower) ||
+    /\brim\b/.test(roomLower) ||
+    /\brogue\b/.test(roomLower);
+  const isAmbush = standing < 0 || isRimPirateSector;
+
+  if (isAmbush) {
+    // Spawn pirate ambush!
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 800;
+    const spawnPos = clientObj.ship.position.add(
+      new Vector2D(Math.cos(angle) * dist, Math.sin(angle) * dist),
+    );
+
+    const pirateShip = new Ship({
+      name: "Rim Pirate Raider",
+      position: spawnPos,
+      velocity: new Vector2D(0, 0),
+      maxShield: 200,
+      maxArmor: 150,
+      thrustPower: 14000,
+      turnRate: 3.0,
+      weaponDamage: 20,
+      weaponCooldown: 0.4,
+    });
+    pirateShip.role = "pirate";
+    pirateShip.faction = "Pirates";
+
+    const controller = new AIController(pirateShip, "pirate", {
+      useUtilityAdvisor: true,
+      factionPolicy: room.factionRegistry.factionPolicy(),
+      standingPolicy: room.factionRegistry.standingPolicy(),
+    });
+    controller.target = clientObj.ship;
+
+    room.engine.addEntity(pirateShip);
+    room.ais.push(controller);
+
+    clientObj.send({
+      type: "notification",
+      message:
+        "Warning: Distress beacon signal intercepted! Hostile Rim Pirate Raider incoming!",
+      style: "error",
+    });
+  } else {
+    // Spawn allied rescue/refuel caravan!
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 800;
+    const spawnPos = clientObj.ship.position.add(
+      new Vector2D(Math.cos(angle) * dist, Math.sin(angle) * dist),
+    );
+
+    const factionName =
+      governingFaction === "Independents" ? "Independent" : governingFaction;
+    const tankerShip = new Ship({
+      name: `${factionName} Refuel Tanker`,
+      position: spawnPos,
+      velocity: new Vector2D(0, 0),
+      maxShield: 350,
+      maxArmor: 250,
+      thrustPower: 12000,
+      turnRate: 2.2,
+      weaponDamage: 12,
+      weaponCooldown: 0.5,
+    });
+    tankerShip.role = "merchant";
+    tankerShip.faction = governingFaction;
+
+    const controller = new AIController(tankerShip, "merchant", {
+      useUtilityAdvisor: false,
+      factionPolicy: room.factionRegistry.factionPolicy(),
+      standingPolicy: room.factionRegistry.standingPolicy(),
+    });
+    controller.destination = clientObj.ship.position.clone();
+    controller.isRefuelTanker = true;
+    controller.refuelTargetId = clientObj.id;
+
+    room.engine.addEntity(tankerShip);
+    room.ais.push(controller);
+
+    clientObj.send({
+      type: "notification",
+      message: `Distress beacon broadcasted. Allied ${factionName} Refuel Tanker scrambled to your coordinates!`,
+      style: "success",
     });
   }
 }

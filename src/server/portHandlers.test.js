@@ -8,8 +8,10 @@ import {
   handlePresetSave,
   handlePresetLoad,
   handleOreRefine,
+  handleDistressBeacon,
 } from "./portHandlers.js";
 import { DEFAULT_OUTFITS } from "../engine/outfitCatalog.js";
+import { Vector2D } from "../physics/Vector2D.js";
 
 describe("portHandlers.handleOutfitBuy (spec 046)", () => {
   let mockClient;
@@ -723,5 +725,104 @@ describe("portHandlers.handleOreRefine & Mining Laser Mass (spec 077)", () => {
     // Agility (effective turn rate) should decrease: 4.0 * (2000 / 2250) = 3.555...
     expect(mockClient.ship.getEffectiveTurnRate()).toBeLessThan(4.0);
     expect(mockClient.ship.getEffectiveTurnRate()).toBeCloseTo(3.55555, 4);
+  });
+});
+
+describe("portHandlers.handleDistressBeacon (spec 084)", () => {
+  let mockClient;
+  let mockRoom;
+
+  beforeEach(() => {
+    mockClient = {
+      id: "cmdr-test",
+      nickname: "TestCmdr",
+      ship: {
+        id: "cmdr-test",
+        outfits: [],
+        position: new Vector2D(100, 100),
+      },
+      sentNotifications: [],
+      send(data) {
+        if (data.type === "notification") {
+          this.sentNotifications.push(data);
+        }
+      },
+      sendStats() {},
+    };
+
+    mockRoom = {
+      name: "Sol Prime",
+      planets: [{ name: "Sol", faction: "Federation" }],
+      factionRegistry: {
+        getStanding(_playerId, _faction) {
+          return 50; // friendly standing by default
+        },
+        factionPolicy() {
+          return null;
+        },
+        standingPolicy() {
+          return null;
+        },
+      },
+      engine: {
+        entities: [],
+        addEntity(e) {
+          this.entities.push(e);
+        },
+      },
+      ais: [],
+    };
+  });
+
+  test("rejects if distress beacon is not equipped", () => {
+    handleDistressBeacon(mockClient, mockRoom);
+
+    expect(mockClient.sentNotifications[0]).toEqual({
+      type: "notification",
+      message: "No Emergency Distress Beacon installed!",
+      style: "error",
+    });
+    expect(mockRoom.engine.entities.length).toBe(0);
+  });
+
+  test("successfully summons allied refuel tanker when standing is friendly/neutral", () => {
+    mockClient.ship.outfits.push("Emergency Distress Beacon");
+
+    handleDistressBeacon(mockClient, mockRoom);
+
+    expect(mockClient.sentNotifications[0].message).toContain(
+      "scrambled to your coordinates",
+    );
+    expect(mockClient.sentNotifications[0].style).toBe("success");
+    expect(mockRoom.engine.entities.length).toBe(1);
+
+    const spawnedTanker = mockRoom.engine.entities[0];
+    expect(spawnedTanker.name).toBe("Federation Refuel Tanker");
+    expect(mockRoom.ais.length).toBe(1);
+
+    const tankerAi = mockRoom.ais[0];
+    expect(tankerAi.isRefuelTanker).toBe(true);
+    expect(tankerAi.refuelTargetId).toBe("cmdr-test");
+    expect(tankerAi.destination).toEqual({ x: 100, y: 100 });
+  });
+
+  test("successfully summons pirate raider when standing is hostile", () => {
+    mockClient.ship.outfits.push("Emergency Distress Beacon");
+    mockRoom.factionRegistry.getStanding = () => -50; // hostile standing!
+
+    handleDistressBeacon(mockClient, mockRoom);
+
+    expect(mockClient.sentNotifications[0].message).toContain(
+      "Hostile Rim Pirate Raider incoming!",
+    );
+    expect(mockClient.sentNotifications[0].style).toBe("error");
+    expect(mockRoom.engine.entities.length).toBe(1);
+
+    const spawnedPirate = mockRoom.engine.entities[0];
+    expect(spawnedPirate.name).toBe("Rim Pirate Raider");
+    expect(mockRoom.ais.length).toBe(1);
+
+    const pirateAi = mockRoom.ais[0];
+    expect(pirateAi.target).toBe(mockClient.ship);
   });
 });

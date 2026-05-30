@@ -154,4 +154,13 @@ export const DEFAULT_OUTFITS = Object.freeze([
     description:
       "Emits an intense localized gravity well. Prevents nearby hostile ships within 300 units from engaging warp drives or jumping sectors.",
   },
+  {
+    name: "Emergency Distress Beacon",
+    cost: 1500,
+    type: "utility",
+    value: 1,
+    mass: 100,
+    description:
+      "A purchaseable emergency beacon. Can be activated in deep space to broadcast a distress signal and summon refuel tankers or rim pirates.",
+  },
 ]);

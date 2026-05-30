@@ -73,6 +73,12 @@ export class AIController {
     this.consumerPlanetName = null;
     this.targetPlanetName = null;
     this.route = [];
+
+    // Refuel tanker AI states (distress beacon, spec 084)
+    /** @type {boolean} */
+    this.isRefuelTanker = false;
+    /** @type {string|null} */
+    this.refuelTargetId = null;
   }
 
   /**

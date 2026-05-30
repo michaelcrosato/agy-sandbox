@@ -468,6 +468,8 @@ const physicsInterval = setInterval(() => {
 
     // F. Scramble aggressive interceptor patrols for hostile players
     room.checkReputationPatrolSpawns(dt);
+    room.checkEliteHunterSpawns(dt);
+    room.checkEscortAmbushSpawns(dt);
     room.checkContrabandSpaceScans(dt);
 
     // G. Update local room physical kinematics
@@ -1103,6 +1105,54 @@ wss.on("connection", (ws) => {
       type: "notification",
       message: `ALERT: Wanted threat ${mission.targetName} spotted in orbit of ${destPlanet.name}!`,
       style: "error",
+    });
+  };
+
+  clientObj.missionManager.onEscortAccepted = (mission) => {
+    const room = instances.get(clientObj.roomId);
+    if (!room) return;
+    const originPlanet = room.planets.find((p) => p.name === mission.origin);
+    if (!originPlanet) return;
+
+    const spawnAngle = Math.random() * Math.PI * 2;
+    const spawnDist = originPlanet.landingRadius + 180;
+    const spawnPos = originPlanet.position.add(
+      new Vector2D(
+        Math.cos(spawnAngle) * spawnDist,
+        Math.sin(spawnAngle) * spawnDist,
+      ),
+    );
+
+    const transportShip = new Ship({
+      name: "Diplomatic Transport",
+      position: spawnPos,
+      velocity: new Vector2D(0, 0),
+      maxShield: 400,
+      maxArmor: 300,
+      thrustPower: 12000,
+      turnRate: 2.0,
+      weaponDamage: 10,
+      weaponCooldown: 0.5,
+    });
+    transportShip.role = "escort";
+    transportShip.faction = mission.faction;
+
+    const controller = new AIController(transportShip, "escort", {
+      useUtilityAdvisor: true,
+      factionPolicy: room.factionRegistry.factionPolicy(),
+      standingPolicy: room.factionRegistry.standingPolicy(),
+    });
+    controller.flagship = clientObj.ship;
+    controller.escortMode = "follow";
+
+    room.engine.addEntity(transportShip);
+    room.ais.push(controller);
+
+    clientObj.send({
+      type: "notification",
+      message:
+        "ESCORT ACTIVE: Keep the Diplomatic Transport safe on the way to destination!",
+      style: "success",
     });
   };
 

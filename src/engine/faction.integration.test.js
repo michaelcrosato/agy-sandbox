@@ -1036,4 +1036,166 @@ describe("mission + trade faction standings (spec 032)", () => {
       room.destroy();
     });
   });
+
+  describe("SPEC-064 Reputation Milestones: Escort ambassador & Elite hunters", () => {
+    test("Allied standing (>60) generates elite escort contracts", () => {
+      const room = new GameInstance("room-test-allied", "Allied Sector");
+      try {
+        const playerId = "allied-cmdr";
+        room.factionRegistry.adjustStanding(playerId, "Federation", 80);
+
+        // Generate missions for a Federation planet (e.g. Sol)
+        const sol = room.planets.find((p) => p.name === "Sol");
+        expect(sol.faction).toBe("Federation");
+
+        const mm = new MissionManager();
+        mm.generateMissionsForPlanet(
+          "Sol",
+          room.planets,
+          room.factionRegistry,
+          playerId,
+        );
+
+        const available = mm.availableMissions["Sol"] || [];
+        const escortMission = available.find(
+          (m) => m.type === "escort_ambassador",
+        );
+
+        expect(escortMission).toBeDefined();
+        expect(escortMission.reward).toBe(8000);
+        expect(escortMission.standingRequired).toBe(60);
+        expect(escortMission.faction).toBe("Federation");
+      } finally {
+        room.destroy();
+      }
+    });
+
+    test("Accepting escort mission spawns companion Diplomatic Transport", () => {
+      const room = new GameInstance(
+        "room-test-escort-spawn",
+        "Escort Spawning",
+      );
+      try {
+        const playerId = "escort-cmdr";
+        const playerShip = {
+          id: playerId,
+          type: "ship",
+          position: new Vector2D(0, 0),
+          outfits: [],
+          cargo: {},
+          getCargoWeight: () => 0,
+        };
+        const clientObj = {
+          id: playerId,
+          ship: playerShip,
+          roomId: room.id,
+          send: () => {},
+        };
+        room.clients.set(playerId, clientObj);
+
+        // Set up the onEscortAccepted callback on this client's missionManager
+        clientObj.missionManager = new MissionManager();
+        clientObj.missionManager.onEscortAccepted = (mission) => {
+          const spawnAngle = 0;
+          const spawnDist = 100;
+          const transportShip = {
+            id: "diplomatic-transport-test",
+            name: "Diplomatic Transport",
+            position: new Vector2D(100, 0),
+            velocity: new Vector2D(0, 0),
+            role: "escort",
+            faction: mission.faction,
+            type: "ship",
+          };
+          room.engine.addEntity(transportShip);
+          const controller = {
+            ship: transportShip,
+            role: "escort",
+            flagship: playerShip,
+            escortMode: "follow",
+          };
+          room.ais.push(controller);
+        };
+
+        const escortMission = {
+          id: "escort-amb-1",
+          type: "escort_ambassador",
+          title: "Elite Escort",
+          reward: 8000,
+          origin: "Sol",
+          destination: "Valkyrie Depot",
+          faction: "Federation",
+          isAccepted: false,
+          isCompleted: false,
+        };
+        clientObj.missionManager.availableMissions["Sol"] = [escortMission];
+
+        const res = clientObj.missionManager.acceptMission(
+          "Sol",
+          "escort-amb-1",
+          playerShip,
+        );
+        expect(res.success).toBe(true);
+
+        const transport = room.engine.entities.find(
+          (e) => e.name === "Diplomatic Transport",
+        );
+        expect(transport).toBeDefined();
+        expect(
+          room.ais.some(
+            (ai) => ai.ship === transport && ai.flagship === playerShip,
+          ),
+        ).toBe(true);
+      } finally {
+        room.destroy();
+      }
+    });
+
+    test("Nadir standing (<= -60) spawns elite faction hunter", () => {
+      const room = new GameInstance("room-test-hunter", "Nadir Sector");
+      try {
+        const playerId = "nadir-cmdr";
+        const playerShip = {
+          id: playerId,
+          type: "ship",
+          position: new Vector2D(0, 0),
+          velocity: new Vector2D(0, 0),
+          outfits: [],
+        };
+        room.engine.addEntity(playerShip);
+
+        const clientObj = {
+          id: playerId,
+          ship: playerShip,
+          roomId: room.id,
+          send: () => {},
+          ws: {
+            readyState: 1, // OPEN
+            OPEN: 1,
+            send: () => {},
+          },
+        };
+        room.clients.set(playerId, clientObj);
+
+        // Wrong the Federation to nadir standing
+        room.factionRegistry.adjustStanding(playerId, "Federation", -80);
+
+        // Run checkEliteHunterSpawns loop
+        room.checkEliteHunterSpawns(15);
+
+        const hunter = room.engine.entities.find(
+          (e) => e.name === "Federation Hunter Elite",
+        );
+        expect(hunter).toBeDefined();
+        expect(hunter.outfits.includes("Interdictor Matrix")).toBe(true);
+        expect(hunter.faction).toBe("Federation");
+
+        const ai = room.ais.find((a) => a.ship === hunter);
+        expect(ai).toBeDefined();
+        expect(ai.target).toBe(playerShip);
+      } finally {
+        room.destroy();
+      }
+    });
+  });
 });

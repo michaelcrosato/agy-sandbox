@@ -15,6 +15,7 @@ export class MissionManager {
     this.storylineCompleted = false;
     this.onStorylineStageAdvanced = null; // Callback to spawn boss ships
     this.onBountyAccepted = null; // Callback for spawning normal bounties
+    this.onEscortAccepted = null; // Callback for spawning escort target companion ships
 
     // Static database of elite/named bounty targets
     this.bountyNames = [
@@ -178,6 +179,26 @@ export class MissionManager {
       }
     }
 
+    if (planetFaction && planetFaction !== "Independents" && standing > 60) {
+      const destPlanet =
+        destinationPlanets[
+          Math.floor(Math.random() * destinationPlanets.length)
+        ];
+      missions.push({
+        id: `escort-ambassador-${planetName}-${Date.now()}`,
+        type: "escort_ambassador",
+        title: `Elite Allied Escort: Ambassador to ${destPlanet.name}`,
+        description: `Ambassadorial Escort: Escort the fragile high-value Diplomatic Transport safely to ${destPlanet.name}. Be prepared for pirate ambushers!`,
+        reward: 8000,
+        origin: planetName,
+        destination: destPlanet.name,
+        isAccepted: false,
+        isCompleted: false,
+        standingRequired: 60,
+        faction: planetFaction,
+      });
+    }
+
     // Proactively generate campaign storyline quest if none active and not completed
     const hasActiveStory = this.activeMissions.some(
       (m) => m.type === "storyline",
@@ -286,6 +307,10 @@ export class MissionManager {
       this.onBountyAccepted(mission);
     }
 
+    if (mission.type === "escort_ambassador" && this.onEscortAccepted) {
+      this.onEscortAccepted(mission);
+    }
+
     return {
       success: true,
       message: `Accepted contract: ${mission.title}`,
@@ -305,15 +330,38 @@ export class MissionManager {
 
     for (const mission of this.activeMissions) {
       if (
-        (mission.type === "courier" || mission.type === "smuggle") &&
+        (mission.type === "courier" ||
+          mission.type === "smuggle" ||
+          mission.type === "escort_ambassador") &&
         mission.destination === destinationName
       ) {
         // Complete the delivery
         mission.isCompleted = true;
         player.credits += mission.reward;
 
-        // Remove cargo
-        player.removeCargo(mission.cargoItem, mission.cargoAmount);
+        // Remove cargo if present
+        if (mission.cargoItem && mission.cargoAmount) {
+          player.removeCargo(mission.cargoItem, mission.cargoAmount);
+        }
+
+        // Clean up escort transport entity from the world
+        if (mission.type === "escort_ambassador" && world.engine) {
+          const transport = world.engine.entities.find(
+            (e) =>
+              e.type === "ship" &&
+              e.name === "Diplomatic Transport" &&
+              !e._isDestroyed,
+          );
+          if (transport) {
+            world.engine.removeEntity(transport.id);
+            if (Array.isArray(world.ais)) {
+              const aiIdx = world.ais.findIndex((a) => a.ship === transport);
+              if (aiIdx !== -1) {
+                world.ais.splice(aiIdx, 1);
+              }
+            }
+          }
+        }
 
         if (mission.generated) {
           const consequences = applyMissionConsequences(mission, world);

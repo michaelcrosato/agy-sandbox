@@ -891,6 +891,24 @@ export class GameInstance {
 
     // --- Ships destroyed ---
     else if (ent.type === "ship") {
+      if (ent.name === "Diplomatic Transport") {
+        for (const client of this.clients.values()) {
+          const escMissionIdx = client.missionManager.activeMissions.findIndex(
+            (m) => m.type === "escort_ambassador",
+          );
+          if (escMissionIdx !== -1) {
+            client.missionManager.activeMissions.splice(escMissionIdx, 1);
+            client.send({
+              type: "notification",
+              message:
+                "MISSION FAILED: The Diplomatic Transport was destroyed!",
+              style: "error",
+            });
+            client.sendStats();
+          }
+        }
+      }
+
       // Remove AI controller from room's active AIs list to optimize updates and avoid memory leaks
       const aiIdx = this.ais.findIndex((a) => a.ship === ent);
       if (aiIdx !== -1) {
@@ -1064,9 +1082,17 @@ export class GameInstance {
           this.engine.addEntity(pod);
         }
 
-        const rewardBase = 1000;
+        let rewardBase = 1000;
+        let faction = this.getGoverningFaction();
+        let isElite = false;
+        if (ent.name && ent.name.includes("Hunter Elite")) {
+          rewardBase = 8000;
+          faction = ent.faction || faction;
+          isElite = true;
+        }
+
         if (killerClient) {
-          const faction = this.getGoverningFaction();
+          const label = isElite ? "Elite Hunter" : "Pirate";
           if (killerSquadMembers && killerSquadMembers.length > 0) {
             const share = Math.floor(rewardBase / killerSquadMembers.length);
             for (const member of killerSquadMembers) {
@@ -1076,7 +1102,7 @@ export class GameInstance {
               member.ship.bountyVouchers.push({ faction, value: share });
               member.send({
                 type: "notification",
-                message: `Pirate eliminated by ${killerClient.nickname}! Squad share bounty voucher: +${share} CR (${faction})`,
+                message: `${label} eliminated by ${killerClient.nickname}! Squad share bounty voucher: +${share} CR (${faction})`,
                 style: "success",
               });
               member.sendStats();
@@ -1090,7 +1116,7 @@ export class GameInstance {
               member.ship.bountyVouchers.push({ faction, value: share });
               member.send({
                 type: "notification",
-                message: `Pirate eliminated by ${killerClient.nickname}! Fleet share bounty voucher: +${share} CR (${faction})`,
+                message: `${label} eliminated by ${killerClient.nickname}! Fleet share bounty voucher: +${share} CR (${faction})`,
                 style: "success",
               });
               member.sendStats();
@@ -1296,6 +1322,171 @@ export class GameInstance {
       message: `Warning: Hostile ${faction} Interceptor scrambled to your location!`,
       style: "error",
     });
+  }
+
+  /**
+   * Scrambles highly aggressive elite faction hunters to hunt players with nadir reputation (<= -60).
+   * @param {number} dt - Time delta in seconds.
+   */
+  checkEliteHunterSpawns(dt) {
+    if (!this.hunterSpawnTimer) this.hunterSpawnTimer = 0;
+    this.hunterSpawnTimer += dt;
+    if (this.hunterSpawnTimer < 12) return; // check every 12 seconds
+    this.hunterSpawnTimer = 0;
+
+    // Scan for players who are highly hostile to any major faction (standing <= -60)
+    for (const ent of this.engine.entities) {
+      if (ent.type === "ship" && !ent.isDestroyed) {
+        const isPlayer =
+          Array.from(this.clients.values()).some((c) => c.ship === ent) ||
+          ent.isPlayerMock;
+        if (!isPlayer) continue;
+
+        for (const faction of ["Federation", "Frontier League", "Pirates"]) {
+          const standing = this.factionRegistry.getStanding(ent.id, faction);
+          if (standing <= -60) {
+            // Check if an elite hunter of this faction already exists and is targeting this player in the room
+            const exists = this.engine.entities.some(
+              (e) =>
+                e.type === "ship" &&
+                e.name === `${faction} Hunter Elite` &&
+                !e.isDestroyed,
+            );
+            if (exists) continue;
+
+            // Check player-specific hunter cooldown (e.g. 120 seconds max per spawn)
+            if (!this.lastEliteHunterSpawnTime) {
+              this.lastEliteHunterSpawnTime = {};
+            }
+            const lastSpawn = this.lastEliteHunterSpawnTime[ent.id] || 0;
+            if (Date.now() - lastSpawn < 120000) continue; // 120 seconds cooldown
+
+            this.lastEliteHunterSpawnTime[ent.id] = Date.now();
+            this.spawnEliteHunter(ent, faction);
+            break; // Spawn one hunter at a time
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Spawns a premium, highly aggressive elite faction hunter targeting the hostile player.
+   * @param {Object} playerShip - The hostile player's Ship instance.
+   * @param {string} faction - The faction scrambling the elite hunter.
+   */
+  spawnEliteHunter(playerShip, faction) {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 1100; // Spawn slightly out of view
+    const spawnPos = playerShip.position.add(
+      new Vector2D(Math.cos(angle) * dist, Math.sin(angle) * dist),
+    );
+
+    const hunterShip = new Ship({
+      name: `${faction} Hunter Elite`,
+      position: spawnPos,
+      velocity: new Vector2D(0, 0),
+      maxShield: 1000,
+      maxArmor: 800,
+      thrustPower: 32000,
+      turnRate: 3.2,
+      weaponDamage: 55,
+      weaponCooldown: 0.18,
+    });
+    hunterShip.role = "guard";
+    hunterShip.faction = faction;
+    hunterShip.outfits = ["Interdictor Matrix"]; // Elite tactical gravity interdiction capability
+
+    const controller = new AIController(hunterShip, "guard", {
+      useUtilityAdvisor: true,
+      factionPolicy: this.factionRegistry.factionPolicy(),
+      standingPolicy: this.factionRegistry.standingPolicy(),
+    });
+    controller.target = playerShip;
+
+    this.engine.addEntity(hunterShip);
+    this.ais.push(controller);
+
+    this.broadcast({
+      type: "notification",
+      message: `HIGH THREAT WARNING: ${faction} Hunter Elite has entered the sector to terminate you!`,
+      style: "error",
+    });
+  }
+
+  /**
+   * Scrambles ambush pirate raiders to target the Diplomatic Transport or the player
+   * during an active Escort Ambassador mission.
+   * @param {number} dt - Time delta in seconds.
+   */
+  checkEscortAmbushSpawns(dt) {
+    if (!this.escortAmbushTimer) this.escortAmbushTimer = 0;
+    this.escortAmbushTimer += dt;
+    if (this.escortAmbushTimer < 15) return; // check every 15 seconds
+    this.escortAmbushTimer = 0;
+
+    // Check if the Diplomatic Transport is active in this sector
+    const transport = this.engine.entities.find(
+      (ent) =>
+        ent.type === "ship" &&
+        ent.name === "Diplomatic Transport" &&
+        !ent.isDestroyed,
+    );
+    if (!transport) return;
+
+    // Check if we already have too many ambushers in space to avoid entity overcrowding
+    let activeAmbushers = 0;
+    for (const ent of this.engine.entities) {
+      if (
+        ent.type === "ship" &&
+        ent.name &&
+        ent.name.includes("Ambush Raider") &&
+        !ent.isDestroyed
+      ) {
+        activeAmbushers++;
+      }
+    }
+    if (activeAmbushers >= 2) return;
+
+    // 50% chance to spawn an ambush raider near the transport
+    if (Math.random() < 0.5) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 800; // spawn slightly off screen
+      const spawnPos = transport.position.add(
+        new Vector2D(Math.cos(angle) * dist, Math.sin(angle) * dist),
+      );
+
+      const raider = new Ship({
+        name: "Ambush Raider",
+        position: spawnPos,
+        velocity: new Vector2D(0, 0),
+        maxShield: 250,
+        maxArmor: 150,
+        thrustPower: 16000,
+        turnRate: 3.0,
+        weaponDamage: 25,
+        weaponCooldown: 0.25,
+      });
+      raider.role = "pirate";
+      raider.faction = "Pirates";
+
+      const controller = new AIController(raider, "pirate", {
+        useUtilityAdvisor: true,
+        factionPolicy: this.factionRegistry.factionPolicy(),
+        standingPolicy: this.factionRegistry.standingPolicy(),
+      });
+      controller.target = transport; // Target the fragile transport!
+
+      this.engine.addEntity(raider);
+      this.ais.push(controller);
+
+      this.broadcast({
+        type: "notification",
+        message:
+          "AMBUSH INCOMING: Pirate Ambush Raider has locked on the Diplomatic Transport!",
+        style: "error",
+      });
+    }
   }
 
   /**

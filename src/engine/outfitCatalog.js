@@ -118,4 +118,22 @@ export const DEFAULT_OUTFITS = Object.freeze([
     description:
       "Focused extraction beam. Doubles the cargo recovered from asteroids you shatter (+1.0 mining yield multiplier).",
   },
+  {
+    name: "Shielded Cargo Holds",
+    cost: 3500,
+    type: "jammer",
+    value: 0.6,
+    mass: 600,
+    description:
+      "Lead-shielded cargo containment. Reduces planetary security scan contraband detection probability by 60%.",
+  },
+  {
+    name: "Security Decoy Jammer",
+    cost: 5000,
+    type: "jammer",
+    value: 0.9,
+    mass: 400,
+    description:
+      "Active military-grade scanner decoy. Reduces planetary security scan contraband detection probability by 90%.",
+  },
 ]);

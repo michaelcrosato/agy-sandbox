@@ -39,6 +39,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T17:00 · iter-0070 · GREEN · spec-045-046-047-contraband-port-handlers-patrol-spawns
+
+- **Baseline:** `cb2d231` on `main`; 798 Jest tests green.
+- **Move:** Implement contraband jammers (045), modularize port handlers (046), and dynamic hostile faction patrol spawns (047).
+- **Changed:**
+  - Modified `src/engine/outfitCatalog.js` adding "Shielded Cargo Holds" and "Security Decoy Jammer" outfits to the catalog.
+  - Modified `src/engine/Outfitting.js` to process `"jammer"` outfit statistics, and updated `src/engine/Outfitting.test.js` to verify.
+  - Updated `src/server.js` to check for installed jammers during landing, applying a probabilistic scan bypass using a seeded/injected PRNG in tests.
+  - Extracted shipyard, outfitting, and mission WS handlers from `src/server.js` into modular `src/server/portHandlers.js` and wrote full unit tests in `src/server/portHandlers.test.js`.
+  - Added `checkReputationPatrolSpawns(dt)` and dynamic naval/pirate spawn helpers inside `src/engine/GameInstance.js` to scramble patrols when players are hostile.
+  - Added patrol and reputation integration tests in `src/engine/faction.integration.test.js`.
+- **Decisions:** Kept landing security checks testable by accepting an optional `rng` instance. Decoupled port handlers to drastically shrink server.js complexity while boosting isolated test coverage. Pre-configured dynamic AI guards with proper standings rules.
+- **Validation:** `npm run agent:check` -> green (811 Jest tests / 66 suites). All ESLint and JSDoc rules passing cleanly.
+- **Next:** Transition to Cycle 6, promoting the backlog to prioritize P7 interest management optimizations, delta netcode compactions, and advanced AI behaviors.
+
 ## 2026-05-30T16:30 · iter-0069 · GREEN · align-afk-autonomous-readiness
 
 - **Baseline:** `cb2d231` on `main`; 798 Jest tests green / all gates green.

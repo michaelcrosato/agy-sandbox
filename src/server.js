@@ -48,6 +48,12 @@ import { createRegistry } from "./net/metrics.js";
 import { createLogger } from "./net/logger.js";
 import { applyOutfitStats } from "./engine/Outfitting.js";
 import { DEFAULT_OUTFITS } from "./engine/outfitCatalog.js";
+import {
+  handleOutfitBuy,
+  handleShipBuy,
+  handleMissionAccept,
+  handleMissionAbandon,
+} from "./server/portHandlers.js";
 import { tradeOne, applyHullPurchase, factionPrice } from "./engine/Trading.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import { sanitizeNickname } from "./server/roomLifecycle.js";
@@ -403,7 +409,10 @@ const physicsInterval = setInterval(() => {
       }
     }
 
-    // F. Update local room physical kinematics
+    // F. Scramble aggressive interceptor patrols for hostile players
+    room.checkReputationPatrolSpawns(dt);
+
+    // G. Update local room physical kinematics
     room.engine.update(dt);
 
     // G. Restore shield regens
@@ -1239,14 +1248,46 @@ wss.on("connection", (ws) => {
             targetPlanet.name !== "Rogue's Hollow" &&
             clientObj.ship.cargo.contraband > 0
           ) {
-            clientObj.ship.cargo.contraband = 0;
-            clientObj.ship.credits = Math.max(0, clientObj.ship.credits - 1500);
-            clientObj.send({
-              type: "notification",
-              message:
-                "Security Scan: Contraband detected! Confiscated and fined 1,500 CR.",
-              style: "error",
-            });
+            let bestJammerValue = 0;
+            if (clientObj.ship.outfits) {
+              for (const outfitName of clientObj.ship.outfits) {
+                const spec = DEFAULT_OUTFITS.find((o) => o.name === outfitName);
+                if (spec && spec.type === "jammer") {
+                  if (spec.value > bestJammerValue) {
+                    bestJammerValue = spec.value;
+                  }
+                }
+              }
+            }
+
+            let scanDetected = true;
+            if (bestJammerValue > 0) {
+              const rng = clientObj.ship.rng || Math.random;
+              if (rng() < bestJammerValue) {
+                scanDetected = false;
+              }
+            }
+
+            if (scanDetected) {
+              clientObj.ship.cargo.contraband = 0;
+              clientObj.ship.credits = Math.max(
+                0,
+                clientObj.ship.credits - 1500,
+              );
+              clientObj.send({
+                type: "notification",
+                message:
+                  "Security Scan: Contraband detected! Confiscated and fined 1,500 CR.",
+                style: "error",
+              });
+            } else {
+              clientObj.send({
+                type: "notification",
+                message:
+                  "Security Scan: Contraband jamming successful! Scan bypassed.",
+                style: "success",
+              });
+            }
           }
 
           clientObj.isLanded = true;
@@ -1486,115 +1527,19 @@ wss.on("connection", (ws) => {
         }
       }
     } else if (msg.type === "outfit_buy") {
-      if (clientObj.ship && clientObj.isLanded && clientObj.planetLandedOn) {
-        const p = clientObj.planetLandedOn;
-        const outfit = p.outfitter.find((o) => o.name === msg.outfitName);
-        if (!outfit) return;
-
-        if (clientObj.ship.outfits.includes(outfit.name)) {
-          clientObj.send({
-            type: "notification",
-            message: "Upgrade already equipped!",
-            style: "error",
-          });
-          return;
-        }
-
-        if (clientObj.ship.credits < outfit.cost) {
-          clientObj.send({
-            type: "notification",
-            message: "Insufficient credits for upgrade!",
-            style: "error",
-          });
-          return;
-        }
-
-        clientObj.ship.credits -= outfit.cost;
-        clientObj.ship.outfits.push(outfit.name);
-
-        applyOutfitStats(clientObj.ship, outfit);
-
-        clientObj.send({
-          type: "notification",
-          message: `Equipped: ${outfit.name}!`,
-          style: "success",
-        });
-        clientObj.sendStats();
-      }
+      handleOutfitBuy(clientObj, msg.outfitName, clientObj.planetLandedOn);
     } else if (msg.type === "ship_buy") {
-      if (clientObj.ship && clientObj.isLanded && clientObj.planetLandedOn) {
-        const p = clientObj.planetLandedOn;
-        const s = p.shipyard.find((sh) => sh.name === msg.shipName);
-        if (!s) return;
-
-        const result = applyHullPurchase(clientObj.ship, s);
-        if (result.ok) {
-          clientObj.send({
-            type: "notification",
-            message: `Acquired new ship: ${s.name}!`,
-            style: "success",
-          });
-          clientObj.sendStats();
-        } else {
-          clientObj.send({
-            type: "notification",
-            message: "Insufficient credits for ship purchase!",
-            style: "error",
-          });
-        }
-      }
+      handleShipBuy(clientObj, msg.shipName, clientObj.planetLandedOn);
     } else if (msg.type === "mission_accept") {
-      if (
-        clientObj.ship &&
-        clientObj.isLanded &&
-        clientObj.planetLandedOn &&
-        room
-      ) {
-        if (!clientObj.missionManager.availableMissions[msg.planetName]) {
-          clientObj.missionManager.generateMissionsForPlanet(
-            msg.planetName,
-            room.planets,
-          );
-        }
-
-        const res = clientObj.missionManager.acceptMission(
-          msg.planetName,
-          msg.missionId,
-          clientObj.ship,
-        );
-        if (res.success) {
-          clientObj.send({
-            type: "notification",
-            message: res.message,
-            style: "success",
-          });
-          clientObj.sendStats();
-        } else {
-          clientObj.send({
-            type: "notification",
-            message: res.message,
-            style: "error",
-          });
-        }
-      }
+      handleMissionAccept(
+        clientObj,
+        msg.planetName,
+        msg.missionId,
+        clientObj.planetLandedOn,
+        room,
+      );
     } else if (msg.type === "mission_abandon") {
-      if (clientObj.ship) {
-        const activeM = clientObj.missionManager.activeMissions.find(
-          (m) => m.id === msg.missionId,
-        );
-        if (activeM) {
-          clientObj.missionManager.abandonMission(
-            msg.missionId,
-            clientObj.ship,
-          );
-          clientObj.send({
-            type: "notification",
-            message: `Abandoned contract: ${activeM.title}`,
-            style: "info",
-          });
-          clientObj.sendStats();
-        }
-      }
+      handleMissionAbandon(clientObj, msg.missionId);
     } else if (msg.type === "fleet_create" || msg.type === "fleet_join") {
       const code = (msg.fleetName || "").toUpperCase().trim().substring(0, 10);
       if (!code) {

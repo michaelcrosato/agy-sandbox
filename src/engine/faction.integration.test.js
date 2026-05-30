@@ -5,6 +5,7 @@ import { factionPrice } from "./Trading.js";
 import { serializeGalaxy, applyGalaxy } from "../persistence/serializers.js";
 import { MissionManager } from "./MissionManager.js";
 import { applyRefine, refineCost } from "./PortServices.js";
+import { Vector2D } from "../physics/Vector2D.js";
 
 // Spec 016 — faction runtime wiring. The pure FactionRegistry math is covered
 // in FactionRegistry.test.js; these assert the LIVE wiring: a GameInstance owns
@@ -374,6 +375,51 @@ describe("mission + trade faction standings (spec 032)", () => {
         expect(ship.credits).toBe(1000 - 240);
         expect(ship.cargo.ore).toBe(0);
         expect(ship.cargo.minerals).toBe(10);
+      } finally {
+        room.destroy();
+      }
+    });
+  });
+
+  describe("Reputation Patrol Scramble Spawns (spec 047)", () => {
+    it("scrambles aggressive interceptor patrols if player standing is highly hostile", () => {
+      const room = new GameInstance("room-patrol-1", "Patrol Test");
+      try {
+        const playerShip = {
+          id: "player-cmdr-1",
+          type: "ship",
+          outfits: ["Heavy Shields"],
+          cargo: { food: 0 },
+          position: new Vector2D(0, 0),
+          isPlayerMock: true,
+        };
+        room.engine.addEntity(playerShip);
+
+        // Standing is initially neutral (0)
+        room.checkReputationPatrolSpawns(11); // triggers the 10s timer
+
+        let interceptors = room.engine.entities.filter(
+          (e) => e.type === "ship" && e.name && e.name.includes("Interceptor"),
+        );
+        expect(interceptors.length).toBe(0);
+
+        // Player commits hostile crimes and reputation drops to -50
+        room.factionRegistry.setStanding(playerShip.id, "Federation", -50);
+
+        // Run check after standing turns hostile
+        room.checkReputationPatrolSpawns(11);
+
+        interceptors = room.engine.entities.filter(
+          (e) => e.type === "ship" && e.name && e.name.includes("Interceptor"),
+        );
+        expect(interceptors.length).toBe(1);
+        expect(interceptors[0].faction).toBe("Federation");
+        expect(interceptors[0].role).toBe("guard");
+
+        // Verify the patrol's AI targets the hostile player
+        const controller = room.ais.find((ai) => ai.ship === interceptors[0]);
+        expect(controller).toBeDefined();
+        expect(controller.target).toBe(playerShip);
       } finally {
         room.destroy();
       }

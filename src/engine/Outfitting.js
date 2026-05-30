@@ -61,6 +61,9 @@ export function applyOutfitStats(ship, outfit) {
     case "tractor":
       // No direct ship stats to mutate, but recognized as a valid outfit type so mass is added
       break;
+    case "jammer":
+      // No direct ship stats to mutate, but recognized as a valid outfit type so mass is added
+      break;
     default:
       applied = false;
   }

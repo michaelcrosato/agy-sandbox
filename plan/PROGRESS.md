@@ -7,9 +7,21 @@ in [`specs/`](specs/).
 _v1 baseline (2026-05-28): 569 tests / 33 suites; 2 high `npm audit` advisories (axios via localtunnel)._
 _v2 re-audit baseline (2026-05-29, after Phase 0+1): 614 tests / 42 suites; 0 CVEs._
 _v3 re-audit baseline (2026-05-30, ENTIRE v2 blueprint shipped): 696 Jest tests / 51 suites + 17 client green; 0 `npm audit` vulnerabilities; `npm outdated` empty; typecheck gate + CI LTS matrix live._
-_**v4 re-audit baseline (2026-05-30, ENTIRE v3 blueprint shipped): 775 Jest tests / 61 suites + 18 client green; 0 `npm audit` vulnerabilities; matchmaking queue + compression + schema codec all DONE.** Remaining = v4 Phase 0 (039) + Phase 1 (040–042) + Phase 2 (043–044)._
+_v4 re-audit baseline (2026-05-30, ENTIRE v3 blueprint shipped): 775 Jest tests / 61 suites + 18 client green; 0 `npm audit` vulnerabilities; matchmaking queue + compression + schema codec all DONE._
+_**v5 re-audit baseline (2026-05-30, ENTIRE v4 blueprint shipped): 798 Jest tests / 65 suites + 18 client green; 0 `npm audit` vulnerabilities; dynamic refining + matchmaking disconnect auto-admit + glassmorphic dashboard all DONE.** Remaining = v5 Phase 0 (045) + Phase 1 (046) + Phase 2 (047)._
 
-## v4 — Next cycle (NEW · Todo) — see [`ROADMAP.md`](ROADMAP.md)
+## v5 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Quick Wins & Safety
+- [x] `045` Shielded Cargo Holds & Decoy Jammers (smuggling bypass) — **done** (files: `src/engine/outfitCatalog.js`, `src/engine/Outfitting.js`, `src/engine/Outfitting.test.js`, `src/server.js`, `src/server/portHandlers.test.js`; added "Shielded Cargo Holds" and "Security Decoy Jammer" outfits to the catalog and outfitting stats switch; implemented probabilistic security scan bypass checks on core planet landing using a seeded/injected PRNG; added comprehensive unit tests; all 811 Jest tests green).
+
+### Phase 1 — Core Upgrades & Debt Paydown
+- [x] `046` Modularize Port & Mission Handlers (tech debt) — **done** (files: `src/server/portHandlers.js`, `src/server/portHandlers.test.js`, `src/server.js`; extracted WS message handlers for outfit purchases, shipyard hull acquisitions, mission acceptances, and abandonments into a clean, testable sub-module; added comprehensive mock connection unit tests; reduced server.js size by over 100 lines; all 811 Jest tests green).
+
+### Phase 2 — Scale-Out & Premium Features
+- [x] `047` Dynamic Reputation & Patrol Spawns (immersive gameplay) — **done** (files: `src/engine/GameInstance.js`, `src/engine/faction.integration.test.js`, `src/server.js`; added dynamic reputation-based patrol spawns where active naval interceptors aggressively target players with standings below the hostile threshold; implemented safe distance offsets and spawn caps; wrote comprehensive integration tests; all 811 Jest tests green).
+
+## v4 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
 - [x] `039` Tractor outfit mass correction (bug fix) — **done** (files: `src/engine/Outfitting.js`, `src/engine/Outfitting.test.js`; added `case "tractor"` to `applyOutfitStats` switch so that the Tractor Beam Matrix 200 kg mass is correctly applied on purchase and salvage; added unit test verifying ship mass increase; 776 tests green).

@@ -562,6 +562,7 @@ export class GameInstance {
 
   scheduleAIRespawn(name, role) {
     if (name === "Siege Raider") return;
+    if (name && name.includes("Interceptor")) return;
     this.scheduleTimer(() => {
       if (role === "pirate") {
         const pirateNames = [
@@ -1040,5 +1041,117 @@ export class GameInstance {
       });
       client.sendStats();
     }, 3000);
+  }
+
+  /**
+   * Scrambles aggressive naval/pirate interceptors to hunt players with highly hostile reputation
+   * within this sector.
+   * @param {number} dt - Time delta since last tick.
+   */
+  checkReputationPatrolSpawns(dt) {
+    if (!this.patrolSpawnTimer) this.patrolSpawnTimer = 0;
+    this.patrolSpawnTimer += dt;
+    if (this.patrolSpawnTimer < 10) return; // Evaluate every 10 seconds
+    this.patrolSpawnTimer = 0;
+
+    // 1. Identify governing faction of this room
+    let governingFaction = "Independents";
+    for (const planet of this.planets) {
+      if (
+        planet.faction === "Federation" ||
+        planet.faction === "Frontier League" ||
+        planet.faction === "Pirates"
+      ) {
+        governingFaction = planet.faction;
+        break;
+      }
+    }
+    if (governingFaction === "Independents") return;
+
+    // 2. Count active interceptor patrols of this faction
+    let activePatrolsCount = 0;
+    for (const ent of this.engine.entities) {
+      if (
+        ent.type === "ship" &&
+        ent.role === "guard" &&
+        ent.faction === governingFaction &&
+        ent.name &&
+        ent.name.includes("Interceptor") &&
+        !ent.isDestroyed
+      ) {
+        activePatrolsCount++;
+      }
+    }
+    if (activePatrolsCount >= 2) return;
+
+    // 3. Scan for players who are hostile to the governing faction
+    const hostileThreshold =
+      this.factionRegistry.options.hostileThreshold || -30;
+    for (const ent of this.engine.entities) {
+      if (ent.type === "ship" && !ent.isDestroyed && ent.outfits) {
+        const isPlayer =
+          Array.from(this.clients.values()).some((c) => c.ship === ent) ||
+          ent.isPlayerMock;
+        if (isPlayer) {
+          const standing = this.factionRegistry.getStanding(
+            ent.id,
+            governingFaction,
+          );
+          if (standing <= hostileThreshold) {
+            this.spawnPatrolInterceptor(ent, governingFaction);
+            break; // Spawn one interceptor at a time
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Spawns an aggressive interceptor guard that targets the player.
+   * @param {Object} playerShip - The player's Ship instance.
+   * @param {string} faction - Faction scrambling the patrol.
+   */
+  spawnPatrolInterceptor(playerShip, faction) {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 1000;
+    const spawnPos = playerShip.position.add(
+      new Vector2D(Math.cos(angle) * dist, Math.sin(angle) * dist),
+    );
+
+    const isFederation = faction === "Federation";
+    const isFrontier = faction === "Frontier League";
+
+    const pShip = new Ship({
+      name: `${faction} Interceptor`,
+      position: spawnPos,
+      velocity: new Vector2D(0, 0),
+      maxShield: isFederation ? 300 : isFrontier ? 250 : 200,
+      maxArmor: isFederation ? 200 : isFrontier ? 150 : 120,
+      thrustPower: isFederation ? 16000 : isFrontier ? 15000 : 13000,
+      turnRate: 3.0,
+      weaponDamage: isFederation ? 22 : 18,
+      weaponCooldown: 0.3,
+    });
+
+    pShip.role = "guard";
+    pShip.faction = faction;
+
+    const controller = new AIController(pShip, "guard", {
+      useUtilityAdvisor: true,
+      factionPolicy: this.factionRegistry.factionPolicy(),
+      standingPolicy: this.factionRegistry.standingPolicy(),
+    });
+
+    // Make the patrol aggressively target the hostile player ship
+    controller.target = playerShip;
+
+    this.engine.addEntity(pShip);
+    this.ais.push(controller);
+
+    this.broadcast({
+      type: "notification",
+      message: `Warning: Hostile ${faction} Interceptor scrambled to your location!`,
+      style: "error",
+    });
   }
 }

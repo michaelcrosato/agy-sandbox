@@ -114,18 +114,18 @@ flowchart TD
 
 ---
 
-## EXECUTION WAVES (v4)
+## EXECUTION WAVES (v5)
 
-Completed waves (`001–029`, `030–035`, `019b–f`, `036–038`) are recorded DONE in `PROGRESS.md`. The live work:
+Completed waves (`001–044`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
 
-### Phase 0 — Quick Wins & Safety — `039`
-`039` Tractor outfit mass correction (bug fix).
+### Phase 0 — Quick Wins & Safety — `045`
+`045` Shielded Cargo Holds & Decoy Jammers (smuggling bypass).
 
-### Phase 1 — Core Upgrades & Debt Paydown — `040`–`042`
-`040` UtilityAI advisor rollout + rich action mapping · `041` Player-side raw ore refining at ports · `042` Server monolith extraction (heartbeats, GC, lobby sync).
+### Phase 1 — Core Upgrades & Debt Paydown — `046`
+`046` Modularize Port & Mission Handlers (tech debt reduction).
 
-### Phase 2 — Scale-Out & Premium Features — `043`–`044`
-`043` Matchmaking queue disconnect-rejoin lifecycle · `044` Interactive Observability Dashboard (`/dashboard.html`).
+### Phase 2 — Scale-Out & Premium Features — `047`
+`047` Dynamic Reputation & Patrol Spawns (immersive responsive gameplay).
 
 ---
 
@@ -135,14 +135,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 044 | Interactive Observability Dashboard | 2 | 5 | 5 | 5 | 5 | 20 |
-| 039 | Tractor outfit mass correction | 0 | 3 | 5 | 5 | 5 | 18 |
-| 040 | UtilityAI advisor rich action mapping | 1 | 4 | 4 | 4 | 5 | 17 |
-| 041 | Player-side raw ore refining at ports | 1 | 4 | 4 | 4 | 5 | 17 |
-| 042 | Server monolith extraction (ticker/GC/lobby) | 1 | 4 | 4 | 4 | 5 | 17 |
-| 043 | Matchmaking queue disconnect-rejoin lifecycle| 2 | 4 | 4 | 4 | 4 | 16 |
+| 045 | Shielded Cargo Holds & Decoy Jammers | 0 | 4 | 5 | 5 | 5 | 19 |
+| 047 | Dynamic Reputation & Patrol Spawns | 2 | 5 | 4 | 4 | 5 | 18 |
+| 046 | Modularize Port & Mission Handlers | 1 | 3 | 5 | 4 | 5 | 17 |
 
-**Recommended start:** `039` (Σ18 — safety + real bug, very small) to resolve tractor mass discrepancy first, then proceed to high-Σ `044` Observability Dashboard to build a premium, wowing glassmorphic UI matching 2026 aesthetics. Follow up with debt paydown `040`/`042` and the core feature `041`.
+**Recommended start:** `045` (Σ19 — safety/smuggling features, high feasibility, safe) to introduce lead-shielded cargo holds and active decoys, then proceed to `047` (Σ18) to build responsive faction patrol ships hunting hostile players. Complete the wave with `046` (Σ17) message handler extraction to keep the server code clean and unit-tested.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

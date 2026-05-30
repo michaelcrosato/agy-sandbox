@@ -45,6 +45,14 @@ describe("Outfitting.applyOutfitStats (spec 007)", () => {
     expect(s.outfitMass).toBe(200);
   });
 
+  test("jammer outfit adds mass and returns true", () => {
+    const s = new Ship();
+    expect(applyOutfitStats(s, { type: "jammer", value: 0.6, mass: 600 })).toBe(
+      true,
+    );
+    expect(s.outfitMass).toBe(600);
+  });
+
   test("unknown type returns false and adds no mass; null-safe", () => {
     const s = new Ship();
     expect(

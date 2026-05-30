@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-30T03:45 · iter-0053 · GREEN · plan-v3-reaudit-blueprint
+
+- **Baseline:** `ac7461b` on `main`; 696 Jest tests / 51 suites + 17 client green; 0 CVEs; `npm outdated` empty. The **entire v2 blueprint is shipped** (001–025 + 014–019). Planning/direction artifact (no product code changed) — a re-audit + 2026 web research to refresh `/plan/` for the next cycle.
+- **Move:** Audit the now-matured repo, cross-reference 2026 industry standards via real web search, and regenerate a deterministic, execution-ready blueprint.
+- **Changed:** `plan/ROADMAP.md` rewritten to **v3** — new measured REPO BASELINE (Mermaid reflecting AoI + binary + factions + ore + roomRouter; 16.1k src LOC / 51 modules; `server.js` 2,014 LOC) and a **web-verified** research synthesis (Node 26 Current / 20 ≈EOL → CI 22/24/26; `ws` **CVE-2026-45736** memory disclosure, fixed 8.20.1, repo's `^8.21` already safe; **Colyseus** matchmaking + binary-delta parity; **Vitest Browser Mode** for canvas; **permessage-deflate** CPU/mem tradeoff; **Redis pub/sub + sharded channels + least_conn**). 18 new spec files: Phase 0 `026`–`029` (CI LTS, ws CVE floor, **hit-flash armor-branch bug fix**, reputation decay), Phase 1 `030`–`035` (engine typecheck ratchet, `COMMODITIES`, mission/trade standings, advisor rollout, server extraction r3, client visual layer), Phase 2 `019b`–`019f` (RedisStore→worker model→routing→presence→drain) + `036`–`038` (matchmaking, permessage-deflate eval, schema codec eval). Refreshed `plan/PROGRESS.md` (v3 todo checklist) + `plan/AGENTS.md` (v3 baseline; typecheck + `test:client` now in the verification table).
+- **Decisions:** Preserved the completed record (didn't renumber 001–025); slotted new findings as v3 Phase 0/1/2. Grounded every new spec in measured facts (the 2,014-LOC monolith, engine-unchecked typecheck, untested canvas layer, the real hit-flash bug) or web-verified 2026 standards. Promoted the `019a` decomposition bullets into full `019b–f` spec files. `/plan/*.md` is outside lint/prettier/test scope, so the gate is structurally unaffected.
+- **Validation:** `npm run agent:check` → green (696 / 51); `npm run test:client` → 17; `npm audit` → 0; `npm outdated` → empty (re-measured this cycle as the hard baseline). Web research via `WebSearch` (Node release schedule, ws CVEs, Colyseus, Vitest Browser Mode, permessage-deflate, Redis scaling). `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. A copy-paste `EXECUTION /GOAL PROMPT v2026.05` for the refreshed blueprint was surfaced to the operator.
+- **Next:** Execute v3 starting with `026`/`028`/`027` (safety + the real bug, all small + safe), then the debt-paydown wave (`030`/`031`/`033`), then scale-out (`019b` first).
+
 ## 2026-05-30T03:00 · iter-0052 · GREEN · spec-019-horizontal-scaling-first-slice
 
 - **Baseline:** `9cb023a` on `main`; 683 tests / 49 suites + 17 client green. The server is a single Node process holding all rooms in memory. Executing `plan/specs/019` — the **last** in-scope spec (Phase 2, GOAL P7), an explicit epic ("do not attempt as a single task; decompose first").

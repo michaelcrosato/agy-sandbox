@@ -39,6 +39,52 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T10:52 · iter-0085 · GREEN · spec-062-redis-cluster-integration
+
+- **Baseline:** `d287790` on `main`; 870 Jest tests green.
+- **Move:** Implement cluster sharded WebSocket Pub/Sub state sync and presence heartbeat renewals (062).
+- **Changed:**
+  - Integrated `InMemoryPubSub` / `RedisPubSub` connection pooling under the `PubSub` abstract contract.
+  - Subscribed to `"chat:global"` and `"chat:squad"` channels inside `src/server.js`, routing chats cross-worker.
+  - Published global and squad chat messages to Pub/Sub channels to enable real-time cross-process broadcast delivery.
+  - Added lease heartbeats and room presence auto-reaping inside the multi-worker loop when `REDIS_SCALE_OUT=1`.
+  - Configured `src/server/supervisor.js` to propagate the `REDIS_SCALE_OUT` option to spawned worker forks.
+  - Added cluster-sharding integration tests to `src/persistence/multinode.integration.test.js` validating message routing.
+- **Decisions:** Leveraged lazy-loading for `redis` clients to ensure that single-process static server operations have zero third-party run-time dependency overhead.
+- **Validation:** `npm run agent:check` -> green (871 Jest tests / 69 suites).
+- **Next:** Transition to Cycle 11 Phase R (Replenish): promote backlog, research Wave v11, and author new specs.
+
+## 2026-05-30T10:45 · iter-0084 · GREEN · spec-061-trade-caravans
+
+- **Baseline:** `425b232` on `main`; 866 Jest tests green.
+- **Move:** Implement physical cargo trade caravans flying across sector stargates (061).
+- **Changed:**
+  - Implemented specialized caravan role in `executeCaravanAI` in `src/engine/ai/AIController.js` planning multi-hop sector routes.
+  - Wired physical loading and unloading transactions with strictly clamped positive market inventory mutations.
+  - Handled stargate warping mechanics, teleporting caravans when close to stargates and resetting velocities.
+  - Configured authoritative server ticks to track planet market `ore` values and broadcast `"market_sync"` events on deltas.
+  - Added custom Gold `#ffb300` canvas render theme styling for caravan ships in `src/client/CanvasRenderer.js`.
+  - Covered the FSM travel cycle, loading, unloading, route planning, and jumps via comprehensive new unit and integration tests.
+- **Decisions:** Kept FSM state updates deterministic and pure inside the engine physics layer, using thin server hooks to broadcast network syncs.
+- **Validation:** `npm run agent:check` -> green (870 Jest tests / 69 suites).
+- **Next:** Proceed with SPEC-062 to implement sharded multi-worker Redis cluster synchronization.
+
+## 2026-05-30T10:42 · iter-0083 · GREEN · spec-060-naval-campaigns
+
+- **Baseline:** `c2b9695` on `main`; 865 Jest tests green.
+- **Move:** Implement Factional Naval Campaign mission boards and rank-locked spaceport commendations (060).
+- **Changed:**
+  - Integrated Player Naval merits and rank progression milestones inside `src/engine/Ship.js`.
+  - Enforced standing-restricted procedural campaign mission generations in `src/engine/MissionManager.js`.
+  - Added premium hull and outfitting rank purchase lockouts in `src/engine/PortServices.js` and Spaceport UI.
+  - Handled programmatic campaign rewards and merit accumulations saved via persistence layers.
+  - Programmed custom campaign merits serialization and player restores inside player persistence snapshot managers.
+  - Fully verified the rank promotion, purchase locks, and campaign reward cycles via exhaustive new integration tests.
+- **Decisions:** Enforced rank locks on premium military destroyers and advanced weaponry on the server layer to guarantee anti-exploit safety.
+- **Validation:** `npm run agent:check` -> green (866 Jest tests / 69 suites).
+- **Next:** Proceed with SPEC-061 to implement Dynamic Planetary Stock Caravans.
+
+
 ## 2026-05-30T10:55 · iter-0082 · GREEN · spec-059-multiplayer-squads-shared-standing
 
 - **Baseline:** `31ea39e` on `main`; 856 Jest tests green.

@@ -114,18 +114,18 @@ flowchart TD
 
 ---
 
-## EXECUTION WAVES (v9)
+## EXECUTION WAVES (v10)
 
-Completed waves (`001–056`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
+Completed waves (`001–059`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
 
-### Phase 0 — Quick Wins & Safety — `057`
-`057` Dynamic Market Events & Sector Economy Shocks (periodically trigger economic events with dynamic trade price modifiers, broadcast Announcements, and adapt merchant AI).
+### Phase 0 — Quick Wins & Safety — `060`
+`060` Factional Naval Mission Boards & Rank Campaigns (tie FactionRegistry standing progress with specialized rank-locked commendations, premium faction starships, and advanced weaponry).
 
-### Phase 1 — Core Upgrades & Debt Paydown — `058`
-`058` Outfitting Fittings Shop & Loadout Presets (partition equipment into Weapon/Shield/Utility slots, support 90% trade-in refunds, and save/load custom loadout profiles).
+### Phase 1 — Core Upgrades & Debt Paydown — `061`
+`061` Dynamic Planetary Stock Caravans & Cargo Convoy AI (physical cargo transport AI fleets flying across sector warp gates to load and unload goods, modifying planetary stock levels dynamically upon arrival).
 
-### Phase 2 — Scale-Out & Premium Features — `059`
-`059` Multiplayer Squads & Allied Shared Standing (squad creation protocol, split bounty/merit rewards among sector squadmates, and render squad status panel overlay on client HUD).
+### Phase 2 — Scale-Out & Premium Features — `062`
+`062` High-Concurrency Multi-Worker Redis Cluster State Sync (fully wire supervisor processes andConsistent consistent load balancing to run clustered sharded Redis Pub/Sub networks behind a flag).
 
 ---
 
@@ -135,11 +135,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 057 | Dynamic Market Events & Sector Economy Shocks | 0 | 5 | 5 | 4 | 5 | 19 |
-| 058 | Outfitting Fittings Shop & Loadout Presets | 1 | 5 | 4 | 4 | 5 | 18 |
-| 059 | Multiplayer Squads & Allied Shared Standing | 2 | 4 | 4 | 3 | 5 | 16 |
+| 060 | Factional Naval Mission Boards & Rank Campaigns | 0 | 5 | 5 | 5 | 5 | 20 |
+| 061 | Dynamic Planetary Stock Caravans & Cargo Convoy AI | 1 | 5 | 4 | 4 | 5 | 18 |
+| 062 | High-Concurrency Multi-Worker Redis Cluster Sync | 2 | 4 | 4 | 3 | 5 | 16 |
 
-**Recommended start:** `057` (Σ19 — economic shocks and market events, high immersion, safe and self-contained) to add dynamic events in galaxy ticker economics pulse, then proceed to `058` (Σ18) to introduce starship fitting slots. Complete the wave with `059` (Σ16) to implement squads and co-op shared bounty splits.
+**Recommended start:** `060` (Σ20 — faction naval campaigns and rank commendations, high immersion, safe and extremely self-contained), then proceed to `061` (Σ18) to introduce physical cargo transport convoys. Complete the wave with `062` (Σ16) to wire the multi-node worker cluster sync integration.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

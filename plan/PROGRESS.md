@@ -13,8 +13,20 @@ _**v6 re-audit baseline (2026-05-30, ENTIRE v5 blueprint shipped): 811 Jest test
 _**v7 re-audit baseline (2026-05-30, ENTIRE v6 blueprint shipped): 821 Jest tests / 66 suites + 18 client green; 0 `npm audit` vulnerabilities; contraband space scans + spatial interest grid + wingman formations all DONE.** Remaining = v7 Phase 0 (051) + Phase 1 (052) + Phase 2 (053)._
 _**v8 re-audit baseline (2026-05-30, ENTIRE v7 blueprint shipped): 827 Jest tests / 66 suites + 15 client green; 0 `npm audit` vulnerabilities; kinetic damage + warp tolls + bounty radar HUD all DONE.** Remaining = v8 Phase 0 (055) + Phase 1 (056) + Phase 2 (054)._
 _**v9 re-audit baseline (2026-05-30, ENTIRE v8 blueprint shipped): 839 Jest tests / 66 suites + 22 client green; 0 `npm audit` vulnerabilities; dynamic reputation battles + interdiction + command decks all DONE.** Remaining = v9 Phase 0 (057) + Phase 1 (058) + Phase 2 (059)._
+_**v10 re-audit baseline (2026-05-30, ENTIRE v9 blueprint shipped): 865 Jest tests / 69 suites + 24 client green; 0 `npm audit` vulnerabilities; dynamic market events + fittings loadouts + multiplayer co-op squads all DONE. Remaining = v10 Phase 0 (060) + Phase 1 (061) + Phase 2 (062).**_
 
-## v9 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+## v10 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Quick Wins & Safety
+- [ ] `060` Factional Naval Mission Boards & Rank Campaigns (tie FactionRegistry standing progress with specialized rank-locked commendations, premium faction starships, and advanced weaponry) — **todo**.
+
+### Phase 1 — Core Upgrades & Debt Paydown
+- [ ] `061` Dynamic Planetary Stock Caravans & Cargo Convoy AI (physical cargo transport AI fleets flying across sector warp gates to load and unload goods, modifying planetary stock levels dynamically upon arrival) — **todo**.
+
+### Phase 2 — Scale-Out & Premium Features
+- [ ] `062` High-Concurrency Multi-Worker Redis Cluster State Sync (fully wire supervisor processes and consistent load balancing to run clustered sharded Redis Pub/Sub networks behind a flag) — **todo**.
+
+## v9 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
 - [x] `057` Dynamic Market Events & Sector Economy Shocks (periodically trigger economic events with dynamic trade price modifiers, broadcast Announcements, and adapt merchant AI) — **done** (files: `src/engine/GalaxyEventsManager.js`, `src/engine/GalaxyEventsManager.test.js`, `src/engine/EconomyManager.js`, `src/engine/faction.integration.test.js`, `src/server.js`, `src/client/NetworkHandler.js`, `src/client/UIController.js`, `src/main.js`, `index.html`; created GalaxyEventsManager with famine/harvest-boom/blockade/breakthrough roster, wired event multipliers to dynamically modify planet markets on sever side, added local client duration ticking and pulsing glassmorphic ticker banner at top of HUD viewport, and verified AI trade scoring reroots merchant AIs naturally; 845 Jest + 22 client Vitest tests 100% green).

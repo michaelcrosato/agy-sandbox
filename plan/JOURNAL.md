@@ -7,8 +7,8 @@ It records cycle transitions, key milestones, and precise next steps.
 
 ## Cycle 18 — 2026-05-30
 - **Status:** GREEN
-- **Summary:** Transitioned to Cycle 18 Phase D (Execute) and successfully implemented SPEC-085 (Underworld Smuggling Contracts & Standing Propagation). Configured Rogue's Hollow to procedurally generate specialized high-paying Underworld Contraband Smuggling contracts with custom descriptions and negative law faction standing delta consequences. Enriched `checkArrivalCompletions` and `completeGeneratedMission` in `MissionManager.js` to dynamically propagate standings consequences to Pirate and major law-enforcement registries (Federation and Frontier League) with robust player ID fallbacks. Standardized negative standing merits display alerts on the server. Added comprehensive integration tests in `faction.integration.test.js` validating the full procedural smuggling boards generation and completion standing propagation with 100% green passing rate.
-- **Next Action:** Transition to SPEC-084 (Emergency Distress Beacons & Emergent Rescue Caravans), isolated inside git working-tree state.
+- **Summary:** Transitioned to Cycle 18 Phase D (Execute) and successfully implemented SPEC-085 (Underworld Smuggling Contracts), SPEC-084 (Emergency Distress Beacons), and SPEC-083 (Client-Side Entity Interpolation). Designed the EntityInterpolator with ring history buffers, LERP/angular LERP calculations, capped extrapolation, and periodic pruning, wiring it seamlessly into syncEntitiesFromServer and gameLoop drawing overlays in main.js. Configured Rogue's Hollow smuggling boards and distress beacon server listener, spawning refuel tankers or pirate raiders dynamically based on standings. All 916 Jest + 54 Vitest client + 3 Vitest browser tests are 100% green.
+- **Next Action:** Transition to Cycle 19 Phase R (Replenish) to re-run AUDIT and RESEARCH, promote new BACKLOG items, and author the next wave of specifications (SPEC-086+).
 
 ## Cycle 17 — 2026-05-30
 - **Status:** GREEN

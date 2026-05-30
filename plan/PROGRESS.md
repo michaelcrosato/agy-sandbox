@@ -26,10 +26,10 @@ _**v18 re-audit baseline (2026-05-30, ENTIRE v17 blueprint shipped): 912 Jest te
 ## v18 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
-- [ ] `083` client-side entity interpolation & remote ship smoothing (implement smooth LERP/SLERP interpolation buffer caching for remote entities inside CanvasRenderer to eliminate movement stuttering)
+- [x] `083` client-side entity interpolation & remote ship smoothing (implement smooth LERP/SLERP interpolation buffer caching for remote entities inside CanvasRenderer to eliminate movement stuttering) — **done** (files: `src/client/Interpolator.js`, `src/client/__tests__/Interpolator.test.js`, `src/main.js`; designed rolling history buffers with short-arc angular LERP/LERP calculations, capped extrapolation to prevent drift, wired pushing to `EntityInterpolator` on server snapshot receipts in `syncEntitiesFromServer`, cleared on warp/initialization, pruned stale entries in `gameLoop`, and wrapped drawing with smooth interpolated position/heading mappings and restorations; 54 Vitest client tests and 3 Vitest browser tests pass 100% green)
 
 ### Phase 1 — Core Upgrades & Feature Delivery
-- [ ] `084` emergency distress beacons & emergent rescue caravans (catalog Emergency Distress Beacon outfit, program distress beacon server listener, spawn allied refuel tankers or hostile rim pirate ambushers based on local standing)
+- [x] `084` emergency distress beacons & emergent rescue caravans (catalog Emergency Distress Beacon outfit, program distress beacon server listener, spawn allied refuel tankers or hostile rim pirate ambushers based on local standing) — **done** (files: `src/engine/outfitCatalog.js`, `src/server/portHandlers.js`, `src/server/portHandlers.test.js`, `src/engine/Outfitting.js`, `src/engine/ai/AIController.js`; cataloged Emergency Distress Beacon as utility outfit, implemented handleDistressBeacon spawning allied refuel tankers for friendly/neutral standings or hostile rim pirate raiders for negative standings, fixed word-boundary sector name matching, declared refuel tanker AI properties, and verified all behaviors with 28 passing unit tests; 916 Jest tests green)
 
 ### Phase 2 — System Architecture
 - [x] `085` underworld smuggling contracts & standing propagation (procedurally generate smuggling contracts at Rogue's Hollow, attach negative standing consequences to major law factions, and verify propagation on completion) — **done** (files: `src/engine/MissionManager.js`, `src/server.js`, `src/engine/faction.integration.test.js`)

@@ -39,6 +39,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T14:35 · iter-0093 · GREEN · cycle-18-client-side-entity-interpolation
+- **Baseline:** `49e61c4` on `feat/procedural-missions`; 916 Jest + 54 Vitest tests green.
+- **Move:** Implement client-side entity interpolation (SPEC-083) to smooth remote ship positions and heading rotations under network updates.
+- **Changed:**
+  - Created `src/client/Interpolator.js` defining `EntityInterpolator` with ring history buffers, LERP/angular LERP formulas, capped extrapolation, and memory pruning.
+  - Created `src/client/__tests__/Interpolator.test.js` with 24 robust unit tests covering all LERP boundary cases and prune actions.
+  - Modified `src/main.js` to instantiate `EntityInterpolator` at module scope.
+  - Wired snapshot pushing on server state updates inside `syncEntitiesFromServer` in `src/main.js`.
+  - Wired clearing of interpolation histories on connection init or warp success.
+  - Wrapped `renderer.draw` in the game loop to substitute and restore interpolated positions/headings for all remote entities.
+  - Added periodic historical state pruning at 5-second cutoff inside the gameLoop tick.
+- **Decisions:** Performed interpolation substitution temporarily during the draw call to isolate smooth visual updates from precise physics simulations and interaction distance checks.
+- **Validation:** `npm run agent:check` -> green (916 Jest tests / 73 suites pass; ESLint, Prettier, checkJs green); `npm run test:client` & `npm run test:client:browser` -> green (54 Vitest client tests + 3 Vitest browser tests pass).
+- **Next:** Proceed with committing these changes to the feature branch for human review and final verification.
+
 ## 2026-05-30T18:40 · iter-0092 · GREEN · cycle-17-outlaw-black-markets-trade-advisor
 - **Baseline:** `92172e3` on `feat/procedural-missions`; 909 Jest tests green.
 - **Move:** Implement Outlaw Black Market Spaceports with docking standing gates, scale contraband sell prices by 1.5x, and build a standings-aware Trade Advisor cockpit HUD panel.

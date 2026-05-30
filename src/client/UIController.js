@@ -53,6 +53,13 @@ export class UIController {
     this.nebulaTitle = document.getElementById("nebula-hud-title");
     this.nebulaName = document.getElementById("nebula-hud-name");
     this.nebulaDetails = document.getElementById("nebula-hud-details");
+
+    // Bounty Locator Radar elements
+    this.bountyRadar = document.getElementById("bounty-radar");
+    this.bountyRadarTarget = document.getElementById("bounty-radar-target");
+    this.bountyRadarTelemetry = document.getElementById(
+      "bounty-radar-telemetry",
+    );
   }
 
   /**
@@ -90,8 +97,16 @@ export class UIController {
    * @param {Array<Planet>} planets - Loaded planets list to check landing zone prompts.
    * @param {Array} [nebulae] - Nebula hazards active.
    * @param {Array} [entities] - Active physics engine entities for proximity checks.
+   * @param {Array} [activeMissions] - Active missions list for bounty tracking.
    */
-  update(player, target, planets, nebulae = [], entities = []) {
+  update(
+    player,
+    target,
+    planets,
+    nebulae = [],
+    entities = [],
+    activeMissions = [],
+  ) {
     if (!player) return;
 
     // 1. Update Shields, Armor, Energy & Heat bars
@@ -242,6 +257,81 @@ export class UIController {
       this.nebulaPanel.style.boxShadow = `0 0 15px ${glow}`;
     } else if (this.nebulaPanel) {
       this.nebulaPanel.classList.remove("visible");
+    }
+
+    // 6. Update Bounty Locator Radar overlay
+    const hasRadar =
+      player.outfits && player.outfits.includes("Bounty Locator Radar");
+    if (!hasRadar) {
+      if (this.bountyRadar) {
+        this.bountyRadar.style.display = "none";
+        this.bountyRadar.classList.remove("visible");
+      }
+    } else {
+      if (this.bountyRadar) {
+        this.bountyRadar.style.display = "block";
+        this.bountyRadar.classList.add("visible");
+      }
+
+      // Collect names of target bosses from active bounty/storyline missions
+      const activeBountyNames = [];
+      if (Array.isArray(activeMissions)) {
+        for (const m of activeMissions) {
+          if ((m.type === "bounty" || m.type === "storyline") && m.targetName) {
+            activeBountyNames.push(m.targetName);
+          }
+        }
+      }
+
+      // Find target boss or matching targetName entity in sector
+      let bountyTarget = null;
+      if (Array.isArray(entities)) {
+        for (const ent of entities) {
+          if (ent.type === "ship" && !ent.isDestroyed) {
+            if (ent.role === "boss" || activeBountyNames.includes(ent.name)) {
+              bountyTarget = ent;
+              break;
+            }
+          }
+        }
+      }
+
+      if (bountyTarget) {
+        const dx = bountyTarget.position.x - player.position.x;
+        const dy = bountyTarget.position.y - player.position.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // North is 0°, East is 90°, South is 180°, West is 270° (-Y is North)
+        const compassHeading =
+          ((Math.atan2(dy, dx) * 180) / Math.PI + 90 + 360) % 360;
+
+        // Relative angle to the ship nose
+        const angleRad = Math.atan2(dy, dx);
+        let relativeAngleRad = angleRad - (player.heading || 0);
+        relativeAngleRad = Math.atan2(
+          Math.sin(relativeAngleRad),
+          Math.cos(relativeAngleRad),
+        );
+        const relativeAngleDeg = relativeAngleRad * (180 / Math.PI);
+
+        if (this.bountyRadarTarget) {
+          this.bountyRadarTarget.innerText =
+            bountyTarget.name || "WANTED TARGET";
+        }
+        if (this.bountyRadarTelemetry) {
+          this.bountyRadarTelemetry.innerHTML = `
+            <span style="display: inline-block; font-size: 14px; font-weight: bold; color: var(--color-cyan); margin-right: 8px; transform: rotate(${relativeAngleDeg.toFixed(1)}deg); transition: transform 0.05s ease-out;">▲</span>
+            RANGE: <strong>${Math.round(distance).toLocaleString()} u</strong> | HDG: <strong>${Math.round(compassHeading)}°</strong>
+          `;
+        }
+      } else {
+        if (this.bountyRadarTarget) {
+          this.bountyRadarTarget.innerText = "NO TARGET DETECTED";
+        }
+        if (this.bountyRadarTelemetry) {
+          this.bountyRadarTelemetry.innerHTML = `No Active Bounty Targets in Sector`;
+        }
+      }
     }
   }
 

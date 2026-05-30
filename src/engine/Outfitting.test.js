@@ -53,6 +53,14 @@ describe("Outfitting.applyOutfitStats (spec 007)", () => {
     expect(s.outfitMass).toBe(600);
   });
 
+  test("radar outfit adds mass and returns true", () => {
+    const s = new Ship();
+    expect(applyOutfitStats(s, { type: "radar", value: 1, mass: 150 })).toBe(
+      true,
+    );
+    expect(s.outfitMass).toBe(150);
+  });
+
   test("unknown type returns false and adds no mass; null-safe", () => {
     const s = new Ship();
     expect(

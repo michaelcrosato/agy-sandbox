@@ -17,6 +17,9 @@ function mountHud() {
     <div id="hud-shield-lockout"></div>
     <div id="hud-boost-indicator"></div>
     <div id="hit-flash-overlay"></div>
+    <div id="bounty-radar"></div>
+    <div id="bounty-radar-target"></div>
+    <div id="bounty-radar-telemetry"></div>
   `;
   return new UIController();
 }
@@ -155,5 +158,117 @@ describe("UIController combat-feedback HUD transitions", () => {
     );
     expect(ui.shieldLockoutPip.style.display).toBe("block");
     expect(ui.shieldBar.classList.contains("shield-locked")).toBe(true);
+  });
+
+  describe("Bounty Locator Radar overlay tracking", () => {
+    function createMockRadarPlayer(overrides = {}) {
+      return {
+        shield: 100,
+        maxShield: 100,
+        armor: 100,
+        maxArmor: 100,
+        energy: 100,
+        maxEnergy: 100,
+        heat: 0,
+        maxHeat: 100,
+        credits: 5000,
+        cargoCapacity: 20,
+        getCargoWeight: () => 0,
+        velocity: { magnitude: () => 0 },
+        position: { x: 0, y: 0 },
+        heading: 0,
+        outfits: [],
+        ...overrides,
+      };
+    }
+
+    it("hides the radar overlay when player does not have Bounty Locator Radar equipped", () => {
+      const player = createMockRadarPlayer({
+        outfits: ["Basic Laser"],
+      });
+      ui.update(player, null, [], [], [], []);
+      expect(ui.bountyRadar.style.display).toBe("none");
+      expect(ui.bountyRadar.classList.contains("visible")).toBe(false);
+    });
+
+    it("shows the radar overlay with NO TARGET when equipped but no active bounty target exists in-sector", () => {
+      const player = createMockRadarPlayer({
+        outfits: ["Basic Laser", "Bounty Locator Radar"],
+      });
+      ui.update(player, null, [], [], [], []);
+      expect(ui.bountyRadar.style.display).toBe("block");
+      expect(ui.bountyRadar.classList.contains("visible")).toBe(true);
+      expect(ui.bountyRadarTarget.innerText).toBe("NO TARGET DETECTED");
+      expect(ui.bountyRadarTelemetry.innerHTML).toContain(
+        "No Active Bounty Targets in Sector",
+      );
+    });
+
+    it("tracks and displays distance, absolute bearing, and relative arrow heading to a target boss in sector", () => {
+      const player = createMockRadarPlayer({
+        outfits: ["Bounty Locator Radar"],
+        position: { x: 0, y: 0 },
+        heading: 0, // facing East (+X)
+      });
+      const entities = [
+        {
+          type: "ship",
+          role: "boss",
+          name: "Void Serpent 99",
+          position: { x: 100, y: 0 }, // Directly East
+          isDestroyed: false,
+        },
+      ];
+      const activeMissions = [
+        {
+          type: "bounty",
+          targetName: "Void Serpent 99",
+        },
+      ];
+
+      ui.update(player, null, [], [], entities, activeMissions);
+      expect(ui.bountyRadar.style.display).toBe("block");
+      expect(ui.bountyRadarTarget.innerText).toBe("Void Serpent 99");
+      // Compass heading for East: (atan2(0, 100) * 180 / Math.PI + 90 + 360) % 360 = 90 deg.
+      // Relative bearing: 0 deg.
+      expect(ui.bountyRadarTelemetry.innerHTML).toContain(
+        "RANGE: <strong>100 u</strong>",
+      );
+      expect(ui.bountyRadarTelemetry.innerHTML).toContain(
+        "HDG: <strong>90°</strong>",
+      );
+      expect(ui.bountyRadarTelemetry.innerHTML).toContain("rotate(0.0deg)");
+    });
+
+    it("calculates relative arrow degrees correctly when player has a non-zero heading and target is North", () => {
+      const player = createMockRadarPlayer({
+        outfits: ["Bounty Locator Radar"],
+        position: { x: 0, y: 0 },
+        heading: Math.PI / 2, // Facing South (+Y)
+      });
+      const entities = [
+        {
+          type: "ship",
+          role: "boss",
+          name: "Void Serpent 99",
+          position: { x: 0, y: -100 }, // Directly North (-Y)
+          isDestroyed: false,
+        },
+      ];
+      const activeMissions = [
+        {
+          type: "bounty",
+          targetName: "Void Serpent 99",
+        },
+      ];
+
+      ui.update(player, null, [], [], entities, activeMissions);
+      // Compass heading for North is 0 deg.
+      // Relative angle from South to North is 180 deg (or -180 deg).
+      expect(ui.bountyRadarTelemetry.innerHTML).toContain(
+        "HDG: <strong>0°</strong>",
+      );
+      expect(ui.bountyRadarTelemetry.innerHTML).toContain("rotate(-180.0deg)");
+    });
   });
 });

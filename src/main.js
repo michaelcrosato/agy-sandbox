@@ -1425,7 +1425,14 @@ network.onStatsReceived = (msg) => {
     uiController.updateActiveMissionsHUD(missionManager.activeMissions);
   }
 
-  uiController.update(player, playerTarget, planets);
+  uiController.update(
+    player,
+    playerTarget,
+    planets,
+    NEBULAE,
+    engine.entities,
+    missionManager ? missionManager.activeMissions : [],
+  );
   spaceportUI.refreshActiveTab();
 };
 
@@ -2044,7 +2051,14 @@ function gameLoop(time) {
   );
 
   // 5. Synchronize dynamic health bars and targeting dials with overlay DOM dashboard
-  uiController.update(player, playerTarget, planets, NEBULAE, engine.entities);
+  uiController.update(
+    player,
+    playerTarget,
+    planets,
+    NEBULAE,
+    engine.entities,
+    missionManager ? missionManager.activeMissions : [],
+  );
 
   requestAnimationFrame(gameLoop);
 }

@@ -1771,4 +1771,56 @@ h1, h2, h3, h4 {
   }
 }
 
+/* ==========================================================================
+   BOUNTY LOCATOR RADAR OVERLAY STYLING
+   ========================================================================== */
+
+#bounty-radar {
+  position: absolute;
+  top: 95px; /* Sits nicely below the center nebula-status-hud if both are visible */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 290px;
+  padding: 10px 18px;
+  text-align: center;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 242, 254, 0.4);
+  background: rgba(8, 18, 22, 0.85);
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+#bounty-radar.visible {
+  opacity: 1;
+}
+
+.radar-title {
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--color-cyan);
+  margin-bottom: 4px;
+  text-shadow: 0 0 8px rgba(0, 242, 254, 0.5);
+}
+
+.radar-name {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 2px;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.radar-telemetry {
+  font-family: var(--font-display);
+  font-size: 10px;
+  color: var(--color-gold);
+  text-shadow: 0 0 5px var(--color-gold-glow);
+}
+
+
 

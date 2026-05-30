@@ -21,7 +21,7 @@ _**v7 re-audit baseline (2026-05-30, ENTIRE v6 blueprint shipped): 821 Jest test
 - [x] `052` Stargate Warp Tolls & Port Transaction Taxes (reputation standings) — **done** (files: `src/engine/Hyperdrive.js`, `src/engine/Trading.js`, `src/engine/faction.integration.test.js`, `src/server.js`, `src/server/portHandlers.js`; connected stargate jump fees (150/0/500 CR) and port transaction docking/sales taxes (5%/0%/15%) to the FactionRegistry standings, with allied/friendly waivers, neutral defaults, and hostile surcharges; added comprehensive integration tests; all 826 Jest tests green).
 
 ### Phase 2 — Scale-Out & Premium Features
-- [ ] `053` Faction Bounty Locator Radar (immersive professions) — **todo** (files: `src/engine/outfitCatalog.js`, `src/client/UIController.js`, `src/engine/Outfitting.test.js`; add military-grade tracking locator radar that calculates and renders distance and bearing vector guidance to active bounty marks in-sector).
+- [x] `053` Faction Bounty Locator Radar (immersive professions) — **done** (files: `src/engine/outfitCatalog.js`, `src/engine/Outfitting.js`, `src/engine/Outfitting.test.js`, `index.html`, `index.css`, `src/client/UIController.js`, `src/main.js`, `src/client/__tests__/UIController.test.js`; integrated the Bounty Locator Radar outfit to catalog; added relative distance, absolute compass heading, and relative CSS-rotated arrow indicator calculations to the HUD UIController; fully null-safe; all 827 Jest + 15 client Vitest tests green).
 
 ## v6 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

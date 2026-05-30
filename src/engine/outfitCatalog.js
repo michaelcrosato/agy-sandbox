@@ -136,4 +136,13 @@ export const DEFAULT_OUTFITS = Object.freeze([
     description:
       "Active military-grade scanner decoy. Reduces planetary security scan contraband detection probability by 90%.",
   },
+  {
+    name: "Bounty Locator Radar",
+    cost: 4000,
+    type: "radar",
+    value: 1,
+    mass: 150,
+    description:
+      "Military-grade tracking system. Projects real-time directional bearing and range telemetry to bounty targets in-sector.",
+  },
 ]);

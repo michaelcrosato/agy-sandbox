@@ -1,8 +1,10 @@
 import {
-  DEFAULT_BOARDING_OPTIONS,
   canBoard,
   plunder,
   boardRepair,
+  boardSalvage,
+  boardCapture,
+  DEFAULT_BOARDING_OPTIONS,
 } from "./Boarding.js";
 import { Ship } from "./Ship.js";
 import { Vector2D } from "../physics/Vector2D.js";
@@ -120,6 +122,62 @@ describe("Boarding (EW2)", () => {
       expect(boarder.credits).toBe(startCredits);
       expect(boarder.cargo.minerals).toBe(0);
       expect(target.cargo.minerals).toBe(5);
+    });
+  });
+
+  describe("boardSalvage", () => {
+    test("salvages a new module from the target when available", () => {
+      const boarder = boarderAt(0, 0, { outfits: ["Basic Laser"] });
+      const target = disabledTargetAt(30, 0, {
+        outfits: ["Basic Laser", "Shield Booster"],
+      });
+
+      const r = boardSalvage(boarder, target);
+      expect(r.ok).toBe(true);
+      expect(r.salvaged).toBe("Shield Booster");
+      expect(boarder.outfits).toContain("Shield Booster");
+      expect(r.credits).toBe(0);
+    });
+
+    test("awards 800 credits scrap reward if target has no new outfits", () => {
+      const boarder = boarderAt(0, 0, {
+        outfits: ["Basic Laser", "Shield Booster"],
+        credits: 100,
+      });
+      const target = disabledTargetAt(30, 0, { outfits: ["Basic Laser"] });
+
+      const r = boardSalvage(boarder, target);
+      expect(r.ok).toBe(true);
+      expect(r.salvaged).toBeNull();
+      expect(r.credits).toBe(800);
+      expect(boarder.credits).toBe(900);
+    });
+  });
+
+  describe("boardCapture", () => {
+    test("revives target by spending 1500 credits", () => {
+      const boarder = boarderAt(0, 0, { credits: 2000 });
+      const target = disabledTargetAt();
+      target.maxArmor = 100;
+      target.armor = 30;
+
+      const r = boardCapture(boarder, target, 1500);
+      expect(r.ok).toBe(true);
+      expect(boarder.credits).toBe(500);
+      expect(target.isDisabled).toBe(false);
+      expect(target.armor).toBe(40); // floor(100 * 0.4)
+      expect(target.shield).toBe(0);
+    });
+
+    test("fails if boarder has insufficient credits", () => {
+      const boarder = boarderAt(0, 0, { credits: 1000 });
+      const target = disabledTargetAt();
+
+      const r = boardCapture(boarder, target, 1500);
+      expect(r.ok).toBe(false);
+      expect(r.reason).toContain("Insufficient credits");
+      expect(boarder.credits).toBe(1000);
+      expect(target.isDisabled).toBe(true); // untouched
     });
   });
 });

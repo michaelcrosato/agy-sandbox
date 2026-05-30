@@ -182,7 +182,7 @@ function findSurplusSource(
  * @param {Object<string,string>} [world.planetFactions] - Map planet name -> controlling faction.
  * @param {string} [world.playerId] - Player the consequences attach to.
  * @param {Object} [options={}]
- * @param {() => number} options.rng - REQUIRED seeded RNG (e.g. from `createSeededRng`).
+ * @param {() => number} [options.rng] - REQUIRED seeded RNG, validated at runtime (e.g. `createSeededRng`).
  * @param {Object} [options.tuning] - Overrides merged onto `DEFAULT_GENERATIVE_OPTIONS`.
  * @returns {Array<Object>} Generated missions; empty when no eligible shortages/targets exist.
  */

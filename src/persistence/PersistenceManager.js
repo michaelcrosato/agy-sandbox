@@ -21,8 +21,8 @@ import {
  */
 export class PersistenceManager {
   /**
-   * @param {Object} config
-   * @param {import("./Store.js").Store} config.store - Backing store (filesystem, memory, ...).
+   * @param {Object} [config]
+   * @param {import("./Store.js").Store} [config.store] - Backing store, validated at runtime (filesystem, memory, ...).
    * @param {(msg: string, err?: Error) => void} [config.logger] - Optional log sink.
    *   Defaults to `console.warn` so failures are visible without crashing.
    */

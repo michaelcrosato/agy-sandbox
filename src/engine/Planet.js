@@ -7,14 +7,10 @@ import { DEFAULT_OUTFITS } from "./outfitCatalog.js";
 export class Planet extends SpaceEntity {
   /**
    * Creates a Planet.
-   * @param {Object} config - Configuration parameters.
-   * @param {string} config.name - Planet name.
-   * @param {string} [config.description] - Flavor lore/text.
-   * @param {Object} [config.market] - Buy/sell commodity price map (default prices: food: 100, electronics: 300, minerals: 150).
-   * @param {Array} [config.outfitter] - List of upgrades available to buy.
-   * @param {Array} [config.shipyard] - List of ships available to buy.
-   * @param {number} [config.landingRadius] - Trigger distance for landing (default radius + 40).
-   * @param {Object} [config.parentParams] - Remaining baseline entity properties.
+   * @param {Object} config - Configuration: `name`, optional `description`, `color`,
+   *   `market` (commodity price map), `outfitter`, `shipyard`, `landingRadius`,
+   *   `sector`, `faction`, `services`, plus any baseline `SpaceEntity` fields
+   *   (position/velocity/radius/mass/…) collected into `parentParams`.
    */
   constructor({
     name,

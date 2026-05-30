@@ -130,6 +130,7 @@ export class GameInstance {
     // before seedGalaxy so NPC spawns can hand their controllers the policy
     // views (faction relations + per-player standings) for disposition targeting.
     this.factionRegistry = new FactionRegistry();
+    this.baseMarkets = BASE_MARKETS;
 
     // Seed initial entities
     this.seedGalaxy();
@@ -261,6 +262,7 @@ export class GameInstance {
     this.engine.addEntity(roguesPlanet);
 
     // 4. Hyperlane Warp Stargates Seeding (Endless Sky Navigation)
+    /** @type {any} */
     const gateCoreToFrontier = new SpaceEntity({
       id: "gate-core-to-frontier",
       type: "warp_gate",
@@ -274,6 +276,7 @@ export class GameInstance {
     gateCoreToFrontier.targetPosition = new Vector2D(17200, 20000);
     this.engine.addEntity(gateCoreToFrontier);
 
+    /** @type {any} */
     const gateFrontierToCore = new SpaceEntity({
       id: "gate-frontier-to-core",
       type: "warp_gate",
@@ -287,6 +290,7 @@ export class GameInstance {
     gateFrontierToCore.targetPosition = new Vector2D(3300, 0);
     this.engine.addEntity(gateFrontierToCore);
 
+    /** @type {any} */
     const gateFrontierToRim = new SpaceEntity({
       id: "gate-frontier-to-rim",
       type: "warp_gate",
@@ -300,6 +304,7 @@ export class GameInstance {
     gateFrontierToRim.targetPosition = new Vector2D(-17200, -20000);
     this.engine.addEntity(gateFrontierToRim);
 
+    /** @type {any} */
     const gateRimToFrontier = new SpaceEntity({
       id: "gate-rim-to-frontier",
       type: "warp_gate",
@@ -827,6 +832,7 @@ export class GameInstance {
         const completedBounty = client.missionManager.checkBountyCompletion(
           ent.name,
           client.ship,
+          this,
         );
         if (completedBounty) {
           if (client.fleetName) {

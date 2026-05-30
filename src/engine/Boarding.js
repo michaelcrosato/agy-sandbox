@@ -51,6 +51,7 @@ export function plunder(boarder, target, options = {}) {
   if (!canBoard(boarder, target, o)) return fail;
   if (target.looted) return fail;
 
+  /** @type {Record<string, number>} */
   const moved = {};
   if (
     boarder.cargo &&
@@ -100,4 +101,58 @@ export function boardRepair(boarder, target, options = {}) {
   target.armor = max;
   target.isDisabled = false;
   return { ok: true, repaired };
+}
+
+/**
+ * Salvages a boardable target: equips a random non-duplicate outfit from the target
+ * onto the boarder (and applies stats). If target has no new outfits, awards 800 credits.
+ * Mutates both ships.
+ * @param {Object} boarder - Boarding ship.
+ * @param {Object} target - Target ship being boarded.
+ * @param {Function} [rng] - Optional random source.
+ * @returns {{ ok: boolean, salvaged: ?string, credits: number }} Result.
+ */
+export function boardSalvage(boarder, target, rng = Math.random) {
+  if (!boarder || !target) return { ok: false, salvaged: null, credits: 0 };
+  const targetOutfits = Array.isArray(target.outfits) ? target.outfits : [];
+  const boarderOutfits = Array.isArray(boarder.outfits) ? boarder.outfits : [];
+  const salvagable = targetOutfits.filter((o) => !boarderOutfits.includes(o));
+
+  if (salvagable.length > 0) {
+    const chosen = salvagable[Math.floor(rng() * salvagable.length)];
+    if (!boarder.outfits) boarder.outfits = [];
+    boarder.outfits.push(chosen);
+    return { ok: true, salvaged: chosen, credits: 0 };
+  } else {
+    if (Number.isFinite(boarder.credits)) {
+      boarder.credits += 800;
+    }
+    return { ok: true, salvaged: null, credits: 800 };
+  }
+}
+
+/**
+ * Captures a boardable target: revives it by spending credits from the boarder.
+ * Mutates both ships.
+ * @param {Object} boarder - Boarding ship.
+ * @param {Object} target - Target ship being captured.
+ * @param {number} [fee=1500] - Cost to capture.
+ * @returns {{ ok: boolean, reason?: string }} Result.
+ */
+export function boardCapture(boarder, target, fee = 1500) {
+  if (!boarder || !target)
+    return { ok: false, reason: "Invalid boarder or target" };
+  const credits = Number.isFinite(boarder.credits) ? boarder.credits : 0;
+  if (credits < fee) {
+    return {
+      ok: false,
+      reason: `Insufficient credits for crew (${fee.toLocaleString()} CR)!`,
+    };
+  }
+  boarder.credits -= fee;
+  target.isDisabled = false;
+  const maxArmor = Number.isFinite(target.maxArmor) ? target.maxArmor : 100;
+  target.armor = Math.floor(maxArmor * 0.4);
+  target.shield = 0;
+  return { ok: true };
 }

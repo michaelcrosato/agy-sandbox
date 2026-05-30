@@ -78,3 +78,37 @@ export function ramscoopRegen(
   if (r <= 0) return 0;
   return refuel(ship, r * dt);
 }
+
+/**
+ * Validates stargate distance and hyper-fuel requirements for a jump.
+ * @param {Object} ship - The jumping ship.
+ * @param {Object} gate - Stargate entity.
+ * @param {number} [jumpCost] - Fuel cost.
+ * @returns {{ ok: boolean, reason?: string }} Result.
+ */
+export function validateWarpJump(
+  ship,
+  gate,
+  jumpCost = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost,
+) {
+  if (!ship || !gate || gate.type !== "warp_gate") {
+    return { ok: false, reason: "Warp Gate invalid or not found!" };
+  }
+  if (!ship.position || !gate.position) {
+    return { ok: false, reason: "Stargate positions not loaded!" };
+  }
+  const dist = ship.position.distance(gate.position);
+  if (dist > 150) {
+    return {
+      ok: false,
+      reason: "Too far from stargate to initiate warp jump! Move within 150u.",
+    };
+  }
+  if (!canJump(ship, jumpCost)) {
+    return {
+      ok: false,
+      reason: `Insufficient Hyper-Fuel! Requires ${jumpCost} units. Land on a planet to refuel.`,
+    };
+  }
+  return { ok: true };
+}

@@ -8,18 +8,12 @@ import { makeEmptyCargo } from "./commodities.js";
 export class Ship extends SpaceEntity {
   /**
    * Creates a Ship entity.
-   * @param {Object} config - Configuration parameters.
-   * @param {number} [config.thrustPower] - Forward propulsion force in Newtons.
-   * @param {number} [config.brakePower] - Retro-propulsion force in Newtons.
-   * @param {number} [config.turnRate] - Turning speed in radians/second.
-   * @param {number} [config.maxSpeed] - Speed cap in units/second.
-   * @param {number} [config.maxShield] - Maximum shield health capacity.
-   * @param {number} [config.maxArmor] - Maximum structural armor capacity.
-   * @param {number} [config.shieldRegen] - Shield regeneration rate per second.
-   * @param {number} [config.credits] - Currency amount for trading.
-   * @param {number} [config.cargoCapacity] - Max weight of cargo units.
-   * @param {string} [config.name] - Readable identifier for UI display.
-   * @param {Object} [config.parentParams] - Remaining baseline entity properties.
+   * @param {Object} config - Configuration: `thrustPower`, `brakePower`,
+   *   `turnRate`, `maxSpeed`, `maxShield`, `maxArmor`, `shieldRegen`, `credits`,
+   *   `cargoCapacity`, `name`, `passengerCapacity`, `faction`, the weapon stats
+   *   (`weaponDamage`/`weaponRange`/`weaponSpeed`/`weaponCooldown`), `bountyValue`,
+   *   `ramscoopRate`, `miningYieldMultiplier`, plus any baseline `SpaceEntity`
+   *   fields (position/velocity/heading/…) collected into `parentParams`.
    */
   constructor({
     thrustPower = 8000,
@@ -41,6 +35,7 @@ export class Ship extends SpaceEntity {
     bountyValue = null,
     ramscoopRate = 0,
     miningYieldMultiplier = 1,
+    outfits = ["Basic Laser"],
     ...parentParams
   } = {}) {
     super({ type: "ship", mass: 2000, radius: 15, ...parentParams });
@@ -100,12 +95,24 @@ export class Ship extends SpaceEntity {
     this.cargo = makeEmptyCargo();
 
     // Weapon & Outfit Loadouts
-    this.outfits = ["Basic Laser"];
+    this.outfits = outfits;
     this.weaponDamage = weaponDamage;
     this.weaponRange = weaponRange;
     this.weaponSpeed = weaponSpeed;
     this.weaponCooldown = weaponCooldown;
+    // Per-shot costs + shield pierce; overwritten by applyArchetypeToShip. Default
+    // to the legacy baseline so an un-archetyped ship still fires correctly.
+    this.weaponEnergyCost = 6;
+    this.weaponHeatCost = 8;
+    this.weaponShieldPierce = 0;
     this.activeWeaponCooldown = 0; // current active countdown
+
+    /** @type {number|undefined} */
+    this.weaponEnergyCost = undefined;
+    /** @type {number|undefined} */
+    this.weaponHeatCost = undefined;
+    /** @type {number|undefined} */
+    this.weaponShieldPierce = undefined;
 
     // Combat record (EW1). `bountyValue`: explicit credit-worth as a target;
     // null means derive from stats via CombatRating.shipBountyValue. The ledger
@@ -231,6 +238,13 @@ export class Ship extends SpaceEntity {
    */
   get isDestroyed() {
     return this.armor <= 0;
+  }
+
+  /**
+   * @param {boolean} _val
+   */
+  set isDestroyed(_val) {
+    // Read-only dynamic property derived from armor
   }
 
   /**

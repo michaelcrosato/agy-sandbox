@@ -4,6 +4,7 @@ import {
   consumeJump,
   refuel,
   ramscoopRegen,
+  validateWarpJump,
 } from "./Hyperdrive.js";
 
 describe("Hyperdrive (EW3)", () => {
@@ -81,6 +82,54 @@ describe("Hyperdrive (EW3)", () => {
       expect(ramscoopRegen(ship, 1, 0)).toBe(0);
       expect(ramscoopRegen(ship, 0, 4)).toBe(0);
       expect(ship.hyperFuel).toBe(50);
+    });
+  });
+
+  describe("validateWarpJump", () => {
+    const pos = (x, y) => ({
+      x,
+      y,
+      distance(o) {
+        return Math.hypot(this.x - o.x, this.y - o.y);
+      },
+    });
+
+    test("succeeds when close and fuel is sufficient", () => {
+      const ship = { hyperFuel: 50, position: pos(0, 0) };
+      const gate = { type: "warp_gate", position: pos(100, 0) };
+      expect(validateWarpJump(ship, gate, 20)).toEqual({ ok: true });
+    });
+
+    test("fails when gate is invalid or missing", () => {
+      const ship = { hyperFuel: 50, position: pos(0, 0) };
+      expect(validateWarpJump(ship, null)).toEqual({
+        ok: false,
+        reason: "Warp Gate invalid or not found!",
+      });
+      expect(validateWarpJump(ship, { type: "not_gate" })).toEqual({
+        ok: false,
+        reason: "Warp Gate invalid or not found!",
+      });
+    });
+
+    test("fails when too far", () => {
+      const ship = { hyperFuel: 50, position: pos(0, 0) };
+      const gate = { type: "warp_gate", position: pos(200, 0) };
+      expect(validateWarpJump(ship, gate, 20)).toEqual({
+        ok: false,
+        reason:
+          "Too far from stargate to initiate warp jump! Move within 150u.",
+      });
+    });
+
+    test("fails when fuel is insufficient", () => {
+      const ship = { hyperFuel: 10, position: pos(0, 0) };
+      const gate = { type: "warp_gate", position: pos(50, 0) };
+      expect(validateWarpJump(ship, gate, 20)).toEqual({
+        ok: false,
+        reason:
+          "Insufficient Hyper-Fuel! Requires 20 units. Land on a planet to refuel.",
+      });
     });
   });
 });

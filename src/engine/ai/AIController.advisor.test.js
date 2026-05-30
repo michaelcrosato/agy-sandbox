@@ -125,4 +125,87 @@ describe("AIController advisory layer (spec 017)", () => {
     ai.update(0.1, [ship, pirate()]);
     expect(ai.currentGoal).toBeNull(); // advisor never ran
   });
+
+  it("a damaged guard chooses to REGROUP to recharge shields", () => {
+    const woundedGuard = makeShip({
+      id: "g1",
+      role: "guard",
+      shield: 0,
+      maxShield: 100,
+      armor: 100,
+      maxArmor: 100,
+      position: pos(0, 0),
+    });
+    const pirateThreat = pirate({ position: pos(600, 0) });
+    const ai = new AIController(woundedGuard, "guard", {
+      useUtilityAdvisor: true,
+    });
+
+    ai.update(0.1, [woundedGuard, pirateThreat]);
+
+    expect(ai.currentGoal).toBe(Goals.REGROUP);
+    expect(woundedGuard.controls.isThrusting).toBe(true);
+  });
+
+  it("a merchant chooses to TRADE and steer toward a safe nearby planet", () => {
+    const merchant = makeShip({ position: pos(0, 0) });
+    const safePlanet = {
+      id: "p1",
+      type: "planet",
+      position: pos(300, 300),
+      landingRadius: 50,
+    };
+    const ai = new AIController(merchant, "merchant", {
+      useUtilityAdvisor: true,
+    });
+
+    ai.update(0.1, [merchant, safePlanet]);
+
+    expect(ai.currentGoal).toBe(Goals.TRADE);
+    expect(ai.destination).toBe(safePlanet.position);
+    expect(merchant.controls.isThrusting).toBe(true);
+  });
+
+  it("a merchant trades and brakes when close to a planet", () => {
+    const merchant = makeShip({ position: pos(0, 0) });
+    const closePlanet = {
+      id: "p1",
+      type: "planet",
+      position: pos(20, 20),
+      landingRadius: 50,
+    };
+    const ai = new AIController(merchant, "merchant", {
+      useUtilityAdvisor: true,
+    });
+
+    ai.update(0.1, [merchant, closePlanet]);
+
+    expect(ai.currentGoal).toBe(Goals.TRADE);
+    expect(merchant.controls.isBraking).toBe(true);
+    expect(merchant.controls.isThrusting).toBeFalsy();
+  });
+
+  it("a pirate with advisor prefers the highest-weakness prey over the nearest prey", () => {
+    const raider = pirate({ position: pos(0, 0) });
+    const healthyPrey = makeShip({
+      id: "healthy",
+      position: pos(100, 0),
+      armor: 100,
+      maxArmor: 100,
+    });
+    const woundedPrey = makeShip({
+      id: "wounded",
+      position: pos(200, 0),
+      armor: 10,
+      maxArmor: 100,
+    });
+    const ai = new AIController(raider, "pirate", { useUtilityAdvisor: true });
+
+    // Both are soft non-pirates and valid targets
+    ai.update(0.1, [raider, healthyPrey, woundedPrey]);
+
+    // Raider has ENGAGE goal and selects the wounded prey even though it is twice as far!
+    expect(ai.currentGoal).toBe(Goals.ENGAGE);
+    expect(ai.target.id).toBe("wounded");
+  });
 });

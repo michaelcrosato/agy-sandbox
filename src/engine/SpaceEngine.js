@@ -3,6 +3,11 @@ import { Projectile } from "./Projectile.js";
 import { DEFAULT_WEAPON_COSTS } from "./WeaponArchetypes.js";
 
 /**
+ * @typedef {import("./SpaceEntity.js").SpaceEntity} SpaceEntity
+ * @typedef {import("./Ship.js").Ship} Ship
+ */
+
+/**
  * Orchestrator class managing simulation state, entity updates, weapon fires, and circular elastic collisions.
  */
 export class SpaceEngine {
@@ -239,9 +244,11 @@ export class SpaceEngine {
 
   /**
    * Processes impact of weapon discharges on ships or asteroids.
+   * @param {SpaceEntity} e1 - First colliding entity.
+   * @param {SpaceEntity} e2 - Second colliding entity.
    */
   resolveProjectileCollision(e1, e2) {
-    const proj = e1.type === "projectile" ? e1 : e2;
+    const proj = /** @type {*} */ (e1.type === "projectile" ? e1 : e2);
     const target = e1.type === "projectile" ? e2 : e1;
 
     // Projectile can't hit its own launcher or other projectiles or static planets
@@ -255,9 +262,10 @@ export class SpaceEngine {
 
     // Apply damage to target
     if (target.type === "ship") {
-      target.takeDamage(proj.damage, proj.shieldPierce || 0);
-      if (target.isDestroyed) {
-        target.destroyedBy = proj.ownerId;
+      const shipTarget = /** @type {Ship} */ (target);
+      shipTarget.takeDamage(proj.damage, proj.shieldPierce || 0);
+      if (shipTarget.isDestroyed) {
+        shipTarget.destroyedBy = proj.ownerId;
       }
     } else if (target.type === "generic" || target.type === "gem_asteroid") {
       // Asteroids/Generic debris simply take damage or disappear
@@ -342,12 +350,16 @@ export class SpaceEngine {
    * @param {number} damage - Impact damage amount.
    */
   applyRamDamage(target, other, damage) {
-    if (target.type !== "ship" || typeof target.takeDamage !== "function") {
+    if (
+      target.type !== "ship" ||
+      typeof (/** @type {*} */ (target).takeDamage) !== "function"
+    ) {
       return;
     }
-    target.takeDamage(damage);
-    if (target.isDestroyed && !target.destroyedBy) {
-      target.destroyedBy = other.id;
+    const shipTarget = /** @type {Ship} */ (target);
+    shipTarget.takeDamage(damage);
+    if (shipTarget.isDestroyed && !shipTarget.destroyedBy) {
+      shipTarget.destroyedBy = other.id;
     }
   }
 }

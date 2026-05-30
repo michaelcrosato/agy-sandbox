@@ -16,7 +16,9 @@
   "include": [
     "src/net/**/*.js",
     "src/physics/**/*.js",
-    "src/server/**/*.js"
+    "src/server/**/*.js",
+    "src/engine/**/*.js",
+    "src/persistence/**/*.js"
   ],
   "exclude": ["node_modules", "**/*.test.js"]
 }

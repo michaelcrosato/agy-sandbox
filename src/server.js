@@ -19,12 +19,17 @@ import { PersistenceManager } from "./persistence/PersistenceManager.js";
 import { applyGalaxy, applyPlayer } from "./persistence/serializers.js";
 import { applyRepair, applyRefuel } from "./engine/PortServices.js";
 import {
-  canJump,
   consumeJump,
   DEFAULT_HYPERDRIVE_OPTIONS,
+  validateWarpJump,
 } from "./engine/Hyperdrive.js";
 
-import { plunder, boardRepair } from "./engine/Boarding.js";
+import {
+  plunder,
+  boardRepair,
+  boardSalvage,
+  boardCapture,
+} from "./engine/Boarding.js";
 import { isAllowedOrigin } from "./net/originPolicy.js";
 import { selectDeadSockets, DEFAULT_HEARTBEAT_MS } from "./net/heartbeat.js";
 import { sendDecision } from "./net/backpressure.js";
@@ -611,7 +616,9 @@ function runSectorEventTickForRoom(room) {
       });
       raiderShip.role = "pirate";
 
-      const controller = new AIController(raiderShip, "pirate");
+      const controller = new AIController(raiderShip, "pirate", {
+        useUtilityAdvisor: true,
+      });
       room.engine.addEntity(raiderShip);
       room.ais.push(controller);
       spawnedShipIds.push(shipId);
@@ -959,7 +966,9 @@ wss.on("connection", (ws) => {
       });
     }
 
-    const controller = new AIController(bossShip, "pirate");
+    const controller = new AIController(bossShip, "pirate", {
+      useUtilityAdvisor: true,
+    });
     room.engine.addEntity(bossShip);
     room.ais.push(controller);
 
@@ -997,7 +1006,9 @@ wss.on("connection", (ws) => {
       weaponCooldown: 0.22,
     });
 
-    const controller = new AIController(bossShip, "pirate");
+    const controller = new AIController(bossShip, "pirate", {
+      useUtilityAdvisor: true,
+    });
     room.engine.addEntity(bossShip);
     room.ais.push(controller);
 
@@ -1208,6 +1219,7 @@ wss.on("connection", (ws) => {
           const completed = clientObj.missionManager.checkArrivalCompletions(
             targetPlanet.name,
             clientObj.ship,
+            room,
           );
           for (const m of completed) {
             if (clientObj.fleetName) {
@@ -1341,6 +1353,16 @@ wss.on("connection", (ws) => {
             room.economyManager.registerBuy(p.name, msg.item);
           } else {
             room.economyManager.registerSell(p.name, msg.item);
+          }
+
+          // spec 032: successful trading at a faction-controlled port nudges standing
+          if (room.factionRegistry && p.faction) {
+            const TRADE_STANDING_NUDGE = 0.5;
+            room.factionRegistry.adjustStanding(
+              clientObj.id,
+              p.faction,
+              TRADE_STANDING_NUDGE,
+            );
           }
           clientObj.send({
             type: "notification",
@@ -1615,29 +1637,11 @@ wss.on("connection", (ws) => {
     } else if (msg.type === "warp_jump") {
       if (room) {
         const gate = room.engine.getEntity(msg.gateId);
-        if (!gate || gate.type !== "warp_gate") {
+        const val = validateWarpJump(clientObj.ship, gate, JUMP_FUEL_COST);
+        if (!val.ok) {
           clientObj.send({
             type: "notification",
-            message: "Warp Gate invalid or not found!",
-            style: "error",
-          });
-          return;
-        }
-        const dist = clientObj.ship.position.distance(gate.position);
-        if (dist > 150) {
-          clientObj.send({
-            type: "notification",
-            message:
-              "Too far from stargate to initiate warp jump! Move within 150u.",
-            style: "error",
-          });
-          return;
-        }
-        if (!canJump(clientObj.ship, JUMP_FUEL_COST)) {
-          clientObj.send({
-            type: "notification",
-            message:
-              "Insufficient Hyper-Fuel! Requires 20 units. Land on a planet to refuel.",
+            message: val.reason,
             style: "error",
           });
           return;
@@ -1745,50 +1749,44 @@ wss.on("connection", (ws) => {
             });
           }
         } else if (msg.action === "salvage") {
-          const salvagable = target.outfits
-            ? target.outfits.filter((o) => !clientObj.ship.outfits.includes(o))
-            : [];
-          if (salvagable.length > 0) {
-            const chosen =
-              salvagable[Math.floor(Math.random() * salvagable.length)];
-            clientObj.ship.outfits.push(chosen);
+          const result = boardSalvage(clientObj.ship, target);
+          if (result.ok) {
+            if (result.salvaged) {
+              const match = DEFAULT_OUTFITS.find(
+                (o) => o.name === result.salvaged,
+              );
+              if (match) applyOutfitStats(clientObj.ship, match);
 
-            const match = DEFAULT_OUTFITS.find((o) => o.name === chosen);
-            if (match) applyOutfitStats(clientObj.ship, match);
-
-            clientObj.send({
-              type: "notification",
-              message: `Hull Component Salvaged! Equipped: ${chosen}`,
-              style: "success",
-            });
-            clientObj.sendStats();
-          } else {
-            clientObj.ship.credits += 800;
-            clientObj.send({
-              type: "notification",
-              message: "No new modules found. Salvaged scrap for +800 CR.",
-              style: "info",
-            });
+              clientObj.send({
+                type: "notification",
+                message: `Hull Component Salvaged! Equipped: ${result.salvaged}`,
+                style: "success",
+              });
+            } else {
+              clientObj.send({
+                type: "notification",
+                message: `No new modules found. Salvaged scrap for +${result.credits} CR.`,
+                style: "info",
+              });
+            }
             clientObj.sendStats();
           }
         } else if (msg.action === "capture") {
-          const fee = 1500;
-          if (clientObj.ship.credits < fee) {
+          const result = boardCapture(clientObj.ship, target, 1500);
+          if (!result.ok) {
             clientObj.send({
               type: "notification",
-              message: "Insufficient credits for crew (1,500 CR)!",
+              message: result.reason,
               style: "error",
             });
             return;
           }
-          clientObj.ship.credits -= fee;
 
-          target.isDisabled = false;
-          target.armor = Math.floor(target.maxArmor * 0.4);
-          target.shield = 0;
           target.name = `${clientObj.nickname}'s Escort`;
 
-          const controller = new AIController(target, "escort");
+          const controller = new AIController(target, "escort", {
+            useUtilityAdvisor: true,
+          });
           controller.flagship = clientObj.ship;
           room.ais.push(controller);
 

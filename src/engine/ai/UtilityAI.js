@@ -350,6 +350,7 @@ export function evaluateGoals(perception, options = DEFAULT_UTILITY_OPTIONS) {
  */
 export function selectGoal(perception, options = DEFAULT_UTILITY_OPTIONS) {
   const scores = evaluateGoals(perception, options);
+  /** @type {string} */
   let goal = Goals.PATROL;
   let score = -Infinity;
   for (const g of GOAL_ORDER) {

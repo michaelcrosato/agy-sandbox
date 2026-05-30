@@ -6,10 +6,8 @@ import { SpaceEntity } from "./SpaceEntity.js";
 export class CargoPod extends SpaceEntity {
   /**
    * Creates a CargoPod.
-   * @param {Object} config - Configuration parameters.
-   * @param {string} [config.resourceType] - Type of resource (minerals, luxuries, contraband, machinery, food, electronics).
-   * @param {number} [config.amount] - Units of cargo contained (default 1).
-   * @param {Object} [config.parentParams] - Remaining baseline entity properties.
+   * @param {Object} [config] - `resourceType`, `amount`, plus any baseline
+   *   `SpaceEntity` fields (position/velocity/…) collected into `parentParams`.
    */
   constructor({ resourceType = "minerals", amount = 1, ...parentParams } = {}) {
     // Cargo pods are light, drift physical objects with radius 8 and mass 50

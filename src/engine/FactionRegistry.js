@@ -157,12 +157,9 @@ export function dockingPermitted(standing, options = DEFAULT_OPTIONS) {
  */
 export class FactionRegistry {
   /**
-   * @param {Object} [config={}]
-   * @param {Array<string>} [config.factions=DEFAULT_FACTIONS] - Faction roster.
-   * @param {Object} [config.relations=DEFAULT_RELATIONS] - Pairwise relation map.
-   * @param {Object} [config.options] - Overrides merged onto `DEFAULT_OPTIONS`.
-   * @param {Object} [config.standings={}] - Initial standings keyed by player.
-   *   Shape: `{ [playerId]: { [faction]: number } }`.
+   * @param {Object} [config] - `factions` (roster), `relations` (pairwise map),
+   *   `options` (merged onto `DEFAULT_OPTIONS`), and `standings`
+   *   (`{ [playerId]: { [faction]: number } }`). All optional.
    */
   constructor({
     factions = DEFAULT_FACTIONS,
@@ -263,6 +260,7 @@ export class FactionRegistry {
    */
   adjustStanding(playerId, faction, delta) {
     if (!this.hasFaction(faction)) return {};
+    /** @type {Record<string, number>} */
     const changes = {};
     const primary = this.setStanding(
       playerId,
@@ -415,6 +413,7 @@ export class FactionRegistry {
   decay(playerId, rate = this.options.decayRate) {
     const playerMap = this.standings[playerId];
     if (!playerMap) return {};
+    /** @type {Record<string, number>} */
     const changes = {};
     for (const faction of Object.keys(playerMap)) {
       const current = playerMap[faction];
@@ -435,6 +434,7 @@ export class FactionRegistry {
    * @returns {Object<string, Object<string, number>>} Per-player change map.
    */
   decayAll(rate = this.options.decayRate) {
+    /** @type {Record<string, Record<string, number>>} */
     const all = {};
     for (const playerId of Object.keys(this.standings)) {
       const changed = this.decay(playerId, rate);

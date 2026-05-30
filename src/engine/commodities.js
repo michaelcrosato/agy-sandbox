@@ -30,6 +30,7 @@ export const COMMODITIES = Object.freeze([
  * @returns {Object<string, number>}
  */
 export function makeEmptyCargo() {
+  /** @type {Record<string, number>} */
   const cargo = {};
   for (const commodity of COMMODITIES) cargo[commodity] = 0;
   return cargo;

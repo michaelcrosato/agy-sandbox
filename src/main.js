@@ -117,7 +117,9 @@ missionManager.onBountyAccepted = (mission) => {
     weaponCooldown: 0.22,
   });
 
-  const controller = new AIController(bossShip, "pirate");
+  const controller = new AIController(bossShip, "pirate", {
+    useUtilityAdvisor: true,
+  });
   engine.addEntity(bossShip);
   ais.push(controller);
 
@@ -175,7 +177,9 @@ missionManager.onStorylineStageAdvanced = (mission) => {
     });
   }
 
-  const controller = new AIController(bossShip, "pirate");
+  const controller = new AIController(bossShip, "pirate", {
+    useUtilityAdvisor: true,
+  });
   engine.addEntity(bossShip);
   ais.push(controller);
 
@@ -429,7 +433,9 @@ for (let i = 0; i < 8; i++) {
     turnRate: isHeavy ? 1.2 : 1.5,
   });
 
-  const controller = new AIController(mShip, "merchant");
+  const controller = new AIController(mShip, "merchant", {
+    useUtilityAdvisor: true,
+  });
   engine.addEntity(mShip);
   ais.push(controller);
 }
@@ -464,7 +470,9 @@ for (let i = 0; i < 7; i++) {
     weaponCooldown: isHeavy ? 0.2 : 0.3,
   });
 
-  const controller = new AIController(pShip, "pirate");
+  const controller = new AIController(pShip, "pirate", {
+    useUtilityAdvisor: true,
+  });
   engine.addEntity(pShip);
   ais.push(controller);
 }
@@ -501,7 +509,9 @@ for (let i = 0; i < 6; i++) {
     weaponCooldown: isDestroyer ? 0.3 : 0.25,
   });
 
-  const controller = new AIController(gShip, "guard");
+  const controller = new AIController(gShip, "guard", {
+    useUtilityAdvisor: true,
+  });
   engine.addEntity(gShip);
   ais.push(controller);
 }
@@ -994,7 +1004,9 @@ function triggerRandomSpaceEvent() {
       turnRate: 1.5,
     });
 
-    const mController = new AIController(distressedMerchant, "merchant");
+    const mController = new AIController(distressedMerchant, "merchant", {
+      useUtilityAdvisor: true,
+    });
     engine.addEntity(distressedMerchant);
     ais.push(mController);
 
@@ -1019,7 +1031,9 @@ function triggerRandomSpaceEvent() {
       });
 
       // Make pirate attack the merchant
-      const pController = new AIController(attacker, "pirate");
+      const pController = new AIController(attacker, "pirate", {
+        useUtilityAdvisor: true,
+      });
       pController.target = distressedMerchant;
 
       engine.addEntity(attacker);

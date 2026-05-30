@@ -3,6 +3,8 @@ import {
   applyMissionConsequences,
 } from "./GenerativeMissions.js";
 
+/** @typedef {import("./Planet.js").Planet} Planet */
+
 /**
  * Manages the procedural mission generation, active contract tracking, and completion cycles.
  */
@@ -266,8 +268,11 @@ export class MissionManager {
 
   /**
    * Triggers courier/smuggling landing validation on arrival.
+   * @param {string} destinationName - Name of landed planet.
+   * @param {Object} player - Player ship.
+   * @param {Object} [world={}] - World context for consequences.
    */
-  checkArrivalCompletions(destinationName, player) {
+  checkArrivalCompletions(destinationName, player, world = {}) {
     const completed = [];
     const remaining = [];
 
@@ -283,6 +288,12 @@ export class MissionManager {
         // Remove cargo
         player.removeCargo(mission.cargoItem, mission.cargoAmount);
 
+        if (mission.generated) {
+          const consequences = applyMissionConsequences(mission, world);
+          mission.factionChanges = consequences.factionChanges;
+          mission.marketChanges = consequences.marketChanges;
+        }
+
         completed.push(mission);
       } else if (
         mission.type === "passenger" &&
@@ -292,6 +303,13 @@ export class MissionManager {
         // leaving activeMissions frees the bunks they occupied.
         mission.isCompleted = true;
         player.credits += mission.reward;
+
+        if (mission.generated) {
+          const consequences = applyMissionConsequences(mission, world);
+          mission.factionChanges = consequences.factionChanges;
+          mission.marketChanges = consequences.marketChanges;
+        }
+
         completed.push(mission);
       } else if (
         mission.type === "storyline" &&
@@ -330,8 +348,11 @@ export class MissionManager {
 
   /**
    * Evaluates if a destroyed bounty matches active targets.
+   * @param {string} shipName - Name of destroyed target.
+   * @param {Object} player - Player ship.
+   * @param {Object} [world={}] - World context for consequences.
    */
-  checkBountyCompletion(shipName, player) {
+  checkBountyCompletion(shipName, player, world = {}) {
     const index = this.activeMissions.findIndex(
       (m) =>
         (m.type === "bounty" && m.targetName === shipName) ||
@@ -381,6 +402,12 @@ export class MissionManager {
         // Standard Bounty Complete
         mission.isCompleted = true;
         player.credits += mission.reward;
+
+        if (mission.generated) {
+          const consequences = applyMissionConsequences(mission, world);
+          mission.factionChanges = consequences.factionChanges;
+          mission.marketChanges = consequences.marketChanges;
+        }
 
         // Remove from active
         this.activeMissions.splice(index, 1);

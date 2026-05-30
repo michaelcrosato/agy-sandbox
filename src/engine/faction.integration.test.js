@@ -3,6 +3,7 @@ import { FactionRegistry } from "./FactionRegistry.js";
 import { AIController } from "./ai/AIController.js";
 import { factionPrice } from "./Trading.js";
 import { serializeGalaxy, applyGalaxy } from "../persistence/serializers.js";
+import { MissionManager } from "./MissionManager.js";
 
 // Spec 016 — faction runtime wiring. The pure FactionRegistry math is covered
 // in FactionRegistry.test.js; these assert the LIVE wiring: a GameInstance owns
@@ -167,6 +168,121 @@ describe("reputation decay hook (spec 029)", () => {
       const v = room.factionRegistry.getStanding("p", "Pirates");
       expect(v).toBeGreaterThan(-100);
       expect(v).toBeLessThan(0);
+    } finally {
+      room.destroy();
+    }
+  });
+});
+
+describe("mission + trade faction standings (spec 032)", () => {
+  it("adjusts player standings on successful trade at a faction planet", () => {
+    const room = new GameInstance("room-trade-test", "Trade Test");
+    try {
+      const sol = room.planets.find((p) => p.name === "Sol");
+      expect(sol.faction).toBe("Federation");
+
+      const playerId = "cmdr-trade-1";
+      const before = room.factionRegistry.getStanding(playerId, "Federation");
+      expect(before).toBe(0);
+
+      // Nudge standing by 0.5 (matching TRADE_STANDING_NUDGE in server.js)
+      room.factionRegistry.adjustStanding(playerId, sol.faction, 0.5);
+
+      const after = room.factionRegistry.getStanding(playerId, "Federation");
+      expect(after).toBe(0.5);
+      // Propagation happened too!
+      expect(
+        room.factionRegistry.getStanding(playerId, "Independents"),
+      ).toBeGreaterThan(0);
+    } finally {
+      room.destroy();
+    }
+  });
+
+  it("applies generated mission consequences (standing changes) on arrival completion", () => {
+    const room = new GameInstance("room-mission-test", "Mission Test");
+    try {
+      const playerId = "cmdr-mission-1";
+      const mm = new MissionManager();
+
+      // Create a mock active generated delivery mission
+      const mission = {
+        id: "gen-courier-test",
+        type: "courier",
+        generated: true,
+        destination: "Sol",
+        reward: 500,
+        cargoItem: "electronics",
+        cargoAmount: 1,
+        consequences: {
+          factionDeltas: [{ playerId, faction: "Federation", delta: 15 }],
+        },
+      };
+
+      mm.activeMissions.push(mission);
+
+      let removeCargoCalledWith = null;
+      const player = {
+        credits: 1000,
+        removeCargo: (item, amt) => {
+          removeCargoCalledWith = [item, amt];
+        },
+      };
+
+      // Trigger landing on Sol, passing room (GameInstance) as the world context!
+      const completed = mm.checkArrivalCompletions("Sol", player, room);
+
+      expect(completed.length).toBe(1);
+      expect(completed[0].id).toBe("gen-courier-test");
+      expect(player.credits).toBe(1500);
+      expect(removeCargoCalledWith).toEqual(["electronics", 1]);
+
+      // Verify that standing is updated in the faction registry!
+      const standing = room.factionRegistry.getStanding(playerId, "Federation");
+      expect(standing).toBe(15);
+      // Verify propagation
+      expect(
+        room.factionRegistry.getStanding(playerId, "Independents"),
+      ).toBeGreaterThan(0);
+    } finally {
+      room.destroy();
+    }
+  });
+
+  it("applies generated bounty consequences (standing changes) on bounty completion", () => {
+    const room = new GameInstance("room-bounty-test", "Bounty Test");
+    try {
+      const playerId = "cmdr-bounty-1";
+      const mm = new MissionManager();
+
+      // Create a mock active generated bounty mission
+      const mission = {
+        id: "gen-bounty-test",
+        type: "bounty",
+        generated: true,
+        targetName: "Wanted Pirate",
+        reward: 2000,
+        consequences: {
+          factionDeltas: [{ playerId, faction: "Federation", delta: 25 }],
+        },
+      };
+
+      mm.activeMissions.push(mission);
+
+      const player = {
+        credits: 1000,
+      };
+
+      // Trigger bounty check on target death, passing room (GameInstance) as the world context!
+      const completed = mm.checkBountyCompletion("Wanted Pirate", player, room);
+
+      expect(completed).not.toBeNull();
+      expect(completed.id).toBe("gen-bounty-test");
+      expect(player.credits).toBe(3000);
+
+      // Verify that standing is updated in the faction registry!
+      const standing = room.factionRegistry.getStanding(playerId, "Federation");
+      expect(standing).toBe(25);
     } finally {
       room.destroy();
     }

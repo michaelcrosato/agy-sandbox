@@ -1,5 +1,11 @@
 import { buildPerception, defaultIsThreat } from "./buildPerception.js";
 import { selectGoal, Goals } from "./UtilityAI.js";
+import { Vector2D } from "../../physics/Vector2D.js";
+
+/**
+ * @typedef {import("../Ship.js").Ship} Ship
+ * @typedef {import("../SpaceEntity.js").SpaceEntity} SpaceEntity
+ */
 
 /**
  * AIController manages NPC behavior states (wander, chase, patrol, trade) and maps them into ship controls.
@@ -9,19 +15,14 @@ export class AIController {
    * Creates an AIController for a ship.
    * @param {Ship} ship - The ship being controlled.
    * @param {string} [role] - AI role ("pirate", "merchant", "guard").
-   * @param {Object} [options] - Optional configuration.
-   * @param {Object} [options.factionPolicy] - Pairwise faction relation view
-   *   exposing `isHostile(a, b)` and `isAllied(a, b)`. When set AND both the
-   *   self ship and a candidate target carry a `faction` tag, target
-   *   selection uses faction relations; otherwise the legacy name-based
-   *   classifier (`isPirateShip`) is used unchanged.
-   * @param {boolean} [options.useUtilityAdvisor=false] - When true, a pure
-   *   `UtilityAI` goal (from a `buildPerception` snapshot) is consulted each
-   *   tick and can override the role FSM (currently FLEE pre-empts with an
-   *   evade). Default off so existing call sites/tests keep exact legacy
-   *   behaviour; new server spawns opt in.
-   * @param {Object} [options.perceptionOptions] - Optional overrides for
-   *   `buildPerception` (e.g. faction-aware `isThreat`).
+   * @param {Object} [options] - Optional configuration:
+   *   `factionPolicy` (pairwise relation view `isHostile`/`isAllied` — when set
+   *   and both ships carry a `faction`, target selection uses faction relations,
+   *   else the legacy `isPirateShip` classifier); `standingPolicy` (per-player
+   *   disposition view so a guard targets a player hostile to its faction);
+   *   `useUtilityAdvisor` (default off — when on a `UtilityAI` goal can override
+   *   the role FSM, currently FLEE pre-empts with an evade); and
+   *   `perceptionOptions` (overrides for `buildPerception`).
    */
   constructor(
     ship,
@@ -87,6 +88,12 @@ export class AIController {
       this.currentGoal = selectGoal(perception).goal;
       if (this.currentGoal === Goals.FLEE) {
         this.executeFlee(entities);
+        return;
+      } else if (this.currentGoal === Goals.REGROUP) {
+        this.executeRegroup(entities);
+        return;
+      } else if (this.currentGoal === Goals.TRADE) {
+        this.executeTrade(entities);
         return;
       }
     }
@@ -177,14 +184,11 @@ export class AIController {
     return false;
   }
 
-  /**
-   * Searches for suitable nearby targets depending on role.
-   * @param {Array<SpaceEntity>} entities - All entities.
-   */
   scanSensors(entities) {
     const sensorRange = 500;
     let closestTarget = null;
     let closestDist = sensorRange;
+    let bestScore = -1;
 
     for (const ent of entities) {
       if (ent.id === this.ship.id || ent.isDestroyed || ent.type !== "ship") {
@@ -192,9 +196,23 @@ export class AIController {
       }
 
       const dist = this.ship.position.distance(ent.position);
-      if (dist < closestDist && this.shouldTarget(ent)) {
-        closestTarget = ent;
-        closestDist = dist;
+      if (dist < sensorRange && this.shouldTarget(ent)) {
+        if (this.useUtilityAdvisor && this.role === "pirate") {
+          // Prefer highest-weakness prey (lowest remaining armor fraction)
+          const armorMax = ent.maxArmor || 100;
+          const armorCur = ent.armor !== undefined ? ent.armor : armorMax;
+          const weakness = 1 - armorCur / armorMax;
+          const score = weakness * 1000 + (sensorRange - dist);
+          if (score > bestScore) {
+            bestScore = score;
+            closestTarget = ent;
+          }
+        } else {
+          if (dist < closestDist) {
+            closestTarget = ent;
+            closestDist = dist;
+          }
+        }
       }
     }
 
@@ -291,7 +309,7 @@ export class AIController {
 
   /**
    * Helper to steer the ship towards a target position vector.
-   * @param {Vector2D} targetPos - Coordinate vector to navigate to.
+   * @param {{x: number, y: number}} targetPos - Coordinate to navigate toward.
    */
   steerTowards(targetPos) {
     const desiredAngle = Math.atan2(
@@ -342,7 +360,7 @@ export class AIController {
    * drove the FLEE decision (the perception override if set, else the default),
    * so the ship flees what the scorer feared. If no threat can be located
    * (edge case), it coasts rather than thrusting blindly.
-   * @param {Array<SpaceEntity>} entities - All entities.
+   * @param {Array<Object>} entities - All entities.
    */
   executeFlee(entities) {
     const isThreat =
@@ -366,10 +384,10 @@ export class AIController {
     if (!nearest) return; // nothing to flee from; coast
 
     // Aim at a point directly opposite the threat and accelerate away.
-    const fleeTarget = {
-      x: this.ship.position.x + (this.ship.position.x - nearest.position.x),
-      y: this.ship.position.y + (this.ship.position.y - nearest.position.y),
-    };
+    const fleeTarget = new Vector2D(
+      this.ship.position.x + (this.ship.position.x - nearest.position.x),
+      this.ship.position.y + (this.ship.position.y - nearest.position.y),
+    );
     this.steerTowards(fleeTarget);
     this.ship.controls.isThrusting = true;
   }
@@ -377,7 +395,7 @@ export class AIController {
   /**
    * Defensive Escort autopilot executing defend formation or target interception commands.
    * @param {number} dt - Frame time step.
-   * @param {Array<SpaceEntity>} entities - All entities.
+   * @param {Array<Object>} entities - All entities.
    */
   executeEscortAI(dt, entities) {
     if (!this.flagship || this.flagship.isDestroyed) {
@@ -509,5 +527,101 @@ export class AIController {
     if (angle < -Math.PI) angle += 2 * Math.PI;
     if (angle >= Math.PI) angle -= 2 * Math.PI;
     return angle;
+  }
+
+  /**
+   * Defensive Regroup maneuver: retreat from threat to safe distance to recharge.
+   * @param {Array<SpaceEntity>} entities - All entities.
+   */
+  executeRegroup(entities) {
+    let nearest = null;
+    let best = Infinity;
+    const isThreat = this.perceptionOptions?.isThreat || defaultIsThreat;
+
+    for (const ent of entities) {
+      if (!ent || ent === this.ship || ent.type !== "ship" || ent.isDestroyed) {
+        continue;
+      }
+      if (!isThreat(ent, this.ship)) continue;
+      const d = this.ship.position.distance(ent.position);
+      if (d < best) {
+        best = d;
+        nearest = ent;
+      }
+    }
+
+    if (!nearest) {
+      this.ship.controls.isBraking = true;
+      return;
+    }
+
+    const fleeTarget = new Vector2D(
+      this.ship.position.x + (this.ship.position.x - nearest.position.x),
+      this.ship.position.y + (this.ship.position.y - nearest.position.y),
+    );
+    this.steerTowards(fleeTarget);
+
+    const energy = this.ship.energy !== undefined ? this.ship.energy : 100;
+    if (energy > 20) {
+      this.ship.controls.isThrusting = true;
+    } else {
+      this.ship.controls.isBraking = true;
+    }
+  }
+
+  /**
+   * Commercial Autopilot: steer towards the closest profitable planet to trade.
+   * @param {Array<SpaceEntity>} entities - All entities.
+   */
+  executeTrade(entities) {
+    let bestPlanet = null;
+    let bestScore = -1;
+
+    for (const ent of entities) {
+      if (!ent || ent.type !== "planet" || ent.isDestroyed) {
+        continue;
+      }
+
+      const dist = this.ship.position.distance(ent.position);
+      if (dist > 2000) continue;
+
+      let score = 10000 / (dist + 50);
+      if (this.ship.faction && ent.faction) {
+        if (
+          this.factionPolicy &&
+          this.factionPolicy.isAllied(this.ship.faction, ent.faction)
+        ) {
+          score += 200;
+        } else if (
+          this.factionPolicy &&
+          this.factionPolicy.isHostile(this.ship.faction, ent.faction)
+        ) {
+          continue;
+        }
+      }
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestPlanet = ent;
+      }
+    }
+
+    if (!bestPlanet) {
+      this.executeWander(0.016);
+      return;
+    }
+
+    this.destination = bestPlanet.position;
+    this.steerTowards(this.destination);
+
+    const planet = /** @type {*} */ (bestPlanet);
+    const dist = this.ship.position.distance(this.destination);
+    const landingRadius =
+      planet.landingRadius !== undefined ? planet.landingRadius : 60;
+    if (dist < landingRadius + 40) {
+      this.ship.controls.isBraking = true;
+    } else {
+      this.ship.controls.isThrusting = true;
+    }
   }
 }

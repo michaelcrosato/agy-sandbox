@@ -35,6 +35,19 @@ export class SpaceEntity {
     this.angularVelocity = angularVelocity;
     this.radius = radius;
 
+    // Universal lifecycle + identity fields, declared so the type model and the
+    // combat/AI consumers can rely on them. Subclasses/NPCs set name/role/faction;
+    // the engine toggles isDestroyed/destroyedBy on death.
+    this._isDestroyed = false;
+    /** @type {string|null} */
+    this.destroyedBy = null;
+    /** @type {string|undefined} */
+    this.name = undefined;
+    /** @type {string|null} */
+    this.role = null;
+    /** @type {string|null} */
+    this.faction = null;
+
     // Temporary force accumulator reset on every physics frame update
     this.accumulatorForce = new Vector2D(0, 0);
   }
@@ -91,5 +104,19 @@ export class SpaceEntity {
    */
   getDirectionVector() {
     return new Vector2D(Math.cos(this.heading), Math.sin(this.heading));
+  }
+
+  /**
+   * @returns {boolean}
+   */
+  get isDestroyed() {
+    return this._isDestroyed;
+  }
+
+  /**
+   * @param {boolean} val
+   */
+  set isDestroyed(val) {
+    this._isDestroyed = val;
   }
 }

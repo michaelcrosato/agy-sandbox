@@ -1,5 +1,7 @@
 import { BASE_MARKETS } from "./GameInstance.js";
 
+/** @typedef {import("./Planet.js").Planet} Planet */
+
 /**
  * EconomyManager class that encapsulates dynamic market supply/demand, price elasticity,
  * price normalization, and random economic events across all galactic sectors.

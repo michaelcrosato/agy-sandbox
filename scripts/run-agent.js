@@ -17,6 +17,17 @@ if (!GEMINI_API_KEY) {
   process.exit(1);
 }
 
+if (GEMINI_API_KEY.startsWith("ghp_")) {
+  console.error(
+    "❌ Error: GEMINI_API_KEY starts with 'ghp_', which is a GitHub Personal Access Token!",
+  );
+  console.error(
+    "   Please obtain a Gemini API key from Google AI Studio and put it in GEMINI_API_KEY in `.env`.",
+  );
+  console.error("   Then put your 'ghp_...' token in GITHUB_TOKEN in `.env`.");
+  process.exit(1);
+}
+
 // Set up the Google GenAI client (unified @google/genai SDK).
 import { GoogleGenAI, Type } from "@google/genai";
 const genAI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
@@ -42,7 +53,6 @@ for (let i = 0; i < args.length; i++) {
     break;
   }
 }
-
 if (!issueNumber) {
   console.error(
     "❌ Error: No issue number specified. Use --issue <number> or set the ISSUE_NUMBER env var.",
@@ -50,8 +60,45 @@ if (!issueNumber) {
   process.exit(1);
 }
 
+if (issueNumber !== "0" && (!GITHUB_TOKEN || GITHUB_TOKEN === "hidden")) {
+  console.error(
+    "❌ Error: GITHUB_TOKEN is not set or is still 'hidden' in `.env`.",
+  );
+  console.error(
+    "   Please set GITHUB_TOKEN to your GitHub Personal Access Token.",
+  );
+  process.exit(1);
+}
+
 // Fetch issue details using the native fetch API
 async function fetchIssueDetails(issueNum) {
+  if (issueNum === "0" || issueNum === 0) {
+    console.log("ℹ️ Running in local offline/mock mode for issue #0.");
+    let mockTitle = "Local Mock Dry Run Issue";
+    let mockBody =
+      "Implement a simple dummy test feature or add a descriptive comment in src/server.js to verify that the autonomous loop completes successfully.";
+    if (fs.existsSync("plan/mock_issue.md")) {
+      try {
+        const content = fs.readFileSync("plan/mock_issue.md", "utf-8");
+        const lines = content.split("\n");
+        const titleLine = lines[0].replace(/^#\s*/, "").trim();
+        if (titleLine) mockTitle = titleLine;
+        const bodyContent = lines.slice(1).join("\n").trim();
+        if (bodyContent) mockBody = bodyContent;
+      } catch (err) {
+        console.warn(
+          "⚠️ Warning: Failed to read plan/mock_issue.md, using default mock details.",
+          err,
+        );
+      }
+    }
+    return {
+      title: mockTitle,
+      body: mockBody,
+      commentsUrl: null,
+    };
+  }
+
   console.log(`Fetching details for issue #${issueNum}...`);
   const url = `https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${issueNum}`;
   const response = await fetch(url, {
@@ -163,6 +210,10 @@ async function createPullRequest(branchName, title, body) {
 
 // Add a comment to the issue
 async function addIssueComment(issueNum, body) {
+  if (issueNum === "0" || issueNum === 0) {
+    console.log(`📡 [MOCK] Logging issue comment:\n${body}\n`);
+    return;
+  }
   console.log(`Adding comment to issue #${issueNum}...`);
   const url = `https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${issueNum}/comments`;
   await fetch(url, {
@@ -375,25 +426,37 @@ Resolves issue #${issueNumber}: "${issue.title}"`;
     runCommand(`git commit -F .git-commit-msg.txt`);
     fs.unlinkSync(".git-commit-msg.txt");
 
-    // Push branch
-    // Note: in CI, authentication is handled by the actions runner using the GITHUB_TOKEN
-    const pushRes = runCommand(`git push -u origin ${branchName} --force`);
-    if (!pushRes.success) {
-      throw new Error(`Failed to push git branch: ${pushRes.output}`);
+    if (issueNumber === "0" || issueNumber === 0) {
+      console.log(
+        `🚀 [MOCK] Autonomously resolved local mock issue #${issueNumber}.`,
+      );
+      console.log(
+        `🚀 [MOCK] Branch ${branchName} successfully created and committed locally.`,
+      );
+      console.log(
+        `🚀 [MOCK] Skipping git push, GitHub PR creation, and comments.`,
+      );
+    } else {
+      // Push branch
+      // Note: in CI, authentication is handled by the actions runner using the GITHUB_TOKEN
+      const pushRes = runCommand(`git push -u origin ${branchName} --force`);
+      if (!pushRes.success) {
+        throw new Error(`Failed to push git branch: ${pushRes.output}`);
+      }
+
+      // Create Pull Request
+      const prUrl = await createPullRequest(
+        branchName,
+        `[AUTO] Resolve: ${issue.title}`,
+        `This Pull Request was generated autonomously by the **AGY Autonomous Coder Agent** to resolve issue #${issueNumber}.\n\n### Changes Implemented\n- Programmatically applied generated code improvements.\n- Fully validated with \`npm run lint\` and \`npm run test\` (all tests pass).\n- Checked and reformatted according to standard styling conventions.\n\nCloses #${issueNumber}.`,
+      );
+
+      // Comment on the issue
+      await addIssueComment(
+        issueNumber,
+        `🚀 **Autonomous Solution Proposed!**\n\nI have successfully resolved the requirements for this issue and fully verified the solution against the local unit tests and style guides. All tests passed successfully.\n\nI have submitted a Pull Request containing the proposed improvements here:\n👉 **[Pull Request](${prUrl})**\n\nCloses #${issueNumber}.`,
+      );
     }
-
-    // Create Pull Request
-    const prUrl = await createPullRequest(
-      branchName,
-      `[AUTO] Resolve: ${issue.title}`,
-      `This Pull Request was generated autonomously by the **AGY Autonomous Coder Agent** to resolve issue #${issueNumber}.\n\n### Changes Implemented\n- Programmatically applied generated code improvements.\n- Fully validated with \`npm run lint\` and \`npm run test\` (all tests pass).\n- Checked and reformatted according to standard styling conventions.\n\nCloses #${issueNumber}.`,
-    );
-
-    // Comment on the issue
-    await addIssueComment(
-      issueNumber,
-      `🚀 **Autonomous Solution Proposed!**\n\nI have successfully resolved the requirements for this issue and fully verified the solution against the local unit tests and style guides. All tests passed successfully.\n\nI have submitted a Pull Request containing the proposed improvements here:\n👉 **[Pull Request](${prUrl})**\n\nCloses #${issueNumber}.`,
-    );
 
     // Return to main branch
     runCommand(`git checkout main`);

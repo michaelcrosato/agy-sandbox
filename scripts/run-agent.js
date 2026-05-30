@@ -161,7 +161,7 @@ function getLocalCodeContext() {
       if (stat.isDirectory()) {
         readDirRecursive(fullPath);
       } else if (
-        file.endsWith(".js") ||
+        (file.endsWith(".js") && !file.endsWith(".test.js")) ||
         file.endsWith(".json") ||
         file.endsWith(".md")
       ) {

@@ -230,6 +230,7 @@ export class AIController {
     }
 
     this.target = closestTarget;
+    this.ship.target = closestTarget;
   }
 
   /**
@@ -429,6 +430,10 @@ export class AIController {
     if (this.escortMode === "attack") {
       let currentTarget = this.target;
 
+      if (this.flagship.target && !this.flagship.target.isDestroyed) {
+        currentTarget = this.flagship.target;
+      }
+
       if (!currentTarget || currentTarget.isDestroyed) {
         // scan for closest active pirate raider threat
         const hostiles = entities.filter(
@@ -448,6 +453,8 @@ export class AIController {
       }
 
       if (currentTarget && !currentTarget.isDestroyed) {
+        this.target = currentTarget;
+        this.ship.target = currentTarget;
         this.steerTowards(currentTarget.position);
         const dist = this.ship.position.distance(currentTarget.position);
         if (dist < 400) {

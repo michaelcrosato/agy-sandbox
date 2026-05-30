@@ -1,6 +1,5 @@
 import { applyOutfitStats } from "../engine/Outfitting.js";
 import { applyHullPurchase } from "../engine/Trading.js";
-import { DEFAULT_OUTFITS } from "../engine/outfitCatalog.js";
 
 /**
  * Handles purchase of an outfit from a planet.
@@ -148,4 +147,36 @@ export function handleMissionAbandon(clientObj, missionId) {
     });
     clientObj.sendStats();
   }
+}
+
+/**
+ * Handles transmitting tactical orders to player escorts.
+ * @param {Object} clientObj - The socket client connection object.
+ * @param {Object} msg - The command message payload containing "command" and optional "targetId".
+ * @param {Object} room - Dynamic GameInstance room.
+ */
+export function handleEscortCommand(clientObj, msg, room) {
+  if (!clientObj || !clientObj.ship || !room || !msg) return;
+
+  const command = msg.command;
+  if (command === "attack" && msg.targetId) {
+    const target = room.engine.getEntity(msg.targetId);
+    if (target && !target.isDestroyed) {
+      clientObj.ship.target = target;
+    }
+  }
+
+  let count = 0;
+  for (const ai of room.ais) {
+    if (ai.role === "escort" && ai.flagship === clientObj.ship) {
+      ai.escortMode = command;
+      count++;
+    }
+  }
+
+  clientObj.send({
+    type: "notification",
+    message: `Transmitted [${command.toUpperCase()}] commands to ${count} AI wingmen.`,
+    style: "success",
+  });
 }

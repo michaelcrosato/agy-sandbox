@@ -390,4 +390,18 @@ describe("AIController escort behaviour", () => {
     ctrl.executeEscortAI(0.1, []); // no threats
     expect(ctrl.ship.controls.isThrusting).toBe(true);
   });
+
+  test("in attack mode, prioritizes and targets the flagship's active combat target", () => {
+    const ctrl = new AIController(shipAt("Escort", 0, 0), "escort");
+    ctrl.flagship = shipAt("Flagship", 0, 0);
+    const mockTarget = shipAt("Hostile Target", 150, 0);
+    ctrl.flagship.target = mockTarget; // flagship is locking target
+    ctrl.escortMode = "attack";
+
+    const entities = [ctrl.ship, ctrl.flagship, mockTarget];
+    ctrl.executeEscortAI(0.1, entities);
+
+    expect(ctrl.target).toBe(mockTarget);
+    expect(ctrl.ship.controls.isFiring).toBe(true); // target within firing arc and close
+  });
 });

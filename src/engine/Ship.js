@@ -107,6 +107,9 @@ export class Ship extends SpaceEntity {
     this.weaponShieldPierce = 0;
     this.activeWeaponCooldown = 0; // current active countdown
 
+    /** @type {?SpaceEntity} The active combat target selected by this ship. */
+    this.target = null;
+
     // Combat record (EW1). `bountyValue`: explicit credit-worth as a target;
     // null means derive from stats via CombatRating.shipBountyValue. The ledger
     // (kills/combatValue/combatRating) accrues when THIS ship destroys others —

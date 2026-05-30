@@ -3,6 +3,7 @@ import {
   handleShipBuy,
   handleMissionAccept,
   handleMissionAbandon,
+  handleEscortCommand,
 } from "./portHandlers.js";
 import { DEFAULT_OUTFITS } from "../engine/outfitCatalog.js";
 
@@ -168,7 +169,7 @@ describe("portHandlers.handleMissionAccept & handleMissionAbandon (spec 046)", (
       missionManager: {
         availableMissions: {},
         activeMissions: [],
-        generateMissionsForPlanet(p, planets) {
+        generateMissionsForPlanet(p) {
           this.availableMissions[p] = [
             {
               id: "m1",
@@ -179,7 +180,7 @@ describe("portHandlers.handleMissionAccept & handleMissionAbandon (spec 046)", (
             },
           ];
         },
-        acceptMission(p, mId, ship) {
+        acceptMission(p, mId) {
           const list = this.availableMissions[p] || [];
           const m = list.find((x) => x.id === mId);
           if (m) {
@@ -188,7 +189,7 @@ describe("portHandlers.handleMissionAccept & handleMissionAbandon (spec 046)", (
           }
           return { success: false, message: "Mission not found!" };
         },
-        abandonMission(mId, ship) {
+        abandonMission(mId) {
           this.activeMissions = this.activeMissions.filter((x) => x.id !== mId);
         },
       },
@@ -337,5 +338,84 @@ describe("Contraband Scanning & Jammer Outfits (spec 045)", () => {
     expect(res.confiscated).toBe(false);
     expect(res.fined).toBe(0);
     expect(ship.cargo.contraband).toBe(4);
+  });
+});
+
+describe("portHandlers.handleEscortCommand (spec 050)", () => {
+  let mockClient;
+  let mockRoom;
+
+  beforeEach(() => {
+    mockClient = {
+      ship: { id: "player-ship" },
+      sentNotifications: [],
+      send(data) {
+        if (data.type === "notification") {
+          this.sentNotifications.push(data);
+        }
+      },
+    };
+
+    mockRoom = {
+      ais: [
+        { role: "escort", flagship: mockClient.ship, escortMode: "follow" },
+        { role: "escort", flagship: mockClient.ship, escortMode: "follow" },
+        {
+          role: "escort",
+          flagship: { id: "other-ship" },
+          escortMode: "follow",
+        },
+        { role: "guard", flagship: mockClient.ship, escortMode: "follow" }, // different role
+      ],
+    };
+  });
+
+  test("transmits orders to player escorts and updates their mode", () => {
+    handleEscortCommand(mockClient, { command: "attack" }, mockRoom);
+
+    expect(mockRoom.ais[0].escortMode).toBe("attack");
+    expect(mockRoom.ais[1].escortMode).toBe("attack");
+    expect(mockRoom.ais[2].escortMode).toBe("follow"); // not owned
+    expect(mockRoom.ais[3].escortMode).toBe("follow"); // not an escort
+    expect(mockClient.sentNotifications[0]).toEqual({
+      type: "notification",
+      message: "Transmitted [ATTACK] commands to 2 AI wingmen.",
+      style: "success",
+    });
+  });
+
+  test("resolves targetId and assigns flagship target on attack command", () => {
+    const mockTarget = { id: "target-1", isDestroyed: false };
+    mockRoom.engine = {
+      getEntity(id) {
+        return id === "target-1" ? mockTarget : null;
+      },
+    };
+
+    handleEscortCommand(
+      mockClient,
+      { command: "attack", targetId: "target-1" },
+      mockRoom,
+    );
+
+    expect(mockClient.ship.target).toBe(mockTarget);
+    expect(mockRoom.ais[0].escortMode).toBe("attack");
+  });
+
+  test("handles empty fleet scenario gracefully", () => {
+    mockRoom.ais = [];
+    handleEscortCommand(mockClient, { command: "hold" }, mockRoom);
+
+    expect(mockClient.sentNotifications[0]).toEqual({
+      type: "notification",
+      message: "Transmitted [HOLD] commands to 0 AI wingmen.",
+      style: "success",
+    });
+  });
+
+  test("does nothing if client, ship or room is missing", () => {
+    handleEscortCommand(null, { command: "hold" }, mockRoom);
+    handleEscortCommand(mockClient, { command: "hold" }, null);
+    expect(mockClient.sentNotifications.length).toBe(0);
   });
 });

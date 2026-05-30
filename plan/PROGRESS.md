@@ -14,7 +14,7 @@ _**v6 re-audit baseline (2026-05-30, ENTIRE v5 blueprint shipped): 811 Jest test
 ## v6 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
-- [ ] `050` Wingman Tactical Formation & Targeting Controls (fleet depth) — **todo** (files: `src/server/portHandlers.js`, `src/server/portHandlers.test.js`, `src/server.js`, `src/engine/ai/AIController.js`, `src/engine/ai/AIController.test.js`; extract inline `"escort_command"` message handler into `portHandlers.js` and add comprehensive tests, extend AIController so escorts in `"attack"` mode actively lock onto the flagship's active combat target).
+- [x] `050` Wingman Tactical Formation & Targeting Controls (fleet depth) — **done** (files: `src/server/portHandlers.js`, `src/server/portHandlers.test.js`, `src/server.js`, `src/engine/ai/AIController.js`, `src/engine/ai/AIController.test.js`, `src/engine/Ship.js`; extracted inline `"escort_command"` message handler into `portHandlers.js` and added comprehensive tests; declared target on Ship constructor; extended escort AI to inherit flagship active targets in attack mode; all 816 Jest tests green).
 
 ### Phase 1 — Core Upgrades & Debt Paydown
 - [ ] `049` Interest Management Grid Optimizations (performance scaling) — **todo** (files: `src/net/interest.js`, `src/net/interest.test.js`; optimize the AoI filter culling complexity using a high-performance 2D spatial grid/bucket hashing index, achieving $O(N + M)$ query scaling while preserving 100% array ordering and culling behavior).

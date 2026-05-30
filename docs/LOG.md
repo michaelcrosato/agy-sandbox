@@ -39,6 +39,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T17:15 · iter-0071 · GREEN · spec-050-wingman-tactical-formation-targeting
+
+- **Baseline:** `d4f8cea` on `main`; 811 Jest tests green.
+- **Move:** Implement wingman tactical formation and cooperative attack targeting (050) and modularize its message handler.
+- **Changed:**
+  - Extracted the inline `"escort_command"` message handler from `src/server.js` into modular `src/server/portHandlers.js` as `handleEscortCommand`.
+  - Added robust unit and integration tests inside `src/server/portHandlers.test.js` validating command routing.
+  - Declared the `target` property with a JSDoc type annotation in `src/engine/Ship.js` to satisfy `checkJs` TypeScript compilations.
+  - Enhanced the wingman AI controller inside `src/engine/ai/AIController.js` to inherit and track the flagship's active combat target under the `"attack"` mode.
+  - Wrote a new cooperation test inside `src/engine/ai/AIController.test.js` verifying the new tactical strike behavior.
+- **Decisions:** Exposed active target locks directly on `Ship` instances, creating a clean flagship target replication paradigm. Modularized escort commands out of the server socket dispatch closure to reduce complexity.
+- **Validation:** `npm run agent:check` -> green (816 Jest tests / 66 suites). All ESLint and type compilation checks pass.
+- **Next:** Claim and implement SPEC-049 to optimize AoI interest culling from O(N*M) linear sweeps to O(N+M) spatial hashing grids.
+
 ## 2026-05-30T17:00 · iter-0070 · GREEN · spec-045-046-047-contraband-port-handlers-patrol-spawns
 
 - **Baseline:** `cb2d231` on `main`; 798 Jest tests green.

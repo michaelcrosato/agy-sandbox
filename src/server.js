@@ -53,8 +53,9 @@ import {
   handleShipBuy,
   handleMissionAccept,
   handleMissionAbandon,
+  handleEscortCommand,
 } from "./server/portHandlers.js";
-import { tradeOne, applyHullPurchase, factionPrice } from "./engine/Trading.js";
+import { tradeOne, factionPrice } from "./engine/Trading.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import { sanitizeNickname } from "./server/roomLifecycle.js";
 import {
@@ -1797,21 +1798,7 @@ wss.on("connection", (ws) => {
         room.broadcastRosterUpdate();
       }
     } else if (msg.type === "escort_command") {
-      if (room) {
-        const cmd = msg.command;
-        let count = 0;
-        for (const ai of room.ais) {
-          if (ai.role === "escort" && ai.flagship === clientObj.ship) {
-            ai.escortMode = cmd;
-            count++;
-          }
-        }
-        clientObj.send({
-          type: "notification",
-          message: `Transmitted [${cmd.toUpperCase()}] commands to ${count} AI wingmen.`,
-          style: "success",
-        });
-      }
+      handleEscortCommand(clientObj, msg, room);
     } else if (msg.type === "ping") {
       clientObj.send({
         type: "pong",

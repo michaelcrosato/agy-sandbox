@@ -26,7 +26,7 @@ _**v13 re-audit baseline (2026-05-30, ENTIRE v12 blueprint shipped): 886 Jest te
 - [x] `069` Matchmaking Room Queues, Ratings & Priority Filters (upgrade matchmaking loop to support Combat Rating MMR matching, dynamic search tolerance expansion over elapsed wait times, and group matchmaking) — **done** (files: `src/server/matchmaking.js`, `src/server/matchmaking.test.js`; implemented combat rating MMR checks, a progressive tolerance expansion queue enqueuing timestamps and widening rating tolerances dynamically over elapsed time, and squad group slot reservations)
 
 ### Phase 2 — System Architecture
-- [ ] `070` Sharded Database Storage Backend Partitioning (introduce ShardedStore partitioning keys across multiple storage partition layers, isolating states and ensuring infinite horizontal scale)
+- [x] `070` Sharded Database Storage Backend Partitioning (introduce ShardedStore partitioning keys across multiple storage partition layers, isolating states and ensuring infinite horizontal scale) — **done** (files: `src/persistence/ShardedStore.js`, `src/persistence/ShardedStore.test.js`; successfully implemented ShardedStore database sharding persistence layer partitioning keys evenly across multi-shard arrays using standard 32-bit FNV-1a uniform string hashing, fully isolating states across shards, and verified horizontal scaling partitioning structures via robust unit test coverage; 897 Jest tests green)
 
 ## v12 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

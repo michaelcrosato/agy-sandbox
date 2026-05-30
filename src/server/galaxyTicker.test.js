@@ -1,6 +1,7 @@
 import {
   runEconomyTickForRoom,
   runEconomyNormalizationForRoom,
+  runGalaxyHeartbeatInterval,
 } from "./galaxyTicker.js";
 
 describe("galaxyTicker module (Spec-042)", () => {
@@ -66,5 +67,26 @@ describe("galaxyTicker module (Spec-042)", () => {
 
     runEconomyNormalizationForRoom(mockRoom);
     expect(broadcastCount).toBe(1);
+  });
+
+  it("runGalaxyHeartbeatInterval periodic ticker decays active player standing toward zero", () => {
+    let decayCalled = false;
+    const mockRoom = {
+      planets: [],
+      galaxyHeartbeat: {
+        pulse() {
+          return [];
+        },
+      },
+      decayReputations() {
+        decayCalled = true;
+      },
+      broadcast() {},
+    };
+
+    const instances = new Map([["room-1", mockRoom]]);
+    runGalaxyHeartbeatInterval(instances);
+
+    expect(decayCalled).toBe(true);
   });
 });

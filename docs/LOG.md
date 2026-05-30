@@ -39,6 +39,18 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T18:11 · iter-0090 · GREEN · cycle-13-visual-mmr-sharded
+- **Baseline:** `84534de` on `feat/procedural-missions`; 886 Jest tests green.
+- **Move:** Execute Cycle 13 Phase R (Replenish) promoting backlog items, and successfully implement canvas visual smoke tests, MMR matchmaking progressive queues, and horizontal partitioned database sharding.
+- **Changed:**
+  - Expanded Playwright Canvas visual smoke suite, adding a comprehensive viewport mock rendering starfields, boosts, trails, shields, projectiles, and anomalies.
+  - Frozen browser system time using Date.now() mock to eliminate dynamic anti-aliasing and pulsating render differences in screenshots.
+  - Upgraded matchmaking logic supporting rating MMR matches, a progressive tolerance expansion queue enqueuing timestamps and widening rating tolerances dynamically over wait times, and group slot reservations.
+  - Built ShardedStore partition persistence layer dividing keys evenly across multi-shard arrays using standard 32-bit FNV-1a uniform string hashing, fully isolating states.
+- **Decisions:** Frozen the system clock at the Vitest browser harness level rather than introducing complex Playwright orchestration, keeping the visual testing pipeline fast and highly stable.
+- **Validation:** `npm run agent:check` -> green (897 Jest tests / 72 suites + 24 client logic + 3 client browser tests).
+- **Next:** Continue re-running audits on performance/routing optimizations and extend scale-out sharding drivers.
+
 ## 2026-05-30T18:06 · iter-0089 · GREEN · cycle-12-replenish-spec-065-066-067
 - **Baseline:** `aeecf04` on `feat/procedural-missions`; 882 Jest tests green.
 - **Move:** Execute Cycle 12 Phase R (Replenish) promoting backlog items, and successfully implement procedural generated mission completion pipelines, standings decay, UtilityAI wider rollout, and perception hardening.

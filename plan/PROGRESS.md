@@ -23,8 +23,7 @@ _**v13 re-audit baseline (2026-05-30, ENTIRE v12 blueprint shipped): 886 Jest te
 ### Phase 0 — Quick Wins & Safety
 - [x] `068` Playwright Canvas Visual Smoke & Component Interactions (expand Vitest Browser Mode visual infrastructure, implement fully-populated viewport mocks, and verify visual regression stability) — **done** (files: `src/client/__tests/CanvasRenderer.browser.test.js`, `src/client/__tests__/__screenshots__/CanvasRenderer.browser.test.js/space-scene-composite-rich-chromium-win32.png`; successfully expanded the Vitest Browser Mode visual regression suite, implemented a fully-populated viewport mock with starfields, engine exhaust flares, target indicators, projectiles, cosmic storm bounds, cargo pods with active tethers, and stargates, and froze the system clock using a `Date.now()` mock to achieve 100% stable, identical screenshot comparisons across runs)
 
-### Phase 1 — Core Upgrades & Feature Delivery
-- [ ] `069` Matchmaking Room Queues, Ratings & Priority Filters (upgrade matchmaking loop to support Combat Rating MMR matching, dynamic search tolerance expansion over elapsed wait times, and group matchmaking)
+- [x] `069` Matchmaking Room Queues, Ratings & Priority Filters (upgrade matchmaking loop to support Combat Rating MMR matching, dynamic search tolerance expansion over elapsed wait times, and group matchmaking) — **done** (files: `src/server/matchmaking.js`, `src/server/matchmaking.test.js`; implemented combat rating MMR checks, a progressive tolerance expansion queue enqueuing timestamps and widening rating tolerances dynamically over elapsed time, and squad group slot reservations)
 
 ### Phase 2 — System Architecture
 - [ ] `070` Sharded Database Storage Backend Partitioning (introduce ShardedStore partitioning keys across multiple storage partition layers, isolating states and ensuring infinite horizontal scale)

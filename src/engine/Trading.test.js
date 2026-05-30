@@ -1,4 +1,4 @@
-import { tradeOne, applyHullPurchase } from "./Trading.js";
+import { tradeOne, applyHullPurchase, findBestTradeRoutes } from "./Trading.js";
 import { Ship } from "./Ship.js";
 
 describe("Trading.tradeOne (spec 025)", () => {
@@ -88,5 +88,35 @@ describe("Trading.applyHullPurchase (spec 025)", () => {
   test("null-safe", () => {
     expect(applyHullPurchase(null, hull).ok).toBe(false);
     expect(applyHullPurchase(new Ship(), null).ok).toBe(false);
+  });
+});
+
+describe("Trading.findBestTradeRoutes", () => {
+  test("finds and sorts top trade routes correctly", () => {
+    const planets = [
+      {
+        name: "Sol",
+        faction: "Federation",
+        market: { food: 100, luxuries: 400 },
+      },
+      {
+        name: "Valkyrie Depot",
+        faction: "Federation",
+        market: { food: 200, luxuries: 200 },
+      },
+    ];
+
+    const routes = findBestTradeRoutes(planets, null, "p1");
+    expect(routes.length).toBe(2);
+    expect(routes[0].commodity).toBe("luxuries");
+    expect(routes[0].netProfit).toBe(200);
+    expect(routes[1].commodity).toBe("food");
+    expect(routes[1].netProfit).toBe(100);
+  });
+
+  test("null-safe and guards empty inputs", () => {
+    expect(findBestTradeRoutes(null, null, "p1")).toEqual([]);
+    expect(findBestTradeRoutes([], null, "p1")).toEqual([]);
+    expect(findBestTradeRoutes([{}], null, "p1")).toEqual([]);
   });
 });

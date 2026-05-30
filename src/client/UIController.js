@@ -74,6 +74,10 @@ export class UIController {
     // Wingman Telemetry Panel (SPEC-079)
     this.wingmanPanel = document.getElementById("wingman-panel");
     this.wingmanList = document.getElementById("wingman-list");
+
+    // Trade Route Advisor Panel (SPEC-082)
+    this.tradeAdvisorPanel = document.getElementById("trade-advisor-panel");
+    this.tradeRoutesList = document.getElementById("trade-routes-list");
   }
 
   /**
@@ -501,6 +505,129 @@ export class UIController {
               </div>
             `;
             this.wingmanList.appendChild(card);
+          }
+        }
+      }
+    }
+
+    // 9. Update Trade Advisor HUD (SPEC-082)
+    if (this.tradeAdvisorPanel && this.tradeRoutesList) {
+      if (!planets || planets.length < 2) {
+        this.tradeRoutesList.innerHTML = `
+          <div style="color: rgba(255, 255, 255, 0.5); font-style: italic; font-size: 0.9em; text-align: center; padding: 4px 0;">No sector planets available</div>
+        `;
+      } else {
+        const getStanding = (faction) => {
+          if (!faction || !player.standings) return 0;
+          return player.standings[faction] || 0;
+        };
+
+        const getTaxRate = (faction) => {
+          if (!faction || faction === "Independents") return 0.0;
+          const standing = getStanding(faction);
+          if (standing >= 50) return 0.0;
+          if (standing <= -16) return 0.15;
+          return 0.05;
+        };
+
+        const getFactionPrice = (basePrice, faction, mode) => {
+          if (!faction || faction === "Independents") return basePrice;
+          const standing = getStanding(faction);
+          const t = Math.max(-1, Math.min(1, standing / 100));
+          const modifier = mode === "sell" ? 1 + t * 0.2 : 1 - t * 0.2;
+          return Math.max(1, Math.round(basePrice * modifier));
+        };
+
+        const routes = [];
+        const commodities = [
+          "food",
+          "electronics",
+          "minerals",
+          "luxuries",
+          "contraband",
+          "machinery",
+          "ore",
+        ];
+
+        for (let i = 0; i < planets.length; i++) {
+          const pA = planets[i];
+          for (let j = 0; j < planets.length; j++) {
+            if (i === j) continue;
+            const pB = planets[j];
+
+            for (const commodity of commodities) {
+              let baseBuyPrice = pA.market[commodity];
+              let baseSellPrice = pB.market[commodity];
+              if (baseBuyPrice === undefined || baseSellPrice === undefined)
+                continue;
+
+              // Black market premium for contraband
+              if (
+                commodity === "contraband" &&
+                pB.services &&
+                pB.services.blackMarket
+              ) {
+                baseSellPrice = Math.round(baseSellPrice * 1.5);
+              }
+
+              const buyPrice = getFactionPrice(baseBuyPrice, pA.faction, "buy");
+              const sellPrice = getFactionPrice(
+                baseSellPrice,
+                pB.faction,
+                "sell",
+              );
+              const taxRate = getTaxRate(pB.faction);
+              const netSellPrice = Math.max(
+                1,
+                Math.round(sellPrice * (1 - taxRate)),
+              );
+
+              const netProfit = netSellPrice - buyPrice;
+              if (netProfit > 0) {
+                routes.push({
+                  commodity,
+                  origin: pA.name,
+                  destination: pB.name,
+                  buyPrice,
+                  sellPrice: netSellPrice,
+                  netProfit,
+                });
+              }
+            }
+          }
+        }
+
+        routes.sort((a, b) => b.netProfit - a.netProfit);
+        const topRoutes = routes.slice(0, 3);
+
+        if (topRoutes.length === 0) {
+          this.tradeRoutesList.innerHTML = `
+            <div style="color: rgba(255, 255, 255, 0.5); font-style: italic; font-size: 0.9em; text-align: center; padding: 4px 0;">No profitable routes in sector</div>
+          `;
+        } else {
+          this.tradeRoutesList.innerHTML = "";
+          for (const route of topRoutes) {
+            const row = document.createElement("div");
+            row.style.background = "rgba(212, 175, 55, 0.05)";
+            row.style.border = "1px solid rgba(212, 175, 55, 0.2)";
+            row.style.borderRadius = "4px";
+            row.style.padding = "6px 8px";
+            row.style.display = "flex";
+            row.style.flexDirection = "column";
+            row.style.gap = "2px";
+
+            row.innerHTML = `
+              <div style="display: flex; justify-content: space-between; font-weight: bold; color: #ffffff;">
+                <span class="capitalize" style="color: var(--color-gold);">${route.commodity}</span>
+                <span style="color: var(--color-green);">+${route.netProfit} CR/t</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: rgba(255,255,255,0.7);">
+                <span>${route.origin} (${route.buyPrice} CR)</span>
+                <span>▶</span>
+                <span>${route.destination} (${route.sellPrice} CR)</span>
+              </div>
+            `;
+            this.tradeRoutesList.appendChild(row);
           }
         }
       }

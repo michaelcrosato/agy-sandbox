@@ -39,6 +39,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T18:40 · iter-0092 · GREEN · cycle-17-outlaw-black-markets-trade-advisor
+- **Baseline:** `92172e3` on `feat/procedural-missions`; 909 Jest tests green.
+- **Move:** Implement Outlaw Black Market Spaceports with docking standing gates, scale contraband sell prices by 1.5x, and build a standings-aware Trade Advisor cockpit HUD panel.
+- **Changed:**
+  - Configured Rogue's Hollow with a custom `services.blackMarket: true` flag inside GameInstance.js.
+  - Enforced a reputation check in server.js's "land" message handler refusing docking at Black Market spaceports if player standings with the outlaw faction is negative.
+  - Added 1.5x price premium modifier for selling contraband at black markets in server.js trade handler.
+  - Implemented the findBestTradeRoutes pure route-margin algorithm in Trading.js factoring in player landings discounts, destination taxes, and black market premiums.
+  - Created the gold-themed #trade-advisor-panel cockpit HUD element in index.html and index.css.
+  - Wired live Trade Advisor route recommendations rendering in UIController.js.
+  - Added comprehensive integration tests in faction.integration.test.js and unit tests in Trading.test.js and UIController.test.js.
+- **Decisions:** Calculated transaction margins dynamically using client-cached standings and taxes in UIController.js, maintaining complete client-server rendering decoupling.
+- **Validation:** `npm run agent:check` -> green (912 Jest tests / 73 suites + 30 client Vitest tests pass green; Prettier/ESLint clean).
+- **Next:** Push the green feature branch for review and initiate the next Cycle 18 Replenish phase.
+
 ## 2026-05-30T18:16 · iter-0091 · GREEN · cycle-14-reconciler-delta-sparklines
 - **Baseline:** `c48a616` on `feat/procedural-missions`; 897 Jest tests green.
 - **Move:** Implement lightweight glowing vector sparkline line-graph charts on dashboard.html showing tick rates, egress bandwidth, and matchmaking queue size telemetry.

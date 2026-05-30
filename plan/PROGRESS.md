@@ -20,7 +20,18 @@ _**v13 re-audit baseline (2026-05-30, ENTIRE v12 blueprint shipped): 886 Jest te
 _**v14 re-audit baseline (2026-05-30, ENTIRE v13 blueprint shipped): 897 Jest tests / 72 suites + 24 client green; 0 `npm audit` vulnerabilities; canvas visual regression + MMR progressive queues + sharded storage partitions all DONE.**_
 _**v15 re-audit baseline (2026-05-30, ENTIRE v14 blueprint shipped): 901 Jest tests / 73 suites + 26 client green + 3 Vitest browser tests green; 0 `npm audit` vulnerabilities; client-side prediction reconciler + delta snapshot compression + canvas dashboard sparklines all DONE.**_
 _**v16 re-audit baseline (2026-05-30, ENTIRE v15 blueprint shipped): 904 Jest tests / 73 suites + 26 client green + 3 Vitest browser tests green; 0 `npm audit` vulnerabilities; pairwise standing propagation + generative consequences broadcast + wingman formations and HUD overlay all DONE.**_
-_**v17 re-audit baseline (2026-05-30, ENTIRE v16 blueprint shipped): 909 Jest tests / 73 suites + 28 client green; 0 `npm audit` vulnerabilities; spaceport ore refining + reputation decay heartbeat hook + wingman FSM intercept and telemetry panel HUD all DONE.**_
+_**v17 re-audit baseline (2026-05-30, ENTIRE v16 blueprint shipped): 909 Jest tests / 73 suites + 28 client green; 0 npm audit vulnerabilities; spaceport ore refining + reputation decay heartbeat hook + wingman FSM intercept and telemetry panel HUD all DONE.**_
+
+## v17 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Quick Wins & Safety
+- [x] `080` tractor outfit mass correction (ensure the Tractor Beam Matrix outfit correctly applies its 200 kg mass to the ship's hull on buy or salvage) — **done** (files: `src/engine/Outfitting.js`, `src/engine/Outfitting.test.js`; verified that Tractor Beam Matrix correctly applies 200 kg mass under existing unit tests)
+
+### Phase 1 — Core Upgrades & Feature Delivery
+- [x] `081` outlaw spaceports and black market contraband pricing (configure Pirate Haven / Rogue's Hollow with blackMarket services, refuse docking to players with negative underworld standing, and award a 1.5x price premium on contraband sales) — **done** (files: `src/engine/GameInstance.js`, `src/server.js`, `src/engine/faction.integration.test.js`; successfully configured Rogue's Hollow with services.blackMarket: true, enforced underworld faction standing docking blocks for hostile players, scaled contraband sales base price by 1.5x at Black Market ports on the server, and verified via extensive integration tests)
+
+### Phase 2 — System Architecture
+- [ ] `082` faction-aware trade advisor HUD panel (implement TradeAdvisor calculation engine sorting top 3 trade routes by standing-adjusted net profits, and render as a dynamic gold HUD cockpit panel)
 
 ## v16 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

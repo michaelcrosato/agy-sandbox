@@ -1441,6 +1441,26 @@ wss.on("connection", (ws) => {
             });
             return;
           }
+          // SPEC-081: refuse docking at Black Market ports if underworld standing is negative
+          if (
+            room.factionRegistry &&
+            targetPlanet.faction &&
+            targetPlanet.services &&
+            targetPlanet.services.blackMarket
+          ) {
+            const standing = room.factionRegistry.getStanding(
+              clientObj.id,
+              targetPlanet.faction,
+            );
+            if (standing < 0) {
+              clientObj.send({
+                type: "notification",
+                message: `Access Denied — Underworld Hostility: ${targetPlanet.faction} faction requires at least neutral standing.`,
+                style: "error",
+              });
+              return;
+            }
+          }
           const completed = clientObj.missionManager.checkArrivalCompletions(
             targetPlanet.name,
             clientObj.ship,
@@ -1631,8 +1651,17 @@ wss.on("connection", (ws) => {
         room
       ) {
         const p = clientObj.planetLandedOn;
-        const basePrice = p.market[msg.item];
+        let basePrice = p.market[msg.item];
         if (basePrice === undefined) return;
+        // SPEC-081: Apply a +50% premium for selling contraband at a Black Market spaceport
+        if (
+          msg.item === "contraband" &&
+          msg.action === "sell" &&
+          p.services &&
+          p.services.blackMarket
+        ) {
+          basePrice = Math.round(basePrice * 1.5);
+        }
         // spec 016: friendly standing discounts buys / lifts sells at a faction
         // dock; hostile standing does the inverse. No-op without a faction.
         const price = factionPrice(

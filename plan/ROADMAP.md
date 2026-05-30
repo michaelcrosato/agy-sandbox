@@ -114,18 +114,18 @@ flowchart TD
 
 ---
 
-## EXECUTION WAVES (v16)
+## EXECUTION WAVES (v17)
 
-Completed waves (`001–076`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
+Completed waves (`001–079`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
 
-### Phase 0 — Quick Wins & Safety — `077`
-`077` raw ore refining port services and mining laser mass (implement Spaceport refining conversions, tax adjustments, and mining laser outfits contributing mass property to hulls).
+### Phase 0 — Quick Wins & Safety — `080`
+`080` tractor outfit mass correction (ensure the Tractor Beam Matrix outfit correctly applies its 200 kg mass to the ship's hull on buy or salvage).
 
-### Phase 1 — Core Upgrades & Feature Delivery — `078`
-`078` reputation decay heartbeat hook (globally trigger FactionRegistry reputation decays drift towards zero from server ticker updates).
+### Phase 1 — Core Upgrades & Feature Delivery — `081`
+`081` outlaw spaceports and black market contraband pricing (configure Pirate Haven / Rogue's Hollow with blackMarket services, refuse docking to players with negative underworld standing, and award a 1.5x price premium on contraband sales).
 
-### Phase 2 — System Architecture — `079`
-`079` wingman intercept tactics and shield/armor HUD telemetry (program wingman intercept targets commands and FSM transitions, and render mini cockpit HUD status panels).
+### Phase 2 — System Architecture — `082`
+`082` faction-aware trade advisor HUD panel (implement TradeAdvisor calculation engine sorting top 3 trade routes by standing-adjusted net profits, and render as a dynamic gold HUD cockpit panel).
 
 ---
 
@@ -135,11 +135,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 077 | Raw Ore Refining & Mining Laser Mass | 0 | 5 | 5 | 5 | 5 | 20 |
-| 078 | Reputation Decay Heartbeat Hook | 1 | 5 | 5 | 5 | 5 | 20 |
-| 079 | Wingman Intercept & HUD Telemetry | 2 | 5 | 5 | 5 | 5 | 20 |
+| 080 | Tractor Outfit Mass Correction | 0 | 4 | 5 | 5 | 5 | 19 |
+| 081 | Outlaw Spaceports & Black Markets | 1 | 5 | 5 | 4 | 5 | 19 |
+| 082 | Faction-Aware Trade Advisor | 2 | 5 | 4 | 5 | 5 | 19 |
 
-**Recommended start:** `077` (Σ20 — raw ore refining), then proceed to `078` (Σ20) for standings decay, and finally `079` (Σ20) for advanced wingman commands and HUD status panels.
+**Recommended start:** `080` (Σ19 — tractor mass), then proceed to `081` (Σ19) for outlaw spaceports, and finally `082` (Σ19) for faction-aware trade advisor.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

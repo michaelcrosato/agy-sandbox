@@ -1497,5 +1497,21 @@ describe("mission + trade faction standings (spec 032)", () => {
         room.destroy();
       }
     });
+
+    test("SPEC-081: Rogue's Hollow outlaw planet has blackMarket services enabled", () => {
+      const room = new GameInstance(
+        "room-test-blackmarket-1",
+        "Black Market Sector",
+      );
+      try {
+        const hollow = room.planets.find((p) => p.name === "Rogue's Hollow");
+        expect(hollow).toBeDefined();
+        expect(hollow.services).toBeDefined();
+        expect(hollow.services.blackMarket).toBe(true);
+        expect(hollow.faction).toBe("Pirates");
+      } finally {
+        room.destroy();
+      }
+    });
   });
 });

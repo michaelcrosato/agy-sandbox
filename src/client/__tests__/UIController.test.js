@@ -24,6 +24,8 @@ function mountHud() {
     <div id="squad-members-list"></div>
     <div id="wingman-panel" style="display: none;"></div>
     <div id="wingman-list"></div>
+    <div id="trade-advisor-panel"></div>
+    <div id="trade-routes-list"></div>
   `;
   return new UIController();
 }
@@ -380,6 +382,68 @@ describe("UIController combat-feedback HUD transitions", () => {
       const card = ui.wingmanList.children[0];
       expect(card.innerHTML).toContain("Valerie Guard");
       expect(card.innerHTML).toContain("TARGET: Hostile Raider");
+    });
+  });
+
+  describe("UIController Trade Advisor panel rendering", () => {
+    it("displays friendly placeholder when no active planet data is available", () => {
+      const player = {
+        id: "player-1",
+        shield: 100,
+        maxShield: 100,
+        armor: 100,
+        maxArmor: 100,
+        credits: 5000,
+        cargoCapacity: 20,
+        getCargoWeight: () => 0,
+        velocity: { magnitude: () => 0 },
+        position: { x: 0, y: 0 },
+        standings: { Federation: 0 },
+      };
+
+      ui.update(player, null, [], [], [], []);
+      expect(ui.tradeRoutesList.innerHTML).toContain(
+        "No sector planets available",
+      );
+    });
+
+    it("displays top trade routes correctly based on market pricing", () => {
+      const player = {
+        id: "player-1",
+        shield: 100,
+        maxShield: 100,
+        armor: 100,
+        maxArmor: 100,
+        credits: 5000,
+        cargoCapacity: 20,
+        getCargoWeight: () => 0,
+        velocity: { magnitude: () => 0 },
+        position: { x: 0, y: 0 },
+        standings: { Federation: 0 },
+      };
+
+      const planets = [
+        {
+          name: "Sol",
+          faction: "Federation",
+          market: { food: 100 },
+          canLand: () => false,
+        },
+        {
+          name: "Valkyrie Depot",
+          faction: "Federation",
+          market: { food: 250 },
+          canLand: () => false,
+        },
+      ];
+
+      ui.update(player, null, planets, [], [], []);
+
+      expect(ui.tradeRoutesList.children.length).toBe(1);
+      const routeRow = ui.tradeRoutesList.children[0];
+      expect(routeRow.innerHTML).toContain("food");
+      expect(routeRow.innerHTML).toContain("Sol");
+      expect(routeRow.innerHTML).toContain("Valkyrie Depot");
     });
   });
 });

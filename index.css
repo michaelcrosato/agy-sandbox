@@ -1843,5 +1843,30 @@ h1, h2, h3, h4 {
   text-shadow: 0 0 5px var(--color-gold-glow);
 }
 
+/* SPEC-082 & SPEC-079 HUD Panels */
+#trade-advisor-panel {
+  position: absolute;
+  top: 250px;
+  right: 20px;
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  max-height: 250px;
+  z-index: 15;
+  pointer-events: auto;
+}
+
+#wingman-panel {
+  position: absolute;
+  top: 550px;
+  left: 20px;
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  max-height: 250px;
+  z-index: 15;
+  pointer-events: auto;
+}
+
 
 

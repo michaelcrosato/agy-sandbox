@@ -275,6 +275,7 @@ export class GameInstance {
       radius: 52,
       market: { ...BASE_MARKETS["Rogue's Hollow"] },
       sector: "rim",
+      services: { repair: true, refuel: true, blackMarket: true },
     });
     this.planets.push(roguesPlanet);
     this.engine.addEntity(roguesPlanet);

@@ -18,7 +18,7 @@ _**v7 re-audit baseline (2026-05-30, ENTIRE v6 blueprint shipped): 821 Jest test
 - [x] `051` Collision Kinetic Damage & Shield Absorption (fleet tactical safety) — **done** (files: `src/engine/SpaceEngine.js`, `src/engine/SpaceEngine.test.js`; implemented relative-momentum kinetic damage calculations for both dynamic-to-dynamic collisions of variable masses and dynamic-to-static planet collisions, with full backward-compatibility for standard 2000kg ship configurations; all 823 Jest tests green).
 
 ### Phase 1 — Core Upgrades & Debt Paydown
-- [ ] `052` Stargate Warp Tolls & Port Transaction Taxes (reputation standings) — **todo** (files: `src/engine/Hyperdrive.js`, `src/engine/Trading.js`, `src/engine/faction.integration.test.js`; connect stargate jump fees and port docking/sales tariffs to the faction reputation standing registry with friendly discounts and hostile surcharges).
+- [x] `052` Stargate Warp Tolls & Port Transaction Taxes (reputation standings) — **done** (files: `src/engine/Hyperdrive.js`, `src/engine/Trading.js`, `src/engine/faction.integration.test.js`, `src/server.js`, `src/server/portHandlers.js`; connected stargate jump fees (150/0/500 CR) and port transaction docking/sales taxes (5%/0%/15%) to the FactionRegistry standings, with allied/friendly waivers, neutral defaults, and hostile surcharges; added comprehensive integration tests; all 826 Jest tests green).
 
 ### Phase 2 — Scale-Out & Premium Features
 - [ ] `053` Faction Bounty Locator Radar (immersive professions) — **todo** (files: `src/engine/outfitCatalog.js`, `src/client/UIController.js`, `src/engine/Outfitting.test.js`; add military-grade tracking locator radar that calculates and renders distance and bearing vector guidance to active bounty marks in-sector).

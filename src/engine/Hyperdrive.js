@@ -80,16 +80,42 @@ export function ramscoopRegen(
 }
 
 /**
- * Validates stargate distance and hyper-fuel requirements for a jump.
+ * Calculates the stargate warp toll based on faction standing.
+ * @param {Object} ship - The jumping ship.
+ * @param {Object|null} factionRegistry - The FactionRegistry instance.
+ * @param {string} governingFaction - Governing faction of the sector.
+ * @returns {number} The credit toll to charge.
+ */
+export function getWarpToll(ship, factionRegistry, governingFaction) {
+  if (
+    !ship ||
+    !factionRegistry ||
+    !governingFaction ||
+    governingFaction === "Independents"
+  ) {
+    return 0;
+  }
+  const standing = factionRegistry.getStanding(ship.id, governingFaction);
+  if (standing >= 50) return 0; // Allied/Friendly
+  if (standing <= -16) return 500; // Hostile
+  return 150; // Neutral
+}
+
+/**
+ * Validates stargate distance, hyper-fuel, and credit toll requirements for a jump.
  * @param {Object} ship - The jumping ship.
  * @param {Object} gate - Stargate entity.
  * @param {number} [jumpCost] - Fuel cost.
+ * @param {Object|null} [factionRegistry] - Faction standings.
+ * @param {string} [governingFaction] - Faction name.
  * @returns {{ ok: boolean, reason?: string }} Result.
  */
 export function validateWarpJump(
   ship,
   gate,
   jumpCost = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost,
+  factionRegistry = null,
+  governingFaction = "Independents",
 ) {
   if (!ship || !gate || gate.type !== "warp_gate") {
     return { ok: false, reason: "Warp Gate invalid or not found!" };
@@ -110,5 +136,18 @@ export function validateWarpJump(
       reason: `Insufficient Hyper-Fuel! Requires ${jumpCost} units. Land on a planet to refuel.`,
     };
   }
+
+  // Calculate and validate toll affordability
+  const toll = getWarpToll(ship, factionRegistry, governingFaction);
+  if (toll > 0) {
+    const credits = Number.isFinite(ship.credits) ? ship.credits : 0;
+    if (credits < toll) {
+      return {
+        ok: false,
+        reason: `Insufficient credits for warp gate toll! Requires ${toll} CR.`,
+      };
+    }
+  }
+
   return { ok: true };
 }

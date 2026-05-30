@@ -33,6 +33,7 @@ import {
   consumeJump,
   DEFAULT_HYPERDRIVE_OPTIONS,
   validateWarpJump,
+  getWarpToll,
 } from "./engine/Hyperdrive.js";
 
 import {
@@ -55,7 +56,11 @@ import {
   handleMissionAbandon,
   handleEscortCommand,
 } from "./server/portHandlers.js";
-import { tradeOne, factionPrice } from "./engine/Trading.js";
+import {
+  tradeOne,
+  factionPrice,
+  getTransactionTaxRate,
+} from "./engine/Trading.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import { sanitizeNickname } from "./server/roomLifecycle.js";
 import {
@@ -1383,7 +1388,22 @@ wss.on("connection", (ws) => {
           msg.action,
         );
 
-        const result = tradeOne(clientObj.ship, msg.item, msg.action, price);
+        const taxRate = getTransactionTaxRate(
+          room.factionRegistry,
+          clientObj.id,
+          p.faction,
+        );
+        const finalPrice =
+          msg.action === "buy"
+            ? Math.round(price * (1 + taxRate))
+            : Math.max(1, Math.round(price * (1 - taxRate)));
+
+        const result = tradeOne(
+          clientObj.ship,
+          msg.item,
+          msg.action,
+          finalPrice,
+        );
         if (result.ok) {
           if (msg.action === "buy") {
             room.economyManager.registerBuy(p.name, msg.item);
@@ -1404,8 +1424,8 @@ wss.on("connection", (ws) => {
             type: "notification",
             message:
               result.reason === "bought"
-                ? `Purchased 1 ton of ${msg.item} for ${price} CR`
-                : `Sold 1 ton of ${msg.item} for ${price} CR`,
+                ? `Purchased 1 ton of ${msg.item} for ${finalPrice} CR`
+                : `Sold 1 ton of ${msg.item} for ${finalPrice} CR`,
             style: "success",
           });
           clientObj.sendStats();
@@ -1536,9 +1556,14 @@ wss.on("connection", (ws) => {
         }
       }
     } else if (msg.type === "outfit_buy") {
-      handleOutfitBuy(clientObj, msg.outfitName, clientObj.planetLandedOn);
+      handleOutfitBuy(
+        clientObj,
+        msg.outfitName,
+        clientObj.planetLandedOn,
+        room,
+      );
     } else if (msg.type === "ship_buy") {
-      handleShipBuy(clientObj, msg.shipName, clientObj.planetLandedOn);
+      handleShipBuy(clientObj, msg.shipName, clientObj.planetLandedOn, room);
     } else if (msg.type === "mission_accept") {
       handleMissionAccept(
         clientObj,
@@ -1629,7 +1654,14 @@ wss.on("connection", (ws) => {
     } else if (msg.type === "warp_jump") {
       if (room) {
         const gate = room.engine.getEntity(msg.gateId);
-        const val = validateWarpJump(clientObj.ship, gate, JUMP_FUEL_COST);
+        const governingFaction = room.getGoverningFaction();
+        const val = validateWarpJump(
+          clientObj.ship,
+          gate,
+          JUMP_FUEL_COST,
+          room.factionRegistry,
+          governingFaction,
+        );
         if (!val.ok) {
           clientObj.send({
             type: "notification",
@@ -1639,7 +1671,15 @@ wss.on("connection", (ws) => {
           return;
         }
 
+        const toll = getWarpToll(
+          clientObj.ship,
+          room.factionRegistry,
+          governingFaction,
+        );
         consumeJump(clientObj.ship, JUMP_FUEL_COST);
+        if (toll > 0) {
+          clientObj.ship.credits = Math.max(0, clientObj.ship.credits - toll);
+        }
         clientObj.ship.position = gate.targetPosition.clone();
         clientObj.ship.velocity.set(0, 0);
 

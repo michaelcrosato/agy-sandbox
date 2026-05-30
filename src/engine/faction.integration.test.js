@@ -1,11 +1,16 @@
 import { GameInstance } from "./GameInstance.js";
 import { FactionRegistry } from "./FactionRegistry.js";
 import { AIController } from "./ai/AIController.js";
-import { factionPrice } from "./Trading.js";
+import {
+  factionPrice,
+  getTransactionTaxRate,
+  getModifiedUpgradePrice,
+} from "./Trading.js";
 import { serializeGalaxy, applyGalaxy } from "../persistence/serializers.js";
 import { MissionManager } from "./MissionManager.js";
 import { applyRefine, refineCost } from "./PortServices.js";
 import { Vector2D } from "../physics/Vector2D.js";
+import { validateWarpJump, getWarpToll } from "./Hyperdrive.js";
 
 // Spec 016 — faction runtime wiring. The pure FactionRegistry math is covered
 // in FactionRegistry.test.js; these assert the LIVE wiring: a GameInstance owns
@@ -560,6 +565,93 @@ describe("mission + trade faction standings (spec 032)", () => {
       } finally {
         room.destroy();
       }
+    });
+  });
+
+  describe("Stargate Warp Tolls & Port Transaction Taxes (spec 052)", () => {
+    it("applies reputation-based stargate warp tolls and gates jump correctly", () => {
+      const registry = new FactionRegistry();
+      const gate = {
+        id: "gate",
+        type: "warp_gate",
+        position: new Vector2D(0, 0),
+      };
+      const ship = {
+        id: "p1",
+        credits: 1000,
+        hyperFuel: 100,
+        position: new Vector2D(0, 0),
+      };
+
+      // 1. Neutral standing: 150 CR toll
+      expect(getWarpToll(ship, registry, "Federation")).toBe(150);
+      expect(validateWarpJump(ship, gate, 20, registry, "Federation").ok).toBe(
+        true,
+      );
+
+      // 2. Friendly/Allied standing (>= 50): 100% waiver (0 CR toll)
+      registry.setStanding(ship.id, "Federation", 60);
+      expect(getWarpToll(ship, registry, "Federation")).toBe(0);
+      expect(validateWarpJump(ship, gate, 20, registry, "Federation").ok).toBe(
+        true,
+      );
+
+      // 3. Hostile standing (<= -16): 500 CR toll
+      registry.setStanding(ship.id, "Federation", -20);
+      expect(getWarpToll(ship, registry, "Federation")).toBe(500);
+      expect(validateWarpJump(ship, gate, 20, registry, "Federation").ok).toBe(
+        true,
+      );
+
+      // 4. Insufficient credits for toll (hostile gate requires 500 CR, ship has 400 CR)
+      ship.credits = 400;
+      const val = validateWarpJump(ship, gate, 20, registry, "Federation");
+      expect(val.ok).toBe(false);
+      expect(val.reason).toContain("Requires 500 CR");
+    });
+
+    it("applies correct transaction tax rates on commodity trade values", () => {
+      const registry = new FactionRegistry();
+      const playerId = "p1";
+
+      // 1. Neutral standing (-15 to 49): 5% tax
+      expect(getTransactionTaxRate(registry, playerId, "Federation")).toBe(
+        0.05,
+      );
+
+      // 2. Allied/Friendly standing (>= 50): 0% tax
+      registry.setStanding(playerId, "Federation", 50);
+      expect(getTransactionTaxRate(registry, playerId, "Federation")).toBe(0.0);
+
+      // 3. Hostile standing (<= -16): 15% tax
+      registry.setStanding(playerId, "Federation", -30);
+      expect(getTransactionTaxRate(registry, playerId, "Federation")).toBe(
+        0.15,
+      );
+    });
+
+    it("applies correct discounts and surcharges on shipyard hulls and outfits", () => {
+      const registry = new FactionRegistry();
+      const playerId = "p1";
+
+      const basePrice = 1000;
+
+      // 1. Neutral: standard price
+      expect(
+        getModifiedUpgradePrice(basePrice, registry, playerId, "Federation"),
+      ).toBe(1000);
+
+      // 2. Allied/Friendly (>= 50): 15% discount -> 850 CR
+      registry.setStanding(playerId, "Federation", 50);
+      expect(
+        getModifiedUpgradePrice(basePrice, registry, playerId, "Federation"),
+      ).toBe(850);
+
+      // 3. Hostile (<= -16): 20% surcharge -> 1200 CR
+      registry.setStanding(playerId, "Federation", -30);
+      expect(
+        getModifiedUpgradePrice(basePrice, registry, playerId, "Federation"),
+      ).toBe(1200);
     });
   });
 });

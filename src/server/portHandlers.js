@@ -1,13 +1,22 @@
 import { applyOutfitStats } from "../engine/Outfitting.js";
-import { applyHullPurchase } from "../engine/Trading.js";
+import {
+  applyHullPurchase,
+  getModifiedUpgradePrice,
+} from "../engine/Trading.js";
 
 /**
  * Handles purchase of an outfit from a planet.
  * @param {Object} clientObj - The socket client connection object.
  * @param {string} outfitName - Name of the outfit to purchase.
  * @param {Object} targetPlanet - The planet entity.
+ * @param {Object|null} [room=null] - Dynamic GameInstance room.
  */
-export function handleOutfitBuy(clientObj, outfitName, targetPlanet) {
+export function handleOutfitBuy(
+  clientObj,
+  outfitName,
+  targetPlanet,
+  room = null,
+) {
   if (!clientObj || !clientObj.ship || !clientObj.isLanded || !targetPlanet)
     return;
 
@@ -23,7 +32,15 @@ export function handleOutfitBuy(clientObj, outfitName, targetPlanet) {
     return;
   }
 
-  if (clientObj.ship.credits < outfit.cost) {
+  const factionRegistry = room ? room.factionRegistry : null;
+  const cost = getModifiedUpgradePrice(
+    outfit.cost,
+    factionRegistry,
+    clientObj.id,
+    targetPlanet.faction,
+  );
+
+  if (clientObj.ship.credits < cost) {
     clientObj.send({
       type: "notification",
       message: "Insufficient credits for upgrade!",
@@ -32,7 +49,7 @@ export function handleOutfitBuy(clientObj, outfitName, targetPlanet) {
     return;
   }
 
-  clientObj.ship.credits -= outfit.cost;
+  clientObj.ship.credits -= cost;
   clientObj.ship.outfits.push(outfit.name);
 
   applyOutfitStats(clientObj.ship, outfit);
@@ -50,15 +67,24 @@ export function handleOutfitBuy(clientObj, outfitName, targetPlanet) {
  * @param {Object} clientObj - The socket client connection object.
  * @param {string} shipName - Name of the ship hull type.
  * @param {Object} targetPlanet - The planet entity.
+ * @param {Object|null} [room=null] - Dynamic GameInstance room.
  */
-export function handleShipBuy(clientObj, shipName, targetPlanet) {
+export function handleShipBuy(clientObj, shipName, targetPlanet, room = null) {
   if (!clientObj || !clientObj.ship || !clientObj.isLanded || !targetPlanet)
     return;
 
   const s = targetPlanet.shipyard.find((sh) => sh.name === shipName);
   if (!s) return;
 
-  const result = applyHullPurchase(clientObj.ship, s);
+  const factionRegistry = room ? room.factionRegistry : null;
+  const cost = getModifiedUpgradePrice(
+    s.cost,
+    factionRegistry,
+    clientObj.id,
+    targetPlanet.faction,
+  );
+
+  const result = applyHullPurchase(clientObj.ship, s, cost);
   if (result.ok) {
     clientObj.send({
       type: "notification",

@@ -1157,6 +1157,23 @@ export class GameInstance {
   }
 
   /**
+   * Identifies the governing faction of this room/sector based on planets.
+   * @returns {string} Governing faction name.
+   */
+  getGoverningFaction() {
+    for (const planet of this.planets) {
+      if (
+        planet.faction === "Federation" ||
+        planet.faction === "Frontier League" ||
+        planet.faction === "Pirates"
+      ) {
+        return planet.faction;
+      }
+    }
+    return "Independents";
+  }
+
+  /**
    * Scans active players carrying contraband in space.
    * Remote security sweeps are executed when a player flies near a faction patrol.
    * @param {number} dt - Time delta in seconds.
@@ -1168,17 +1185,7 @@ export class GameInstance {
     this.spaceScanAccumulator = 0;
 
     // 1. Identify governing faction of this room
-    let governingFaction = "Independents";
-    for (const planet of this.planets) {
-      if (
-        planet.faction === "Federation" ||
-        planet.faction === "Frontier League" ||
-        planet.faction === "Pirates"
-      ) {
-        governingFaction = planet.faction;
-        break;
-      }
-    }
+    const governingFaction = this.getGoverningFaction();
     if (governingFaction === "Independents") return;
 
     // 2. Scan players carrying contraband

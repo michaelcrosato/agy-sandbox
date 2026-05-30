@@ -68,18 +68,69 @@ export function factionPrice(
 }
 
 /**
+ * Calculates the transaction tax rate based on player faction standing.
+ * @param {Object|null} registry - FactionRegistry instance.
+ * @param {string} playerId - Player ID.
+ * @param {string|null} faction - Faction name.
+ * @returns {number} The tax rate (0.0, 0.05, or 0.15).
+ */
+export function getTransactionTaxRate(registry, playerId, faction) {
+  if (
+    !registry ||
+    !faction ||
+    faction === "Independents" ||
+    typeof registry.getStanding !== "function"
+  ) {
+    return 0.0;
+  }
+  const standing = registry.getStanding(playerId, faction);
+  if (standing >= 50) return 0.0; // Allied/Friendly
+  if (standing <= -16) return 0.15; // Hostile
+  return 0.05; // Neutral
+}
+
+/**
+ * Calculates the standing-adjusted price for hulls and outfits.
+ * @param {number} baseCost - Base cost of the hull/outfit.
+ * @param {Object|null} registry - FactionRegistry instance.
+ * @param {string} playerId - Player ID.
+ * @param {string|null} faction - Controlling faction name.
+ * @returns {number} The standing-adjusted price.
+ */
+export function getModifiedUpgradePrice(baseCost, registry, playerId, faction) {
+  if (
+    !registry ||
+    !faction ||
+    faction === "Independents" ||
+    typeof registry.getStanding !== "function"
+  ) {
+    return baseCost;
+  }
+  const standing = registry.getStanding(playerId, faction);
+  if (standing >= 50) {
+    return Math.max(1, Math.round(baseCost * 0.85)); // 15% discount
+  }
+  if (standing <= -16) {
+    return Math.max(1, Math.round(baseCost * 1.2)); // 20% surcharge
+  }
+  return baseCost; // Neutral
+}
+
+/**
  * Applies a shipyard hull purchase: charges the cost, swaps the hull stats, and
  * resets the cargo hold. No-op (insufficient_credits) if the ship can't afford it.
  * @param {Object} ship - Ship-like (mutated on success).
  * @param {Object} hull - Shipyard entry `{ name, cost, maxShield, maxArmor, cargoCapacity, thrustPower, turnRate }`.
+ * @param {number|null} [costOverride] - Optional standing-adjusted cost to charge.
  * @returns {{ok: boolean, reason: string}}
  */
-export function applyHullPurchase(ship, hull) {
+export function applyHullPurchase(ship, hull, costOverride = null) {
   if (!ship || !hull) return { ok: false, reason: "invalid" };
-  if (!Number.isFinite(ship.credits) || ship.credits < hull.cost) {
+  const cost = Number.isFinite(costOverride) ? costOverride : hull.cost;
+  if (!Number.isFinite(ship.credits) || ship.credits < cost) {
     return { ok: false, reason: "insufficient_credits" };
   }
-  ship.credits -= hull.cost;
+  ship.credits -= cost;
   ship.name = hull.name;
   ship.maxShield = hull.maxShield;
   ship.shield = hull.maxShield;

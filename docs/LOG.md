@@ -39,6 +39,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T18:25 · iter-0075 · GREEN · spec-052-stargate-warp-tolls-taxes
+
+- **Baseline:** `f92e97b` on `main`; 823 Jest tests green.
+- **Move:** Implement standing-based stargate warp tolls and port docking/sales transaction taxes (052).
+- **Changed:**
+  - Implemented the `getWarpToll` helper inside `src/engine/Hyperdrive.js` and extended `validateWarpJump` to validate credit affordability of sector gate tolls.
+  - Wired the stargate toll calculations and dynamic credit deductions in the server's `warp_jump` socket message handler inside `src/server.js`.
+  - Implemented the `getTransactionTaxRate` and `getModifiedUpgradePrice` helpers in `src/engine/Trading.js` to calculate standing-based tariffs.
+  - Refactored server-side outfitting buys (`handleOutfitBuy`) and shipyard buys (`handleShipBuy`) in `src/server/portHandlers.js` to apply standing-based pricing (15% discount for friendly, 20% surcharge for hostile).
+  - Refactored commodity trades in `src/server.js` to apply dynamic standing-based sales and purchase taxes (5% standard, 0% friendly, 15% hostile).
+  - Added new comprehensive integration tests in `src/engine/faction.integration.test.js` covering stargate tolls, trade taxes, and upgrade pricing.
+- **Decisions:** Integrated the new sector governing faction method `getGoverningFaction()` in `GameInstance.js` to keep the codebase modular, DRY, and clean. Resolved the ESLint `no-useless-assignment` warning by using `const` declarations with clean ternary assignments.
+- **Validation:** `npm run agent:check` -> green (826 Jest tests / 66 suites).
+- **Next:** Proceed with SPEC-053 to implement the real-time Bounty Locator Radar tracking outfit.
+
 ## 2026-05-30T18:05 · iter-0074 · GREEN · spec-051-collision-kinetic-damage
 
 - **Baseline:** `31cbb64` on `main`; 821 Jest tests green.

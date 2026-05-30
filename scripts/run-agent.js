@@ -295,8 +295,8 @@ Body: ${issue.body}
 Comments:
 ${comments.join("\n")}`;
 
-    // Default to gemini-2.5-flash for high quota and speed, allow customization via GEMINI_MODEL
-    const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+    // Default to gemini-3.5-flash for high quota, high reasoning, and speed
+    const modelName = process.env.GEMINI_MODEL || "gemini-3.5-flash";
     console.log(`Calling LLM (${modelName}) to plan and generate changes...`);
     const generationConfig = {
       responseMimeType: "application/json",

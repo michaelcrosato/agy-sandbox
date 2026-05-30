@@ -140,19 +140,47 @@ Completed waves (`001–089`) are recorded DONE in `PROGRESS.md`. The sandbox in
 
 ---
 
+## EXECUTION WAVES (v22)
+
+Completed waves (`001–094`) are recorded DONE in `PROGRESS.md`. The advanced load & cost sentinel wave:
+
+### Phase 0 — Adv Evals & Load Scaling — `095`
+- `095` High-Concurrency Sandbox Stress-Testing & Simulated Network Latency Injector (build application-level latency/drop injector and concurrent headless load runner simulating 50+ concurrent pilots clashing in sectors).
+
+### Phase 1 — Observability & Universe History — `096`
+- `096` The Galactic Chronicle & Dynamic persistent simulation history logs (record major econ spikes and faction stand-off results in pruned JSON store and display on neon timeline sidebar).
+
+### Phase 2 — Security & Cost Sentinel — `097`
+- `097` Sandboxed Outbound API Rate Limiter & Network Domain Sentinel (protect host budgets via sliding-window limiters wrapping external AI prompts, returning warning mocks and blocking non-allowlisted egress domains).
+
+---
+
+## EXECUTION WAVES (v23)
+
+Completed waves (`001–097`) are recorded DONE in `PROGRESS.md`. The emergent gameplay and centralized architecture wave:
+
+### Phase 0 — Core Architecture Hardening — `099`
+- `099` Centralized Commodities & Unified Schema Registry (centralize commodities configurations and all WebSocket / request command structures into a unified schema registry to prevent client/server drift and validation bugs).
+
+### Phase 1 — Emergent Universe Operations — `098`
+- `098` Emergent Faction Territory Control & Dynamic Sector Borders (build dynamic influence tracker shifting sector control, security ratings, and tax rates dynamically based on combat and mission outcomes).
+
+### Phase 2 — Ship Fittings & Loadout UI — `100`
+- `100` Ship Fittings Presets & Loadout Manager (build server-persisted outfitting loadout preset manager allowing single-click preset purchases and dynamic slot/power grid safety validation).
+
+---
+
 ## MASTER PRIORITIZATION TABLE (next-cycle work)
 
 Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + Fit.
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 090 | Event-Loop Latency Monitoring | 0 | 4 | 5 | 5 | 5 | 19 |
-| 091 | Game Invariant Self-Healing Verifier | 1 | 5 | 5 | 4 | 5 | 19 |
-| 092 | Automated Zombie Reaper & Clean | 0 | 5 | 5 | 5 | 5 | 20 |
-| 093 | State Leakage Workspace Sanitizer | 0 | 5 | 5 | 5 | 5 | 20 |
-| 094 | Sandbox Observability Telemetry | 2 | 4 | 5 | 5 | 5 | 19 |
+| 099 | Centralized Schema Registry | 0 | 5 | 5 | 5 | 5 | 20 |
+| 098 | Emergent Faction Territory | 1 | 5 | 4 | 4 | 5 | 18 |
+| 100 | Ship Fittings Preset Manager | 2 | 4 | 4 | 4 | 5 | 17 |
 
-**Recommended start:** `092` (Σ20 — Automated zombie reaper & clean teardown), then proceed to `093` (Σ20 — state isolation sanitizer), followed by `090` (Σ19) and `091` (Σ19), and finally `094` (Σ19).
+**Recommended start:** `099` (Σ20 — Centralized Commodities & Unified Schema Registry), then proceed to `098` (Σ18 — Emergent Faction Territory Control & Dynamic Sector Borders), and finally `100` (Σ17 — Ship Fittings Presets & Loadout Manager).
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

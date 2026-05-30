@@ -24,8 +24,20 @@ _**v17 re-audit baseline (2026-05-30, ENTIRE v16 blueprint shipped): 909 Jest te
 _**v18 re-audit baseline (2026-05-30, ENTIRE v17 blueprint shipped): 912 Jest tests / 73 suites + 30 client green; 0 npm audit vulnerabilities; tractor outfit mass + black market spaceports + standing-aware trade advisor HUD all DONE.**_
 _**v19 re-audit baseline (2026-05-30, ENTIRE v19 blueprint shipped): 921 Jest tests / 73 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; dynamic trade profit metric + NPC smuggler fleets + stargate nav overlay all DONE.**_
 _**v21 re-audit baseline (2026-05-31, ENTIRE v21 sandbox blueprint shipped): 953 Jest tests / 82 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; Invariant Verifier self-healing + Sandbox resource peak telemetry + Process reaper + Workspace isolation defender all DONE. Remaining = 095, 096, 097.**_
+_**v22 re-audit baseline (2026-05-31, ENTIRE v22 sandbox blueprint shipped): 979 Jest tests / 86 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; High-concurrency stress testing + Galactic chronicle dynamic history + Sandboxed outbound rate limiter sentinel all DONE.**_
 
-## v22 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
+## v23 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Core Architecture Hardening
+- [ ] `099` Centralized Commodities & Unified Schema Registry (centralize commodities configurations and all WebSocket / request command structures into a unified schema registry to prevent client/server drift and validation bugs)
+
+### Phase 1 — Emergent Universe Operations
+- [ ] `098` Emergent Faction Territory Control & Dynamic Sector Borders (build dynamic influence tracker shifting sector control, security ratings, and tax rates dynamically based on combat and mission outcomes)
+
+### Phase 2 — Ship Fittings & Loadout UI
+- [ ] `100` Ship Fittings Presets & Loadout Manager (build server-persisted outfitting loadout preset manager allowing single-click preset purchases and dynamic slot/power grid safety validation)
+
+## v22 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Adv Evals & Load Scaling
 - [x] `095` High-Concurrency Sandbox Stress-Testing & Simulated Network Latency Injector (build application-level latency/drop injector and concurrent headless load runner simulating 50+ concurrent pilots clashing in sectors) — **done** (files: `src/net/NetworkLatencyInjector.js`, `src/net/NetworkLatencyInjector.test.js`, `scripts/agent/stress-test.js`, `src/server/stressConcurrency.integration.test.js`, `src/server.js`; created a highly configurable socket decorator to delay and drop packages, engineered an async spawner spawning 25+ pilots clashing concurrently under clean teardowns, and verified event-loop lag induced backpressure shedding end-to-end; 955 Jest tests green)

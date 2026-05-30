@@ -12,6 +12,7 @@ import { MissionManager } from "./engine/MissionManager.js";
 import { NEBULAE } from "./engine/Nebulae.js";
 import { GameInstance } from "./engine/GameInstance.js";
 import { nextFrame } from "./net/BroadcastFramer.js";
+import { interestFilter } from "./net/interest.js";
 import { JsonFileStore } from "./persistence/Store.js";
 import { PersistenceManager } from "./persistence/PersistenceManager.js";
 import { applyGalaxy, applyPlayer } from "./persistence/serializers.js";
@@ -35,6 +36,14 @@ import { buildStatsPayload } from "./net/statsPayload.js";
 import { shouldGcRoom, sanitizeNickname } from "./server/roomLifecycle.js";
 
 const JUMP_FUEL_COST = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost;
+
+// Interest management (spec 014): per-client area-of-interest filtering of the
+// world-state broadcast — a client receives only entities near its ship (plus
+// its own). Enabled by default; set INTEREST_MANAGEMENT=0 to fall back to
+// sending every entity to every client. INTEREST_RADIUS (world units) tunes how
+// far a client sees.
+const INTEREST_ENABLED = process.env.INTEREST_MANAGEMENT !== "0";
+const INTEREST_RADIUS = Number(process.env.INTEREST_RADIUS) || 3000;
 
 // Observability (spec 010): a dependency-free metrics registry exposed at
 // GET /metrics, plus a leveled JSON logger for structured events.
@@ -342,19 +351,40 @@ setInterval(() => {
     // against the previous broadcast (`state_delta`). The wire string is built
     // ONCE per tick and reused for every client so cost stays O(clients) on the
     // socket layer alone, not O(clients * entities) on JSON.stringify.
-    const frame = nextFrame({
-      entities: room.serializeEntities(),
-      prev: room.broadcastState,
-      forceKeyframe: !!room.needsKeyframe,
-    });
-    room.broadcastState = frame.nextState;
+    // Interest management (spec 014): serialize the room's entities once, then
+    // frame PER CLIENT against that client's area-of-interest filter and its own
+    // keyframe/delta baseline. A client receives only entities near its ship
+    // (plus its own), so bandwidth scales with what a player can see rather than
+    // with room size. Entities entering/leaving the AOI surface as natural
+    // add/remove deltas via StateCodec, so nothing lingers client-side.
+    const allEntities = room.serializeEntities();
+    const roomForceKeyframe = !!room.needsKeyframe;
     room.needsKeyframe = false;
-    const statePayload = JSON.stringify(frame.payload);
     for (const client of room.clients.values()) {
       if (client.ws.readyState !== client.ws.OPEN) continue;
+
+      const viewer = client.ship;
+      const visible =
+        INTEREST_ENABLED && viewer && viewer.position
+          ? interestFilter(
+              allEntities,
+              { x: viewer.position.x, y: viewer.position.y },
+              { radius: INTEREST_RADIUS, alwaysIncludeId: client.id },
+            )
+          : allEntities;
+
+      const frame = nextFrame({
+        entities: visible,
+        prev: client.broadcastState,
+        forceKeyframe:
+          roomForceKeyframe || !client.broadcastState || !!client.needsKeyframe,
+      });
+
       // Backpressure (spec 004): a slow client's send buffer must not grow
       // unbounded. Skip deltas to a backed-up client (it resyncs on the next
-      // keyframe); drop one that is hopelessly behind.
+      // keyframe); drop one that is hopelessly behind. The per-client baseline
+      // advances ONLY on a successful send, so a skipped client's next delta is
+      // computed against the state it actually holds — no desync.
       const decision = sendDecision(client.ws.bufferedAmount, {
         isKeyframe: frame.isKeyframe,
       });
@@ -362,6 +392,9 @@ setInterval(() => {
         client.ws.terminate();
         metrics.inc("slow_client_drops");
       } else if (decision === "send") {
+        client.broadcastState = frame.nextState;
+        client.needsKeyframe = false;
+        const statePayload = JSON.stringify(frame.payload);
         client.ws.send(statePayload);
         metrics.inc("broadcast_bytes", statePayload.length);
       }
@@ -726,6 +759,11 @@ function joinRoom(clientObj, roomId, nickname) {
   // Force the next broadcast to be a keyframe so the newcomer starts from a
   // full snapshot instead of waiting up to ~1s for the next scheduled one.
   room.needsKeyframe = true;
+  // Per-client broadcast baseline (spec 014): the newcomer's snapshot/delta
+  // stream is framed independently each tick against its own AOI; start it from
+  // a fresh keyframe.
+  clientObj.broadcastState = null;
+  clientObj.needsKeyframe = true;
 
   const spawnPos = new Vector2D(
     (Math.random() - 0.5) * 150,

@@ -14,8 +14,17 @@ _**v7 re-audit baseline (2026-05-30, ENTIRE v6 blueprint shipped): 821 Jest test
 _**v8 re-audit baseline (2026-05-30, ENTIRE v7 blueprint shipped): 827 Jest tests / 66 suites + 15 client green; 0 `npm audit` vulnerabilities; kinetic damage + warp tolls + bounty radar HUD all DONE.** Remaining = v8 Phase 0 (055) + Phase 1 (056) + Phase 2 (054)._
 _**v9 re-audit baseline (2026-05-30, ENTIRE v8 blueprint shipped): 839 Jest tests / 66 suites + 22 client green; 0 `npm audit` vulnerabilities; dynamic reputation battles + interdiction + command decks all DONE.** Remaining = v9 Phase 0 (057) + Phase 1 (058) + Phase 2 (059)._
 _**v10 re-audit baseline (2026-05-30, ENTIRE v9 blueprint shipped): 871 Jest tests / 69 suites + 24 client green; 0 `npm audit` vulnerabilities; dynamic market events + fittings loadouts + multiplayer co-op squads all DONE. Remaining = none (ALL v10 blueprint shipped!).**_
+_**v11 re-audit baseline (2026-05-30, ENTIRE v10 blueprint shipped): 871 Jest tests / 69 suites + 24 client green; 0 `npm audit` vulnerabilities; naval rank boards + physical trade caravans + multi-worker Redis cluster sync all DONE.**_
 
-## v10 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+## v11 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Quick Wins & Safety
+- [ ] `063` Dynamic Cosmic Storms & Wandering Anomalies (wandering server-authoritative cosmic hazards that drift across sectors, draining ship energy, reducing sensor range, and causing direct armor decay)
+
+### Phase 1 — Core Upgrades & Feature Delivery
+- [ ] `064` Faction Reputation Milestones & Bounty Hunters (standing-locked Allied ambassadorial escort missions at Spaceports, and persistent nadir-standing elite faction hunter spawns aggressively chasing players)
+
+## v10 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
 - [x] `060` Factional Naval Mission Boards & Rank Campaigns (tie FactionRegistry standing progress with specialized rank-locked commendations, premium faction starships, and advanced weaponry) — **done** (files: `src/engine/Ship.js`, `src/engine/MissionManager.js`, `src/engine/PortServices.js`, `src/persistence/serializers.js`, `src/server.js`, `src/server/portHandlers.js`, `src/engine/faction.integration.test.js`; implemented player naval merit tracking and rank promotions triggered on completing high-reward faction campaign missions, enforced purchase unlocks on premium starships and weaponry based on explicit naval campaign ranks, integrated authoritative standing-restricted procedural mission board filtering, and verified the entire merit progression and acquisition lockout loop via comprehensive integration tests; 866 Jest tests 100% green).
@@ -25,6 +34,7 @@ _**v10 re-audit baseline (2026-05-30, ENTIRE v9 blueprint shipped): 871 Jest tes
 
 ### Phase 2 — Scale-Out & Premium Features
 - [x] `062` High-Concurrency Multi-Worker Redis Cluster State Sync (fully wire supervisor processes and consistent load balancing to run clustered sharded Redis Pub/Sub networks behind a flag) — **done** (files: `src/server.js`, `src/server/supervisor.js`, `src/persistence/multinode.integration.test.js`; wired `InMemoryPubSub` / `RedisPubSub` connections, routed global and squad chat messages cross-process via pub/sub channels, propagated `REDIS_SCALE_OUT` environment variable toggles through the supervisor to active worker forks, enforced graceful lease renewal heartbeats inside the multi-worker presence loops, and fully verified concurrent websocket sharding presence sync and multi-worker pubsub exchange via new cluster-sharding integration tests; 871 Jest tests green).
+
 
 ## v9 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

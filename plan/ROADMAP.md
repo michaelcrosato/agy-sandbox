@@ -114,18 +114,15 @@ flowchart TD
 
 ---
 
-## EXECUTION WAVES (v10)
+## EXECUTION WAVES (v11)
 
-Completed waves (`001–059`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
+Completed waves (`001–062`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
 
-### Phase 0 — Quick Wins & Safety — `060`
-`060` Factional Naval Mission Boards & Rank Campaigns (tie FactionRegistry standing progress with specialized rank-locked commendations, premium faction starships, and advanced weaponry).
+### Phase 0 — Quick Wins & Safety — `063`
+`063` Dynamic Cosmic Storms & Wandering Anomalies (wandering server-authoritative cosmic hazards that drift across sectors, draining ship energy, reducing sensor range, and causing direct armor decay).
 
-### Phase 1 — Core Upgrades & Debt Paydown — `061`
-`061` Dynamic Planetary Stock Caravans & Cargo Convoy AI (physical cargo transport AI fleets flying across sector warp gates to load and unload goods, modifying planetary stock levels dynamically upon arrival).
-
-### Phase 2 — Scale-Out & Premium Features — `062`
-`062` High-Concurrency Multi-Worker Redis Cluster State Sync (fully wire supervisor processes andConsistent consistent load balancing to run clustered sharded Redis Pub/Sub networks behind a flag).
+### Phase 1 — Core Upgrades & Feature Delivery — `064`
+`064` Faction Reputation Milestones & Bounty Hunters (standing-locked Allied ambassadorial escort missions at Spaceports, and persistent nadir-standing elite faction hunter spawns aggressively chasing players).
 
 ---
 
@@ -135,11 +132,10 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 060 | Factional Naval Mission Boards & Rank Campaigns | 0 | 5 | 5 | 5 | 5 | 20 |
-| 061 | Dynamic Planetary Stock Caravans & Cargo Convoy AI | 1 | 5 | 4 | 4 | 5 | 18 |
-| 062 | High-Concurrency Multi-Worker Redis Cluster Sync | 2 | 4 | 4 | 3 | 5 | 16 |
+| 063 | Dynamic Cosmic Storms & Wandering Anomalies | 0 | 5 | 5 | 5 | 5 | 20 |
+| 064 | Faction Reputation Milestones & Bounty Hunters | 1 | 5 | 4 | 4 | 5 | 18 |
 
-**Recommended start:** `060` (Σ20 — faction naval campaigns and rank commendations, high immersion, safe and extremely self-contained), then proceed to `061` (Σ18) to introduce physical cargo transport convoys. Complete the wave with `062` (Σ16) to wire the multi-node worker cluster sync integration.
+**Recommended start:** `063` (Σ20 — wandering storms, highly modular physics integration, safe and completely self-contained), then proceed to `064` (Σ18) to introduce standing-locked quests and aggressive faction hunter squads.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.
@@ -147,4 +143,5 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 - A parallel/rogue writer corrupted `docs/LOG.md` once — **serialize ledger edits** and always anchor on the standalone `== LOG-ANCHOR ==` line, never the first substring match.
 - Scale-out specs touch the hot broadcast path — gate each behind a flag so single-process stays the default and is never regressed.
 - Every spec lands behind a green `npm run agent:check` (+ `npm run test:client` where client-touching); nothing pushed without authorization.
+
 

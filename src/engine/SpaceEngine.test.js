@@ -400,6 +400,57 @@ describe("SpaceEngine ramming damage", () => {
     expect(victim.isDestroyed).toBe(true);
     expect(victim.destroyedBy).toBe("rammer");
   });
+
+  test("kinetic damage scales dynamically with larger ship masses (momentum delta)", () => {
+    const engine = new SpaceEngine({ restitution: 0.5 });
+    // Spawn two heavy ships, mass 4000 each (e.g. laden with cargo/outfits)
+    const a = new Ship({
+      id: "heavyA",
+      mass: 4000,
+      position: new Vector2D(0, 0),
+      velocity: new Vector2D(100, 0),
+    });
+    const b = new Ship({
+      id: "heavyB",
+      mass: 4000,
+      position: new Vector2D(20, 0),
+      velocity: new Vector2D(-100, 0),
+    });
+    engine.addEntity(a);
+    engine.addEntity(b);
+
+    engine.handleCollisions();
+
+    // closing speed 200 -> (200-50)*0.15*(8000/1000) = 150 * 0.15 * 8 = 180 damage to each (double standard mass)
+    expect(a.shield).toBeCloseTo(20, 6);
+    expect(b.shield).toBeCloseTo(20, 6);
+  });
+
+  test("collision with static planet calculates double momentum rebound on the dynamic ship", () => {
+    const engine = new SpaceEngine({ restitution: 0.5 });
+    const planet = new SpaceEntity({
+      id: "staticPlanet",
+      type: "planet",
+      radius: 65,
+      mass: 1e12,
+      position: new Vector2D(0, 0),
+    });
+    const ship = new Ship({
+      id: "dynamicShip",
+      mass: 2000,
+      radius: 15,
+      position: new Vector2D(70, 0),
+      velocity: new Vector2D(-100, 0), // closing speed 100
+    });
+    engine.addEntity(planet);
+    engine.addEntity(ship);
+
+    engine.handleCollisions();
+
+    // planet is static, ship is mass 2000 -> massFactor = 2 * 2000 = 4000.
+    // closing speed 100 -> (100 - 50) * 0.15 * (4000/1000) = 50 * 0.15 * 4 = 30 damage to the ship.
+    expect(ship.shield).toBeCloseTo(170, 6);
+  });
 });
 
 describe("SpaceEngine shield-piercing projectiles", () => {

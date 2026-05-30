@@ -333,9 +333,24 @@ export class SpaceEngine {
       // while the pair is closing, so its magnitude is the impact speed.
       const impactSpeed = -velAlongNormal;
       if (impactSpeed > SpaceEngine.RAM_MIN_IMPACT_SPEED) {
-        const ramDamage =
+        // Calculate effective combined mass for damage. If one object is static (like a planet),
+        // we treat its mass contribution as equivalent to the dynamic object's mass scaled by 2
+        // to represent the double-rebound momentum shift of hitting an immovable barrier.
+        let massFactor = 0;
+        if (isE1Static && !isE2Static) {
+          massFactor = 2 * e2.mass;
+        } else if (isE2Static && !isE1Static) {
+          massFactor = 2 * e1.mass;
+        } else if (!isE1Static && !isE2Static) {
+          massFactor = e1.mass + e2.mass;
+        }
+
+        const ramDamage = Math.max(
+          0,
           (impactSpeed - SpaceEngine.RAM_MIN_IMPACT_SPEED) *
-          SpaceEngine.RAM_DAMAGE_COEF;
+            SpaceEngine.RAM_DAMAGE_COEF_MASS *
+            (massFactor / 1000),
+        );
         this.applyRamDamage(e1, e2, ramDamage);
         this.applyRamDamage(e2, e1, ramDamage);
       }
@@ -366,5 +381,7 @@ export class SpaceEngine {
 
 // Impacts below this closing speed (units/sec) cause no ramming damage.
 SpaceEngine.RAM_MIN_IMPACT_SPEED = 50;
-// Damage per unit of closing speed above the threshold.
+// Legacy flat damage coefficient (for compatibility/reference).
 SpaceEngine.RAM_DAMAGE_COEF = 0.6;
+// Base damage multiplier per unit of relative momentum / 1000.
+SpaceEngine.RAM_DAMAGE_COEF_MASS = 0.15;

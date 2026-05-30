@@ -39,6 +39,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T18:05 · iter-0074 · GREEN · spec-051-collision-kinetic-damage
+
+- **Baseline:** `31cbb64` on `main`; 821 Jest tests green.
+- **Move:** Implement relative-momentum kinetic damage for ship-to-ship and ship-to-planet circle collisions (051).
+- **Changed:**
+  - Redesigned circle collision ram damage calculation in `src/engine/SpaceEngine.js` to scale proportionally with combined mass of colliding entities.
+  - Implemented static-to-dynamic collision logic treating immovable planets as double-rebound momentum sources (`2 * ship.mass`).
+  - Added the `SpaceEngine.RAM_DAMAGE_COEF_MASS = 0.15` coefficient to maintain precise backward compatibility with the legacy `0.6` flat coefficient for default 2000kg ships.
+  - Added new comprehensive unit tests in `src/engine/SpaceEngine.test.js` asserting correct dynamic mass-scaling and dynamic-to-static planet calculations.
+- **Decisions:** Used double-rebound velocity reversal logic (`2 * dynamicShip.mass`) to realistically simulate kinetic energy transfer against static/immovable obstacles without triggering integer overflow or infinite damage.
+- **Validation:** `npm run agent:check` -> green (823 Jest tests / 66 suites).
+- **Next:** Proceed with SPEC-052 to implement standing-based stargate jump tolls and dock transaction taxes.
+
 ## 2026-05-30T17:40 · iter-0073 · GREEN · spec-048-contraband-space-patrol-scans
 
 - **Baseline:** `726874b` on `main`; 818 Jest tests green.

@@ -15,7 +15,7 @@ _**v7 re-audit baseline (2026-05-30, ENTIRE v6 blueprint shipped): 821 Jest test
 ## v7 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
-- [ ] `051` Collision Kinetic Damage & Shield Absorption (fleet tactical safety) — **todo** (files: `src/engine/SpaceEngine.js`, `src/engine/Ship.js`, `src/engine/Ship.test.js`; implement kinetic collision impact damage for ships colliding at high velocity based on mass/velocity, absorbed by shields, reducing shield/armor).
+- [x] `051` Collision Kinetic Damage & Shield Absorption (fleet tactical safety) — **done** (files: `src/engine/SpaceEngine.js`, `src/engine/SpaceEngine.test.js`; implemented relative-momentum kinetic damage calculations for both dynamic-to-dynamic collisions of variable masses and dynamic-to-static planet collisions, with full backward-compatibility for standard 2000kg ship configurations; all 823 Jest tests green).
 
 ### Phase 1 — Core Upgrades & Debt Paydown
 - [ ] `052` Stargate Warp Tolls & Port Transaction Taxes (reputation standings) — **todo** (files: `src/engine/Hyperdrive.js`, `src/engine/Trading.js`, `src/engine/faction.integration.test.js`; connect stargate jump fees and port docking/sales tariffs to the faction reputation standing registry with friendly discounts and hostile surcharges).

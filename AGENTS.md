@@ -155,3 +155,32 @@ in `docs/LOG.md`, and continue):
 - [ ] The ticket's acceptance checkboxes are updated; follow-ups filed.
 - [ ] `docs/LOG.md` has a compliant entry **iff** product code / gate status / architecture changed.
 - [ ] You never claimed a check passed that you did not actually run.
+
+---
+
+## Cursor Cloud specific instructions
+
+**Stack:** Node.js **20+** (`.nvmrc` → 20; CI uses 20). **npm** only (`package-lock.json`). No Docker, no bundler, no database — persistence is JSON files under `./data` (created at runtime, gitignored).
+
+**Install / gate (no server needed):**
+
+| Intent | Command |
+| --- | --- |
+| Install deps | `npm run agent:bootstrap` (`npm ci`) |
+| Full CI gate | `npm run agent:check` (Prettier + ESLint + Jest) |
+| Single test file | `npm test -- src/engine/Ship.test.js` |
+
+**Run the game (browser E2E):** `node src/server.js` — serves static client + authoritative WebSocket sim on **http://localhost:8080** (override with `PORT`). Do **not** use `npm run dev` for gameplay; `http-server` has no simulation or multiplayer.
+
+- Health: `GET http://localhost:8080/healthz` (JSON)
+- Metrics: `GET http://localhost:8080/metrics`
+- Optional env: `PERSISTENCE_DIR` (default `./data`), `AUTOSAVE_INTERVAL_MS`, `ALLOWED_ORIGINS`, `LOG_LEVEL` — see `.env.example`
+
+**tmux:** Use a named session (e.g. `starfall-server`) for the long-running server; attach or `send-keys` to inspect logs. The update script does not start the server.
+
+**Gotchas:**
+
+- `src/server.js` is the real entry point; `package.json` `"main": "src/index.js"` is a stub.
+- Jest uses `node --experimental-vm-modules` (wired in `npm test`); VM-module warnings are expected.
+- `localtunnel` is optional (`npm i localtunnel`); not installed by default.
+- GitHub issue agent (`scripts/run-agent.js`) needs `GEMINI_API_KEY` / `GITHUB_TOKEN` — not required for game dev or `agent:check`.

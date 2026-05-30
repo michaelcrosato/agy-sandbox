@@ -28,7 +28,7 @@ _**v21 re-audit baseline (2026-05-31, ENTIRE v21 sandbox blueprint shipped): 953
 ## v22 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Adv Evals & Load Scaling
-- [ ] `095` High-Concurrency Sandbox Stress-Testing & Simulated Network Latency Injector (build application-level latency/drop injector and concurrent headless load runner simulating 50+ concurrent pilots clashing in sectors)
+- [~] `095` High-Concurrency Sandbox Stress-Testing & Simulated Network Latency Injector (build application-level latency/drop injector and concurrent headless load runner simulating 50+ concurrent pilots clashing in sectors)
 
 ### Phase 1 — Observability & Universe History
 - [ ] `096` The Galactic Chronicle & Dynamic persistent simulation history logs (record major econ spikes and faction stand-off results in pruned JSON store and display on neon timeline sidebar)

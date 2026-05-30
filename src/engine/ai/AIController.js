@@ -80,11 +80,11 @@ export class AIController {
     // all). Every other goal falls through to the legacy role behaviour, which
     // already maps ENGAGE→attack / TRADE→route / PATROL→wander.
     if (this.useUtilityAdvisor) {
-      const perception = buildPerception(
-        this.ship,
-        entities,
-        this.perceptionOptions || undefined,
-      );
+      const perception = buildPerception(this.ship, entities, {
+        factionPolicy: this.factionPolicy,
+        standingPolicy: this.standingPolicy,
+        ...this.perceptionOptions,
+      });
       this.currentGoal = selectGoal(perception).goal;
       if (this.currentGoal === Goals.FLEE) {
         this.executeFlee(entities);
@@ -94,6 +94,9 @@ export class AIController {
         return;
       } else if (this.currentGoal === Goals.TRADE) {
         this.executeTrade(entities);
+        return;
+      } else if (this.currentGoal === Goals.ENGAGE) {
+        this.executeEngage(entities, dt);
         return;
       }
     }
@@ -197,11 +200,21 @@ export class AIController {
 
       const dist = this.ship.position.distance(ent.position);
       if (dist < sensorRange && this.shouldTarget(ent)) {
-        if (this.useUtilityAdvisor && this.role === "pirate") {
-          // Prefer highest-weakness prey (lowest remaining armor fraction)
+        if (this.useUtilityAdvisor) {
+          // Prefer highest-weakness prey (lowest remaining shield/armor, highest thermal buildup)
+          const shieldMax = ent.maxShield || 100;
+          const shieldCur = ent.shield !== undefined ? ent.shield : shieldMax;
+          const shieldWeakness = 1 - shieldCur / shieldMax;
+
           const armorMax = ent.maxArmor || 100;
           const armorCur = ent.armor !== undefined ? ent.armor : armorMax;
-          const weakness = 1 - armorCur / armorMax;
+          const armorWeakness = 1 - armorCur / armorMax;
+
+          const heatMax = ent.maxHeat || 100;
+          const heatCur = ent.heat !== undefined ? ent.heat : 0;
+          const heatWeakness = heatMax > 0 ? heatCur / heatMax : 0;
+
+          const weakness = (shieldWeakness + armorWeakness + heatWeakness) / 3;
           const score = weakness * 1000 + (sensorRange - dist);
           if (score > bestScore) {
             bestScore = score;
@@ -569,34 +582,67 @@ export class AIController {
     }
   }
 
-  /**
-   * Commercial Autopilot: steer towards the closest profitable planet to trade.
-   * @param {Array<SpaceEntity>} entities - All entities.
-   */
   executeTrade(entities) {
     let bestPlanet = null;
     let bestScore = -1;
 
-    for (const ent of entities) {
-      if (!ent || ent.type !== "planet" || ent.isDestroyed) {
-        continue;
-      }
+    const list = /** @type {Array<*>} */ (
+      Array.isArray(entities) ? entities : []
+    );
+    const planets = list.filter(
+      (e) => e && e.type === "planet" && !e.isDestroyed,
+    );
+    if (planets.length === 0) {
+      this.executeWander(0.016);
+      return;
+    }
 
+    for (const ent of planets) {
       const dist = this.ship.position.distance(ent.position);
       if (dist > 2000) continue;
 
-      let score = 10000 / (dist + 50);
-      if (this.ship.faction && ent.faction) {
-        if (
-          this.factionPolicy &&
-          this.factionPolicy.isAllied(this.ship.faction, ent.faction)
-        ) {
-          score += 200;
-        } else if (
-          this.factionPolicy &&
-          this.factionPolicy.isHostile(this.ship.faction, ent.faction)
-        ) {
+      if (this.ship.faction && ent.faction && this.factionPolicy) {
+        if (this.factionPolicy.isHostile(this.ship.faction, ent.faction)) {
           continue;
+        }
+      }
+
+      // Calculate profit spread for this planet relative to other planets
+      const otherPlanets = planets.filter((p) => p !== ent && p.market);
+      let maxSpread = 0;
+      if (ent.market && otherPlanets.length > 0) {
+        const commodities = [
+          "food",
+          "electronics",
+          "minerals",
+          "luxuries",
+          "contraband",
+          "machinery",
+          "ore",
+        ];
+        for (const item of commodities) {
+          const priceHere = ent.market[item];
+          if (typeof priceHere !== "number") continue;
+          for (const other of otherPlanets) {
+            const priceThere = other.market[item];
+            if (typeof priceThere !== "number") continue;
+            const diff = Math.abs(priceHere - priceThere);
+            if (diff > maxSpread) {
+              maxSpread = diff;
+            }
+          }
+        }
+      }
+
+      // Map spread from 0 to 300 to a profit value in [0.2, 0.95] clamped
+      const profit = 0.2 + 0.75 * Math.min(maxSpread / 300, 1);
+
+      // Score balance: higher profit, closer distance
+      let score = profit * 1000 + (2000 - dist);
+
+      if (this.ship.faction && ent.faction && this.factionPolicy) {
+        if (this.factionPolicy.isAllied(this.ship.faction, ent.faction)) {
+          score += 200;
         }
       }
 
@@ -622,6 +668,35 @@ export class AIController {
       this.ship.controls.isBraking = true;
     } else {
       this.ship.controls.isThrusting = true;
+    }
+  }
+
+  /**
+   * Offensive Engage behavior: chase and attack the selected weak target.
+   * @param {Array<SpaceEntity>} entities - All entities.
+   * @param {number} dt - Frame time step.
+   */
+  executeEngage(entities, dt) {
+    if (this.target && !this.target.isDestroyed) {
+      this.steerTowards(this.target.position);
+      const dist = this.ship.position.distance(this.target.position);
+      if (dist < 400) {
+        this.ship.controls.isThrusting = dist > 150;
+        const angleToTarget = Math.atan2(
+          this.target.position.y - this.ship.position.y,
+          this.target.position.x - this.ship.position.x,
+        );
+        const headingDiff = Math.abs(
+          this.normalizeAngle(angleToTarget - this.ship.heading),
+        );
+        if (headingDiff < 0.25) {
+          this.ship.controls.isFiring = true;
+        }
+      } else {
+        this.ship.controls.isThrusting = true;
+      }
+    } else {
+      this.executeWander(dt);
     }
   }
 }

@@ -208,4 +208,102 @@ describe("AIController advisory layer (spec 017)", () => {
     expect(ai.currentGoal).toBe(Goals.ENGAGE);
     expect(ai.target.id).toBe("wounded");
   });
+
+  it("a damaged ship in REGROUP retreats from close threats or holds still to recharge when safe", () => {
+    const woundedGuard = makeShip({
+      id: "g1",
+      role: "guard",
+      shield: 0,
+      maxShield: 100,
+      armor: 100,
+      maxArmor: 100,
+      position: pos(0, 0),
+    });
+    const ai = new AIController(woundedGuard, "guard", {
+      useUtilityAdvisor: true,
+    });
+
+    // 1. With a threat at a safe distance, it should choose REGROUP and retreat (thrusting)
+    const pirateThreat = pirate({ position: pos(600, 0) });
+    ai.update(0.1, [woundedGuard, pirateThreat]);
+    expect(ai.currentGoal).toBe(Goals.REGROUP);
+    expect(woundedGuard.controls.isThrusting).toBe(true);
+
+    // 2. In a safe zone, it brakes to hold position and recharge
+    woundedGuard.clearControls();
+    ai.update(0.1, [woundedGuard]); // threat is gone
+    expect(ai.currentGoal).toBe(Goals.REGROUP);
+    expect(woundedGuard.controls.isBraking).toBe(true);
+    expect(woundedGuard.controls.isThrusting).toBeFalsy();
+  });
+
+  it("a merchant in TRADE chooses the most profitable planet from local market spreads", () => {
+    const merchant = makeShip({ position: pos(0, 0) });
+
+    // Planet A: no commodities in market (no spread)
+    const planetA = {
+      id: "pA",
+      type: "planet",
+      position: pos(100, 100),
+      market: {},
+      landingRadius: 50,
+    };
+
+    // Planet B: large price spread (highly profitable) with Planet C
+    const planetB = {
+      id: "pB",
+      type: "planet",
+      position: pos(150, 150),
+      market: { food: 500 },
+      landingRadius: 50,
+    };
+
+    // Planet C: far away planet to establish the spread
+    const planetC = {
+      id: "pC",
+      type: "planet",
+      position: pos(1000, 1000),
+      market: { food: 100 },
+      landingRadius: 50,
+    };
+
+    const ai = new AIController(merchant, "merchant", {
+      useUtilityAdvisor: true,
+    });
+
+    ai.update(0.1, [merchant, planetA, planetB, planetC]);
+
+    expect(ai.currentGoal).toBe(Goals.TRADE);
+    // Should target planetB because of the massive profit spread, despite being slightly further!
+    expect(ai.destination).toBe(planetB.position);
+  });
+
+  it("a pirate attacker using the advisor targets the weaker threat in ENGAGE", () => {
+    const raider = pirate({
+      id: "p1",
+      position: pos(0, 0),
+    });
+    const healthyThreat = makeShip({
+      id: "healthy-merchant",
+      position: pos(100, 0),
+      shield: 100,
+      maxShield: 100,
+      armor: 100,
+      maxArmor: 100,
+    });
+    const woundedThreat = makeShip({
+      id: "wounded-merchant",
+      position: pos(200, 0),
+      shield: 10,
+      maxShield: 100,
+      armor: 20,
+      maxArmor: 100,
+    });
+    const ai = new AIController(raider, "pirate", { useUtilityAdvisor: true });
+
+    ai.update(0.1, [raider, healthyThreat, woundedThreat]);
+
+    expect(ai.currentGoal).toBe(Goals.ENGAGE);
+    expect(ai.target.id).toBe("wounded-merchant");
+  });
 });

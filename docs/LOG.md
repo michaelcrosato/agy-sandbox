@@ -39,6 +39,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T14:10 · iter-0065 · GREEN · spec-040-utilityai-advisor-rich-actions
+
+- **Baseline:** `d030804` on `main`; 778 Jest / 62 suites green. Executing `plan/specs/040` — UtilityAI advisor rollout & rich actions.
+- **Move:** Wire faction standings and relations into `buildPerception`, upgrade target weakness evaluation in `scanSensors` (combined shield, armor, and heat), and implement rich actions mapping to scored goals (`REGROUP` retreats/recharges, `TRADE` evaluates local planet spreads, `ENGAGE` tracks weaker targets).
+- **Changed:**
+  - Modified `src/engine/ai/buildPerception.js` to accept `factionPolicy` and `standingPolicy` overrides, filtering hostile planets from `TRADE` and identifying faction threats/prey. Calculated trade profit based on actual commodity spreads relative to other planets.
+  - Modified `src/engine/ai/AIController.js` to pass standings to perception, map `Goals.ENGAGE` to a new `executeEngage` steering/attack action, and upgrade `scanSensors` target selection to evaluate shield, armor, and heat weaknesses. Reworked `executeTrade` to score planets by dynamic spreads and proximity.
+  - Added 3 new deterministic unit tests in `src/engine/ai/AIController.advisor.test.js` covering safe-zone shield/energy recharging, spread-based trade target routing, and weakness-based engage locking.
+- **Decisions:** Structured the planet market spread calculation as a pure function of local planets in the entity list, keeping the engine decoupled from stateful server databases. Leveraged JSDoc typecasting to maintain JSDoc/TS type safety.
+- **Validation:** `npm run agent:check` -> green (**781 Jest tests / 62 suites**). Lints cleanly, compiles green, and formats correctly.
+- **Notes:** Substrate files untouched.
+- **Next:** Spec `041` Player-side raw ore refining at ports.
+
 ## 2026-05-30T13:20 · iter-0064 · GREEN · feat-unattended-afk-loop-grid
 
 - **Baseline:** `4614626` on `main`; 778 Jest / 62 suites green. Executing setup of high-efficiency AFK loop grid.

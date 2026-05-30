@@ -65,8 +65,28 @@ function isPirateLike(ent) {
  * @param {Object} self - The perceiving ship.
  * @returns {boolean}
  */
-export function defaultIsThreat(ent, self) {
+export function defaultIsThreat(ent, self, opts = {}) {
   if (!ent || ent.type !== "ship" || ent.isDestroyed) return false;
+
+  // Use faction standings & relations if available
+  const selfFaction = self.faction;
+  const targetFaction = ent.faction;
+  const factionPolicy = opts.factionPolicy;
+  const standingPolicy = opts.standingPolicy;
+
+  if (factionPolicy && selfFaction && targetFaction) {
+    if (factionPolicy.isHostile(selfFaction, targetFaction)) {
+      return true;
+    }
+  }
+
+  if (standingPolicy && selfFaction && ent.id != null) {
+    if (standingPolicy.isHostile(ent.id, selfFaction)) {
+      return true;
+    }
+  }
+
+  // Legacy fallback
   if (isPirateLike(ent)) return self.role !== "pirate";
   if (ent.role === "guard") return self.role === "pirate";
   return false;
@@ -76,9 +96,11 @@ export function defaultIsThreat(ent, self) {
  * Default threat magnitude in [0,1]: a healthy, armed enemy is more dangerous;
  * a crippled one less so. Scaled off remaining armor.
  * @param {Object} ent
+ * @param {Object} self
+ * @param {Object} [_opts]
  * @returns {number}
  */
-export function defaultThreatLevel(ent) {
+export function defaultThreatLevel(ent, self, _opts = {}) {
   return clamp01(0.8 * armorFraction(ent));
 }
 
@@ -87,11 +109,24 @@ export function defaultThreatLevel(ent) {
  * that are not of the pirate's own faction.
  * @param {Object} ent - Candidate entity.
  * @param {Object} self - The perceiving ship.
+ * @param {Object} [opts]
  * @returns {boolean}
  */
-export function defaultIsPrey(ent, self) {
+export function defaultIsPrey(ent, self, opts = {}) {
   if (self.role !== "pirate") return false;
   if (!ent || ent.type !== "ship" || ent.isDestroyed) return false;
+
+  const selfFaction = self.faction;
+  const targetFaction = ent.faction;
+  const factionPolicy = opts.factionPolicy;
+
+  if (factionPolicy && selfFaction && targetFaction) {
+    if (selfFaction === targetFaction) return false;
+    if (factionPolicy.isAllied(selfFaction, targetFaction)) return false;
+    return true;
+  }
+
+  // Legacy fallback
   if (isPirateLike(ent) || ent.role === "guard") return false;
   if (self.faction && ent.faction && self.faction === ent.faction) return false;
   return true;
@@ -101,9 +136,11 @@ export function defaultIsPrey(ent, self) {
  * Default prey desirability in [0,1]: a soft target is attractive (baseline
  * 0.6) and an already-worn-down one even more so (up to 1.0).
  * @param {Object} ent
+ * @param {Object} self
+ * @param {Object} [_opts]
  * @returns {number}
  */
-export function defaultPreyWeakness(ent) {
+export function defaultPreyWeakness(ent, self, _opts = {}) {
   return clamp01(0.6 + 0.4 * (1 - armorFraction(ent)));
 }
 
@@ -112,20 +149,68 @@ export function defaultPreyWeakness(ent) {
  * opportunities.
  * @param {Object} ent - Candidate entity.
  * @param {Object} self - The perceiving ship.
+ * @param {Object} [opts]
  * @returns {boolean}
  */
-export function defaultIsTrade(ent, self) {
+export function defaultIsTrade(ent, self, opts = {}) {
   if (self.role === "pirate") return false;
-  return !!ent && ent.type === "planet" && !ent.isDestroyed;
+  if (!ent || ent.type !== "planet" || ent.isDestroyed) return false;
+
+  const selfFaction = self.faction;
+  const targetFaction = ent.faction;
+  const factionPolicy = opts.factionPolicy;
+
+  if (factionPolicy && selfFaction && targetFaction) {
+    if (factionPolicy.isHostile(selfFaction, targetFaction)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /**
- * Default trade profitability in [0,1]. A flat baseline — callers with live
- * market spreads can override this for a sharper signal.
+ * Default trade profitability in [0,1] derived from market spreads.
+ * @param {Object} ent
+ * @param {Object} self
+ * @param {Object} [opts]
  * @returns {number}
  */
-export function defaultTradeProfit() {
-  return 0.6;
+export function defaultTradeProfit(ent, self, opts = {}) {
+  if (!ent || ent.type !== "planet" || !ent.market) return 0.6;
+  const list = opts.entities || [];
+  const otherPlanets = list.filter(
+    (e) => e && e.type === "planet" && e !== ent && e.market,
+  );
+  if (otherPlanets.length === 0) return 0.6;
+
+  const commodities = [
+    "food",
+    "electronics",
+    "minerals",
+    "luxuries",
+    "contraband",
+    "machinery",
+    "ore",
+  ];
+  let maxSpread = 0;
+
+  for (const item of commodities) {
+    const priceHere = ent.market[item];
+    if (typeof priceHere !== "number") continue;
+
+    for (const other of otherPlanets) {
+      const priceThere = other.market[item];
+      if (typeof priceThere !== "number") continue;
+
+      const diff = Math.abs(priceHere - priceThere);
+      if (diff > maxSpread) {
+        maxSpread = diff;
+      }
+    }
+  }
+
+  return clamp01(0.2 + 0.75 * Math.min(maxSpread / 300, 1));
 }
 
 /**
@@ -160,6 +245,9 @@ export const DEFAULT_PERCEPTION_OPTIONS = Object.freeze({
  */
 export function buildPerception(ship, entities, options = {}) {
   const opts = { ...DEFAULT_PERCEPTION_OPTIONS, ...options };
+  // Attach entities list so classifiers can access other entities
+  opts.entities = entities;
+
   const list = Array.isArray(entities) ? entities : [];
   const self = selfStateFromShip(ship);
   const threats = [];
@@ -175,20 +263,23 @@ export function buildPerception(ship, entities, options = {}) {
       const distance = ship.position.distance(ent.position);
       if (!Number.isFinite(distance) || distance >= opts.sensorRange) continue;
 
-      if (opts.isThreat(ent, ship)) {
+      if (opts.isThreat(ent, ship, opts)) {
         threats.push({
           distance,
-          threat: clamp01(opts.threatLevel(ent, ship)),
+          threat: clamp01(opts.threatLevel(ent, ship, opts)),
         });
       }
-      if (opts.isPrey(ent, ship)) {
+      if (opts.isPrey(ent, ship, opts)) {
         prey.push({
           distance,
-          weakness: clamp01(opts.preyWeakness(ent, ship)),
+          weakness: clamp01(opts.preyWeakness(ent, ship, opts)),
         });
       }
-      if (opts.isTrade(ent, ship)) {
-        trades.push({ distance, profit: clamp01(opts.tradeProfit(ent, ship)) });
+      if (opts.isTrade(ent, ship, opts)) {
+        trades.push({
+          distance,
+          profit: clamp01(opts.tradeProfit(ent, ship, opts)),
+        });
       }
     }
   }

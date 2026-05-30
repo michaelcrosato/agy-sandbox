@@ -15,7 +15,7 @@ _**v4 re-audit baseline (2026-05-30, ENTIRE v3 blueprint shipped): 775 Jest test
 - [x] `039` Tractor outfit mass correction (bug fix) — **done** (files: `src/engine/Outfitting.js`, `src/engine/Outfitting.test.js`; added `case "tractor"` to `applyOutfitStats` switch so that the Tractor Beam Matrix 200 kg mass is correctly applied on purchase and salvage; added unit test verifying ship mass increase; 776 tests green).
 
 ### Phase 1 — Core Upgrades & Debt Paydown
-- [~] `040` UtilityAI advisor rollout + rich action mapping
+- [x] `040` UtilityAI advisor rollout + rich action mapping — **done** (files: `src/engine/ai/buildPerception.js`, `src/engine/ai/AIController.js`, `src/engine/ai/AIController.advisor.test.js`; fed live faction standings and relations into buildPerception; upgraded scanSensors to evaluate combined target weaknesses across shields, armor, and heat; implemented REGROUP retreat-and-recharge behavior, TRADE market-spread planet routing, and ENGAGE target locking actions; added 3 new unit tests; all 781 Jest tests green).
 - [ ] `041` Player-side raw ore refining at ports
 - [ ] `042` Server monolith extraction (heartbeats, GC, lobby sync)
 

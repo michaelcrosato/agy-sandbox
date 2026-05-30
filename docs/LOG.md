@@ -41,6 +41,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-30T12:05 · iter-0057 · GREEN · spec-019b-redis-store-shared-backend
+
+- **Baseline:** `78ae0fa` on `main`; 720 Jest / 53 suites + 18 client JSDOM + 2 browser green. Executing `plan/specs/019b` — RedisStore behind Store.
+- **Move:** Implement the `Store` key-value persistence contract for Redis, test it via a fake/in-memory client, and prove identical behavior inside the multi-node integration test.
+- **Changed:**
+  - Created `src/persistence/RedisStore.js` inheriting from `Store`, supporting injected client and a custom isolating namespace `keyPrefix` (defaulting to `"starfall:"`).
+  - Added full JSDoc type parameters for TS typechecking.
+  - Created `src/persistence/RedisStore.test.js` exercising all standard `Store` contracts (round-trip equality, missing-key `null` return, existence checks, data ref decoupling) using a Map-backed `FakeRedisClient`.
+  - Refactored `src/persistence/multinode.integration.test.js` to run the entire multi-node orchestrations (persisting galaxy, reading presence, and hot-drain handoff) in a parameterized loop over both `InMemoryStore` and `RedisStore(fakeClient)`.
+- **Decisions:** Made `redis` a completely lazy, optional dependency to avoid bloat in the single-process build. Injected the client into the `RedisStore` constructor, enabling 100% headless mock validation in local testing. Parameterized the integration test loop to serve as an authoritative contract validator.
+- **Validation:** `npm run agent:check` -> green (**730 Jest tests / 54 suites**). Both browser and JSDOM Vitest client test jobs pass cleanly.
+- **Notes:** Substrate files untouched. No push/merge. Progressed directly into the worker orchestration primitive.
+- **Next:** Spec `019c` Worker process model (spawning child processes for node nodes).
+
 ## 2026-05-30T12:00 · iter-0056 · GREEN · spec-035-client-visual-browser-testing
 
 - **Baseline:** `1100f83` on `main`; 720 Jest / 53 suites + 18 client JSDOM green. Executing `plan/specs/035` — Client visual layer (Vitest Browser Mode + Playwright config).

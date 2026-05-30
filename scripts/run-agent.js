@@ -3,7 +3,8 @@ import path from "path";
 import { execSync } from "child_process";
 import dotenv from "dotenv";
 
-dotenv.config();
+// dotenv 17 prints a startup banner by default; quiet keeps CI/agent logs clean.
+dotenv.config({ quiet: true });
 
 // Ensure required environment variables are set
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;

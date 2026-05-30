@@ -30,7 +30,7 @@ modularization.** Remaining = Wave A (020–025) + Phase 2 (014–019)._
 - [x] `020` Salvage outfit dedup (→ applyOutfitStats) — **done** (files: new `src/engine/outfitCatalog.js` (DEFAULT_OUTFITS, single source) + `.test.js`; `Planet.js` + `server.js` salvage both import it; salvage applies stats via `applyOutfitStats` — now covers the EW outfits it silently ignored; server.js −107 LOC → 1979; tractor-mass note → BACKLOG.md)
 - [ ] `021` Client test harness (Vitest Browser Mode / Playwright) — _blocked by: none_
 - [x] `022` CI Node LTS matrix (20/22/24) + version alignment — **done** (files: `.github/workflows/ci.yml` `strategy.matrix.node-version: [20,22,24]` + `${{ matrix.node-version }}`, `fail-fast: false`; `.nvmrc` → 22 (Maintenance LTS). Local gate green on Node 24; CI runs 20/22 on push.)
-- [ ] `023` dotenv 16→17 bump — _blocked by: none_
+- [x] `023` dotenv 16→17 bump — **done** (files: `package.json` dotenv ^17.4; `scripts/run-agent.js` `dotenv.config({ quiet: true })` to suppress the new v17 banner; no-key smoke clean; `npm outdated` now empty; audit 0)
 - [ ] `024` JSDoc typecheck gate (`tsc --noEmit` over checkJs) — _blocked by: none_
 - [ ] `025` Continue server.js extraction (message handlers) — _blocked by: none (continues 007)_
 

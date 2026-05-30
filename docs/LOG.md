@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-29T23:45 · iter-0046 · GREEN · spec-021-client-test-harness
+
+- **Baseline:** `2cedfb1` on `main`; 628 tests / 44 suites (Jest) green; `src/client/*` had zero automated coverage — the last Wave A item. Executing `plan/specs/021`.
+- **Move:** Stand up a browser-capable client test runner, separate from the Jest engine gate, and cover the decision-heavy client logic first.
+- **Changed:** New `vitest.config.js` (jsdom environment, `include` scoped to `src/client/**`) + `test:client` script (`vitest run`); `vitest`+`jsdom` devDeps (0 new audit advisories). `jest.config.json` added with `testPathIgnorePatterns` ignoring `/src/client/` so the two runners never pick up each other's files and `agent:check` stays Jest-only. Extracted `NetworkHandler.applySnapshotMessage`/`applyDeltaMessage` out of the socket `onmessage` closure (behaviour-identical delegation) so the P7 keyframe/delta reconstruction is testable without a live WebSocket. New `src/client/__tests__/NetworkHandler.test.js` (7: keyframe adopt, delta add/update/remove, stale-delta drop leaves state intact, multi-frame reconstruction, keyframe resync) and `UIController.test.js` (10: hit-flash + shield lockout, armor-hit detection, boost gating, heat-critical, low-resource pulse, engine-driven lockout pip). A dedicated CI `client-tests` job runs `test:client` on Node 22.
+- **Decisions:** Used **jsdom**, not Vitest browser-mode/Playwright — no browser binary is installable in this sandbox, and the spec's own Test Strategy lists "Unit (browser/jsdom)" as acceptable; the heavier Playwright visual-regression smoke is deferred (BACKLOG). Writing the HUD tests surfaced a **real bug**: `UIController._updateCombatFeedback`'s `shieldDropped` test is algebraically identical to its own hit-branch guard, so the `"armor"` flash kind is unreachable dead code (armor hits flash the shield vignette). Logged to BACKLOG rather than fixed — this spec is the harness, not a combat-feel change; the test asserts the hit fires without pinning the buggy kind.
+- **Validation:** `npm run test:client` → 17 passed (2 files). `npm test` (Jest) → 628 / 44 unchanged (client dir ignored). `npm run agent:check` → green (prettier + eslint + typecheck + 628 tests). `timeout 6 node src/server.js` → boots and listens on 8080. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 021 done; `plan/BACKLOG.md` records the hit-flash dead-branch bug. **All six Wave A specs (020–025) are now complete.**
+- **Next:** Phase 2 (`plan/specs/014`–`019`): interest management, binary wire protocol, faction runtime wiring, goal-driven NPC, production chains + ore commodity, and the horizontal-scaling epic.
+
 ## 2026-05-29T23:12 · iter-0045 · GREEN · spec-024-jsdoc-typecheck-gate
 
 - **Baseline:** `425a89c` on `main`; 628 tests / 44 suites green; no type verification existed. Executing `plan/specs/024` (Wave A).

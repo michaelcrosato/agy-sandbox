@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-30T01:05 · iter-0049 · GREEN · spec-018-production-chains-ore
+
+- **Baseline:** `d3afa74` on `main`; 657 tests / 47 suites green. The economy had producer/consumer pulses but **no multi-stage chains** and no raw `ore` (mining yielded `minerals` directly). Executing `plan/specs/018` (Phase 2, GOAL P2).
+- **Move:** Add a raw `ore` commodity and a refine chain so a supply shock in one stage propagates to its dependents.
+- **Changed:** Threaded a 7th commodity `ore` consistently through `Ship.cargo`, `Trading.applyHullPurchase` cargo reset, `Planet`'s default market, and all 8 `BASE_MARKETS` (cheap at mining hubs ~50–55, pricier at the industrial worlds that demand it ~125–130). `Mining.oreResource` `minerals`→`ore`, so generic asteroids now drop **raw ore**. `ProductionModel`: New Polaris + Aurelia became ore-producing **mining hubs**; Sigma Draconis + Valkyrie Depot now **consume ore and refine** it into minerals/machinery via a new optional `refines` profile edge, with a `refineGain`/`maxRefineBoost` coupling added to `applyProductionPulse` — a refined output's production strength scales with its input's availability (cheap ore boosts the minerals/machinery it refines into; scarce ore throttles them), so an upstream ore shock measurably shifts downstream prices over pulses. Updated the breaking 6→7 assertions (`Planet.test` market, `serializers.test` cargo) and `Mining.test` (generic→ore); +4 chain-coupling tests in `ProductionModel.test`.
+- **Decisions:** The refine coupling is **guarded** (`profile.refines` absent → skipped), so the existing `applyProductionPulse`/heartbeat tests — which use hand-built profiles with no `refines` — are byte-identical (verified green). Persistence needed **no edits**: the galaxy/player serializers spread `{...market}`/`{...cargo}`, so `ore` auto-round-trips (the `serializers.test` 7-key cargo assertion confirms it). Verified via a full-suite run that no other site hardcodes the commodity set (only `Planet`/`serializers`/`Mining` tests broke, all fixed). The spec's optional `COMMODITIES` centralization constant + player-side ore→minerals refining are logged to BACKLOG rather than scope-crept here.
+- **Validation:** `npm run agent:check` → green (prettier + eslint + typecheck + **661 tests / 47 suites**). `timeout 6 node src/server.js` → boots and listens on 8080. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 018 done; `plan/BACKLOG.md` records the COMMODITIES/refine-port follow-ups.
+- **Next:** Continue Phase 2 — `plan/specs/015` (binary wire protocol), `014` (interest management / per-client framing), `019` (horizontal scaling epic).
+
 ## 2026-05-30T00:25 · iter-0048 · GREEN · spec-016-faction-runtime-wiring
 
 - **Baseline:** `2cd4f79` on `main`; 648 tests / 46 suites + 17 client green. `FactionRegistry` was a complete, tested model but **not consulted** by the live game — no NPC spawn, price, or hostility read it. Executing `plan/specs/016` (Phase 2, GOAL P3).

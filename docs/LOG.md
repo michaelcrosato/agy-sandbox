@@ -39,6 +39,15 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
  
+## 2026-05-30T23:45 · iter-0102 · GREEN · cycle-21-spec-091-invariant-verifier-healing
+- **Baseline:** `652c124` on `feat/procedural-missions`; 943 Jest green.
+- **Move:** Implement Authoritative Game Invariant Verifier & Heartbeat Self-Healing Loop (SPEC-091).
+- **Changed:**
+  - Coded `src/engine/InvariantVerifier.js` defining pure, deterministic audits for credits (finite, non-negative), cargo capacities (pruning excess commodity weight), physics boundaries (resetting infinite/NaN coords and velocities to 0), and fittings slots (un-equipping overflowing weapons/shields/utilities).
+  - Wired `InvariantVerifier` into the slow-heartbeat galaxy ticker `src/server/galaxyTicker.js` to periodically sweep all active rooms and log corrective actions via the JSON logger.
+  - Coded Jest unit suite `src/engine/InvariantVerifier.test.js` validating all invariant boundaries, healing actions, and stat corrections.
+- **Decisions:** Used deterministic sort keys during cargo pruning to keep self-healing perfectly repeatable. Integrated with `Outfitting.js` to automatically reduce ship physical stats upon fittings un-equipping.
+- **Validation:** `npm run agent:check` → 947 Jest tests + 57 Vitest client tests green with 0 ESLint warnings on the new code.
 ## 2026-05-30T23:30 · iter-0101 · GREEN · cycle-21-spec-093-workspace-sanitize-latency-monitor
 - **Baseline:** `0cc5d78` on `feat/procedural-missions`; 936 Jest green.
 - **Move:** Implement State Leakage Defender (SPEC-093) and Event-Loop Latency Monitoring (SPEC-090).

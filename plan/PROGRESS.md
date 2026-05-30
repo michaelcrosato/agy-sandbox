@@ -39,10 +39,10 @@ _**v20 re-audit baseline (2026-05-30, new sandbox prime directive): 933 Jest tes
 
 ### Phase 0 — Quick Wins & Safety
 - [x] `089` zero-trust WebSocket input schema validation (construct a performant zero-dependency schema validation utility for all inbound socket payloads to prevent prototype pollution and overflow injections) — **done** (files: `src/net/SchemaValidator.js`, `src/net/SchemaValidator.test.js`, `src/server.js`, `src/server/schemaValidation.integration.test.js`; implemented pure, zero-dependency validation schemas and stripped unknown keys to prevent prototype pollution across all inbound socket payloads, fully verified by unit and socket-level integration tests; 933 Jest tests green)
-- [ ] `090` event-loop latency monitoring & backpressure load-shedding (monitor process tick lag dynamically and implement automatic broadcast shedding of optional frames under critical loop load)
+- [x] `090` event-loop latency monitoring & backpressure load-shedding (monitor process tick lag dynamically and implement automatic broadcast shedding of optional frames under critical loop load) — **done** (files: `src/net/LatencyMonitor.js`, `src/net/LatencyMonitor.test.js`, `src/server/latencyMonitoring.integration.test.js`, `src/server.js`; designed a high-resolution rolling average latency monitor, exposed metrics on /metrics, and implemented dynamic frame-shedding for connections during critical loop loads; 937 Jest tests green)
 
 ### Phase 1 — Core Upgrades & Feature Delivery
-- [ ] `091` game invariant verifier & heartbeat self-healing (periodically audit credits, cargo capacities, physics coordinates, and outfitting slots on server heartbeat, silently repairing anomalous states)
+- [x] `091` game invariant verifier & heartbeat self-healing (periodically audit credits, cargo capacities, physics coordinates, and outfitting slots on server heartbeat, silently repairing anomalous states) — **done** (files: `src/engine/InvariantVerifier.js`, `src/engine/InvariantVerifier.test.js`, `src/server/galaxyTicker.js`; built pure, deterministic audit and repair module for credits, cargo capacities, position/velocity coordinates, and fittings slot overflow, wired directly to slow-heartbeat ticks; 947 Jest tests green)
 
 ## v19 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

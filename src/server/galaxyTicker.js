@@ -1,6 +1,18 @@
 import { Vector2D } from "../physics/Vector2D.js";
 import { Ship } from "../engine/Ship.js";
 import { AIController } from "../engine/ai/AIController.js";
+import { InvariantVerifier } from "../engine/InvariantVerifier.js";
+import { createLogger } from "../net/logger.js";
+
+const envLogLevel = process.env.LOG_LEVEL;
+const logLevel =
+  envLogLevel === "error" ||
+  envLogLevel === "debug" ||
+  envLogLevel === "info" ||
+  envLogLevel === "warn"
+    ? envLogLevel
+    : "info";
+const logger = createLogger({ level: logLevel });
 
 /**
  * Executes the economy tick (shortage/surplus events) for a room.
@@ -310,6 +322,9 @@ export function runEconomyNormalizationInterval(instances) {
  */
 export function runGalaxyHeartbeatInterval(instances) {
   for (const room of instances.values()) {
+    // Audit-Driven Invariant Verification and Self-Healing (SPEC-091)
+    InvariantVerifier.verify(room, logger);
+
     const changedNames = room.galaxyHeartbeat.pulse();
     room.decayReputations();
     for (const name of changedNames) {

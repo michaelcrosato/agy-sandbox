@@ -17,8 +17,20 @@ _v10 re-audit baseline (2026-05-30, ENTIRE v9 blueprint shipped): 871 Jest tests
 _v11 re-audit baseline (2026-05-30, ENTIRE v10 blueprint shipped): 871 Jest tests / 69 suites + 24 client green; 0 `npm audit` vulnerabilities; naval rank boards + physical trade caravans + multi-worker Redis cluster sync all DONE._
 _**v12 re-audit baseline (2026-05-30, ENTIRE v11 blueprint shipped): 882 Jest tests / 71 suites + 24 client green; 0 `npm audit` vulnerabilities; dynamic cosmic storms + Allied ambassador escorts + elite faction hunters all DONE.**_
 _**v13 re-audit baseline (2026-05-30, ENTIRE v12 blueprint shipped): 886 Jest tests / 71 suites + 24 client green; 0 `npm audit` vulnerabilities; procedural mission completions + UtilityAI global rollout + centralized commodities all DONE.**_
+_**v14 re-audit baseline (2026-05-30, ENTIRE v13 blueprint shipped): 897 Jest tests / 72 suites + 24 client green; 0 `npm audit` vulnerabilities; canvas visual regression + MMR progressive queues + sharded storage partitions all DONE.**_
 
-## v13 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+## v14 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Quick Wins & Safety
+- [~] `071` Client-Side Input Prediction & Server Reconciliation Harness (engineer a pure deterministic reconciler simulating physics vectors, input sequences, and authoritative state snapping under packet lag)
+
+### Phase 1 — Core Upgrades & Feature Delivery
+- [ ] `072` Snapshot Delta Compression Network Pipeline (implement client-specific acknowledged frame baseline tracking and field-level dynamic dirty checks to compress broadcast payloads)
+
+### Phase 2 — System Architecture
+- [ ] `073` Observability Teleboard Sparkline Chart Extensions (expand visual telemetry dashboard cards with smooth, self-rendering canvas sparkline line graphs visualizing real-time history logs)
+
+## v13 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
 - [x] `068` Playwright Canvas Visual Smoke & Component Interactions (expand Vitest Browser Mode visual infrastructure, implement fully-populated viewport mocks, and verify visual regression stability) — **done** (files: `src/client/__tests/CanvasRenderer.browser.test.js`, `src/client/__tests__/__screenshots__/CanvasRenderer.browser.test.js/space-scene-composite-rich-chromium-win32.png`; successfully expanded the Vitest Browser Mode visual regression suite, implemented a fully-populated viewport mock with starfields, engine exhaust flares, target indicators, projectiles, cosmic storm bounds, cargo pods with active tethers, and stargates, and froze the system clock using a `Date.now()` mock to achieve 100% stable, identical screenshot comparisons across runs)

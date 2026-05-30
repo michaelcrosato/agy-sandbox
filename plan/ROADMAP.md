@@ -114,18 +114,18 @@ flowchart TD
 
 ---
 
-## EXECUTION WAVES (v13)
+## EXECUTION WAVES (v14)
 
-Completed waves (`001–067`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
+Completed waves (`001–070`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
 
-### Phase 0 — Quick Wins & Safety — `068`
-`068` Playwright Canvas Visual Smoke & Component Interactions (expand Vitest Browser Mode visual infrastructure, implement fully-populated viewport mocks, and verify visual regression stability).
+### Phase 0 — Quick Wins & Safety — `071`
+`071` Client-Side Input Prediction & Server Reconciliation Harness (engineer a pure deterministic reconciler simulating physics vectors, input sequences, and authoritative state snapping under packet lag).
 
-### Phase 1 — Core Upgrades & Feature Delivery — `069`
-`069` Matchmaking Room Queues, Ratings & Priority Filters (upgrade matchmaking loop to support Combat Rating MMR matching, dynamic search tolerance expansion over elapsed wait times, and group matchmaking).
+### Phase 1 — Core Upgrades & Feature Delivery — `072`
+`072` Snapshot Delta Compression Network Pipeline (implement client-specific acknowledged frame baseline tracking and field-level dynamic dirty checks to compress broadcast payloads).
 
-### Phase 2 — System Architecture — `070`
-`070` Sharded Database Storage Backend Partitioning (introduce ShardedStore partitioning keys across multiple storage partition layers, isolating states and ensuring infinite horizontal scale).
+### Phase 2 — System Architecture — `073`
+`073` Observability Teleboard Sparkline Chart Extensions (expand visual telemetry dashboard cards with smooth, self-rendering canvas sparkline line graphs visualizing real-time history logs).
 
 ---
 
@@ -135,11 +135,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 068 | Playwright Canvas Visual Smoke & Component Interactions | 0 | 5 | 5 | 5 | 5 | 20 |
-| 069 | Matchmaking Room Queues, Ratings & Priority Filters | 1 | 5 | 5 | 5 | 5 | 20 |
-| 070 | Sharded Database Storage Backend Partitioning | 2 | 5 | 5 | 5 | 5 | 20 |
+| 071 | Client-Side Input Prediction & Server Reconciliation | 0 | 5 | 5 | 5 | 5 | 20 |
+| 072 | Snapshot Delta Compression Network Pipeline | 1 | 5 | 5 | 5 | 5 | 20 |
+| 073 | Observability Teleboard Sparkline Chart Extensions | 2 | 5 | 5 | 5 | 5 | 20 |
 
-**Recommended start:** `068` (Σ20 — visual canvas automation checks), then proceed to `069` (Σ20) for dynamic rating-based matchmaking, and finally `070` (Σ20) for partition-sharded database storage scaling.
+**Recommended start:** `071` (Σ20 — client input prediction), then proceed to `072` (Σ20) for snapshot delta-compression broadcasts, and finally `073` (Σ20) for real-time observability visual sparklines.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

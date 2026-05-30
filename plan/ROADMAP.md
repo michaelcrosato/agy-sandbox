@@ -114,18 +114,18 @@ flowchart TD
 
 ---
 
-## EXECUTION WAVES (v6)
+## EXECUTION WAVES (v7)
 
-Completed waves (`001–047`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
+Completed waves (`001–050`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
 
-### Phase 0 — Quick Wins & Safety — `050`
-`050` Wingman Tactical Formation & Targeting Controls (fleet depth).
+### Phase 0 — Quick Wins & Safety — `051`
+`051` Collision Kinetic Damage & Shield Absorption (dynamic collision physics and damage models).
 
-### Phase 1 — Core Upgrades & Debt Paydown — `049`
-`049` Interest Management Grid Optimizations (performance culling scalability).
+### Phase 1 — Core Upgrades & Debt Paydown — `052`
+`052` Stargate Warp Tolls & Port Transaction Taxes (reputation standings tied to space travel and economy tariffs).
 
-### Phase 2 — Scale-Out & Premium Features — `048`
-`048` Contraband Space Patrol Scans & Hails (immersive smuggling interactions).
+### Phase 2 — Scale-Out & Premium Features — `053`
+`053` Faction Bounty Locator Radar (real-time in-sector directional and range locator telemetry).
 
 ---
 
@@ -135,11 +135,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 050 | Wingman Tactical Formation & Targeting Controls | 0 | 4 | 5 | 5 | 5 | 19 |
-| 049 | Interest Management Grid Optimizations | 1 | 5 | 4 | 4 | 5 | 18 |
-| 048 | Contraband Space Patrol Scans & Hails | 2 | 5 | 4 | 3 | 5 | 17 |
+| 051 | Collision Kinetic Damage & Shield Absorption | 0 | 4 | 5 | 4 | 5 | 18 |
+| 052 | Stargate Warp Tolls & Port Transaction Taxes | 1 | 5 | 4 | 4 | 5 | 18 |
+| 053 | Faction Bounty Locator Radar | 2 | 5 | 4 | 3 | 5 | 17 |
 
-**Recommended start:** `050` (Σ19 — fleet tactical depth, high feasibility, extremely safe) to modularize wingman controls and deepen cooperative targeting AI, then proceed to `049` (Σ18) to implement the grid-based $O(N + M)$ spatial culling optimizations. Complete the wave with `048` (Σ17) to wire up real-time remote security culls and hails for smugglers.
+**Recommended start:** `051` (Σ18 — dynamic collision physics, high impact, safe and self-contained) to compute relative momentum impact damage under a minimum speed limit, then proceed to `052` (Σ18) to connect reputation standings to warp gate and spaceport tariffs. Complete the wave with `053` (Σ17) to design real-time tracking radar for bounty hunter professions.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

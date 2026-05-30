@@ -32,7 +32,7 @@ _**v18 re-audit baseline (2026-05-30, ENTIRE v17 blueprint shipped): 912 Jest te
 - [ ] `084` emergency distress beacons & emergent rescue caravans (catalog Emergency Distress Beacon outfit, program distress beacon server listener, spawn allied refuel tankers or hostile rim pirate ambushers based on local standing)
 
 ### Phase 2 — System Architecture
-- [ ] `085` underworld smuggling contracts & standing propagation (procedurally generate smuggling contracts at Rogue's Hollow, attach negative standing consequences to major law factions, and verify propagation on completion)
+- [x] `085` underworld smuggling contracts & standing propagation (procedurally generate smuggling contracts at Rogue's Hollow, attach negative standing consequences to major law factions, and verify propagation on completion) — **done** (files: `src/engine/MissionManager.js`, `src/server.js`, `src/engine/faction.integration.test.js`)
 
 ## v17 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

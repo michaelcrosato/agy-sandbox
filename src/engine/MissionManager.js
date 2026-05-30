@@ -59,7 +59,12 @@ export class MissionManager {
     if (destinationPlanets.length === 0) return;
 
     for (let i = 0; i < count; i++) {
-      const typeRand = Math.random();
+      let typeRand = Math.random();
+      const isRoguesHollow = planetName === "Rogue's Hollow";
+      if (isRoguesHollow && i < 2) {
+        // Force high probability of smuggling at Rogue's Hollow (2 out of 3 generated contracts)
+        typeRand = 0.4;
+      }
       const destPlanet =
         destinationPlanets[
           Math.floor(Math.random() * destinationPlanets.length)
@@ -91,18 +96,39 @@ export class MissionManager {
           isCompleted: false,
         });
       } else if (typeRand < 0.55) {
-        // 2. High-Risk Smuggling Mission
+        // 2. High-Risk Smuggling Mission / Underworld Contraband Smuggling
         const amount = 3 + Math.floor(Math.random() * 4); // 3 to 6 tons of contraband
         const distance = destPlanet.position.distance(
           allPlanets.find((p) => p.name === planetName).position,
         );
-        const reward = Math.round((800 + distance * 0.5 + amount * 120) * 3);
+
+        let reward, title, description, consequences;
+        const isUnderworld = isRoguesHollow;
+
+        if (isUnderworld) {
+          // Massive payout! 4.5x multiplier on a higher base rate
+          reward = Math.round((1500 + distance * 0.8 + amount * 200) * 4.5);
+          title = `Underworld Contraband Smuggling to ${destPlanet.name}`;
+          description = `Underworld Smuggling: Transport ${amount} tons of highly valuable illicit contraband to ${destPlanet.name}. Earn Pirate respect (+15 standings) but anger the Federation (-12 standings) and Frontier League (-8 standings)!`;
+          consequences = {
+            factionDeltas: [
+              { playerId, faction: "Pirates", delta: 15.0 },
+              { playerId, faction: "Federation", delta: -12.0 },
+              { playerId, faction: "Frontier League", delta: -8.0 },
+            ],
+          };
+        } else {
+          reward = Math.round((800 + distance * 0.5 + amount * 120) * 3);
+          title = `Smuggle Contraband to ${destPlanet.name}`;
+          description = `High-risk, high-payout cargo smuggling. Transport ${amount} tons of black-market contraband to ${destPlanet.name}. Avoid security scans on arrival!`;
+          consequences = null;
+        }
 
         missions.push({
-          id: `smuggle-${planetName}-${Date.now()}-${i}`,
+          id: `${isUnderworld ? "underworld-" : ""}smuggle-${planetName}-${Date.now()}-${i}`,
           type: "smuggle",
-          title: `Smuggle Contraband to ${destPlanet.name}`,
-          description: `High-risk, high-payout cargo smuggling. Transport ${amount} tons of black-market contraband to ${destPlanet.name}. Avoid security scans on arrival!`,
+          title: title,
+          description: description,
           reward: reward,
           origin: planetName,
           destination: destPlanet.name,
@@ -110,6 +136,8 @@ export class MissionManager {
           cargoAmount: amount,
           isAccepted: false,
           isCompleted: false,
+          generated: isUnderworld ? true : undefined,
+          consequences: consequences,
         });
       } else if (typeRand < 0.8) {
         // 3. Combat Bounty Hunt
@@ -365,6 +393,16 @@ export class MissionManager {
         }
 
         if (mission.generated) {
+          if (
+            mission.consequences &&
+            Array.isArray(mission.consequences.factionDeltas)
+          ) {
+            for (const fd of mission.consequences.factionDeltas) {
+              if (fd && !fd.playerId && player && player.id) {
+                fd.playerId = player.id;
+              }
+            }
+          }
           const consequences = applyMissionConsequences(mission, world);
           mission.factionChanges = consequences.factionChanges;
           mission.marketChanges = consequences.marketChanges;
@@ -381,6 +419,16 @@ export class MissionManager {
         player.credits += mission.reward;
 
         if (mission.generated) {
+          if (
+            mission.consequences &&
+            Array.isArray(mission.consequences.factionDeltas)
+          ) {
+            for (const fd of mission.consequences.factionDeltas) {
+              if (fd && !fd.playerId && player && player.id) {
+                fd.playerId = player.id;
+              }
+            }
+          }
           const consequences = applyMissionConsequences(mission, world);
           mission.factionChanges = consequences.factionChanges;
           mission.marketChanges = consequences.marketChanges;
@@ -600,6 +648,16 @@ export class MissionManager {
       player.credits += mission.reward || 0;
     }
 
+    if (
+      mission.consequences &&
+      Array.isArray(mission.consequences.factionDeltas)
+    ) {
+      for (const fd of mission.consequences.factionDeltas) {
+        if (fd && !fd.playerId && player && player.id) {
+          fd.playerId = player.id;
+        }
+      }
+    }
     const consequences = applyMissionConsequences(mission, world);
 
     mission.isCompleted = true;

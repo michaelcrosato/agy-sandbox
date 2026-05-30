@@ -1495,10 +1495,14 @@ wss.on("connection", (ws) => {
               }
               if (m.factionChanges && m.factionChanges.length > 0) {
                 for (const change of m.factionChanges) {
+                  const formattedDelta =
+                    change.delta >= 0
+                      ? `+${change.delta.toFixed(1)}`
+                      : change.delta.toFixed(1);
                   clientObj.send({
                     type: "notification",
-                    message: `Standing with ${change.faction}: +${change.delta.toFixed(1)} merits!`,
-                    style: "success",
+                    message: `Standing with ${change.faction}: ${formattedDelta} merits!`,
+                    style: change.delta >= 0 ? "success" : "error",
                   });
                 }
               }

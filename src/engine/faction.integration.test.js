@@ -1513,5 +1513,93 @@ describe("mission + trade faction standings (spec 032)", () => {
         room.destroy();
       }
     });
+
+    test("SPEC-085: Underworld Smuggling Contracts generation and completion standing propagation", () => {
+      const room = new GameInstance("room-test-smuggling", "Smuggling Sector");
+      try {
+        const playerId = "smuggler-1";
+        const mm = new MissionManager();
+
+        // Generate missions at Rogue's Hollow
+        mm.generateMissionsForPlanet(
+          "Rogue's Hollow",
+          room.planets,
+          room.factionRegistry,
+          playerId,
+        );
+        const available = mm.availableMissions["Rogue's Hollow"];
+
+        // Verify we generated underworld smuggling missions
+        const smuggles = available.filter(
+          (m) => m.type === "smuggle" && m.id.startsWith("underworld-smuggle"),
+        );
+        expect(smuggles.length).toBeGreaterThanOrEqual(2);
+
+        const mission = smuggles[0];
+        expect(mission.title).toContain("Underworld Contraband Smuggling");
+        expect(mission.consequences).toBeDefined();
+        expect(mission.consequences.factionDeltas).toEqual(
+          expect.arrayContaining([
+            { playerId, faction: "Pirates", delta: 15.0 },
+            { playerId, faction: "Federation", delta: -12.0 },
+            { playerId, faction: "Frontier League", delta: -8.0 },
+          ]),
+        );
+
+        // Accept the mission
+        const player = new Ship({ id: playerId, type: "ship" });
+        player.credits = 1000;
+
+        const acceptRes = mm.acceptMission(
+          "Rogue's Hollow",
+          mission.id,
+          player,
+        );
+        expect(acceptRes.success).toBe(true);
+        expect(mm.activeMissions.length).toBe(1);
+        expect(player.getCargoWeight()).toBe(mission.cargoAmount);
+
+        // Complete the mission by landing at the destination planet
+        const completed = mm.checkArrivalCompletions(
+          mission.destination,
+          player,
+          room,
+        );
+        expect(completed.length).toBe(1);
+        expect(completed[0].id).toBe(mission.id);
+
+        // Check rewards and cargo removal
+        expect(player.credits).toBe(1000 + mission.reward);
+        expect(player.getCargoWeight()).toBe(0);
+
+        // Check standings changes in room's faction registry
+        const piratesStanding = room.factionRegistry.getStanding(
+          playerId,
+          "Pirates",
+        );
+        const fedStanding = room.factionRegistry.getStanding(
+          playerId,
+          "Federation",
+        );
+        const leagueStanding = room.factionRegistry.getStanding(
+          playerId,
+          "Frontier League",
+        );
+
+        // Expected standing changes factoring in base changes + pairwise propagation:
+        // Adjusting Pirates by +15: Federation -7.5 (enemy), Frontier League -7.5 (enemy), Independents +0.0
+        // Adjusting Federation by -12: Pirates +6.0 (enemy), Frontier League +0.0, Independents -6.0 (ally)
+        // Adjusting Frontier League by -8: Pirates +4.0 (enemy), Federation +0.0, Independents +0.0
+        // Total change expected:
+        // Pirates: +15 (base) + 6.0 (from Fed enemy loss) + 4.0 (from League enemy loss) = +25.0
+        // Federation: -12 (base) - 7.5 (from Pirate ally/enemy propagation) = -19.5
+        // Frontier League: -8 (base) - 7.5 = -15.5
+        expect(piratesStanding).toBe(25);
+        expect(fedStanding).toBe(-19.5);
+        expect(leagueStanding).toBe(-15.5);
+      } finally {
+        room.destroy();
+      }
+    });
   });
 });

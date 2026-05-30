@@ -58,6 +58,9 @@ export function applyOutfitStats(ship, outfit) {
       ship.miningYieldMultiplier =
         (ship.miningYieldMultiplier || 1) + outfit.value;
       break;
+    case "tractor":
+      // No direct ship stats to mutate, but recognized as a valid outfit type so mass is added
+      break;
     default:
       applied = false;
   }

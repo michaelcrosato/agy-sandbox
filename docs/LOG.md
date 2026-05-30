@@ -38,8 +38,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - Entries **SHOULD** target 150–350 words, and **MUST NOT** exceed 500 words unless labeled an `INCIDENT` or `ROLLBACK`.
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 
----
 == LOG-ANCHOR ==
+
+## 2026-05-30T13:00 · iter-0062 · GREEN · spec-039-tractor-outfit-mass-correction
+
+- **Baseline:** `c3368b9` on `main`; 775 Jest / 61 suites green. Executing `plan/specs/039` — Tractor outfit mass correction.
+- **Move:** Fix tractor beam outfit mass application bug by supporting the `tractor` type within the pure `applyOutfitStats` catalog dispatcher.
+- **Changed:**
+  - Added `case "tractor"` to `applyOutfitStats` switch in `src/engine/Outfitting.js` to ensure Tractor Beam Matrix mass is correctly added to ship.
+  - Added unit test in `src/engine/Outfitting.test.js` validating the mass application.
+  - Initialized v4 Planning Directory specs (`039`-`044`) and updated execution charts in `plan/PROGRESS.md` and `plan/ROADMAP.md`.
+- **Decisions:** Kept tractor beam dynamic behavior in room loops unchanged, only correcting the outfitting stats hook to enable proper handling mass penalties.
+- **Validation:** `npm run agent:check` -> green (**776 Jest tests / 61 suites**). All lints, TypeScript compile checks, and Vitest client tests passed cleanly.
+- **Notes:** Substrate files untouched. Ready for the next high-Σ task.
+- **Next:** Spec `044` Interactive Observability Dashboard (`/dashboard.html`).
 
 ## 2026-05-30T12:40 · iter-0061 · GREEN · spec-019f-graceful-drain-zero-downtime
 

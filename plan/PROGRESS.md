@@ -6,12 +6,24 @@ in [`specs/`](specs/).
 
 _v1 baseline (2026-05-28): 569 tests / 33 suites; 2 high `npm audit` advisories (axios via localtunnel)._
 _v2 re-audit baseline (2026-05-29, after Phase 0+1): 614 tests / 42 suites; 0 CVEs._
-_**v3 re-audit baseline (2026-05-30, ENTIRE v2 blueprint shipped): 696 Jest tests / 51 suites + 17 client
-green; 0 `npm audit` vulnerabilities; `npm outdated` empty; typecheck gate + CI LTS matrix live; AoI +
-binary protocol + factions + goal-driven NPCs + ore chain + scaling first slice all DONE.** Remaining =
-v3 Phase 0 (026–029) + Phase 1 (030–035) + Phase 2 scale-out (019b–f, 036–038)._
+_v3 re-audit baseline (2026-05-30, ENTIRE v2 blueprint shipped): 696 Jest tests / 51 suites + 17 client green; 0 `npm audit` vulnerabilities; `npm outdated` empty; typecheck gate + CI LTS matrix live._
+_**v4 re-audit baseline (2026-05-30, ENTIRE v3 blueprint shipped): 775 Jest tests / 61 suites + 18 client green; 0 `npm audit` vulnerabilities; matchmaking queue + compression + schema codec all DONE.** Remaining = v4 Phase 0 (039) + Phase 1 (040–042) + Phase 2 (043–044)._
 
-## v3 — Next cycle (NEW · Todo) — see [`ROADMAP.md`](ROADMAP.md)
+## v4 — Next cycle (NEW · Todo) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Quick Wins & Safety
+- [x] `039` Tractor outfit mass correction (bug fix) — **done** (files: `src/engine/Outfitting.js`, `src/engine/Outfitting.test.js`; added `case "tractor"` to `applyOutfitStats` switch so that the Tractor Beam Matrix 200 kg mass is correctly applied on purchase and salvage; added unit test verifying ship mass increase; 776 tests green).
+
+### Phase 1 — Core Upgrades & Debt Paydown
+- [ ] `040` UtilityAI advisor rollout + rich action mapping
+- [ ] `041` Player-side raw ore refining at ports
+- [ ] `042` Server monolith extraction (heartbeats, GC, lobby sync)
+
+### Phase 2 — Scale-Out & Premium Features
+- [ ] `043` Matchmaking queue disconnect-rejoin lifecycle
+- [ ] `044` Interactive Observability Dashboard (`/dashboard.html`)
+
+## v3 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
 - [x] `026` CI Node 22/24/26 matrix + engines floor `>=22` — **done** (files: `.github/workflows/ci.yml` matrix `['22','24','26']` (dropped EOL Node 20, added Current 26) + `client-tests` job → Node 24; `package.json` `engines.node` `>=20`→`>=22`; `.nvmrc` `22`→`24` (Active LTS). Local gate green on Node 24.15; CI verifies 22/24/26 on push.)

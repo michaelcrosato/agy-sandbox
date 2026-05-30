@@ -114,23 +114,18 @@ flowchart TD
 
 ---
 
-## EXECUTION WAVES (v3)
+## EXECUTION WAVES (v4)
 
-Completed waves (`001–025`, `014–019`) are recorded DONE in `PROGRESS.md`. The live work:
+Completed waves (`001–029`, `030–035`, `019b–f`, `036–038`) are recorded DONE in `PROGRESS.md`. The live work:
 
-### Phase 0 — Quick Wins & Safety (NEW) — `026`–`029`
-`026` CI Node 22/24/26 + floor bump · `027` document/pin ws CVE-2026-45736 floor · `028` fix hit-flash
-armor-branch bug · `029` reputation `decayAll` heartbeat hook.
+### Phase 0 — Quick Wins & Safety — `039`
+`039` Tractor outfit mass correction (bug fix).
 
-### Phase 1 — Core Upgrades & Debt Paydown (NEW) — `030`–`035`
-`030` engine typecheck ratchet · `031` `COMMODITIES` centralization · `032` mission/trade faction standings
-· `033` UtilityAI advisor wider rollout + goal→action mapping · `034` continue `server.js` extraction ·
-`035` client visual layer (Vitest Browser Mode + Playwright).
+### Phase 1 — Core Upgrades & Debt Paydown — `040`–`042`
+`040` UtilityAI advisor rollout + rich action mapping · `041` Player-side raw ore refining at ports · `042` Server monolith extraction (heartbeats, GC, lobby sync).
 
-### Phase 2 — Scale-Out & Competitive Features — `019b`–`019f`, `036`–`038`
-`019b` RedisStore · `019c` worker process model · `019d` sticky routing/LB · `019e` cross-process presence
-(Redis pub/sub) · `019f` graceful drain · `036` matchmaking with room filters/queue · `037` permessage-
-deflate eval (benchmark) · `038` schema-based state encoding eval.
+### Phase 2 — Scale-Out & Premium Features — `043`–`044`
+`043` Matchmaking queue disconnect-rejoin lifecycle · `044` Interactive Observability Dashboard (`/dashboard.html`).
 
 ---
 
@@ -140,37 +135,18 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 028 | Fix hit-flash armor-branch dead code (bug) | 0 | 3 | 5 | 5 | 5 | 18 |
-| 026 | CI Node 22/24/26 + engines floor | 0 | 4 | 5 | 5 | 5 | 19 |
-| 027 | Pin/document ws CVE-2026-45736 floor | 0 | 3 | 5 | 5 | 5 | 18 |
-| 029 | Reputation `decayAll` heartbeat hook | 0 | 3 | 5 | 4 | 5 | 17 |
-| 031 | `COMMODITIES` centralization | 1 | 3 | 4 | 4 | 5 | 16 |
-| 030 | Engine typecheck ratchet | 1 | 4 | 3 | 4 | 4 | 15 |
-| 033 | UtilityAI advisor rollout + mapping | 1 | 4 | 3 | 4 | 4 | 15 |
-| 032 | Mission/trade faction standings | 1 | 4 | 3 | 3 | 4 | 14 |
-| 034 | Continue `server.js` extraction | 1 | 4 | 2 | 3 | 4 | 13 |
-| 035 | Client visual layer (Vitest Browser Mode) | 1 | 5 | 2 | 3 | 4 | 14 |
-| 019b | RedisStore behind `Store` | 2 | 4 | 3 | 4 | 4 | 15 |
-| 036 | Matchmaking with room filters/queue | 2 | 4 | 3 | 3 | 4 | 14 |
-| 037 | permessage-deflate eval (benchmark) | 2 | 3 | 3 | 3 | 4 | 13 |
-| 038 | Schema-based state encoding eval | 2 | 3 | 2 | 3 | 3 | 11 |
-| 019c | Worker process model | 2 | 5 | 2 | 2 | 3 | 12 |
-| 019d | Sticky routing / LB front door | 2 | 4 | 2 | 3 | 3 | 12 |
-| 019e | Cross-process presence (Redis pub/sub) | 2 | 4 | 2 | 3 | 3 | 12 |
-| 019f | Graceful drain / zero-downtime | 2 | 4 | 2 | 3 | 3 | 12 |
+| 044 | Interactive Observability Dashboard | 2 | 5 | 5 | 5 | 5 | 20 |
+| 039 | Tractor outfit mass correction | 0 | 3 | 5 | 5 | 5 | 18 |
+| 040 | UtilityAI advisor rich action mapping | 1 | 4 | 4 | 4 | 5 | 17 |
+| 041 | Player-side raw ore refining at ports | 1 | 4 | 4 | 4 | 5 | 17 |
+| 042 | Server monolith extraction (ticker/GC/lobby) | 1 | 4 | 4 | 4 | 5 | 17 |
+| 043 | Matchmaking queue disconnect-rejoin lifecycle| 2 | 4 | 4 | 4 | 4 | 16 |
 
-**Recommended start:** `026`/`028`/`027` (Σ19/18/18 — safety + a real bug, all small), then `029`, then the
-debt-paydown `031`/`030`/`033`, then product `032`. `035` (client visual) is high-impact but infra-heavy
-(real browser) — keep it a separate CI job. Scale-out (`019b–f`) is the North-Star epic: land `019b`
-(RedisStore) first, then the process model, **decompose, don't build-as-one**.
+**Recommended start:** `039` (Σ18 — safety + real bug, very small) to resolve tractor mass discrepancy first, then proceed to high-Σ `044` Observability Dashboard to build a premium, wowing glassmorphic UI matching 2026 aesthetics. Follow up with debt paydown `040`/`042` and the core feature `041`.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.
-- Client **canvas/visual** is still not headlessly verifiable without a real browser — `035` adds it; until
-  then verify UI by booting `node src/server.js` (+ the existing `ws`-client smoke pattern).
-- A parallel/rogue writer corrupted `docs/LOG.md` once (recovered, iter-0037) — **serialize ledger edits**
-  and always anchor on the standalone `== LOG-ANCHOR ==` line, never the first substring match.
-- Scale-out specs touch the hot broadcast path — gate each behind a flag (`INTEREST_MANAGEMENT`,
-  `BINARY_PROTOCOL` precedents) so single-process stays the default and is never regressed.
-- Every spec lands behind a green `npm run agent:check` (+ `npm run test:client` where client-touching);
-  nothing pushed without authorization.
+- Client **canvas/visual** is still not headlessly verifiable without a real browser — `035` adds it; until then verify UI by booting `node src/server.js`.
+- A parallel/rogue writer corrupted `docs/LOG.md` once — **serialize ledger edits** and always anchor on the standalone `== LOG-ANCHOR ==` line, never the first substring match.
+- Scale-out specs touch the hot broadcast path — gate each behind a flag so single-process stays the default and is never regressed.
+- Every spec lands behind a green `npm run agent:check` (+ `npm run test:client` where client-touching); nothing pushed without authorization.

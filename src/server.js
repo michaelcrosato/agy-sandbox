@@ -47,6 +47,14 @@ import { tradeOne, applyHullPurchase, factionPrice } from "./engine/Trading.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import { shouldGcRoom, sanitizeNickname } from "./server/roomLifecycle.js";
 import {
+  runEconomyShortageInterval,
+  runEnvironmentalSiegeInterval,
+  runEconomyNormalizationInterval,
+  runGalaxyHeartbeatInterval,
+} from "./server/galaxyTicker.js";
+import { runGcSweep } from "./server/roomGc.js";
+import { broadcastLobbySync, sendLobbyList } from "./server/lobbySync.js";
+import {
   assignShard,
   RoomRegistry,
   routeConnection,
@@ -428,44 +436,23 @@ const physicsInterval = setInterval(() => {
 
 // 2. Room Economy Shortage/Surplus events loops (45 seconds)
 const economyShortageInterval = setInterval(() => {
-  for (const room of instances.values()) {
-    runEconomyTickForRoom(room);
-  }
+  runEconomyShortageInterval(instances);
 }, 45000);
 
 // 3. Room Environmental Siege/EMP events loops (90 seconds)
 const environmentalSiegeInterval = setInterval(() => {
-  for (const room of instances.values()) {
-    runSectorEventTickForRoom(room);
-  }
+  runEnvironmentalSiegeInterval(instances);
 }, 90000);
 
 // 4. Room Economy Normalization drift loops (6 seconds)
 const economyNormalizationInterval = setInterval(() => {
-  for (const room of instances.values()) {
-    runEconomyNormalizationForRoom(room);
-  }
+  runEconomyNormalizationInterval(instances);
 }, 6000);
 
 // 4b. Galaxy Heartbeat: age the economy and diffuse prices across trade lanes
 // even when nobody is in the sector (8 seconds).
 const galaxyHeartbeatInterval = setInterval(() => {
-  for (const room of instances.values()) {
-    const changedNames = room.galaxyHeartbeat.pulse();
-    // spec 029: heal reputations a little each heartbeat so standings drift back
-    // toward neutral over time when a player leaves a faction alone.
-    room.decayReputations();
-    for (const name of changedNames) {
-      const planet = room.planets.find((p) => p.name === name);
-      if (planet) {
-        room.broadcast({
-          type: "market_sync",
-          planetName: planet.name,
-          market: planet.market,
-        });
-      }
-    }
-  }
+  runGalaxyHeartbeatInterval(instances);
 }, 8000);
 
 // Shared presence/registry keys & helpers (spec 019e)
@@ -502,31 +489,21 @@ async function saveRegistry(registry) {
 
 // 5. Inactive Custom Rooms Garbage Collection (10 seconds)
 const gcInterval = setInterval(() => {
-  const now = Date.now();
-  for (const [id, room] of instances.entries()) {
-    if (shouldGcRoom(room, { now })) {
-      console.log(
-        `🧹 Garbage Collecting inactive sector: [${room.name}] (${id})`,
-      );
-      room.destroy();
-      instances.delete(id);
-      broadcastLobbySync();
-
-      // Release dynamic room presence in the shared registry
-      if (WORKERS > 1) {
-        loadRegistry().then((reg) => {
-          if (reg.release(id, `node-${SHARD_INDEX}`)) {
-            saveRegistry(reg);
-          }
-        });
-      }
-    }
-  }
+  runGcSweep(instances, {
+    now: Date.now(),
+    workersCount: WORKERS,
+    nodeId: `node-${SHARD_INDEX}`,
+    loadRegistry,
+    saveRegistry,
+    onRoomGc: () => {
+      broadcastLobbySync(instances, clients);
+    },
+  });
 }, 10000);
 
 // 6. Periodic Lobby Sync Refresh for clients still on the lobby screen (5 seconds)
 const lobbySyncInterval = setInterval(() => {
-  broadcastLobbySync();
+  broadcastLobbySync(instances, clients);
 }, 5000);
 
 // 7. Periodic Multi-worker Room Registry Heartbeat, Lease Renewal & Reaping Loop (4 seconds)
@@ -559,257 +536,8 @@ if (WORKERS > 1) {
   }, 4000);
 }
 
-// Dynamic Event Managers Helpers
-function runEconomyTickForRoom(room) {
-  if (room.economyManager.activeEconomicEvent) {
-    const prevPlanetName = room.economyManager.activeEconomicEvent.planetName;
-    const prevPlanet = room.planets.find((p) => p.name === prevPlanetName);
-    room.economyManager.clearActiveEvent();
-    if (prevPlanet) {
-      room.broadcast({
-        type: "market_sync",
-        planetName: prevPlanet.name,
-        market: prevPlanet.market,
-      });
-    }
-  }
-
-  const event = room.economyManager.triggerRandomEvent();
-  if (!event) return;
-
-  room.broadcast({
-    type: "market_sync",
-    planetName: event.planetName,
-    market: room.planets.find((p) => p.name === event.planetName).market,
-  });
-
-  const formattedMsg = event.isShortage
-    ? `MARKET ALERT: ${event.planetName} reports severe ${event.commodity.toUpperCase()} shortage! Prices soared to ${event.newPrice} CR!`
-    : `MARKET ALERT: ${event.planetName} reports massive ${event.commodity.toUpperCase()} surplus! Prices dropped to ${event.newPrice} CR!`;
-
-  room.broadcastNotification(
-    formattedMsg,
-    event.isShortage ? "error" : "success",
-  );
-
-  const chatPayload = {
-    type: "chat",
-    channel: "global",
-    sender: "SYSTEM-ECONOMY",
-    text: formattedMsg,
-  };
-  for (const c of room.clients.values()) {
-    c.send(chatPayload);
-  }
-}
-
-function runSectorEventTickForRoom(room) {
-  if (room.activeSectorEvent) {
-    if (room.activeSectorEvent.type === "siege") {
-      for (const shipId of room.activeSectorEvent.spawnedShipIds) {
-        const ent = room.engine.entities.find((e) => e.id === shipId);
-        if (ent) {
-          room.engine.removeEntity(ent);
-        }
-        const aiIdx = room.ais.findIndex((a) => a.ship.id === shipId);
-        if (aiIdx !== -1) {
-          room.ais.splice(aiIdx, 1);
-        }
-      }
-
-      const formattedMsg = `EVENT OVER: The Pirate Siege at ${room.activeSectorEvent.planetName} has been repelled!`;
-      room.broadcastNotification(formattedMsg, "success");
-
-      const chatPayload = {
-        type: "chat",
-        channel: "global",
-        sender: "SYSTEM-ALERTS",
-        text: formattedMsg,
-      };
-      room.broadcast(chatPayload);
-    } else if (room.activeSectorEvent.type === "emp") {
-      const formattedMsg = `EVENT OVER: The Solar EMP Ion Storm at ${room.activeSectorEvent.planetName} has subsided.`;
-      room.broadcastNotification(formattedMsg, "success");
-
-      const chatPayload = {
-        type: "chat",
-        channel: "global",
-        sender: "SYSTEM-ALERTS",
-        text: formattedMsg,
-      };
-      room.broadcast(chatPayload);
-    }
-    room.activeSectorEvent = null;
-  }
-
-  const eventTypes = ["siege", "emp"];
-  const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
-
-  let targetPlanet;
-  if (eventType === "emp") {
-    const nonSolPlanets = room.planets.filter((p) => p.name !== "Sol");
-    targetPlanet =
-      nonSolPlanets[Math.floor(Math.random() * nonSolPlanets.length)];
-  } else {
-    targetPlanet =
-      room.planets[Math.floor(Math.random() * room.planets.length)];
-  }
-
-  if (!targetPlanet) return;
-
-  if (eventType === "siege") {
-    const spawnedShipIds = [];
-    const count = 2;
-
-    for (let i = 0; i < count; i++) {
-      const spawnAngle = Math.random() * Math.PI * 2;
-      const spawnDist = targetPlanet.landingRadius + 180 + Math.random() * 50;
-      const spawnPos = targetPlanet.position.add(
-        new Vector2D(
-          Math.cos(spawnAngle) * spawnDist,
-          Math.sin(spawnAngle) * spawnDist,
-        ),
-      );
-      const shipId =
-        "siege-raider-" + Math.random().toString(36).substring(2, 9);
-
-      const raiderShip = new Ship({
-        id: shipId,
-        name: "Siege Raider",
-        position: spawnPos,
-        velocity: new Vector2D(
-          (Math.random() - 0.5) * 30,
-          (Math.random() - 0.5) * 30,
-        ),
-        heading: Math.random() * Math.PI * 2,
-        maxShield: 500,
-        maxArmor: 350,
-        thrustPower: 18000,
-        turnRate: 2.2,
-        weaponDamage: 30,
-        weaponCooldown: 0.25,
-      });
-      raiderShip.role = "pirate";
-
-      const controller = new AIController(raiderShip, "pirate", {
-        useUtilityAdvisor: true,
-      });
-      room.engine.addEntity(raiderShip);
-      room.ais.push(controller);
-      spawnedShipIds.push(shipId);
-    }
-
-    room.activeSectorEvent = {
-      type: "siege",
-      planetName: targetPlanet.name,
-      spawnedShipIds: spawnedShipIds,
-    };
-
-    const formattedMsg = `RED ALERT: Pirate Siege detected at ${targetPlanet.name}! Heavy raiders are attacking the trade hub!`;
-    room.broadcastNotification(formattedMsg, "error");
-
-    const chatPayload = {
-      type: "chat",
-      channel: "global",
-      sender: "SYSTEM-ALERTS",
-      text: formattedMsg,
-    };
-    room.broadcast(chatPayload);
-  } else if (eventType === "emp") {
-    room.activeSectorEvent = {
-      type: "emp",
-      planetName: targetPlanet.name,
-      spawnedShipIds: [],
-    };
-
-    const formattedMsg = `ENVIRONMENT ALERT: Solar EMP Ion Storm detected at ${targetPlanet.name}! Shield regeneration disabled within 400u!`;
-    room.broadcastNotification(formattedMsg, "error");
-
-    const chatPayload = {
-      type: "chat",
-      channel: "global",
-      sender: "SYSTEM-ALERTS",
-      text: formattedMsg,
-    };
-    room.broadcast(chatPayload);
-  }
-
-  broadcastEventSyncForRoom(room);
-}
-
-function broadcastEventSyncForRoom(room) {
-  const eventPayload = {
-    type: "event_sync",
-    event: room.activeSectorEvent
-      ? {
-          type: room.activeSectorEvent.type,
-          planetName: room.activeSectorEvent.planetName,
-        }
-      : null,
-  };
-  room.broadcast(eventPayload);
-}
-
-function runEconomyNormalizationForRoom(room) {
-  const changedPlanets = room.economyManager.normalizePrices();
-  for (const p of changedPlanets) {
-    room.broadcast({
-      type: "market_sync",
-      planetName: p.name,
-      market: p.market,
-    });
-  }
-}
-
-// Global Matchmaking Multi-Instance Lobby helpers
-function broadcastLobbySync() {
-  const roomsList = [];
-  for (const room of instances.values()) {
-    const meta = room.metadata();
-    roomsList.push({
-      id: meta.id,
-      name: meta.name,
-      playersCount: meta.players,
-      mode: meta.mode,
-      maxPlayers: meta.maxPlayers,
-      tags: meta.tags,
-    });
-  }
-
-  const payload = {
-    type: "lobby_sync",
-    rooms: roomsList,
-  };
-
-  const str = JSON.stringify(payload);
-  for (const client of clients.values()) {
-    if (!client.roomId) {
-      if (client.ws.readyState === client.ws.OPEN) {
-        client.ws.send(str);
-      }
-    }
-  }
-}
-
-function sendLobbyList(clientObj) {
-  const roomsList = [];
-  for (const room of instances.values()) {
-    const meta = room.metadata();
-    roomsList.push({
-      id: meta.id,
-      name: meta.name,
-      playersCount: meta.players,
-      mode: meta.mode,
-      maxPlayers: meta.maxPlayers,
-      tags: meta.tags,
-    });
-  }
-
-  clientObj.send({
-    type: "lobby_sync",
-    rooms: roomsList,
-  });
-}
+// Note: Heartbeat economy ticks, room GC, and lobby synchronization helper functions
+// have been extracted to modular sub-modules under ./server/ for testability (spec 042).
 
 async function joinRoom(clientObj, roomId, nickname) {
   // 1. Clean up from previous room if switching
@@ -1184,7 +912,7 @@ wss.on("connection", (ws) => {
           .loadPlayer(token)
           .then((wrapped) => {
             if (!wrapped || !wrapped.player) {
-              sendLobbyList(clientObj);
+              sendLobbyList(clientObj, instances);
               return;
             }
             // Use the saved id so the engine entity (and future saves) keep
@@ -1212,7 +940,7 @@ wss.on("connection", (ws) => {
           })
           .catch(() => {
             // The manager already logged; just route the client to the lobby.
-            sendLobbyList(clientObj);
+            sendLobbyList(clientObj, instances);
           });
         return;
       }
@@ -1298,7 +1026,7 @@ wss.on("connection", (ws) => {
           currentRoom.broadcastFleetUpdate(sessionClient.fleetName);
         }
       } else {
-        sendLobbyList(clientObj);
+        sendLobbyList(clientObj, instances);
       }
     } else if (msg.type === "quick_join") {
       // spec 036: route the client into a room by criteria — join the fullest
@@ -1314,7 +1042,7 @@ wss.on("connection", (ws) => {
 
       if (decision.action === "join") {
         joinRoom(clientObj, decision.roomId, msg.nickname);
-        broadcastLobbySync();
+        broadcastLobbySync(instances, clients);
       } else if (decision.action === "create") {
         let qRoomId;
         let qAttempts = 0;
@@ -1336,7 +1064,7 @@ wss.on("connection", (ws) => {
         if (Array.isArray(msg.tags)) created.tags = msg.tags;
         instances.set(qRoomId, created);
         joinRoom(clientObj, qRoomId, msg.nickname);
-        broadcastLobbySync();
+        broadcastLobbySync(instances, clients);
       } else {
         // Every matching sector is full — the client waits for a freed slot.
         clientObj.send({
@@ -1370,10 +1098,10 @@ wss.on("connection", (ws) => {
       console.log(`🌌 Created custom sector: [${name}] (${newRoomId})`);
 
       joinRoom(clientObj, newRoomId, msg.nickname);
-      broadcastLobbySync();
+      broadcastLobbySync(instances, clients);
     } else if (msg.type === "join_room") {
       joinRoom(clientObj, msg.roomId || "public", msg.nickname);
-      broadcastLobbySync();
+      broadcastLobbySync(instances, clients);
     } else if (msg.type === "controls") {
       if (
         clientObj.ship &&
@@ -2128,7 +1856,7 @@ wss.on("connection", (ws) => {
         );
         currentRoom.broadcastRosterUpdate();
       }
-      broadcastLobbySync();
+      broadcastLobbySync(instances, clients);
     }, 30000);
 
     clients.delete(ws);

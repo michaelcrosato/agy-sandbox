@@ -39,6 +39,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T14:40 · iter-0067 · GREEN · spec-042-server-monolith-extraction
+
+- **Baseline:** `0643b47` on `main`; 789 Jest / 62 suites green. Executing `plan/specs/042` — Server monolith extraction.
+- **Move:** Extract dynamic heartbeat tickers, economic/environmental events, sector garbage collection, and lobby synchronization loops out of the monolithic `server.js` into isolated, testable sub-modules.
+- **Changed:**
+  - Created `src/server/galaxyTicker.js` and `src/server/galaxyTicker.test.js` managing economy shortage surplus ticks, environmental siege events, EMP storm alerts, price normalizations, and economic chain pulses.
+  - Created `src/server/roomGc.js` and `src/server/roomGc.test.js` sweeping idle rooms and cleaning up dynamic worker presence leases.
+  - Created `src/server/lobbySync.js` and `src/server/lobbySync.test.js` compiling room metadata payload formatters and broadcasting lobby synchronizations.
+  - Modified `src/server.js` importing the new modules, delegating all dynamic sweeps/broadcasts, and stripping old monolithic code, resulting in a reduction of over 260 lines of code.
+- **Decisions:** Structured callbacks so multi-worker presence registry operations remain clean, decoupled, and unit-tested in isolation, avoiding any database mocking inside the server core tests.
+- **Validation:** `npm run agent:check` -> green (**796 Jest tests / 65 suites**). Lints cleanly, compiles green, and formats correctly.
+- **Notes:** Substrate files untouched. Server monolith line count down to 2,166 lines.
+- **Next:** Spec `043` Matchmaking queue disconnect-rejoin lifecycle.
+
 ## 2026-05-30T14:30 · iter-0066 · GREEN · spec-041-player-side-raw-ore-refining
 
 - **Baseline:** `d030804` on `main`; 781 Jest / 62 suites green. Executing `plan/specs/041` — Player-side raw ore refining at ports.

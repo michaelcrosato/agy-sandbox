@@ -15,7 +15,7 @@ _**v4 re-audit baseline (2026-05-30, ENTIRE v3 blueprint shipped): 775 Jest test
 - [x] `039` Tractor outfit mass correction (bug fix) — **done** (files: `src/engine/Outfitting.js`, `src/engine/Outfitting.test.js`; added `case "tractor"` to `applyOutfitStats` switch so that the Tractor Beam Matrix 200 kg mass is correctly applied on purchase and salvage; added unit test verifying ship mass increase; 776 tests green).
 
 ### Phase 1 — Core Upgrades & Debt Paydown
-- [ ] `040` UtilityAI advisor rollout + rich action mapping
+- [~] `040` UtilityAI advisor rollout + rich action mapping
 - [ ] `041` Player-side raw ore refining at ports
 - [ ] `042` Server monolith extraction (heartbeats, GC, lobby sync)
 

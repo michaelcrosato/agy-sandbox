@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-29T22:20 · iter-0040 · GREEN · plan-v2-reaudit-blueprint
+
+- **Baseline:** `9bb7098` on `main`; 614 tests / 42 suites green; `npm audit` 0. Planning/direction artifact (no product code changed) — a re-audit of the now-hardened repo to refresh the `/plan/` blueprint.
+- **Move:** Re-run the audit + 2026 research against the post-Phase-0/1 state and regenerate the blueprint to reflect current reality + newly-surfaced work.
+- **Changed:** `plan/ROADMAP.md` — new REPO BASELINE (Mermaid + scale: 42 modules, server.js 2,086 LOC, ESLint 10 / Jest 30 / `@google/genai`, 0 CVEs), Phase 0/1 marked DONE, research synthesis (Node 24 Active LTS; Vitest-browser-mode/Playwright as the 2026 canvas-client test standard; Colyseus/geckos.io/Hathora recap), and a re-prioritized master table for the remaining work. New specs `plan/specs/020–025` (salvage outfit dedup; client test harness; CI Node 20/22/24 matrix; dotenv 17; JSDoc `tsc --noEmit` typecheck gate; continue server.js handler extraction). Refreshed `plan/PROGRESS.md` (v2 baseline + Wave A 020–025) and `plan/AGENTS.md` (new baseline numbers + a ledger-safety note citing the iter-0037 corruption).
+- **Decisions:** Preserved the completed record (specs 001–019 kept; did not renumber) and slotted the new findings as a "Wave A" between the done Phase 1 and the pending Phase 2 features. Grounded every new spec in measured facts: the 5 untested `src/client/*` files, the confirmed salvage `defaultCatalog` duplication, CI-on-Node-20-only, and the lone `dotenv` 16→17 outdated entry.
+- **Validation:** `npm run agent:check` → green (614 tests / 42 suites; `/plan/*.md` is outside lint/prettier scope so the gate is structurally unaffected). `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. A copy-paste `EXECUTION /GOAL PROMPT v2026.05` for the refreshed blueprint was surfaced to the operator.
+- **Next:** Execute Wave A starting with `specs/022` + `020` (highest Σ, small + safe), then `021` (client coverage); then Phase 2 product/netcode features.
+
 ## 2026-05-29T22:00 · iter-0039 · GREEN · spec-012-jest-30-migration
 
 - **Baseline:** `b771b14` on branch `main`; 614 tests / 42 suites green; Jest 29.7. Executing `plan/specs/012` — the last Phase-1 item.

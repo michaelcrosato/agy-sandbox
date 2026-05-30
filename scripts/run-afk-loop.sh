@@ -22,7 +22,9 @@ fi
 IterationCount=1
 
 while true; do
-    echo -e "\n${CYAN}---------------------------------------------------------${NC}"
+    # Clear the console screen to keep terminal presentation completely clean and token-efficient (spec /clear)
+    clear
+    echo -e "${CYAN}---------------------------------------------------------${NC}"
     echo -e "${CYAN}   CYCLE RUN TICK #$IterationCount — $(date +'%H:%M:%S')   ${NC}"
     echo -e "${CYAN}---------------------------------------------------------${NC}"
 

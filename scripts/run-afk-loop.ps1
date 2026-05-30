@@ -23,7 +23,9 @@ if (-Not (Test-Path "plan/STATE.md")) {
 $IterationCount = 1
 
 while ($true) {
-    Write-Host "`n---------------------------------------------------------" -ForegroundColor DarkCyan
+    # Clear the host console to keep terminal presentation completely clean and token-efficient (spec /clear)
+    Clear-Host
+    Write-Host "---------------------------------------------------------" -ForegroundColor DarkCyan
     Write-Host "   CYCLE RUN TICK #$IterationCount — $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Cyan
     Write-Host "---------------------------------------------------------" -ForegroundColor DarkCyan
 

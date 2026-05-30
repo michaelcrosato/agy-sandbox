@@ -39,6 +39,22 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T10:50 · iter-0081 · GREEN · spec-058-outfitting-fittings-presets
+
+- **Baseline:** `31ea39e` on `main`; 849 Jest tests green.
+- **Move:** Implement discrete starship outfitting slots and custom loadout presets (058).
+- **Changed:**
+  - Integrated `validateSlotAvailability(ship, outfit)` checking Weapon (Max 2), Shield (Max 1), and Utility (Max 1) categories, including starter "Basic Laser" counting.
+  - Implemented `"port_outfit_sell"` server handler in `src/server/portHandlers.js` refunding 90% of standing-adjusted outfit costs and subtracting stats/mass safely.
+  - Coded custom loadout presets (`handlePresetSave` and `handlePresetLoad`) managing up to 3 slots, calculating net credit transitions, rank locking, and slot limits dynamically.
+  - Expanded `serializePlayer` and `applyPlayer` in `src/persistence/serializers.js` to serialize/deserialize custom preset arrays across restarts.
+  - Upgraded the client spaceport UI in `src/client/SpaceportUI.js` with visual glassmorphic fittings sub-sections, quick trade-in sell buttons, Performance Diagnostics HUD, and Preset Save/Load actions.
+  - Handled `"outfit_sell"`, `"preset_save"`, and `"preset_load"` WebSocket dispatch routing branches in `src/server.js` and `src/client/NetworkHandler.js`.
+  - Added comprehensive server-side integration tests in `src/server/portHandlers.test.js` validating purchase slot blocks, sale refunds, and preset loading configurations.
+- **Decisions:** Enforced slot limits and rank lockouts directly on the server during preset loading to prevent fraudulent credit transactions or invalid loadouts while offline.
+- **Validation:** `npm run agent:check` -> green (856 Jest tests / 67 suites).
+- **Next:** Proceed with SPEC-059 to implement Multiplayer Squads and Shared allied reputation merits.
+
 ## 2026-05-30T10:40 · iter-0080 · GREEN · spec-057-dynamic-market-events
 
 - **Baseline:** `31ea39e` on `main`; 839 Jest tests green.

@@ -4,6 +4,9 @@ import {
   handleMissionAccept,
   handleMissionAbandon,
   handleEscortCommand,
+  handleOutfitSell,
+  handlePresetSave,
+  handlePresetLoad,
 } from "./portHandlers.js";
 import { DEFAULT_OUTFITS } from "../engine/outfitCatalog.js";
 
@@ -417,5 +420,183 @@ describe("portHandlers.handleEscortCommand (spec 050)", () => {
     handleEscortCommand(null, { command: "hold" }, mockRoom);
     handleEscortCommand(mockClient, { command: "hold" }, null);
     expect(mockClient.sentNotifications.length).toBe(0);
+  });
+});
+
+describe("portHandlers.handleOutfitSell (spec 058)", () => {
+  let mockClient;
+  let mockPlanet;
+
+  beforeEach(() => {
+    mockClient = {
+      isLanded: true,
+      ship: {
+        credits: 1000,
+        outfits: ["Basic Laser", "Heavy Shields"],
+        maxShield: 450,
+        shield: 450,
+        outfitMass: 800,
+        removeOutfitMass(m) {
+          this.outfitMass = Math.max(0, this.outfitMass - m);
+        },
+      },
+      sentNotifications: [],
+      send(data) {
+        if (data.type === "notification") {
+          this.sentNotifications.push(data);
+        }
+      },
+      sendStats() {},
+    };
+
+    mockPlanet = {
+      faction: "Federation",
+      outfitter: [
+        {
+          name: "Heavy Shields",
+          cost: 1200,
+          type: "shield",
+          value: 350,
+          mass: 800,
+        },
+      ],
+    };
+  });
+
+  test("successfully sells an outfit, refunds 90% credits, removes mass, and updates maxShield", () => {
+    handleOutfitSell(mockClient, "Heavy Shields", mockPlanet);
+
+    // Cost is 1200. Refund = 1200 * 0.9 = 1080. Credits: 1000 + 1080 = 2080.
+    expect(mockClient.ship.credits).toBe(2080);
+    expect(mockClient.ship.outfits).not.toContain("Heavy Shields");
+    expect(mockClient.ship.outfits).toContain("Basic Laser");
+    expect(mockClient.ship.maxShield).toBe(100); // 450 - 350
+    expect(mockClient.ship.outfitMass).toBe(0);
+    expect(mockClient.sentNotifications[0]).toEqual({
+      type: "notification",
+      message: "Sold: Heavy Shields for 1,080 CR!",
+      style: "success",
+    });
+  });
+
+  test("rejects sell if outfit is not equipped", () => {
+    handleOutfitSell(mockClient, "Plasma Cannon", mockPlanet);
+
+    expect(mockClient.ship.credits).toBe(1000);
+    expect(mockClient.sentNotifications[0]).toEqual({
+      type: "notification",
+      message: "Upgrade not equipped!",
+      style: "error",
+    });
+  });
+});
+
+describe("portHandlers.handlePresetSave & handlePresetLoad (spec 058)", () => {
+  let mockClient;
+  let mockPlanet;
+
+  beforeEach(() => {
+    mockClient = {
+      isLanded: true,
+      presets: [null, null, null],
+      ship: {
+        credits: 10000,
+        outfits: ["Basic Laser", "Heavy Shields"],
+        maxShield: 450,
+        shield: 450,
+        outfitMass: 800,
+        addOutfitMass(m) {
+          this.outfitMass += m;
+        },
+        removeOutfitMass(m) {
+          this.outfitMass = Math.max(0, this.outfitMass - m);
+        },
+      },
+      sentNotifications: [],
+      send(data) {
+        if (data.type === "notification") {
+          this.sentNotifications.push(data);
+        }
+      },
+      sendStats() {},
+    };
+
+    mockPlanet = {
+      faction: "Federation",
+      outfitter: [
+        {
+          name: "Heavy Shields",
+          cost: 1200,
+          type: "shield",
+          value: 350,
+          mass: 800,
+        },
+        {
+          name: "Plasma Cannon",
+          cost: 1800,
+          type: "weapon",
+          value: 25,
+          mass: 300,
+        },
+      ],
+    };
+  });
+
+  test("saves presets successfully", () => {
+    handlePresetSave(mockClient, 0);
+
+    expect(mockClient.presets[0]).toEqual(["Basic Laser", "Heavy Shields"]);
+    expect(mockClient.sentNotifications[0].message).toContain(
+      "Saved Loadout Preset 1!",
+    );
+  });
+
+  test("loads presets successfully with net credit transactions", () => {
+    // Save current preset
+    mockClient.presets[0] = ["Basic Laser", "Plasma Cannon"];
+
+    // Current: ["Basic Laser", "Heavy Shields"]
+    // Target: ["Basic Laser", "Plasma Cannon"]
+    // Sell: Heavy Shields. Cost: 1200. Refund: 1080.
+    // Buy: Plasma Cannon. Cost: 1800.
+    // Net credit change: 1080 - 1800 = -720. Credits: 10000 - 720 = 9280.
+    handlePresetLoad(mockClient, 0, mockPlanet);
+
+    expect(mockClient.ship.outfits).toEqual(["Basic Laser", "Plasma Cannon"]);
+    expect(mockClient.ship.credits).toBe(9280);
+    expect(mockClient.sentNotifications[0].message).toContain(
+      "Loaded Preset 1! Net Transaction: -720 CR",
+    );
+  });
+
+  test("rejects preset load if index is invalid or preset not saved", () => {
+    handlePresetLoad(mockClient, 1, mockPlanet);
+    expect(mockClient.sentNotifications[0].message).toContain(
+      "No preset saved in slot 2!",
+    );
+  });
+
+  test("rejects preset load if credits are insufficient", () => {
+    mockClient.presets[0] = ["Basic Laser", "Plasma Cannon"];
+    mockClient.ship.credits = 100; // not enough for net -720 CR
+
+    handlePresetLoad(mockClient, 0, mockPlanet);
+    expect(mockClient.ship.outfits).toEqual(["Basic Laser", "Heavy Shields"]); // unchanged
+    expect(mockClient.sentNotifications[0].message).toContain(
+      "Insufficient credits to load preset!",
+    );
+  });
+
+  test("rejects preset load if slot limits are exceeded in target preset", () => {
+    mockClient.presets[0] = [
+      "Basic Laser",
+      "Heavy Shields",
+      "Aegis Shield Matrix",
+    ]; // 2 shields (exceeds cap 1)
+
+    handlePresetLoad(mockClient, 0, mockPlanet);
+    expect(mockClient.sentNotifications[0].message).toContain(
+      "Preset exceeds Shield slot cap",
+    );
   });
 });

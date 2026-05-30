@@ -4,6 +4,8 @@ import {
   getNavalRank,
   redeemFactionVouchers,
 } from "../engine/PortServices.js";
+import { DEFAULT_OUTFITS } from "../engine/outfitCatalog.js";
+import { getOutfitCategory } from "../engine/Outfitting.js";
 
 /**
  * Manages the interactive glassmorphic spaceport menu, handling trading, ship upgrades, and purchases.
@@ -353,43 +355,540 @@ export class SpaceportUI {
   /**
    * Renders the outfitter shop panel.
    */
+  /**
+   * Renders the outfitter shop panel.
+   */
   renderOutfitter() {
     if (!this.paneOutfitter || !this.player || !this.planet) return;
 
-    this.paneOutfitter.innerHTML = "";
+    this.paneOutfitter.innerHTML = `
+      <style>
+        .outfitter-dashboard {
+          display: flex;
+          gap: 20px;
+          height: 100%;
+          width: 100%;
+          font-family: 'Inter', sans-serif;
+        }
+        .fittings-panel {
+          flex: 1;
+          background: rgba(25, 35, 60, 0.4);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 12px;
+          padding: 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          color: #e0e5f5;
+        }
+        .store-panel {
+          flex: 1.2;
+          background: rgba(25, 35, 60, 0.2);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 12px;
+          padding: 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          overflow-y: auto;
+          max-height: 550px;
+        }
+        .dashboard-title {
+          font-size: 14px;
+          font-weight: 700;
+          color: #38bdf8;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+          padding-bottom: 6px;
+          margin-bottom: 8px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .fittings-slots {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .fit-slot {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px dashed rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          padding: 10px 14px;
+          font-size: 12px;
+          transition: all 0.2s ease;
+        }
+        .fit-slot.equipped {
+          background: rgba(56, 189, 248, 0.05);
+          border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+        .slot-label {
+          color: #8fa0c0;
+          font-weight: 600;
+          text-transform: uppercase;
+          font-size: 10px;
+          letter-spacing: 0.5px;
+          width: 100px;
+        }
+        .slot-val {
+          flex-grow: 1;
+          color: #ffffff;
+          font-weight: 500;
+        }
+        .slot-val.empty {
+          color: #4b5563;
+          font-style: italic;
+        }
+        .performance-hud {
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 8px;
+          padding: 12px;
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 8px;
+          font-size: 11px;
+        }
+        .hud-stat-label {
+          color: #a3a3a3;
+        }
+        .hud-stat-val {
+          color: #ffffff;
+          font-weight: 700;
+          text-align: right;
+        }
+        .presets-section {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          margin-top: auto;
+        }
+        .preset-slot {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: rgba(255, 255, 255, 0.01);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 6px;
+          padding: 8px 12px;
+          font-size: 11px;
+        }
+        .preset-name {
+          color: #e2e8f0;
+          font-weight: 600;
+        }
+        .preset-summary {
+          font-size: 9px;
+          color: #64748b;
+          margin-top: 2px;
+          max-width: 150px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .preset-actions {
+          display: flex;
+          gap: 6px;
+        }
+        .preset-btn {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 4px;
+          padding: 4px 8px;
+          font-size: 10px;
+          font-weight: 600;
+          color: #ffffff;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .preset-btn:hover {
+          background: rgba(56, 189, 248, 0.2);
+          border-color: #38bdf8;
+        }
+        .preset-btn.btn-load {
+          background: rgba(56, 189, 248, 0.1);
+          color: #38bdf8;
+        }
+        .preset-btn.btn-load:hover {
+          background: #38bdf8;
+          color: #000;
+        }
+        .sell-btn {
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid rgba(239, 68, 68, 0.2);
+          color: #f87171;
+          border-radius: 4px;
+          padding: 2px 6px;
+          font-size: 9px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .sell-btn:hover {
+          background: #ef4444;
+          color: #ffffff;
+        }
+        .store-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+        .store-card {
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 8px;
+          padding: 12px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          transition: all 0.2s ease;
+        }
+        .store-card:hover {
+          border-color: rgba(56, 189, 248, 0.3);
+          background: rgba(255, 255, 255, 0.03);
+        }
+        .store-card-info {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          max-width: 70%;
+        }
+        .store-card-name {
+          font-size: 13px;
+          font-weight: 700;
+          color: #ffffff;
+        }
+        .store-card-desc {
+          font-size: 10px;
+          color: #94a3b8;
+          line-height: 1.3;
+        }
+        .store-card-meta {
+          font-size: 9px;
+          color: #38bdf8;
+          font-weight: 600;
+          text-transform: uppercase;
+        }
+        .store-card-action {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 8px;
+        }
+        .store-card-cost {
+          font-weight: 700;
+          color: #fbbf24;
+          font-size: 12px;
+        }
+        .purchase-btn {
+          background: #38bdf8;
+          color: #000000;
+          border: none;
+          border-radius: 4px;
+          padding: 6px 12px;
+          font-size: 11px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .purchase-btn:hover {
+          background: #0ea5e9;
+          box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        }
+        .purchase-btn:disabled {
+          background: rgba(255, 255, 255, 0.05);
+          color: #4b5563;
+          cursor: not-allowed;
+          box-shadow: none;
+        }
+      </style>
+      <div class="outfitter-dashboard">
+        <!-- LEFT: STARSHIP FITTINGS HUD + PRESETS -->
+        <div class="fittings-panel">
+          <div class="dashboard-title">Starship Fittings</div>
+          
+          <div class="fittings-slots" id="fittings-slots-list">
+            <!-- Dynamically rendered slots -->
+          </div>
 
-    const grid = document.createElement("div");
-    grid.className = "outfitter-grid";
+          <div class="dashboard-title">Performance Diagnostics</div>
+          <div class="performance-hud">
+            <span class="hud-stat-label">Chassis Agility (Mass):</span>
+            <span class="hud-stat-val" id="perf-mass">0 kg</span>
+            <span class="hud-stat-label">Maximum Velocity:</span>
+            <span class="hud-stat-val" id="perf-speed">0 units/s</span>
+            <span class="hud-stat-label">Shield Integrity:</span>
+            <span class="hud-stat-val" id="perf-shield">0 GW</span>
+            <span class="hud-stat-label">Weapon Output Boost:</span>
+            <span class="hud-stat-val" id="perf-weapon">+0 MW</span>
+          </div>
 
-    for (const outfit of this.planet.outfitter) {
-      const card = document.createElement("div");
-      card.className = "outfit-card";
+          <div class="presets-section">
+            <div class="dashboard-title">Loadout Presets</div>
+            <div id="presets-list">
+              <!-- Presets slots -->
+            </div>
+          </div>
+        </div>
 
-      const hasOutfit = this.player.outfits.includes(outfit.name);
-      const descText =
-        outfit.description ||
-        `High-performance ${outfit.type} module. Restores or boosts ship parameters by +${outfit.value}.`;
+        <!-- RIGHT: PLANETARY OUTFITTING STORE -->
+        <div class="store-panel">
+          <div class="dashboard-title">
+            <span>Planetary Outfitter</span>
+            <span style="font-size: 11px; color: #fbbf24;" id="player-outfitter-credits">Credits: 0 CR</span>
+          </div>
+          <div class="store-grid" id="store-outfit-list">
+            <!-- Available outfits -->
+          </div>
+        </div>
+      </div>
+    `;
 
-      card.innerHTML = `
-        <h3>${outfit.name}</h3>
-        <p class="outfit-desc" style="font-size: 11px; color: #a0a5b5; margin-bottom: 8px; line-height: 1.4;">${descText}</p>
-        <p>Type: <span class="capitalize">${outfit.type}</span></p>
-        <p class="cost">${outfit.cost.toLocaleString()} CR</p>
-        <button class="btn-block" ${hasOutfit ? "disabled" : ""}>
-          ${hasOutfit ? "EQUIPPED" : "PURCHASE"}
-        </button>
+    const currentOutfits = [...this.player.outfits];
+    const equippedWeapons = [];
+    const equippedShields = [];
+    const equippedUtilities = [];
+    const equippedGenerals = [];
+
+    for (const name of currentOutfits) {
+      if (name === "Basic Laser") {
+        equippedWeapons.push(name);
+        continue;
+      }
+      const config = DEFAULT_OUTFITS.find((o) => o.name === name);
+      if (config) {
+        const category = getOutfitCategory(config.type);
+        if (category === "weapon") equippedWeapons.push(name);
+        else if (category === "shield") equippedShields.push(name);
+        else if (category === "utility") equippedUtilities.push(name);
+        else equippedGenerals.push(name);
+      } else {
+        equippedGenerals.push(name);
+      }
+    }
+
+    const slotsList = this.paneOutfitter.querySelector("#fittings-slots-list");
+    slotsList.innerHTML = "";
+
+    const renderSlot = (slotLabel, outfitName) => {
+      const isEquipped = !!outfitName;
+      const div = document.createElement("div");
+      div.className = `fit-slot ${isEquipped ? "equipped" : ""}`;
+      div.innerHTML = `
+        <span class="slot-label">${slotLabel}</span>
+        <span class="slot-val ${isEquipped ? "" : "empty"}">${outfitName || "Empty Slot"}</span>
+        ${isEquipped ? `<button class="sell-btn" data-outfit="${outfitName}">SELL (90%)</button>` : ""}
+      `;
+      if (isEquipped) {
+        div.querySelector(".sell-btn").addEventListener("click", () => {
+          if (window.network && window.network.connected) {
+            window.network.requestOutfitSell(outfitName);
+            setTimeout(() => this.renderOutfitter(), 250);
+          } else {
+            // Local offline fallback
+            const idx = this.player.outfits.indexOf(outfitName);
+            if (idx !== -1) {
+              this.player.outfits.splice(idx, 1);
+              let outfitConfig = DEFAULT_OUTFITS.find(
+                (o) => o.name === outfitName,
+              );
+              if (!outfitConfig && outfitName === "Basic Laser") {
+                outfitConfig = {
+                  name: "Basic Laser",
+                  cost: 0,
+                  type: "weapon",
+                  value: 0,
+                  mass: 0,
+                };
+              }
+              if (outfitConfig) {
+                if (outfitConfig.type === "shield") {
+                  this.player.maxShield = Math.max(
+                    1,
+                    this.player.maxShield - outfitConfig.value,
+                  );
+                  this.player.shield = Math.min(
+                    this.player.shield,
+                    this.player.maxShield,
+                  );
+                } else if (outfitConfig.type === "engine") {
+                  this.player.thrustPower = Math.max(
+                    0,
+                    this.player.thrustPower - outfitConfig.value,
+                  );
+                  this.player.maxSpeed = Math.max(0, this.player.maxSpeed - 50);
+                } else if (outfitConfig.type === "weapon") {
+                  this.player.weaponDamage = Math.max(
+                    0,
+                    this.player.weaponDamage - outfitConfig.value,
+                  );
+                } else if (outfitConfig.type === "cargo") {
+                  this.player.cargoCapacity = Math.max(
+                    0,
+                    this.player.cargoCapacity - outfitConfig.value,
+                  );
+                }
+                if (
+                  outfitConfig.mass &&
+                  typeof this.player.removeOutfitMass === "function"
+                ) {
+                  this.player.removeOutfitMass(outfitConfig.mass);
+                }
+                this.player.credits += Math.floor(outfitConfig.cost * 0.9);
+              }
+              this.ui.notify(`Sold: ${outfitName}!`, "success");
+              this.refreshUI();
+              this.renderOutfitter();
+            }
+          }
+        });
+      }
+      slotsList.appendChild(div);
+    };
+
+    renderSlot("Weapon L", equippedWeapons[0]);
+    renderSlot("Weapon R", equippedWeapons[1]);
+    renderSlot("Shield S", equippedShields[0]);
+    renderSlot("Utility U", equippedUtilities[0]);
+
+    if (equippedGenerals.length > 0) {
+      for (const genName of equippedGenerals) {
+        renderSlot("General G", genName);
+      }
+    }
+
+    // Performance diagnostics stats values
+    this.paneOutfitter.querySelector("#perf-mass").innerText =
+      `${(this.player.mass || 2000).toLocaleString()} kg`;
+    this.paneOutfitter.querySelector("#perf-speed").innerText =
+      `${this.player.maxSpeed || 300} units/s`;
+    this.paneOutfitter.querySelector("#perf-shield").innerText =
+      `${this.player.maxShield || 100} GW`;
+    this.paneOutfitter.querySelector("#perf-weapon").innerText =
+      `+${this.player.weaponDamage || 0} MW`;
+
+    // Presets slots setup
+    const presetsList = this.paneOutfitter.querySelector("#presets-list");
+    presetsList.innerHTML = "";
+
+    if (!Array.isArray(this.player.presets)) {
+      this.player.presets = [null, null, null];
+    }
+
+    for (let i = 0; i < 3; i++) {
+      const preset = this.player.presets[i];
+      const div = document.createElement("div");
+      div.className = "preset-slot";
+      const summaryText = preset ? preset.join(", ") : "Empty Preset Slot";
+
+      div.innerHTML = `
+        <div>
+          <div class="preset-name">Preset Slot ${i + 1}</div>
+          <div class="preset-summary" title="${summaryText}">${summaryText}</div>
+        </div>
+        <div class="preset-actions">
+          <button class="preset-btn btn-save" data-idx="${i}">SAVE</button>
+          <button class="preset-btn btn-load" data-idx="${i}" ${preset ? "" : "disabled"}>LOAD</button>
+        </div>
       `;
 
-      card.querySelector("button").addEventListener("click", () => {
-        if (window.network) {
-          if (window.network.connected) {
-            window.network.requestOutfitPurchase(outfit.name);
+      div.querySelector(".btn-save").addEventListener("click", () => {
+        if (window.network && window.network.connected) {
+          window.network.requestPresetSave(i);
+          this.player.presets[i] = [...this.player.outfits];
+          setTimeout(() => this.renderOutfitter(), 150);
+        } else {
+          this.player.presets[i] = [...this.player.outfits];
+          this.ui.notify(`Saved Loadout Preset ${i + 1}!`, "success");
+          this.renderOutfitter();
+        }
+      });
+
+      if (preset) {
+        div.querySelector(".btn-load").addEventListener("click", () => {
+          if (window.network && window.network.connected) {
+            window.network.requestPresetLoad(i);
+            setTimeout(() => this.renderOutfitter(), 250);
           } else {
-            this.ui.notify(
-              "Neural link offline! Cannot upgrade ship.",
-              "error",
-            );
+            // Local offline preset load simulation
+            this.player.outfits = [...preset];
+            this.player.maxShield = 100;
+            this.player.thrustPower = 10000;
+            this.player.maxSpeed = 300;
+            this.player.weaponDamage = 0;
+            this.player.cargoCapacity = 20;
+            this.player.outfitMass = 0;
+            this.player.mass = 2000;
+
+            for (const name of preset) {
+              const outfitConfig = DEFAULT_OUTFITS.find((o) => o.name === name);
+              if (outfitConfig) {
+                if (outfitConfig.type === "shield") {
+                  this.player.maxShield += outfitConfig.value;
+                } else if (outfitConfig.type === "engine") {
+                  this.player.thrustPower += outfitConfig.value;
+                  this.player.maxSpeed += 50;
+                } else if (outfitConfig.type === "weapon") {
+                  this.player.weaponDamage += outfitConfig.value;
+                } else if (outfitConfig.type === "cargo") {
+                  this.player.cargoCapacity += outfitConfig.value;
+                }
+                if (
+                  outfitConfig.mass &&
+                  typeof this.player.addOutfitMass === "function"
+                ) {
+                  this.player.addOutfitMass(outfitConfig.mass);
+                }
+              }
+            }
+            this.player.shield = this.player.maxShield;
+            this.ui.notify(`Loaded Preset ${i + 1}!`, "success");
+            this.refreshUI();
+            this.renderOutfitter();
           }
+        });
+      }
+      presetsList.appendChild(div);
+    }
+
+    // Credits & Planetary shop grid rendering
+    this.paneOutfitter.querySelector("#player-outfitter-credits").innerText =
+      `Credits: ${(this.player.credits || 0).toLocaleString()} CR`;
+
+    const storeList = this.paneOutfitter.querySelector("#store-outfit-list");
+    storeList.innerHTML = "";
+
+    for (const outfit of this.planet.outfitter) {
+      const hasOutfit = this.player.outfits.includes(outfit.name);
+      const descText =
+        outfit.description || `High-performance ${outfit.type} module.`;
+      const category = getOutfitCategory(outfit.type);
+
+      const div = document.createElement("div");
+      div.className = "store-card";
+      div.innerHTML = `
+        <div class="store-card-info">
+          <span class="store-card-name">${outfit.name}</span>
+          <span class="store-card-desc">${descText}</span>
+          <span class="store-card-meta">Category: ${category} | Mass: ${outfit.mass || 0} kg</span>
+        </div>
+        <div class="store-card-action">
+          <span class="store-card-cost">${outfit.cost.toLocaleString()} CR</span>
+          <button class="purchase-btn" ${hasOutfit ? "disabled" : ""}>
+            ${hasOutfit ? "EQUIPPED" : "PURCHASE"}
+          </button>
+        </div>
+      `;
+
+      div.querySelector("button").addEventListener("click", () => {
+        if (window.network && window.network.connected) {
+          window.network.requestOutfitPurchase(outfit.name);
+          setTimeout(() => this.renderOutfitter(), 250);
           return;
         }
 
@@ -401,7 +900,6 @@ export class SpaceportUI {
         this.player.credits -= outfit.cost;
         this.player.outfits.push(outfit.name);
 
-        // Apply stat improvements directly based on outfitter details
         if (outfit.type === "shield") {
           this.player.maxShield += outfit.value;
           this.player.shield = this.player.maxShield;
@@ -412,13 +910,10 @@ export class SpaceportUI {
           this.player.weaponDamage += outfit.value;
         } else if (outfit.type === "cargo") {
           this.player.cargoCapacity += outfit.value;
-        } else if (outfit.type === "reactor") {
-          this.player.energyRegen += outfit.value;
-        } else if (outfit.type === "radiator") {
-          this.player.heatDissipation += outfit.value;
-        } else if (outfit.type === "capacitor") {
-          this.player.maxEnergy += outfit.value;
-          this.player.energy = this.player.maxEnergy;
+        }
+
+        if (outfit.mass && typeof this.player.addOutfitMass === "function") {
+          this.player.addOutfitMass(outfit.mass);
         }
 
         this.ui.notify(`Equipped: ${outfit.name}!`, "success");
@@ -426,10 +921,8 @@ export class SpaceportUI {
         this.renderOutfitter();
       });
 
-      grid.appendChild(card);
+      storeList.appendChild(div);
     }
-
-    this.paneOutfitter.appendChild(grid);
   }
 
   /**

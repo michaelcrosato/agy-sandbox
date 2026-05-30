@@ -56,6 +56,9 @@ import {
   handleMissionAbandon,
   handleEscortCommand,
   handleVoucherRedeem,
+  handleOutfitSell,
+  handlePresetSave,
+  handlePresetLoad,
 } from "./server/portHandlers.js";
 import {
   tradeOne,
@@ -1611,6 +1614,22 @@ wss.on("connection", (ws) => {
       handleOutfitBuy(
         clientObj,
         msg.outfitName,
+        clientObj.planetLandedOn,
+        room,
+      );
+    } else if (msg.type === "outfit_sell") {
+      handleOutfitSell(
+        clientObj,
+        msg.outfitName,
+        clientObj.planetLandedOn,
+        room,
+      );
+    } else if (msg.type === "preset_save") {
+      handlePresetSave(clientObj, msg.presetIndex);
+    } else if (msg.type === "preset_load") {
+      handlePresetLoad(
+        clientObj,
+        msg.presetIndex,
         clientObj.planetLandedOn,
         room,
       );

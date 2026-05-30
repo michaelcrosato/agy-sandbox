@@ -357,6 +357,39 @@ export class NetworkHandler {
   }
 
   /**
+   * Sell an equipped starship outfit back to planetary outfitter.
+   * @param {string} outfitName - Name of outfit to sell.
+   */
+  requestOutfitSell(outfitName) {
+    this.send({
+      type: "outfit_sell",
+      outfitName,
+    });
+  }
+
+  /**
+   * Save current starship outfitting to a preset slot.
+   * @param {number} presetIndex - Index of preset slot (0-2).
+   */
+  requestPresetSave(presetIndex) {
+    this.send({
+      type: "preset_save",
+      presetIndex,
+    });
+  }
+
+  /**
+   * Load starship outfitting from a preset slot.
+   * @param {number} presetIndex - Index of preset slot (0-2).
+   */
+  requestPresetLoad(presetIndex) {
+    this.send({
+      type: "preset_load",
+      presetIndex,
+    });
+  }
+
+  /**
    * Trade current hull in for a brand new spacecraft.
    * @param {string} shipName - Shipyard model designation.
    */

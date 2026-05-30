@@ -171,6 +171,16 @@ export class Ship extends SpaceEntity {
   }
 
   /**
+   * Unbolts an outfit of the given mass from the hull.
+   * @param {number} delta - Mass to remove in kg.
+   */
+  removeOutfitMass(delta) {
+    if (!Number.isFinite(delta) || delta <= 0) return;
+    this.outfitMass = Math.max(0, this.outfitMass - delta);
+    this.mass = this.hullMass + this.outfitMass;
+  }
+
+  /**
    * Returns the current effective turn rate (rad/s) after mass scaling.
    * A ship at hull mass turns at its base `turnRate`; outfit mass reduces it
    * by the ratio `hullMass / totalMass`, so a doubled-mass ship turns half

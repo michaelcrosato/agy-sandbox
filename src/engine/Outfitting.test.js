@@ -1,4 +1,4 @@
-import { applyOutfitStats } from "./Outfitting.js";
+import { applyOutfitStats, removeOutfitStats } from "./Outfitting.js";
 import { Ship } from "./Ship.js";
 
 describe("Outfitting.applyOutfitStats (spec 007)", () => {
@@ -69,5 +69,53 @@ describe("Outfitting.applyOutfitStats (spec 007)", () => {
     expect(s.outfitMass).toBe(0);
     expect(applyOutfitStats(null, { type: "shield", value: 1 })).toBe(false);
     expect(applyOutfitStats(s, null)).toBe(false);
+  });
+});
+
+describe("Outfitting.removeOutfitStats (spec 058)", () => {
+  test("reverses shield outfit stats and unbolts mass", () => {
+    const s = new Ship({ maxShield: 200 });
+    applyOutfitStats(s, { type: "shield", value: 350, mass: 800 });
+    expect(s.maxShield).toBe(550);
+    expect(s.outfitMass).toBe(800);
+
+    expect(
+      removeOutfitStats(s, { type: "shield", value: 350, mass: 800 }),
+    ).toBe(true);
+    expect(s.maxShield).toBe(200);
+    expect(s.outfitMass).toBe(0);
+  });
+
+  test("reverses engine and cargo stats cleanly", () => {
+    const s = new Ship();
+    applyOutfitStats(s, { type: "engine", value: 10000 });
+    applyOutfitStats(s, { type: "cargo", value: 20 });
+    expect(s.thrustPower).toBe(18000);
+    expect(s.cargoCapacity).toBe(40);
+
+    removeOutfitStats(s, { type: "engine", value: 10000 });
+    removeOutfitStats(s, { type: "cargo", value: 20 });
+    expect(s.thrustPower).toBe(8000);
+    expect(s.cargoCapacity).toBe(20);
+  });
+
+  test("reverses jammer and weapon stats cleanly", () => {
+    const s = new Ship();
+    applyOutfitStats(s, { type: "jammer", value: 1, mass: 300 });
+    applyOutfitStats(s, { type: "weapon", value: 20 });
+    expect(s.outfitMass).toBe(300);
+    expect(s.weaponDamage).toBe(35);
+
+    removeOutfitStats(s, { type: "jammer", value: 1, mass: 300 });
+    removeOutfitStats(s, { type: "weapon", value: 20 });
+    expect(s.outfitMass).toBe(0);
+    expect(s.weaponDamage).toBe(15);
+  });
+
+  test("rejection and null-safety", () => {
+    const s = new Ship();
+    expect(removeOutfitStats(null, { type: "shield", value: 10 })).toBe(false);
+    expect(removeOutfitStats(s, null)).toBe(false);
+    expect(removeOutfitStats(s, { type: "warp_core", value: 10 })).toBe(false);
   });
 });

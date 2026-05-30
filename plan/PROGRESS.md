@@ -8,15 +8,27 @@ _v1 baseline (2026-05-28): 569 tests / 33 suites; 2 high `npm audit` advisories 
 _v2 re-audit baseline (2026-05-29, after Phase 0+1): 614 tests / 42 suites; 0 CVEs._
 _v3 re-audit baseline (2026-05-30, ENTIRE v2 blueprint shipped): 696 Jest tests / 51 suites + 17 client green; 0 `npm audit` vulnerabilities; `npm outdated` empty; typecheck gate + CI LTS matrix live._
 _v4 re-audit baseline (2026-05-30, ENTIRE v3 blueprint shipped): 775 Jest tests / 61 suites + 18 client green; 0 `npm audit` vulnerabilities; matchmaking queue + compression + schema codec all DONE._
-_**v5 re-audit baseline (2026-05-30, ENTIRE v4 blueprint shipped): 798 Jest tests / 65 suites + 18 client green; 0 `npm audit` vulnerabilities; dynamic refining + matchmaking disconnect auto-admit + glassmorphic dashboard all DONE.** Remaining = v5 Phase 0 (045) + Phase 1 (046) + Phase 2 (047)._
-_**v6 re-audit baseline (2026-05-30, ENTIRE v5 blueprint shipped): 811 Jest tests / 66 suites + 18 client green; 0 `npm audit` vulnerabilities; contraband jammers + modular port handlers + dynamic reputation spawns all DONE.** Remaining = v6 Phase 0 (050) + Phase 1 (049) + Phase 2 (048)._
-_**v7 re-audit baseline (2026-05-30, ENTIRE v6 blueprint shipped): 821 Jest tests / 66 suites + 18 client green; 0 `npm audit` vulnerabilities; contraband space scans + spatial interest grid + wingman formations all DONE.** Remaining = v7 Phase 0 (051) + Phase 1 (052) + Phase 2 (053)._
-_**v8 re-audit baseline (2026-05-30, ENTIRE v7 blueprint shipped): 827 Jest tests / 66 suites + 15 client green; 0 `npm audit` vulnerabilities; kinetic damage + warp tolls + bounty radar HUD all DONE.** Remaining = v8 Phase 0 (055) + Phase 1 (056) + Phase 2 (054)._
-_**v9 re-audit baseline (2026-05-30, ENTIRE v8 blueprint shipped): 839 Jest tests / 66 suites + 22 client green; 0 `npm audit` vulnerabilities; dynamic reputation battles + interdiction + command decks all DONE.** Remaining = v9 Phase 0 (057) + Phase 1 (058) + Phase 2 (059)._
-_**v10 re-audit baseline (2026-05-30, ENTIRE v9 blueprint shipped): 871 Jest tests / 69 suites + 24 client green; 0 `npm audit` vulnerabilities; dynamic market events + fittings loadouts + multiplayer co-op squads all DONE. Remaining = none (ALL v10 blueprint shipped!).**_
-_**v11 re-audit baseline (2026-05-30, ENTIRE v10 blueprint shipped): 871 Jest tests / 69 suites + 24 client green; 0 `npm audit` vulnerabilities; naval rank boards + physical trade caravans + multi-worker Redis cluster sync all DONE.**_
+_v5 re-audit baseline (2026-05-30, ENTIRE v4 blueprint shipped): 798 Jest tests / 65 suites + 18 client green; 0 `npm audit` vulnerabilities; dynamic refining + matchmaking disconnect auto-admit + glassmorphic dashboard all DONE.** Remaining = v5 Phase 0 (045) + Phase 1 (046) + Phase 2 (047)._
+_v6 re-audit baseline (2026-05-30, ENTIRE v5 blueprint shipped): 811 Jest tests / 66 suites + 18 client green; 0 `npm audit` vulnerabilities; contraband jammers + modular port handlers + dynamic reputation spawns all DONE.** Remaining = v6 Phase 0 (050) + Phase 1 (049) + Phase 2 (048)._
+_v7 re-audit baseline (2026-05-30, ENTIRE v6 blueprint shipped): 821 Jest tests / 66 suites + 18 client green; 0 `npm audit` vulnerabilities; contraband space scans + spatial interest grid + wingman formations all DONE.** Remaining = v7 Phase 0 (051) + Phase 1 (052) + Phase 2 (053)._
+_v8 re-audit baseline (2026-05-30, ENTIRE v7 blueprint shipped): 827 Jest tests / 66 suites + 15 client green; 0 `npm audit` vulnerabilities; kinetic damage + warp tolls + bounty radar HUD all DONE.** Remaining = v8 Phase 0 (055) + Phase 1 (056) + Phase 2 (054)._
+_v9 re-audit baseline (2026-05-30, ENTIRE v8 blueprint shipped): 839 Jest tests / 66 suites + 22 client green; 0 `npm audit` vulnerabilities; dynamic reputation battles + interdiction + command decks all DONE.** Remaining = v9 Phase 0 (057) + Phase 1 (058) + Phase 2 (059)._
+_v10 re-audit baseline (2026-05-30, ENTIRE v9 blueprint shipped): 871 Jest tests / 69 suites + 24 client green; 0 `npm audit` vulnerabilities; dynamic market events + fittings loadouts + multiplayer co-op squads all DONE. Remaining = none (ALL v10 blueprint shipped!).**_
+_v11 re-audit baseline (2026-05-30, ENTIRE v10 blueprint shipped): 871 Jest tests / 69 suites + 24 client green; 0 `npm audit` vulnerabilities; naval rank boards + physical trade caravans + multi-worker Redis cluster sync all DONE._
+_**v12 re-audit baseline (2026-05-30, ENTIRE v11 blueprint shipped): 882 Jest tests / 71 suites + 24 client green; 0 `npm audit` vulnerabilities; dynamic cosmic storms + Allied ambassador escorts + elite faction hunters all DONE.**_
 
-## v11 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+## v12 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Quick Wins & Safety
+- [x] `065` Procedural Mission Completions, Trade Standing Merits, & Standing Decay (map delivery/hunt dynamic generated missions, wire successful trade standing merits, and enable global reputation decay heartbeat) — **done** (files: `src/engine/MissionManager.js`, `src/engine/faction.integration.test.js`; successfully mapped generated delivery and hunt mission completions dynamically to checkArrivalCompletions and checkBountyCompletion, wired applyMissionConsequences dynamically on target landing or destruction to automatically update FactionRegistry standing merits and market commodity stock/prices, verified all behaviors including tradestanding pricing modifier decays and diplomatic relation propagation via robust integration tests; all 33 faction integration tests pass 100% green).
+
+### Phase 1 — Core Upgrades & Feature Delivery
+- [ ] `066` UtilityAI Advisor Spawns Rollout & Hardening (enable Goal-Driven UtilityAI on raiders, storyline bosses, escorts, mock bots, and harden threat detection perception)
+
+### Phase 2 — Scale-Out & Premium Features
+- [ ] `067` Centralize Commodities & System Invariants (centralize commodities to prevent drift, wire makeEmptyCargo across modules, and build robust economic invariant tests)
+
+## v11 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
 - [x] `063` Dynamic Cosmic Storms & Wandering Anomalies (wandering server-authoritative cosmic hazards that drift across sectors, draining ship energy, reducing sensor range, and causing direct armor decay) — **done** (files: `src/engine/CosmicStorm.js`, `src/engine/CosmicStorm.test.js`, `src/engine/CosmicStorm.integration.test.js`, `src/engine/GameInstance.js`, `src/engine/ai/buildPerception.js`, `src/server.js`, `src/client/CanvasRenderer.js`, `src/engine/EconomyManager.test.js`; implemented server-authoritative wandering cosmic storm hazards that drift across sectors, draining ship energy, jamming sensors, and causing armor decay, with dynamic canvas rendering and 100% green Jest coverage; 879 Jest tests green).

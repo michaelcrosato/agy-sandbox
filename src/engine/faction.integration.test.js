@@ -15,6 +15,7 @@ import {
 } from "./PortServices.js";
 import { Vector2D } from "../physics/Vector2D.js";
 import { validateWarpJump, getWarpToll } from "./Hyperdrive.js";
+import { Ship } from "./Ship.js";
 
 // Spec 016 — faction runtime wiring. The pure FactionRegistry math is covered
 // in FactionRegistry.test.js; these assert the LIVE wiring: a GameInstance owns
@@ -1193,6 +1194,164 @@ describe("mission + trade faction standings (spec 032)", () => {
         const ai = room.ais.find((a) => a.ship === hunter);
         expect(ai).toBeDefined();
         expect(ai.target).toBe(playerShip);
+      } finally {
+        room.destroy();
+      }
+    });
+  });
+
+  describe("SPEC-065 Procedural Mission Completions & Standing Decay", () => {
+    test("Generated delivery mission completes on arrival and triggers consequences", () => {
+      const room = new GameInstance("room-test-delivery", "Delivery Sector");
+      try {
+        const playerId = "delivery-cmdr";
+        const playerShip = new Ship({
+          id: playerId,
+          position: new Vector2D(0, 0),
+          cargo: { ore: 10 },
+          credits: 1000,
+        });
+        const clientObj = {
+          id: playerId,
+          ship: playerShip,
+          roomId: room.id,
+          send: () => {},
+          missionManager: new MissionManager(),
+        };
+        room.clients.set(playerId, clientObj);
+
+        const deliveryMission = {
+          id: "delivery-1",
+          type: "delivery",
+          title: "Ore Relief",
+          reward: 2000,
+          origin: "Sol",
+          destination: "Valkyrie Depot",
+          cargoItem: "ore",
+          cargoAmount: 10,
+          generated: true,
+          faction: "Federation",
+          isAccepted: true,
+          isCompleted: false,
+          consequences: {
+            marketRelief: {
+              planetName: "Valkyrie Depot",
+              commodity: "ore",
+              priceDelta: 50,
+            },
+            factionDeltas: [
+              {
+                playerId,
+                faction: "Federation",
+                delta: 10,
+              },
+            ],
+          },
+        };
+        clientObj.missionManager.activeMissions = [deliveryMission];
+
+        // Land on Valkyrie Depot
+        const valkyrieDepot = room.planets.find((p) => p.name === "Valkyrie Depot");
+        expect(valkyrieDepot).toBeDefined();
+        valkyrieDepot.market = { ore: 200 };
+        room.baseMarkets["Valkyrie Depot"] = { ore: 10 };
+
+        const completed = clientObj.missionManager.checkArrivalCompletions(
+          "Valkyrie Depot",
+          playerShip,
+          room,
+        );
+
+        expect(completed.length).toBe(1);
+        expect(completed[0].isCompleted).toBe(true);
+        expect(playerShip.credits).toBe(3000); // 1000 + 2000
+        expect(playerShip.cargo.ore).toBe(0); // ore removed
+
+        // Standing adjusted
+        expect(room.factionRegistry.getStanding(playerId, "Federation")).toBe(10);
+        // Market price updated (marketRelief applied: 200 - 50 = 150)
+        expect(valkyrieDepot.market.ore).toBe(150);
+      } finally {
+        room.destroy();
+      }
+    });
+
+    test("Generated hunt mission completes on target ship destruction and triggers consequences", () => {
+      const room = new GameInstance("room-test-hunt", "Hunt Sector");
+      try {
+        const playerId = "hunt-cmdr";
+        const playerShip = new Ship({
+          id: playerId,
+          position: new Vector2D(0, 0),
+          credits: 1000,
+        });
+        const clientObj = {
+          id: playerId,
+          ship: playerShip,
+          roomId: room.id,
+          send: () => {},
+          sendStats: () => {},
+          ws: {
+            readyState: 1, // OPEN
+            OPEN: 1,
+            send: () => {},
+          },
+          missionManager: new MissionManager(),
+        };
+        room.clients.set(playerId, clientObj);
+
+        const huntMission = {
+          id: "hunt-1",
+          type: "hunt",
+          title: "Wanted Outlaw",
+          reward: 3000,
+          targetName: "Outlaw Boss",
+          generated: true,
+          isAccepted: true,
+          isCompleted: false,
+          consequences: {
+            factionDeltas: [
+              {
+                playerId,
+                faction: "Federation",
+                delta: 15,
+              },
+            ],
+          },
+        };
+        clientObj.missionManager.activeMissions = [huntMission];
+
+        // Target ship destroyed
+        const targetShip = new Ship({
+          name: "Outlaw Boss",
+          position: new Vector2D(100, 100),
+        });
+        targetShip.destroyedBy = playerId;
+        targetShip.faction = "Pirates";
+
+        room.handleEntityDestroyed(targetShip);
+
+        // Hunt mission completed and standing adjusted
+        expect(huntMission.isCompleted).toBe(true);
+        expect(playerShip.credits).toBe(4000); // 1000 + 3000
+        expect(room.factionRegistry.getStanding(playerId, "Federation")).toBe(17.5);
+      } finally {
+        room.destroy();
+      }
+    });
+
+    test("DecayReputations slowly drifts active player standing towards zero", () => {
+      const room = new GameInstance("room-test-decay", "Decay Sector");
+      try {
+        const playerId = "decay-cmdr";
+        room.factionRegistry.adjustStanding(playerId, "Federation", 50);
+
+        // Run room decay
+        room.decayReputations(); // default rate is 0.05%
+        let fedStanding = room.factionRegistry.getStanding(playerId, "Federation");
+
+        expect(fedStanding).toBeLessThan(50);
+        expect(fedStanding).toBeGreaterThan(0);
       } finally {
         room.destroy();
       }

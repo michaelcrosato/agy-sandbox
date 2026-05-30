@@ -114,15 +114,18 @@ flowchart TD
 
 ---
 
-## EXECUTION WAVES (v11)
+## EXECUTION WAVES (v12)
 
-Completed waves (`001–062`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
+Completed waves (`001–064`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
 
-### Phase 0 — Quick Wins & Safety — `063`
-`063` Dynamic Cosmic Storms & Wandering Anomalies (wandering server-authoritative cosmic hazards that drift across sectors, draining ship energy, reducing sensor range, and causing direct armor decay).
+### Phase 0 — Quick Wins & Safety — `065`
+`065` Procedural Mission Completions & Standing Decay (map delivery/hunt dynamic generated missions, wire successful trade standing merits, and enable global reputation decay heartbeat).
 
-### Phase 1 — Core Upgrades & Feature Delivery — `064`
-`064` Faction Reputation Milestones & Bounty Hunters (standing-locked Allied ambassadorial escort missions at Spaceports, and persistent nadir-standing elite faction hunter spawns aggressively chasing players).
+### Phase 1 — Core Upgrades & Feature Delivery — `066`
+`066` UtilityAI Advisor Spawns Rollout & Hardening (enable Goal-Driven UtilityAI on raiders, storyline bosses, escorts, mock bots, and harden threat detection perception).
+
+### Phase 2 — System Architecture — `067`
+`067` Centralize Commodities & System Invariants (centralize commodities to prevent drift, wire makeEmptyCargo across modules, and build robust economic invariant tests).
 
 ---
 
@@ -132,10 +135,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 063 | Dynamic Cosmic Storms & Wandering Anomalies | 0 | 5 | 5 | 5 | 5 | 20 |
-| 064 | Faction Reputation Milestones & Bounty Hunters | 1 | 5 | 4 | 4 | 5 | 18 |
+| 065 | Procedural Mission Completions & Standing Decay | 0 | 5 | 5 | 5 | 5 | 20 |
+| 066 | UtilityAI Advisor Spawns Rollout & Hardening | 1 | 5 | 5 | 5 | 5 | 20 |
+| 067 | Centralize Commodities & System Invariants | 2 | 4 | 5 | 5 | 5 | 19 |
 
-**Recommended start:** `063` (Σ20 — wandering storms, highly modular physics integration, safe and completely self-contained), then proceed to `064` (Σ18) to introduce standing-locked quests and aggressive faction hunter squads.
+**Recommended start:** `065` (Σ20 — wiring procedural mission completions dynamically on landing or destruction, highly visible and robust faction standing pipeline completion), then proceed to `066` (Σ20) to roll out goal-driven advisor NPCs globally, and finally `067` (Σ19) to enforce strict commodity invariants.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

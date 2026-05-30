@@ -332,6 +332,7 @@ export class MissionManager {
       if (
         (mission.type === "courier" ||
           mission.type === "smuggle" ||
+          mission.type === "delivery" ||
           mission.type === "escort_ambassador") &&
         mission.destination === destinationName
       ) {
@@ -459,6 +460,7 @@ export class MissionManager {
     const index = this.activeMissions.findIndex(
       (m) =>
         (m.type === "bounty" && m.targetName === shipName) ||
+        (m.type === "hunt" && m.targetName === shipName) ||
         (m.type === "storyline" && m.targetName === shipName),
     );
 

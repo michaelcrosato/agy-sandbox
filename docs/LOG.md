@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-29T22:48 · iter-0043 · GREEN · spec-023-dotenv-17-bump
+
+- **Baseline:** `7e4c8aa` on `main`; 619 tests / 43 suites green. Executing `plan/specs/023` (Wave A) — the last `npm outdated` entry.
+- **Move:** Move the dev-only `dotenv` dependency onto the supported v17 line.
+- **Changed:** `package.json`/lockfile — `dotenv` `^16.6` → `^17.4.2`. `scripts/run-agent.js` now calls `dotenv.config({ quiet: true })` because v17 prints a startup env-injection banner by default (noisy in CI/agent logs).
+- **Decisions:** Suppressed the banner with `{ quiet: true }` (the v17-recommended knob) rather than tolerating noise; dotenv stays dev-only (the game runtime doesn't load env via dotenv). No behaviour change to env loading itself.
+- **Validation:** `GEMINI_API_KEY= node scripts/run-agent.js` → prints only the clear missing-key error (banner gone, no stack trace). `npm run agent:check` → green (619 tests / 43 suites). `npm audit` → 0 vulnerabilities; **`npm outdated` → empty** (every dependency is now current). `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 023 done.
+- **Next:** `plan/specs/025` (continue server.js extraction), then `024` (typecheck), `021` (client tests).
+
 ## 2026-05-29T22:42 · iter-0042 · GREEN · spec-022-ci-node-lts-matrix
 
 - **Baseline:** `9bbf7fb` on `main`; 619 tests / 43 suites green; CI ran on Node 20 only. Executing `plan/specs/022` (Wave A).

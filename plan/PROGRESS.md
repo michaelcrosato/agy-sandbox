@@ -21,7 +21,7 @@ _Baseline at blueprint generation (2026-05-28): 569 tests / 33 suites green; ESL
 - [x] `009` Decouple threat detection from ship names; wire seeded names — **done** (files: `AIController.isPirateShip` role-precedence + null-safe; `GameInstance` loot branch routes through it; `spawnNPCPirate` sets `role="pirate"` + procedural `NameGenerator` names; +3 tests)
 - [x] `010` Observability: structured logging + runtime metrics — **done** (files: new `src/net/metrics.js` + `src/net/logger.js` + tests; `src/server.js` `/metrics` route + clients/rooms gauges, tick_ms, broadcast_bytes, slow_client_drops, heartbeat_reaps, connections_total)
 - [x] `011` ESLint 9→10 migration — **done** (files: `package.json` eslint ^10 + explicit `@eslint/js`/`globals` devDeps; fixed 3 real `no-useless-assignment` findings in `CanvasRenderer.js`/`UIController.js`; flat config unchanged; lint exit 0)
-- [ ] `012` Jest 29→30 migration — _blocked by: none_
+- [x] `012` Jest 29→30 migration — **done** (files: `package.json` jest ^30.4; suite passes unchanged (614/42) under the existing ESM invocation; no config/source changes; no open handles, no flakiness over 2 runs)
 - [x] `013` Migrate @google/generative-ai → @google/genai — _blocked by: none_
 
 ## Phase 2 — Major Features

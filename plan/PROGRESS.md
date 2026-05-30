@@ -13,12 +13,12 @@ _**v6 re-audit baseline (2026-05-30, ENTIRE v5 blueprint shipped): 811 Jest test
 _**v7 re-audit baseline (2026-05-30, ENTIRE v6 blueprint shipped): 821 Jest tests / 66 suites + 18 client green; 0 `npm audit` vulnerabilities; contraband space scans + spatial interest grid + wingman formations all DONE.** Remaining = v7 Phase 0 (051) + Phase 1 (052) + Phase 2 (053)._
 _**v8 re-audit baseline (2026-05-30, ENTIRE v7 blueprint shipped): 827 Jest tests / 66 suites + 15 client green; 0 `npm audit` vulnerabilities; kinetic damage + warp tolls + bounty radar HUD all DONE.** Remaining = v8 Phase 0 (055) + Phase 1 (056) + Phase 2 (054)._
 _**v9 re-audit baseline (2026-05-30, ENTIRE v8 blueprint shipped): 839 Jest tests / 66 suites + 22 client green; 0 `npm audit` vulnerabilities; dynamic reputation battles + interdiction + command decks all DONE.** Remaining = v9 Phase 0 (057) + Phase 1 (058) + Phase 2 (059)._
-_**v10 re-audit baseline (2026-05-30, ENTIRE v9 blueprint shipped): 865 Jest tests / 69 suites + 24 client green; 0 `npm audit` vulnerabilities; dynamic market events + fittings loadouts + multiplayer co-op squads all DONE. Remaining = v10 Phase 0 (060) + Phase 1 (061) + Phase 2 (062).**_
+_**v10 re-audit baseline (2026-05-30, ENTIRE v9 blueprint shipped): 866 Jest tests / 69 suites + 24 client green; 0 `npm audit` vulnerabilities; dynamic market events + fittings loadouts + multiplayer co-op squads all DONE. Remaining = v10 Phase 0 (060) + Phase 1 (061) + Phase 2 (062).**_
 
 ## v10 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
-- [ ] `060` Factional Naval Mission Boards & Rank Campaigns (tie FactionRegistry standing progress with specialized rank-locked commendations, premium faction starships, and advanced weaponry) — **todo**.
+- [x] `060` Factional Naval Mission Boards & Rank Campaigns (tie FactionRegistry standing progress with specialized rank-locked commendations, premium faction starships, and advanced weaponry) — **done** (files: `src/engine/Ship.js`, `src/engine/MissionManager.js`, `src/engine/PortServices.js`, `src/persistence/serializers.js`, `src/server.js`, `src/server/portHandlers.js`, `src/engine/faction.integration.test.js`; implemented player naval merit tracking and rank promotions triggered on completing high-reward faction campaign missions, enforced purchase unlocks on premium starships and weaponry based on explicit naval campaign ranks, integrated authoritative standing-restricted procedural mission board filtering, and verified the entire merit progression and acquisition lockout loop via comprehensive integration tests; 866 Jest tests 100% green).
 
 ### Phase 1 — Core Upgrades & Debt Paydown
 - [ ] `061` Dynamic Planetary Stock Caravans & Cargo Convoy AI (physical cargo transport AI fleets flying across sector warp gates to load and unload goods, modifying planetary stock levels dynamically upon arrival) — **todo**.

@@ -404,6 +404,7 @@ export function checkUpgradeLockout(
   factionRegistry,
   playerId,
   faction,
+  playerShip = null,
 ) {
   let requiredRank = "RECRUIT";
   if (itemName === "Interceptor") {
@@ -418,23 +419,34 @@ export function checkUpgradeLockout(
     return { allowed: true, requiredRank, currentRank: "RECRUIT" };
   }
 
-  let standing = 0;
-  if (factionRegistry && playerId && faction) {
-    standing = factionRegistry.getStanding(playerId, faction);
+  let currentRank;
+  if (
+    playerShip &&
+    playerShip.navalRank &&
+    faction &&
+    playerShip.navalRank[faction]
+  ) {
+    currentRank = playerShip.navalRank[faction].toUpperCase();
+  } else {
+    let standing = 0;
+    if (factionRegistry && playerId && faction) {
+      standing = factionRegistry.getStanding(playerId, faction);
+    }
+    currentRank = getNavalRank(standing);
   }
-
-  const currentRank = getNavalRank(standing);
 
   // Rank hierarchy priority value for comparison
   const rankPriority = {
     OUTLAW: -1,
     RECRUIT: 0,
-    LIEUTENANT: 1,
-    COMMANDER: 2,
-    ADMIRAL: 3,
+    ENSIGN: 1,
+    LIEUTENANT: 2,
+    COMMANDER: 3,
+    ADMIRAL: 4,
   };
 
-  const hasRank = rankPriority[currentRank] >= rankPriority[requiredRank];
+  const hasRank =
+    (rankPriority[currentRank] || 0) >= (rankPriority[requiredRank] || 0);
 
   return {
     allowed: hasRank,

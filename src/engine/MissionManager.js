@@ -42,8 +42,15 @@ export class MissionManager {
    * Generates 2-3 random missions for a specific planet if not already populated.
    * @param {string} planetName - Name of current planet.
    * @param {Array<Planet>} allPlanets - List of all planets in the sector.
+   * @param {Object|null} [factionRegistry=null] - Faction standing registry.
+   * @param {string|null} [playerId=null] - Player ID.
    */
-  generateMissionsForPlanet(planetName, allPlanets) {
+  generateMissionsForPlanet(
+    planetName,
+    allPlanets,
+    factionRegistry = null,
+    playerId = null,
+  ) {
     const missions = [];
     const count = 3; // 3 procedural missions per landing
 
@@ -148,6 +155,26 @@ export class MissionManager {
           isAccepted: false,
           isCompleted: false,
         });
+      }
+    }
+
+    const originPlanet = allPlanets.find((p) => p.name === planetName);
+    const planetFaction = originPlanet ? originPlanet.faction : null;
+    let standing = 0;
+    if (factionRegistry && playerId && planetFaction) {
+      standing = factionRegistry.getStanding(playerId, planetFaction);
+    }
+
+    if (planetFaction && planetFaction !== "Independents") {
+      for (const m of missions) {
+        if (m.reward > 2000) {
+          if (standing < 30) {
+            m.reward = 2000;
+          } else {
+            /** @type {any} */ (m).standingRequired = 30;
+            /** @type {any} */ (m).faction = planetFaction;
+          }
+        }
       }
     }
 
@@ -343,6 +370,34 @@ export class MissionManager {
     }
 
     this.activeMissions = remaining;
+
+    for (const mission of completed) {
+      if (mission.faction && mission.reward > 2000) {
+        if (!player.navalMerits) player.navalMerits = {};
+        if (!player.navalRank) player.navalRank = {};
+
+        const f = mission.faction;
+        player.navalMerits[f] = (player.navalMerits[f] || 0) + 1;
+        const merits = player.navalMerits[f];
+
+        let newRank = player.navalRank[f] || "RECRUIT";
+        const oldRank = newRank;
+
+        if (merits >= 6) {
+          newRank = "COMMANDER";
+        } else if (merits >= 3) {
+          newRank = "LIEUTENANT";
+        } else if (merits >= 1) {
+          newRank = "ENSIGN";
+        }
+
+        if (newRank !== oldRank) {
+          player.navalRank[f] = newRank;
+          mission.promotionMessage = `PROMOTION: You have been promoted to ${newRank} in the ${f} Naval Fleet!`;
+        }
+      }
+    }
+
     return completed;
   }
 
@@ -411,6 +466,32 @@ export class MissionManager {
 
         // Remove from active
         this.activeMissions.splice(index, 1);
+
+        if (mission.faction && mission.reward > 2000) {
+          if (!player.navalMerits) player.navalMerits = {};
+          if (!player.navalRank) player.navalRank = {};
+
+          const f = mission.faction;
+          player.navalMerits[f] = (player.navalMerits[f] || 0) + 1;
+          const merits = player.navalMerits[f];
+
+          let newRank = player.navalRank[f] || "RECRUIT";
+          const oldRank = newRank;
+
+          if (merits >= 6) {
+            newRank = "COMMANDER";
+          } else if (merits >= 3) {
+            newRank = "LIEUTENANT";
+          } else if (merits >= 1) {
+            newRank = "ENSIGN";
+          }
+
+          if (newRank !== oldRank) {
+            player.navalRank[f] = newRank;
+            mission.promotionMessage = `PROMOTION: You have been promoted to ${newRank} in the ${f} Naval Fleet!`;
+          }
+        }
+
         return mission;
       }
     }
@@ -473,6 +554,31 @@ export class MissionManager {
 
     mission.isCompleted = true;
     this.activeMissions.splice(index, 1);
+
+    if (mission.faction && mission.reward > 2000 && player) {
+      if (!player.navalMerits) player.navalMerits = {};
+      if (!player.navalRank) player.navalRank = {};
+
+      const f = mission.faction;
+      player.navalMerits[f] = (player.navalMerits[f] || 0) + 1;
+      const merits = player.navalMerits[f];
+
+      let newRank = player.navalRank[f] || "RECRUIT";
+      const oldRank = newRank;
+
+      if (merits >= 6) {
+        newRank = "COMMANDER";
+      } else if (merits >= 3) {
+        newRank = "LIEUTENANT";
+      } else if (merits >= 1) {
+        newRank = "ENSIGN";
+      }
+
+      if (newRank !== oldRank) {
+        player.navalRank[f] = newRank;
+        mission.promotionMessage = `PROMOTION: You have been promoted to ${newRank} in the ${f} Naval Fleet!`;
+      }
+    }
 
     return {
       mission,

@@ -58,6 +58,8 @@ const PLAYER_HULL_FIELDS = Object.freeze([
   "kills",
   "combatValue",
   "combatRating",
+  "navalMerits",
+  "navalRank",
 ]);
 
 /**
@@ -208,6 +210,17 @@ export function serializePlayer(clientObj) {
   }
 
   const ship = clientObj.ship || null;
+  let hullSnapshot = null;
+  if (ship) {
+    hullSnapshot = pickFields(ship, PLAYER_HULL_FIELDS);
+    if (hullSnapshot.navalMerits) {
+      hullSnapshot.navalMerits = { ...hullSnapshot.navalMerits };
+    }
+    if (hullSnapshot.navalRank) {
+      hullSnapshot.navalRank = { ...hullSnapshot.navalRank };
+    }
+  }
+
   const shipSnapshot = ship
     ? {
         credits: Number.isFinite(ship.credits) ? ship.credits : 0,
@@ -216,7 +229,7 @@ export function serializePlayer(clientObj) {
         weaponShieldPierce: Number.isFinite(ship.weaponShieldPierce)
           ? ship.weaponShieldPierce
           : 0,
-        hull: pickFields(ship, PLAYER_HULL_FIELDS),
+        hull: hullSnapshot,
       }
     : null;
 
@@ -275,7 +288,13 @@ export function applyPlayer(clientObj, data) {
     if (data.ship.hull && typeof data.ship.hull === "object") {
       for (const field of PLAYER_HULL_FIELDS) {
         if (Object.prototype.hasOwnProperty.call(data.ship.hull, field)) {
-          ship[field] = data.ship.hull[field];
+          if (field === "navalMerits" || field === "navalRank") {
+            ship[field] = data.ship.hull[field]
+              ? { ...data.ship.hull[field] }
+              : {};
+          } else {
+            ship[field] = data.ship.hull[field];
+          }
         }
       }
       // Keep the SpaceEntity-level `mass` consistent with the restored

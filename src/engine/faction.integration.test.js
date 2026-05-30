@@ -8,7 +8,11 @@ import {
 } from "./Trading.js";
 import { serializeGalaxy, applyGalaxy } from "../persistence/serializers.js";
 import { MissionManager } from "./MissionManager.js";
-import { applyRefine, refineCost } from "./PortServices.js";
+import {
+  applyRefine,
+  refineCost,
+  checkUpgradeLockout,
+} from "./PortServices.js";
 import { Vector2D } from "../physics/Vector2D.js";
 import { validateWarpJump, getWarpToll } from "./Hyperdrive.js";
 
@@ -828,6 +832,208 @@ describe("mission + trade faction standings (spec 032)", () => {
       // Verify prices restored back to original baseline
       expect(planet.market.food).toBe(originalFoodPrice);
       expect(planet.market.electronics).toBe(originalElectronicsPrice);
+    });
+  });
+
+  describe("Factional Naval Campaigns & Ranks (060)", () => {
+    it("verifies the entire loop: standing checks -> high-tier missions -> merits -> promotions -> locked hull acquisition", () => {
+      const room = new GameInstance("room-naval-test", "Naval Campaign Test");
+
+      const playerShip = room.ais[0].ship;
+      playerShip.credits = 1000000; // Give plenty of credits
+      playerShip.navalMerits = {};
+      playerShip.navalRank = {};
+
+      const player = {
+        id: "naval_cmdr",
+        nickname: "Admiral Test",
+        ship: playerShip,
+        missionManager: new MissionManager(),
+        send: () => {},
+        sendStats: () => {},
+      };
+      room.clients.set(player.id, player);
+
+      // Ensure initial standing with Federation is < 30
+      room.factionRegistry.adjustStanding(
+        player.id,
+        "Federation",
+        -room.factionRegistry.getStanding(player.id, "Federation"),
+      );
+      expect(room.factionRegistry.getStanding(player.id, "Federation")).toBe(0);
+
+      // Generate missions on a Federation planet (e.g. Sol)
+      const solPlanet = room.planets.find((p) => p.faction === "Federation");
+      expect(solPlanet).toBeDefined();
+
+      player.missionManager.generateMissionsForPlanet(
+        solPlanet.name,
+        room.planets,
+        room.factionRegistry,
+        player.id,
+      );
+
+      // With standing < 30, all missions should have reward <= 2000
+      let available = player.missionManager.availableMissions[solPlanet.name];
+      expect(
+        available.every((m) => m.type === "storyline" || m.reward <= 2000),
+      ).toBe(true);
+
+      // Now set standing to 35
+      room.factionRegistry.adjustStanding(player.id, "Federation", 35);
+      expect(room.factionRegistry.getStanding(player.id, "Federation")).toBe(
+        35,
+      );
+
+      // Clear generated available missions to force regenerate
+      player.missionManager.availableMissions[solPlanet.name] = null;
+
+      // Regenerate missions
+      player.missionManager.generateMissionsForPlanet(
+        solPlanet.name,
+        room.planets,
+        room.factionRegistry,
+        player.id,
+      );
+      available = player.missionManager.availableMissions[solPlanet.name];
+
+      // There should be at least one high-tier mission (> 2000 CR) if standing >= 30, tagged with Federation
+      const highTier = available.find(
+        (m) => m.reward > 2000 || m.standingRequired === 30,
+      );
+      expect(highTier).toBeDefined();
+      expect(highTier.standingRequired).toBe(30);
+      expect(highTier.faction).toBe("Federation");
+
+      // Accept this mission
+      const acceptRes = player.missionManager.acceptMission(
+        solPlanet.name,
+        highTier.id,
+        playerShip,
+      );
+      expect(acceptRes.success).toBe(true);
+
+      // 1st mission completion -> Ensign promotion
+      let completedList;
+      if (highTier.type === "bounty") {
+        const compl = player.missionManager.checkBountyCompletion(
+          highTier.targetName,
+          playerShip,
+          room,
+        );
+        expect(compl).toBeDefined();
+        expect(compl.id).toBe(highTier.id);
+        expect(compl.promotionMessage).toContain("ENSIGN");
+      } else {
+        completedList = player.missionManager.checkArrivalCompletions(
+          highTier.destination,
+          playerShip,
+          room,
+        );
+        expect(completedList.length).toBe(1);
+        expect(completedList[0].id).toBe(highTier.id);
+        expect(completedList[0].promotionMessage).toContain("ENSIGN");
+      }
+
+      // Check merits and ranks
+      expect(playerShip.navalMerits["Federation"]).toBe(1);
+      expect(playerShip.navalRank["Federation"]).toBe("ENSIGN");
+
+      // Complete 2 more high-tier faction missions to reach Lieutenant (merits >= 3)
+      const dummy1 = {
+        id: "d1",
+        faction: "Federation",
+        reward: 3000,
+        generated: true,
+      };
+      player.missionManager.activeMissions.push(dummy1);
+      const res1 = player.missionManager.completeGeneratedMission(
+        "d1",
+        playerShip,
+        room,
+      );
+      expect(res1.mission.promotionMessage).toBeUndefined(); // merits = 2
+
+      const dummy2 = {
+        id: "d2",
+        faction: "Federation",
+        reward: 3000,
+        generated: true,
+      };
+      player.missionManager.activeMissions.push(dummy2);
+      const res2 = player.missionManager.completeGeneratedMission(
+        "d2",
+        playerShip,
+        room,
+      );
+      expect(res2.mission.promotionMessage).toContain("LIEUTENANT"); // merits = 3
+
+      expect(playerShip.navalMerits["Federation"]).toBe(3);
+      expect(playerShip.navalRank["Federation"]).toBe("LIEUTENANT");
+
+      // Verify rank-locked outfitting is allowed for Lieutenant items ("Ion Disruptor Array")
+      // And ship "Interceptor"
+      const lockoutOutfit = checkUpgradeLockout(
+        "Ion Disruptor Array",
+        room.factionRegistry,
+        player.id,
+        "Federation",
+        playerShip,
+      );
+      expect(lockoutOutfit.allowed).toBe(true);
+
+      const lockoutShipLt = checkUpgradeLockout(
+        "Interceptor",
+        room.factionRegistry,
+        player.id,
+        "Federation",
+        playerShip,
+      );
+      expect(lockoutShipLt.allowed).toBe(true);
+
+      // Verify "Military Destroyer" (requires Commander) is blocked
+      const lockoutShipCmdBlocked = checkUpgradeLockout(
+        "Military Destroyer",
+        room.factionRegistry,
+        player.id,
+        "Federation",
+        playerShip,
+      );
+      expect(lockoutShipCmdBlocked.allowed).toBe(false);
+
+      // Complete 3 more to reach 6 merits (Commander)
+      for (let i = 3; i <= 5; i++) {
+        const dummy = {
+          id: `d${i}`,
+          faction: "Federation",
+          reward: 3000,
+          generated: true,
+        };
+        player.missionManager.activeMissions.push(dummy);
+        const res = player.missionManager.completeGeneratedMission(
+          `d${i}`,
+          playerShip,
+          room,
+        );
+        if (i === 5) {
+          expect(res.mission.promotionMessage).toContain("COMMANDER");
+        }
+      }
+
+      expect(playerShip.navalMerits["Federation"]).toBe(6);
+      expect(playerShip.navalRank["Federation"]).toBe("COMMANDER");
+
+      // Verify "Military Destroyer" is now allowed!
+      const lockoutShipCmdAllowed = checkUpgradeLockout(
+        "Military Destroyer",
+        room.factionRegistry,
+        player.id,
+        "Federation",
+        playerShip,
+      );
+      expect(lockoutShipCmdAllowed.allowed).toBe(true);
+
+      room.destroy();
     });
   });
 });

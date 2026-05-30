@@ -59,6 +59,7 @@ export function handleOutfitBuy(
     factionRegistry,
     clientObj.id,
     targetPlanet.faction,
+    clientObj.ship,
   );
   if (!lockout.allowed) {
     clientObj.send({
@@ -118,6 +119,7 @@ export function handleShipBuy(clientObj, shipName, targetPlanet, room = null) {
     factionRegistry,
     clientObj.id,
     targetPlanet.faction,
+    clientObj.ship,
   );
   if (!lockout.allowed) {
     clientObj.send({
@@ -179,6 +181,8 @@ export function handleMissionAccept(
     clientObj.missionManager.generateMissionsForPlanet(
       planetName,
       room.planets,
+      room.factionRegistry,
+      clientObj.id,
     );
   }
 
@@ -524,6 +528,7 @@ export function handlePresetLoad(
       factionRegistry,
       clientObj.id,
       targetPlanet.faction,
+      clientObj.ship,
     );
     if (!lockout.allowed) {
       clientObj.send({

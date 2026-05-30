@@ -1320,6 +1320,13 @@ wss.on("connection", (ws) => {
             room,
           );
           for (const m of completed) {
+            if (m.promotionMessage) {
+              clientObj.send({
+                type: "notification",
+                message: m.promotionMessage,
+                style: "success",
+              });
+            }
             if (clientObj.fleetName) {
               const fleetSet = room.fleets.get(clientObj.fleetName);
               if (fleetSet && fleetSet.size > 1) {
@@ -1405,6 +1412,8 @@ wss.on("connection", (ws) => {
             clientObj.missionManager.generateMissionsForPlanet(
               targetPlanet.name,
               room.planets,
+              room.factionRegistry,
+              clientObj.id,
             );
           }
           const available =

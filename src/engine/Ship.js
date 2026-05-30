@@ -136,6 +136,8 @@ export class Ship extends SpaceEntity {
       isBoosting: false,
     };
     this.isInterdicting = false;
+    this.navalMerits = {};
+    this.navalRank = {};
   }
 
   /**

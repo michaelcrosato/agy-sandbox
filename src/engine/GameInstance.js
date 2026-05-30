@@ -936,6 +936,13 @@ export class GameInstance {
           this,
         );
         if (completedBounty) {
+          if (completedBounty.promotionMessage) {
+            client.send({
+              type: "notification",
+              message: completedBounty.promotionMessage,
+              style: "success",
+            });
+          }
           if (client.fleetName) {
             const fleetSet = this.fleets.get(client.fleetName);
             if (fleetSet && fleetSet.size > 1) {

@@ -159,8 +159,9 @@ Completed waves (`001–094`) are recorded DONE in `PROGRESS.md`. The advanced l
 
 Completed waves (`001–097`) are recorded DONE in `PROGRESS.md`. The emergent gameplay and centralized architecture wave:
 
-### Phase 0 — Core Architecture Hardening — `101`, `099`
+### Phase 0 — Core Architecture Hardening — `101`, `102`, `099`
 - `101` Self-Synchronizing Codebase "Living Codex" & Semantic Registry (scan directories, map classes, methods, JSDoc, tests, and specs into a dynamic machine plan/codex.json and plan/CODEX.md ontology).
+- `102` Interactive Visual Codex Dashboard & Ontological Tree UI (build zero-dependency HTML visualizer serving plan/codex.json, displaying folder topologies, JSDoc completions, test linkages, and spec alignment).
 - `099` Centralized Commodities & Unified Schema Registry (centralize commodities configurations and all WebSocket / request command structures into a unified schema registry to prevent client/server drift and validation bugs).
 
 ### Phase 1 — Emergent Universe Operations — `098`
@@ -178,11 +179,12 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
 | 101 | Codebase Living Codex | 0 | 5 | 5 | 5 | 5 | 20 |
+| 102 | Interactive Codex Dashboard | 0 | 5 | 5 | 5 | 5 | 20 |
 | 099 | Centralized Schema Registry | 0 | 5 | 5 | 5 | 5 | 20 |
 | 098 | Emergent Faction Territory | 1 | 5 | 4 | 4 | 5 | 18 |
 | 100 | Ship Fittings Preset Manager | 2 | 4 | 4 | 4 | 5 | 17 |
 
-**Recommended start:** `101` (Σ20 — Codebase Living Codex) immediately, followed by `099` (Σ20 — Centralized Commodities & Unified Schema Registry), then proceed to `098` (Σ18 — Emergent Faction Territory Control & Dynamic Sector Borders), and finally `100` (Σ17 — Ship Fittings Presets & Loadout Manager).
+**Recommended start:** `101` (Σ20 — Codebase Living Codex) immediately, followed by `102` (Σ20 — Interactive Codex Dashboard), then proceed to `099` (Σ20 — Centralized Commodities & Unified Schema Registry), and finally `098` (Σ18) and `100` (Σ17).
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

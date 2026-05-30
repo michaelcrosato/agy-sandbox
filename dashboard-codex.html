@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📖 Starfall Living Codex Telemetry Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-bg: #070913;
+      --color-card-bg: rgba(13, 17, 39, 0.45);
+      --color-border: rgba(0, 240, 255, 0.08);
+      --color-border-hover: rgba(0, 240, 255, 0.25);
+      --color-primary: #00f0ff;
+      --color-primary-glow: rgba(0, 240, 255, 0.4);
+      --color-secondary: #bd00ff;
+      --color-success: #39ff14;
+      --color-warning: #ffb700;
+      --color-danger: #ff0055;
+      --color-text: #e2e8f0;
+      --color-text-muted: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--color-bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(189, 0, 255, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(0, 240, 255, 0.05) 0px, transparent 50%);
+      color: var(--color-text);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding: 2rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 1.5rem;
+    }
+
+    .title-group h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -0.05em;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 40px rgba(0, 240, 255, 0.1);
+    }
+
+    .title-group p {
+      font-size: 0.95rem;
+      color: var(--color-text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .server-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--color-border);
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-danger);
+      box-shadow: 0 0 10px var(--color-danger);
+      transition: all 0.3s ease;
+    }
+
+    .status-dot.online {
+      background: var(--color-success);
+      box-shadow: 0 0 10px var(--color-success);
+    }
+
+    /* Grid layout */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: var(--color-card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: var(--color-border-hover);
+      box-shadow: 0 10px 30px rgba(0, 240, 255, 0.03);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.5s ease;
+    }
+
+    .card:hover::before {
+      transform: translateX(100%);
+    }
+
+    .card-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .card-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .card-footer-text {
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    /* Big double-column cards */
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 2.5fr 1.5fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .pane {
+      background: var(--color-card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      height: 600px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pane-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      padding-bottom: 1rem;
+    }
+
+    .pane-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .search-bar {
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      font-family: inherit;
+      font-size: 0.9rem;
+      width: 250px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .search-bar:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.15);
+    }
+
+    /* Interactive Tree UI */
+    .tree-container {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+    }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.01);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--color-border-hover);
+      border-radius: 3px;
+    }
+
+    .tree-folder {
+      margin-bottom: 0.75rem;
+    }
+
+    .folder-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.02);
+      transition: all 0.2s ease;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .folder-header:hover {
+      background: rgba(0, 240, 255, 0.03);
+      border-color: rgba(0, 240, 255, 0.1);
+    }
+
+    .folder-icon {
+      color: var(--color-primary);
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    .folder-content {
+      margin-left: 1.5rem;
+      border-left: 1px dashed rgba(255, 255, 255, 0.05);
+      padding-left: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.35rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+
+    .file-item:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .file-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 500;
+      color: var(--color-text);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .file-name:hover {
+      color: var(--color-primary);
+      text-shadow: 0 0 10px var(--color-primary-glow);
+    }
+
+    .file-loc {
+      color: var(--color-text-muted);
+      font-size: 0.75rem;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-covered {
+      background: rgba(57, 255, 20, 0.1);
+      color: var(--color-success);
+      border: 1px solid rgba(57, 255, 20, 0.2);
+    }
+
+    .badge-missing-jsdoc {
+      background: rgba(255, 183, 0, 0.1);
+      color: var(--color-warning);
+      border: 1px solid rgba(255, 183, 0, 0.2);
+    }
+
+    .badge-untested {
+      background: rgba(255, 0, 85, 0.1);
+      color: var(--color-danger);
+      border: 1px solid rgba(255, 0, 85, 0.2);
+    }
+
+    /* Details Panel */
+    .details-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: var(--color-text-muted);
+      border: 1px dashed rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    .details-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      width: 100%;
+      margin-top: 1rem;
+      text-align: left;
+    }
+
+    .details-item {
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      padding: 0.75rem;
+    }
+
+    .details-item-label {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+    }
+
+    .details-item-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+      margin-top: 0.25rem;
+      word-break: break-all;
+    }
+
+    /* Epistemic Debt Table UI */
+    .debt-pane {
+      background: var(--color-card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .debt-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      text-align: left;
+    }
+
+    .debt-table th {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-text-muted);
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .debt-table td {
+      font-size: 0.85rem;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    }
+
+    .debt-table tr:hover td {
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .debt-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="title-group">
+      <h1>📖 Starfall Living Codex</h1>
+      <p>Self-Synchronizing Ontological Codebase Telemetry & Knowledge Graph Dashboard</p>
+    </div>
+    <div class="server-status">
+      <div id="status-dot" class="status-dot"></div>
+      <span id="status-text">Connecting</span>
+    </div>
+  </header>
+
+  <!-- High-level stats grid -->
+  <div class="grid">
+    <div class="card">
+      <div class="card-label">Total Code Volume</div>
+      <div id="metric-loc" class="card-value">-</div>
+      <div class="card-footer-text">Lines of Javascript</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Source Modules</div>
+      <div id="metric-files" class="card-value">-</div>
+      <div class="card-footer-text">Analyzed Components</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Total Test Cases</div>
+      <div id="metric-tests" class="card-value">-</div>
+      <div class="card-footer-text">Headless assertions</div>
+    </div>
+    <div class="card">
+      <div class="card-label">JSDoc Completeness</div>
+      <div id="metric-jsdoc" class="card-value">-</div>
+      <div class="card-footer-text">Type signature coverage</div>
+    </div>
+  </div>
+
+  <!-- Interactive Ontological Visualizer -->
+  <div class="dashboard-layout">
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title">🗺️ Repository Topology Map</div>
+        <input type="text" id="search-input" class="search-bar" placeholder="Search by name, spec, or symbol...">
+      </div>
+      <div id="tree-container" class="tree-container">
+        <!-- Dynamic folders and files -->
+      </div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <div class="pane-title">🔍 Semantic Inspector</div>
+      </div>
+      <div id="details-container" class="details-panel">
+        <div class="details-title">Select a File</div>
+        <p>Click on any file in the topology map to inspect its classes, exported signatures, and specification links.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Epistemic Debt Section -->
+  <div class="debt-pane">
+    <div class="pane-title">⚠️ Codebase Epistemic Debt & Static Gaps</div>
+    <table class="debt-table">
+      <thead>
+        <tr>
+          <th>Module Path</th>
+          <th>Static Gaps / Stale Logic Detected</th>
+          <th>Severity</th>
+        </tr>
+      </thead>
+      <tbody id="debt-table-body">
+        <!-- Dynamic items -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    let codexData = null;
+
+    // Connect to server or load simulated mock fallback if offline
+    async function init() {
+      const elStatusDot = document.getElementById("status-dot");
+      const elStatusText = document.getElementById("status-text");
+
+      try {
+        const res = await fetch("/codex");
+        if (!res.ok) throw new Error("Server metrics not ready");
+        codexData = await res.json();
+        
+        elStatusDot.classList.add("online");
+        elStatusText.innerText = "Online";
+        renderDashboard(codexData);
+      } catch (err) {
+        console.warn("⚠️ Local telemetry endpoint offline. Activating dynamic simulation baseline.");
+        elStatusDot.classList.remove("online");
+        elStatusText.innerText = "Offline (Simulation)";
+        
+        // Dynamic offline mock sandbox compilation matching real agy-sandbox scope
+        codexData = generateMockCodex();
+        renderDashboard(codexData);
+      }
+    }
+
+    function renderDashboard(data) {
+      // 1. Populate Metrics
+      document.getElementById("metric-loc").innerText = data.stats.totalLoc.toLocaleString();
+      document.getElementById("metric-files").innerText = `${data.stats.totalSourceFiles} Files`;
+      document.getElementById("metric-tests").innerText = `${data.stats.totalTests} Tests`;
+      
+      const totalJsDocItems = data.files.reduce((sum, f) => sum + f.classes.length + f.exports.length, 0);
+      const missingJsDocsCount = data.epistemicDebt.missingJsDocs.reduce((sum, f) => sum + f.symbols.length, 0);
+      const jsDocPercent = totalJsDocItems > 0 ? ((totalJsDocItems - missingJsDocsCount) / totalJsDocItems * 100).toFixed(0) : "100";
+      document.getElementById("metric-jsdoc").innerText = `${jsDocPercent}%`;
+
+      // 2. Render Folder Tree Map
+      renderTreeMap(data.files, "");
+
+      // 3. Render Epistemic Debt Table
+      renderDebtTable(data);
+
+      // 4. Wire Search/Filter Input
+      const searchInput = document.getElementById("search-input");
+      searchInput.addEventListener("input", (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        if (query === "") {
+          renderTreeMap(data.files, "");
+        } else {
+          const filtered = data.files.filter(f => {
+            const hasClass = f.classes.some(c => c.name.toLowerCase().includes(query));
+            const hasExport = f.exports.some(ex => ex.name.toLowerCase().includes(query));
+            const matchesPath = f.path.toLowerCase().includes(query);
+            const matchesSpec = f.referencingSpecs.some(spec => spec.toLowerCase().includes(query));
+            return hasClass || hasExport || matchesPath || matchesSpec;
+          });
+          renderTreeMap(filtered, query);
+        }
+      });
+    }
+
+    function renderTreeMap(files, highlightQuery) {
+      const container = document.getElementById("tree-container");
+      container.innerHTML = "";
+
+      // Group files by directory
+      const directories = {};
+      for (const f of files) {
+        const dir = f.path.split("/").slice(0, -1).join("/") || "root";
+        if (!directories[dir]) directories[dir] = [];
+        directories[dir].push(f);
+      }
+
+      for (const [dir, dirFiles] of Object.entries(directories)) {
+        const elFolder = document.createElement("div");
+        elFolder.className = "tree-folder";
+
+        const elHeader = document.createElement("div");
+        elHeader.className = "folder-header";
+        elHeader.innerHTML = `
+          <svg class="folder-icon" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/></svg>
+          <span>${dir}/</span>
+        `;
+
+        const elContent = document.createElement("div");
+        elContent.className = "folder-content";
+
+        for (const f of dirFiles) {
+          const elFile = document.createElement("div");
+          elFile.className = "file-item";
+
+          let badgeClass = "badge-covered";
+          let badgeLabel = "Green";
+
+          if (!f.testFile) {
+            badgeClass = "badge-untested";
+            badgeLabel = "Untested";
+          } else if (f.missingJsDocSymbols && f.missingJsDocSymbols.length > 0) {
+            badgeClass = "badge-missing-jsdoc";
+            badgeLabel = "JSDoc Gaps";
+          }
+
+          elFile.innerHTML = `
+            <div class="file-info">
+              <span class="file-name" data-path="${f.path}">${f.path.split("/").pop()}</span>
+              <span class="file-loc">${f.loc} LOC</span>
+            </div>
+            <span class="badge ${badgeClass}">${badgeLabel}</span>
+          `;
+
+          // Wire file click inspector
+          elFile.querySelector(".file-name").addEventListener("click", () => {
+            inspectFile(f);
+          });
+
+          elContent.appendChild(elFile);
+        }
+
+        // Collapse/Expand toggle
+        elHeader.addEventListener("click", () => {
+          elContent.style.display = elContent.style.display === "none" ? "block" : "none";
+        });
+
+        elFolder.appendChild(elHeader);
+        elFolder.appendChild(elContent);
+        container.appendChild(elFolder);
+      }
+    }
+
+    function inspectFile(file) {
+      const container = document.getElementById("details-container");
+      container.className = "pane-header"; // resets layout
+      container.style.border = "none";
+      container.style.textAlign = "left";
+      container.style.display = "block";
+      container.style.height = "100%";
+      container.style.overflowY = "auto";
+
+      const classesHtml = file.classes.map(c => `
+        <div class="details-item">
+          <div class="details-item-label">Class</div>
+          <div class="details-item-value">${c.name}</div>
+        </div>
+      `).join("") || `<div style="font-size:0.85rem;color:var(--color-text-muted)">None</div>`;
+
+      const exportsHtml = file.exports.map(ex => `
+        <div class="details-item">
+          <div class="details-item-label">Export (${ex.type})</div>
+          <div class="details-item-value">${ex.name}</div>
+        </div>
+      `).join("") || `<div style="font-size:0.85rem;color:var(--color-text-muted)">None</div>`;
+
+      const specsHtml = file.referencingSpecs.map(s => `
+        <div class="details-item" style="border-color: var(--color-primary-glow);">
+          <div class="details-item-label">Spec alignment</div>
+          <div class="details-item-value">${s.split("/").pop()}</div>
+        </div>
+      `).join("") || `<div style="font-size:0.85rem;color:var(--color-text-muted)">None</div>`;
+
+      container.innerHTML = `
+        <div class="details-title" style="font-size:1.4rem;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:0.5rem;margin-bottom:1rem;">
+          📄 ${file.path.split("/").pop()}
+        </div>
+        <div style="font-size:0.85rem;color:var(--color-text-muted);margin-bottom:1rem;">Full Path: ${file.path}</div>
+        
+        <div style="font-weight:600;margin-bottom:0.5rem;text-transform:uppercase;font-size:0.8rem;letter-spacing:0.05em;">Classes defined</div>
+        <div style="display:grid;grid-template-columns:1fr;gap:0.5rem;margin-bottom:1.5rem;">${classesHtml}</div>
+
+        <div style="font-weight:600;margin-bottom:0.5rem;text-transform:uppercase;font-size:0.8rem;letter-spacing:0.05em;">Exported signatures</div>
+        <div style="display:grid;grid-template-columns:1fr;gap:0.5rem;margin-bottom:1.5rem;">${exportsHtml}</div>
+
+        <div style="font-weight:600;margin-bottom:0.5rem;text-transform:uppercase;font-size:0.8rem;letter-spacing:0.05em;">Referencing Specifications</div>
+        <div style="display:grid;grid-template-columns:1fr;gap:0.5rem;margin-bottom:1.5rem;">${specsHtml}</div>
+
+        <div style="font-weight:600;margin-bottom:0.5rem;text-transform:uppercase;font-size:0.8rem;letter-spacing:0.05em;">Unit Test correlation</div>
+        <div class="details-item">
+          <div class="details-item-label">Test file</div>
+          <div class="details-item-value">${file.testFile ? file.testFile.split("/").pop() : "❌ Untested"}</div>
+        </div>
+      `;
+    }
+
+    function renderDebtTable(data) {
+      const tbody = document.getElementById("debt-table-body");
+      tbody.innerHTML = "";
+
+      let debtItems = [];
+
+      // 1. Untested Core Files
+      for (const f of data.epistemicDebt.untestedCoreFiles) {
+        debtItems.push({
+          path: f,
+          issue: "Module is completely missing an associated unit test suite.",
+          severity: "Crimson (High)",
+          style: "color:var(--color-danger);"
+        });
+      }
+
+      // 2. Broken Spec references
+      for (const s of data.epistemicDebt.staleSpecReferences) {
+        debtItems.push({
+          path: s.spec,
+          issue: `Spec references missing files: ${s.brokenFiles.join(", ")}`,
+          severity: "Crimson (High)",
+          style: "color:var(--color-danger);"
+        });
+      }
+
+      // 3. Missing JSDocs
+      for (const m of data.epistemicDebt.missingJsDocs) {
+        for (const sym of m.symbols) {
+          debtItems.push({
+            path: m.path,
+            issue: `Line ${sym.line}: Missing JSDoc type signature for ${sym.type} '${sym.name}'.`,
+            severity: "Amber (Low)",
+            style: "color:var(--color-warning);"
+          });
+        }
+      }
+
+      if (debtItems.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="3" style="text-align:center;color:var(--color-text-muted);">
+              🎉 Clean slate! Zero epistemic debt or static gaps detected in active sandbox.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      for (const d of debtItems) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><strong>${d.path}</strong></td>
+          <td>${d.issue}</td>
+          <td><span class="debt-status" style="${d.style}">${d.severity}</span></td>
+        `;
+        tbody.appendChild(row);
+      }
+    }
+
+    // Dynamic offline mock fallback compilation matching real agy-sandbox scope
+    function generateMockCodex() {
+      return {
+        generatedAt: new Date().toISOString(),
+        stats: {
+          totalSourceFiles: 67,
+          totalTestFiles: 93,
+          totalSpecFiles: 107,
+          totalLoc: 15601,
+          totalTests: 1309,
+          untestedCoreFilesCount: 0
+        },
+        files: [
+          {
+            path: "src/net/ApiRateLimiter.js",
+            loc: 312,
+            classes: [{ name: "ApiRateLimiter", line: 11 }],
+            exports: [{ name: "activateOutboundSentinel", type: "function", line: 122 }],
+            testFile: "src/net/ApiRateLimiter.test.js",
+            testCasesCount: 11,
+            referencingSpecs: ["plan/specs/097_guest_isolation_api_rate_limiter.md"],
+            missingJsDocSymbols: []
+          },
+          {
+            path: "src/persistence/GalacticChronicle.js",
+            loc: 118,
+            classes: [{ name: "GalacticChronicle", line: 15 }],
+            exports: [],
+            testFile: "src/persistence/GalacticChronicle.test.js",
+            testCasesCount: 7,
+            referencingSpecs: ["plan/specs/096_galactic_chronicle_observability.md"],
+            missingJsDocSymbols: []
+          },
+          {
+            path: "src/engine/ai/UtilityAI.js",
+            loc: 398,
+            classes: [],
+            exports: [{ name: "evaluateGoals", type: "function", line: 15 }],
+            testFile: "src/engine/ai/UtilityAI.test.js",
+            testCasesCount: 16,
+            referencingSpecs: [],
+            missingJsDocSymbols: []
+          }
+        ],
+        epistemicDebt: {
+          untestedCoreFiles: [],
+          missingJsDocs: [
+            {
+              path: "src/engine/ai/UtilityAI.js",
+              symbols: [{ name: "scoreTrade", type: "function", line: 89 }]
+            }
+          ],
+          staleSpecReferences: []
+        }
+      };
+    }
+
+    // Start
+    init();
+  </script>
+</body>
+</html>

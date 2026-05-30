@@ -208,6 +208,26 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // SPEC-102: Serve Codebase Living Codex JSON Data & friendly visual redirect
+  if (safeUrl === "/codex") {
+    const codexPath = path.resolve("plan/codex.json");
+    if (fs.existsSync(codexPath)) {
+      res.writeHead(200, {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      });
+      res.end(fs.readFileSync(codexPath, "utf8"));
+    } else {
+      res.writeHead(404, { "Content-Type": "text/plain" });
+      res.end("Living Codex data not found. Please run codex:generate first.");
+    }
+    return;
+  }
+
+  if (safeUrl === "/dashboard-codex") {
+    safeUrl = "/dashboard-codex.html";
+  }
+
   if (safeUrl === "/" || safeUrl === "") {
     safeUrl = "/index.html";
   }

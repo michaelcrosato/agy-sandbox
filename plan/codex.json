@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-30T23:56:20.754Z",
+  "generatedAt": "2026-05-30T23:58:27.541Z",
   "stats": {
     "totalSourceFiles": 67,
-    "totalTestFiles": 93,
-    "totalSpecFiles": 107,
+    "totalTestFiles": 94,
+    "totalSpecFiles": 108,
     "totalLoc": 15601,
-    "totalTests": 1309,
+    "totalTests": 1313,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -3368,6 +3368,17 @@
       "pillar": "P7 — Netcode & Scale / Maintenance / Observability",
       "filesMentioned": [
         "src/**/*.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/102_living_codex_interactive_dashboard.md",
+      "filename": "102_living_codex_interactive_dashboard.md",
+      "title": "SPEC-102 — Observability: Interactive Visual Codex Dashboard & Ontological Tree UI",
+      "status": "Todo",
+      "priority": "High",
+      "pillar": "P8 — Presentation & Game Feel / Observability / Living Codex",
+      "filesMentioned": [
+        "src/server/codexDashboard.integration.test.js"
       ]
     }
   ],

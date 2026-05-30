@@ -197,6 +197,8 @@ export class CanvasRenderer {
         this.drawCargoPod(ent);
       } else if (ent.type === "warp_gate") {
         this.drawWarpGate(ent);
+      } else if (ent.type === "cosmic_storm") {
+        this.drawCosmicStorm(ent, dt);
       } else {
         this.drawAsteroid(ent);
       }
@@ -1707,6 +1709,84 @@ export class CanvasRenderer {
         gate.position.y - gate.radius - 6,
       );
     }
+
+    this.ctx.restore();
+  }
+
+  /**
+   * Draws a wandering server-authoritative cosmic storm cloud.
+   * @param {Object} storm - Cosmic storm entity.
+   * @param {number} _dt - Frame time delta.
+   */
+  drawCosmicStorm(storm, _dt) {
+    this.ctx.save();
+
+    // Draw a radial gradient background for the storm cloud
+    const grad = this.ctx.createRadialGradient(
+      storm.position.x,
+      storm.position.y,
+      0,
+      storm.position.x,
+      storm.position.y,
+      storm.radius,
+    );
+
+    // Use orange/yellow colors for EMP storm, green/blue for radioactive cloud
+    const baseColor =
+      storm.color ||
+      (storm.hazardType === "emp_storm"
+        ? "rgba(255, 140, 0, 0.12)"
+        : "rgba(57, 255, 20, 0.12)");
+    const particleColor =
+      storm.particleColor ||
+      (storm.hazardType === "emp_storm"
+        ? "rgba(255, 140, 0, 0.35)"
+        : "rgba(57, 255, 20, 0.35)");
+
+    grad.addColorStop(0, baseColor);
+    grad.addColorStop(0.5, baseColor.replace(/[\d.]+\)$/, "0.08)"));
+    grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+    this.ctx.fillStyle = grad;
+    this.ctx.beginPath();
+    this.ctx.arc(
+      storm.position.x,
+      storm.position.y,
+      storm.radius,
+      0,
+      Math.PI * 2,
+    );
+    this.ctx.fill();
+
+    // Draw an outer pulsing dashed border ring
+    this.ctx.strokeStyle = particleColor;
+    this.ctx.lineWidth = 1.5;
+    this.ctx.setLineDash([8, 12]);
+    this.ctx.beginPath();
+    this.ctx.arc(
+      storm.position.x,
+      storm.position.y,
+      storm.radius,
+      0,
+      Math.PI * 2,
+    );
+    this.ctx.stroke();
+
+    // Draw the storm type label at its center
+    this.ctx.font = "bold 11px 'Orbitron', 'Inter', sans-serif";
+    this.ctx.fillStyle = particleColor;
+    this.ctx.textAlign = "center";
+    this.ctx.textBaseline = "middle";
+    this.ctx.fillText(
+      (
+        storm.name ||
+        (storm.hazardType === "emp_storm"
+          ? "Solar EMP Storm"
+          : "Radioactive Fog")
+      ).toUpperCase(),
+      storm.position.x,
+      storm.position.y,
+    );
 
     this.ctx.restore();
   }

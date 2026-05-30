@@ -307,6 +307,7 @@ const physicsInterval = setInterval(() => {
 
     // B. Apply Solar EMP Events Shield Regen nerfing
     const originalRegens = new Map();
+    const originalCooldowns = new Map();
     if (room.activeSectorEvent && room.activeSectorEvent.type === "emp") {
       const empPlanet = room.planets.find(
         (p) => p.name === room.activeSectorEvent.planetName,
@@ -436,6 +437,35 @@ const physicsInterval = setInterval(() => {
       }
     }
 
+    // E2. Apply Authoritative Cosmic Storm Hazards
+    for (const ent of room.engine.entities) {
+      if (ent.type === "ship" && !ent.isDestroyed) {
+        for (const storm of room.engine.entities) {
+          if (storm.type === "cosmic_storm") {
+            const dx = ent.position.x - storm.position.x;
+            const dy = ent.position.y - storm.position.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist <= storm.radius) {
+              if (storm.hazardType === "emp_storm") {
+                // Drain ship energy reserves (-15 energy/sec)
+                ent.energy = Math.max(0, ent.energy - 15 * dt);
+                // Double weapon cooldown delay
+                if (!originalCooldowns.has(ent)) {
+                  originalCooldowns.set(ent, ent.weaponCooldown);
+                }
+                ent.weaponCooldown = originalCooldowns.get(ent) * 2.0;
+              } else if (storm.hazardType === "radioactive_cloud") {
+                // Deals slow, direct armor decay if shields are depleted (-5 armor/sec)
+                if (ent.shield <= 0) {
+                  ent.armor = Math.max(0, ent.armor - 5 * dt);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     // F. Scramble aggressive interceptor patrols for hostile players
     room.checkReputationPatrolSpawns(dt);
     room.checkContrabandSpaceScans(dt);
@@ -443,9 +473,12 @@ const physicsInterval = setInterval(() => {
     // G. Update local room physical kinematics
     room.engine.update(dt);
 
-    // G. Restore shield regens
+    // G. Restore shield regens and weapon cooldowns
     for (const [ship, origRegen] of originalRegens.entries()) {
       ship.shieldRegen = origRegen;
+    }
+    for (const [ship, origCooldown] of originalCooldowns.entries()) {
+      ship.weaponCooldown = origCooldown;
     }
 
     // H. Replenish Asteroids

@@ -100,25 +100,26 @@ describe("EconomyManager", () => {
   test("should prevent normalizing prices for items currently undergoing active event", () => {
     // Force shortage event on Sol food
     const sol = planets.find((p) => p.name === "Sol");
-    sol.market.food = 100; // base
+    const basePrice = BASE_MARKETS["Sol"]["food"];
+    sol.market.food = basePrice; // base
 
     manager.activeEconomicEvent = {
       planetName: "Sol",
       commodity: "food",
-      originalPrice: 100,
-      newPrice: 180,
+      originalPrice: basePrice,
+      newPrice: basePrice * 1.8,
       isShortage: true,
       type: "shortage",
     };
-    sol.market.food = 180;
+    sol.market.food = basePrice * 1.8;
 
     // Normalizing prices should NOT change Sol food
     manager.normalizePrices();
-    expect(sol.market.food).toBe(180);
+    expect(sol.market.food).toBe(basePrice * 1.8);
 
     // Clear event and normalize, price should drift back
     manager.clearActiveEvent();
-    expect(sol.market.food).toBe(100); // clear restores baseline directly
+    expect(sol.market.food).toBe(basePrice); // clear restores baseline directly
   });
 
   test("should tick event durations and end expired events correctly", () => {

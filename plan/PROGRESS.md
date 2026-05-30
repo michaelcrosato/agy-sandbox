@@ -19,7 +19,7 @@ _**v11 re-audit baseline (2026-05-30, ENTIRE v10 blueprint shipped): 871 Jest te
 ## v11 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
-- [ ] `063` Dynamic Cosmic Storms & Wandering Anomalies (wandering server-authoritative cosmic hazards that drift across sectors, draining ship energy, reducing sensor range, and causing direct armor decay)
+- [x] `063` Dynamic Cosmic Storms & Wandering Anomalies (wandering server-authoritative cosmic hazards that drift across sectors, draining ship energy, reducing sensor range, and causing direct armor decay) — **done** (files: `src/engine/CosmicStorm.js`, `src/engine/CosmicStorm.test.js`, `src/engine/CosmicStorm.integration.test.js`, `src/engine/GameInstance.js`, `src/engine/ai/buildPerception.js`, `src/server.js`, `src/client/CanvasRenderer.js`, `src/engine/EconomyManager.test.js`; implemented server-authoritative wandering cosmic storm hazards that drift across sectors, draining ship energy, jamming sensors, and causing armor decay, with dynamic canvas rendering and 100% green Jest coverage; 879 Jest tests green).
 
 ### Phase 1 — Core Upgrades & Feature Delivery
 - [ ] `064` Faction Reputation Milestones & Bounty Hunters (standing-locked Allied ambassadorial escort missions at Spaceports, and persistent nadir-standing elite faction hunter spawns aggressively chasing players)

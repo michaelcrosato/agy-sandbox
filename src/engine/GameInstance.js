@@ -6,6 +6,7 @@ import { SpaceEntity } from "./SpaceEntity.js";
 import { AIController } from "./ai/AIController.js";
 import { DEFAULT_OUTFITS } from "./outfitCatalog.js";
 import { CargoPod } from "./CargoPod.js";
+import { CosmicStorm } from "./CosmicStorm.js";
 import { EconomyManager } from "./EconomyManager.js";
 import { GalaxyEventsManager } from "./GalaxyEventsManager.js";
 import { FactionRegistry } from "./FactionRegistry.js";
@@ -109,6 +110,7 @@ export class GameInstance {
     this.tags = [];
     this.engine = new SpaceEngine({ globalDrag: 0.1, restitution: 0.4 });
     this.planets = [];
+    this.cosmicStorms = [];
     this.ais = [];
     this.fleets = new Map(); // fleetName -> Set<clientObj>
     this.clients = new Map(); // ws -> clientObj
@@ -424,6 +426,36 @@ export class GameInstance {
       this.engine.addEntity(gShip);
       this.ais.push(controller);
     }
+
+    // Seed authoritative Wandering Cosmic Storms
+    const empStorm = new CosmicStorm({
+      id: "storm_emp_1",
+      name: "Stellar EMP Storm",
+      description: "High-intensity solar flares draining energy reserves.",
+      position: new Vector2D(-500, -500),
+      radius: 400,
+      velocity: new Vector2D(5, 5),
+      hazardType: "emp_storm",
+      color: "rgba(255, 140, 0, 0.12)",
+      particleColor: "rgba(255, 140, 0, 0.35)",
+    });
+    this.cosmicStorms.push(empStorm);
+    this.engine.addEntity(empStorm);
+
+    const radioactiveStorm = new CosmicStorm({
+      id: "storm_rad_1",
+      name: "Radioactive Anomaly",
+      description:
+        "Ultra-dense toxic fallout fog causing hull erosion and sensor jamming.",
+      position: new Vector2D(1200, -800),
+      radius: 350,
+      velocity: new Vector2D(-6, 4),
+      hazardType: "radioactive_cloud",
+      color: "rgba(57, 255, 20, 0.12)",
+      particleColor: "rgba(57, 255, 20, 0.35)",
+    });
+    this.cosmicStorms.push(radioactiveStorm);
+    this.engine.addEntity(radioactiveStorm);
   }
 
   /**
@@ -770,6 +802,12 @@ export class GameInstance {
           base.targetPosition = ent.targetPosition
             ? { x: ent.targetPosition.x, y: ent.targetPosition.y }
             : null;
+        } else if (ent.type === "cosmic_storm") {
+          base.name = ent.name;
+          base.description = ent.description;
+          base.hazardType = ent.hazardType;
+          base.color = ent.color;
+          base.particleColor = ent.particleColor;
         }
         return base;
       });

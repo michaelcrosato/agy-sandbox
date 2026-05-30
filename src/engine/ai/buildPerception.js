@@ -274,6 +274,25 @@ export function buildPerception(ship, entities, options = {}) {
   const prey = [];
   const trades = [];
 
+  let activeSensorRange = opts.sensorRange;
+  if (ship && ship.position) {
+    for (const ent of list) {
+      if (
+        ent &&
+        ent.type === "cosmic_storm" &&
+        ent.hazardType === "radioactive_cloud"
+      ) {
+        const dx = ship.position.x - ent.position.x;
+        const dy = ship.position.y - ent.position.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist <= ent.radius) {
+          activeSensorRange *= 0.5;
+          break;
+        }
+      }
+    }
+  }
+
   if (ship && ship.position) {
     for (const ent of list) {
       if (!ent || ent === ship || !ent.position) continue;
@@ -281,7 +300,7 @@ export function buildPerception(ship, entities, options = {}) {
         continue;
       }
       const distance = ship.position.distance(ent.position);
-      if (!Number.isFinite(distance) || distance >= opts.sensorRange) continue;
+      if (!Number.isFinite(distance) || distance >= activeSensorRange) continue;
 
       if (opts.isThreat(ent, ship, opts)) {
         threats.push({

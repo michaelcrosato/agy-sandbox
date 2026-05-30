@@ -22,8 +22,18 @@ _**v15 re-audit baseline (2026-05-30, ENTIRE v14 blueprint shipped): 901 Jest te
 _**v16 re-audit baseline (2026-05-30, ENTIRE v15 blueprint shipped): 904 Jest tests / 73 suites + 26 client green + 3 Vitest browser tests green; 0 `npm audit` vulnerabilities; pairwise standing propagation + generative consequences broadcast + wingman formations and HUD overlay all DONE.**_
 _**v17 re-audit baseline (2026-05-30, ENTIRE v16 blueprint shipped): 909 Jest tests / 73 suites + 28 client green; 0 npm audit vulnerabilities; spaceport ore refining + reputation decay heartbeat hook + wingman FSM intercept and telemetry panel HUD all DONE.**_
 _**v18 re-audit baseline (2026-05-30, ENTIRE v17 blueprint shipped): 912 Jest tests / 73 suites + 30 client green; 0 npm audit vulnerabilities; tractor outfit mass + black market spaceports + standing-aware trade advisor HUD all DONE.**_
+_**v19 re-audit baseline (2026-05-30, ENTIRE v19 blueprint shipped): 921 Jest tests / 73 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; dynamic trade profit metric + NPC smuggler fleets + stargate nav overlay all DONE.**_
 
-## v19 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
+## v20 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Quick Wins & Safety
+- [ ] `089` zero-trust WebSocket input schema validation (construct a performant zero-dependency schema validation utility for all inbound socket payloads to prevent prototype pollution and overflow injections)
+- [ ] `090` event-loop latency monitoring & backpressure load-shedding (monitor process tick lag dynamically and implement automatic broadcast shedding of optional frames under critical loop load)
+
+### Phase 1 — Core Upgrades & Feature Delivery
+- [ ] `091` game invariant verifier & heartbeat self-healing (periodically audit credits, cargo capacities, physics coordinates, and outfitting slots on server heartbeat, silently repairing anomalous states)
+
+## v19 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
 - [x] `087` dynamic trade profit metric in AI perception (calculate price spreads across docked ports in sector, apply standings discounts, and feed normalized profitability score directly to buildPerception's tradeProfit perception value) — **done** (files: `src/engine/ai/buildPerception.js`, `src/engine/ai/buildPerception.test.js`, `src/engine/GameInstance.js`, `src/engine/ai/AIController.js`; implemented standings-aware, black-market and transaction-tax aware dynamic price spread calculations, factoring them into NPC merchant profit scoring and updating AIController initialization/update routes; 917 Jest tests green)

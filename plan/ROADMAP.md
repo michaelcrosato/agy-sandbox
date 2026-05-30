@@ -114,18 +114,16 @@ flowchart TD
 
 ---
 
-## EXECUTION WAVES (v19)
+## EXECUTION WAVES (v20)
 
-Completed waves (`001–085`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
+Completed waves (`001–088`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
 
-### Phase 0 — Quick Wins & Safety — `087`
-`087` dynamic trade profit metric in AI perception (calculate price spreads across docked ports in sector, apply standings discounts, and feed normalized profitability score directly to buildPerception's tradeProfit perception value).
+### Phase 0 — Quick Wins & Safety — `089`, `090`
+- `089` Zero-Trust WebSocket Input Schema Validation & Sanitization (construct a performant zero-dependency input schema validator for all websocket commands to prevent prototype pollution and corrupt parameter attacks).
+- `090` Event-Loop Latency Monitoring & Backpressure Load-Shedding (track real-time event-loop delays and dynamically drop non-essential message broadcasts under high process load).
 
-### Phase 1 — Core Upgrades & Feature Delivery — `086`
-`086` NPC smuggler fleets & underworld trader AI (design smuggler merchant AI loading contraband cargo, pathing through outlaw ports, and activating decoy radar jammers to escape security space patrols).
-
-### Phase 2 — System Architecture — `088`
-`088` stargate navigation NAV-computer overlay (construct slide-out gold glassmorphic HUD nav-computer card, calculate shortest path BFS gate routes to hud target sector, and draw neon-purple holographic visual gates brackets).
+### Phase 1 — Core Upgrades & Feature Delivery — `091`
+- `091` Authoritative Game Invariant Verifier & Heartbeat Self-Healing Loop (periodically check system credits, cargo limits, coordinates, and outfitting slots, automatically correcting anomalies to protect state integrity).
 
 ---
 
@@ -135,11 +133,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 087 | Dynamic Trade Profit Metric in AI | 0 | 5 | 5 | 5 | 5 | 20 |
-| 086 | NPC Smuggler Fleets & Trader AI | 1 | 5 | 5 | 4 | 5 | 19 |
-| 088 | Stargate Navigation Overlay HUD | 2 | 5 | 4 | 4 | 5 | 18 |
+| 089 | Zero-Trust WebSocket Validation | 0 | 5 | 5 | 5 | 5 | 20 |
+| 090 | Event-Loop Latency Monitoring | 0 | 4 | 5 | 5 | 5 | 19 |
+| 091 | Game Invariant Self-Healing Verifier | 1 | 5 | 5 | 4 | 5 | 19 |
 
-**Recommended start:** `087` (Σ20 — dynamic trade profit perception), then proceed to `086` (Σ19) for smuggler fleets, and finally `088` (Σ18) for the stargate nav computer overlay.
+**Recommended start:** `089` (Σ20 — security validation boundaries), then proceed to `090` (Σ19) for load-shedding performance, and finally `091` (Σ19) for state-integrity verification.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

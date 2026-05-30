@@ -1,5 +1,6 @@
 import { SpaceEntity } from "./SpaceEntity.js";
 import { ramscoopRegen } from "./Hyperdrive.js";
+import { makeEmptyCargo } from "./commodities.js";
 
 /**
  * Enhanced Ship class representing player and NPC ships with shields, armor, cargo, credits, weapons, and upgrade systems.
@@ -96,15 +97,7 @@ export class Ship extends SpaceEntity {
     this.cargoCapacity = cargoCapacity;
     // Passenger berths (EW4) — passenger-charter missions occupy these, not cargo.
     this.passengerCapacity = passengerCapacity;
-    this.cargo = {
-      food: 0,
-      electronics: 0,
-      minerals: 0,
-      luxuries: 0,
-      contraband: 0,
-      machinery: 0,
-      ore: 0,
-    };
+    this.cargo = makeEmptyCargo();
 
     // Weapon & Outfit Loadouts
     this.outfits = ["Basic Laser"];

@@ -6,6 +6,8 @@
  * Sell), notifications, and broadcasts. Mutates only the ship passed in.
  */
 
+import { makeEmptyCargo } from "./commodities.js";
+
 /**
  * Buys or sells one ton of `item` at `price`, mutating the ship's credits/cargo.
  * @param {Object} ship - Ship-like with `credits`, `addCargo`, `removeCargo`.
@@ -86,14 +88,6 @@ export function applyHullPurchase(ship, hull) {
   ship.cargoCapacity = hull.cargoCapacity;
   ship.thrustPower = hull.thrustPower;
   ship.turnRate = hull.turnRate;
-  ship.cargo = {
-    food: 0,
-    electronics: 0,
-    minerals: 0,
-    luxuries: 0,
-    contraband: 0,
-    machinery: 0,
-    ore: 0,
-  };
+  ship.cargo = makeEmptyCargo();
   return { ok: true, reason: "purchased" };
 }

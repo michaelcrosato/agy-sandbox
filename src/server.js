@@ -443,6 +443,9 @@ setInterval(() => {
 setInterval(() => {
   for (const room of instances.values()) {
     const changedNames = room.galaxyHeartbeat.pulse();
+    // spec 029: heal reputations a little each heartbeat so standings drift back
+    // toward neutral over time when a player leaves a faction alone.
+    room.decayReputations();
     for (const name of changedNames) {
       const planet = room.planets.find((p) => p.name === name);
       if (planet) {

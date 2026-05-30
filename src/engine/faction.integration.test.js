@@ -138,3 +138,37 @@ describe("GameInstance faction wiring", () => {
     }
   });
 });
+
+describe("reputation decay hook (spec 029)", () => {
+  it("decayReputations drifts a standing toward neutral over repeated calls", () => {
+    const room = new GameInstance("room-decay-1", "Decay Test");
+    try {
+      room.factionRegistry.adjustStanding("cmdr1", "Federation", 80);
+      const before = room.factionRegistry.getStanding("cmdr1", "Federation");
+      expect(before).toBe(80);
+
+      for (let i = 0; i < 20; i++) room.decayReputations();
+
+      const after = room.factionRegistry.getStanding("cmdr1", "Federation");
+      // Healed toward 0, but neither instantly nor past neutral.
+      expect(after).toBeLessThan(before);
+      expect(after).toBeGreaterThan(0);
+    } finally {
+      room.destroy();
+    }
+  });
+
+  it("honors an explicit rate and is a safe no-op with no standings", () => {
+    const room = new GameInstance("room-decay-2", "Decay Test 2");
+    try {
+      expect(room.decayReputations()).toEqual({}); // nothing tracked yet
+      room.factionRegistry.adjustStanding("p", "Pirates", -100);
+      room.decayReputations(0.5); // aggressive rate moves it sharply toward 0
+      const v = room.factionRegistry.getStanding("p", "Pirates");
+      expect(v).toBeGreaterThan(-100);
+      expect(v).toBeLessThan(0);
+    } finally {
+      room.destroy();
+    }
+  });
+});

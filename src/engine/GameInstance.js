@@ -426,6 +426,20 @@ export class GameInstance {
     }
   }
 
+  /**
+   * Pulls every tracked player's faction standings a small fraction toward
+   * neutral (spec 029) so reputations heal when left alone. The decay math is
+   * pure (`FactionRegistry.decayAll`); this is the per-room invocation point,
+   * called on the galaxy-heartbeat cadence. `rate` defaults to the registry's
+   * configured `decayRate`.
+   * @param {number} [rate] - Fraction removed per call (default `decayRate`).
+   * @returns {Object<string, Object<string, number>>} Per-player change map.
+   */
+  decayReputations(rate) {
+    if (!this.factionRegistry) return {};
+    return this.factionRegistry.decayAll(rate);
+  }
+
   spawnNewAsteroid(initial = false) {
     const angle = Math.random() * Math.PI * 2;
     const dist = initial

@@ -27,7 +27,7 @@ modularization.** Remaining = Wave A (020–025) + Phase 2 (014–019)._
 - [x] `013` Migrate @google/generative-ai → @google/genai — **done** (files: `scripts/run-agent.js` new unified SDK — `GoogleGenAI({apiKey})`, `models.generateContent`, `Type.*` schema, `result.text`, model `gemini-2.5-pro`; `package.json` swap to devDependency `@google/genai`; runtime `dependencies` now just `ws`; no-key path exits with a clear message, no stack trace)
 
 ## Wave A — Continued hardening & 2026 modernization (NEW · v2 re-audit)
-- [ ] `020` Salvage outfit dedup (→ applyOutfitStats) — _blocked by: none_
+- [x] `020` Salvage outfit dedup (→ applyOutfitStats) — **done** (files: new `src/engine/outfitCatalog.js` (DEFAULT_OUTFITS, single source) + `.test.js`; `Planet.js` + `server.js` salvage both import it; salvage applies stats via `applyOutfitStats` — now covers the EW outfits it silently ignored; server.js −107 LOC → 1979; tractor-mass note → BACKLOG.md)
 - [ ] `021` Client test harness (Vitest Browser Mode / Playwright) — _blocked by: none_
 - [ ] `022` CI Node LTS matrix (20/22/24) + version alignment — _blocked by: none_
 - [ ] `023` dotenv 16→17 bump — _blocked by: none_

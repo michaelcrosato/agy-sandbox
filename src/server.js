@@ -29,6 +29,7 @@ import { sendDecision } from "./net/backpressure.js";
 import { createRegistry } from "./net/metrics.js";
 import { createLogger } from "./net/logger.js";
 import { applyOutfitStats } from "./engine/Outfitting.js";
+import { DEFAULT_OUTFITS } from "./engine/outfitCatalog.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import { shouldGcRoom, sanitizeNickname } from "./server/roomLifecycle.js";
 
@@ -1714,116 +1715,8 @@ wss.on("connection", (ws) => {
               salvagable[Math.floor(Math.random() * salvagable.length)];
             clientObj.ship.outfits.push(chosen);
 
-            const defaultCatalog = [
-              {
-                name: "Heavy Shields",
-                cost: 1200,
-                type: "shield",
-                value: 350,
-                mass: 800,
-              },
-              {
-                name: "Aegis Shield Matrix",
-                cost: 4500,
-                type: "shield",
-                value: 800,
-                mass: 1500,
-              },
-              {
-                name: "Overcharged Engines",
-                cost: 1500,
-                type: "engine",
-                value: 12000,
-                mass: 200,
-              },
-              {
-                name: "Hyper-Drive Thrusters",
-                cost: 3800,
-                type: "engine",
-                value: 25000,
-                mass: 400,
-              },
-              {
-                name: "Plasma Cannon",
-                cost: 1800,
-                type: "weapon",
-                value: 25,
-                mass: 300,
-              },
-              {
-                name: "Neutron Blaster",
-                cost: 4200,
-                type: "weapon",
-                value: 55,
-                mass: 600,
-              },
-              {
-                name: "Expanded Cargo Holds",
-                cost: 1000,
-                type: "cargo",
-                value: 15,
-                mass: 500,
-              },
-              {
-                name: "Sub-space Cargo Compressor",
-                cost: 2800,
-                type: "cargo",
-                value: 45,
-                mass: 1200,
-              },
-              {
-                name: "Tractor Beam Matrix",
-                cost: 2500,
-                type: "tractor",
-                value: 250,
-                mass: 200,
-              },
-              {
-                name: "Cold-Fusion Reactor",
-                cost: 3000,
-                type: "reactor",
-                value: 30,
-                mass: 350,
-              },
-              {
-                name: "Cryo-Cooling Radiator",
-                cost: 2200,
-                type: "radiator",
-                value: 15,
-                mass: 250,
-              },
-              {
-                name: "Supercapacitor Cells",
-                cost: 1600,
-                type: "capacitor",
-                value: 100,
-                mass: 200,
-              },
-            ];
-            const match = defaultCatalog.find((o) => o.name === chosen);
-            if (match) {
-              if (match.type === "shield") {
-                clientObj.ship.maxShield += match.value;
-                clientObj.ship.shield = clientObj.ship.maxShield;
-              } else if (match.type === "engine") {
-                clientObj.ship.thrustPower += match.value;
-                clientObj.ship.maxSpeed += 50;
-              } else if (match.type === "weapon") {
-                clientObj.ship.weaponDamage += match.value;
-              } else if (match.type === "cargo") {
-                clientObj.ship.cargoCapacity += match.value;
-              } else if (match.type === "reactor") {
-                clientObj.ship.energyRegen += match.value;
-              } else if (match.type === "radiator") {
-                clientObj.ship.heatDissipation += match.value;
-              } else if (match.type === "capacitor") {
-                clientObj.ship.maxEnergy += match.value;
-                clientObj.ship.energy = clientObj.ship.maxEnergy;
-              }
-              if (match.mass) {
-                clientObj.ship.addOutfitMass(match.mass);
-              }
-            }
+            const match = DEFAULT_OUTFITS.find((o) => o.name === chosen);
+            if (match) applyOutfitStats(clientObj.ship, match);
 
             clientObj.send({
               type: "notification",

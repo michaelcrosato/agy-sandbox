@@ -30,7 +30,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 const genAI =
   GEMINI_API_KEY && GEMINI_API_KEY !== "hidden"
     ? new GoogleGenAI({ apiKey: GEMINI_API_KEY })
-    : new GoogleGenAI();
+    : new GoogleGenAI({});
 
 // Helper to run shell commands safely
 function runCommand(command) {

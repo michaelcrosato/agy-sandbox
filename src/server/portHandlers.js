@@ -8,6 +8,7 @@ import { DEFAULT_OUTFITS } from "../engine/outfitCatalog.js";
 import {
   checkUpgradeLockout,
   redeemFactionVouchers,
+  applyRefine,
 } from "../engine/PortServices.js";
 import {
   applyHullPurchase,
@@ -626,4 +627,71 @@ export function handlePresetLoad(
     style: "success",
   });
   clientObj.sendStats();
+}
+
+/**
+ * Handles refining raw ore into minerals (or machinery) on command.
+ * @param {Object} clientObj - The socket client connection object.
+ * @param {number} quantity - Quantity of raw 'ore' to refine.
+ * @param {string} targetCommodity - Target refined commodity.
+ * @param {Object} room - Dynamic GameInstance room.
+ */
+export function handleOreRefine(clientObj, quantity, targetCommodity, room) {
+  if (
+    !clientObj ||
+    !clientObj.ship ||
+    !clientObj.isLanded ||
+    !clientObj.planetLandedOn ||
+    !room
+  ) {
+    return;
+  }
+
+  const qty = parseInt(String(quantity), 10);
+  const targetComm = targetCommodity || "minerals";
+  const registry = room.factionRegistry || room.engine.factionRegistry || null;
+
+  const r = applyRefine(
+    clientObj.ship,
+    clientObj.planetLandedOn,
+    qty,
+    {},
+    registry,
+    clientObj.id,
+    targetComm,
+  );
+
+  if (r.ok) {
+    clientObj.send({
+      type: "notification",
+      message: `Refined ${r.refined} units of raw ore into ${r.produced} units of ${targetComm} for ${r.cost} CR.`,
+      style: "success",
+    });
+    clientObj.sendStats();
+  } else {
+    let errorMsg = "Refining failed.";
+    if (r.reason === "no_refinery_services") {
+      errorMsg = "This planet does not possess refinery services.";
+    } else if (r.reason === "invalid_target_commodity") {
+      errorMsg = "Invalid target commodity for refining.";
+    } else if (r.reason === "invalid_quantity") {
+      errorMsg = "Invalid refine quantity specified.";
+    } else if (
+      r.reason &&
+      r.reason.startsWith("quantity_must_be_multiple_of")
+    ) {
+      errorMsg = r.reason.replace(/_/g, " ");
+    } else if (r.reason === "insufficient_ore") {
+      errorMsg = "You do not possess enough raw ore in your cargo.";
+    } else if (r.reason === "insufficient_credits") {
+      errorMsg = `Insufficient credits! Needs ${r.cost} CR.`;
+    } else if (r.reason === "cargo_full") {
+      errorMsg = "Cargo hold is full!";
+    }
+    clientObj.send({
+      type: "notification",
+      message: errorMsg,
+      style: "error",
+    });
+  }
 }

@@ -7,6 +7,7 @@ import {
   handleOutfitSell,
   handlePresetSave,
   handlePresetLoad,
+  handleOreRefine,
 } from "./portHandlers.js";
 import { DEFAULT_OUTFITS } from "../engine/outfitCatalog.js";
 
@@ -598,5 +599,129 @@ describe("portHandlers.handlePresetSave & handlePresetLoad (spec 058)", () => {
     expect(mockClient.sentNotifications[0].message).toContain(
       "Preset exceeds Shield slot cap",
     );
+  });
+});
+
+describe("portHandlers.handleOreRefine & Mining Laser Mass (spec 077)", () => {
+  let mockClient;
+  let mockPlanet;
+  let mockRoom;
+
+  beforeEach(() => {
+    mockClient = {
+      id: "player-1",
+      isLanded: true,
+      planetLandedOn: null,
+      ship: {
+        credits: 1000,
+        cargo: { ore: 20, minerals: 0 },
+        cargoCapacity: 100,
+        outfits: [],
+        hullMass: 2000,
+        mass: 2000,
+        outfitMass: 0,
+        turnRate: 4.0,
+        getEffectiveTurnRate() {
+          if (this.mass <= 0) return this.turnRate;
+          return this.turnRate * (this.hullMass / this.mass);
+        },
+        addOutfitMass(m) {
+          this.outfitMass += m;
+          this.mass = this.hullMass + this.outfitMass;
+        },
+        removeOutfitMass(m) {
+          this.outfitMass = Math.max(0, this.outfitMass - m);
+          this.mass = this.hullMass + this.outfitMass;
+        },
+        getCargoWeight() {
+          return Object.values(this.cargo).reduce((a, b) => a + b, 0);
+        },
+        removeCargo(item, amount) {
+          if (this.cargo[item] >= amount) {
+            this.cargo[item] -= amount;
+            return true;
+          }
+          return false;
+        },
+        addCargo(item, amount) {
+          if (this.getCargoWeight() + amount <= this.cargoCapacity) {
+            this.cargo[item] = (this.cargo[item] || 0) + amount;
+            return true;
+          }
+          return false;
+        },
+      },
+      sentNotifications: [],
+      send(data) {
+        if (data.type === "notification") {
+          this.sentNotifications.push(data);
+        }
+      },
+      sendStats() {},
+    };
+
+    mockPlanet = {
+      name: "Valerie Prime",
+      faction: "Federation",
+      services: { refinery: true },
+    };
+    mockClient.planetLandedOn = mockPlanet;
+
+    mockRoom = {
+      factionRegistry: {
+        priceModifier: () => 1.0, // neutral tax
+        getStanding: () => 0, // neutral standing
+      },
+      engine: {
+        factionRegistry: null,
+      },
+    };
+    mockRoom.engine.factionRegistry = mockRoom.factionRegistry;
+  });
+
+  test("handleOreRefine successfully refines ore to minerals", () => {
+    handleOreRefine(mockClient, 20, "minerals", mockRoom);
+
+    expect(mockClient.ship.cargo.ore).toBe(0);
+    expect(mockClient.ship.cargo.minerals).toBe(10);
+    expect(mockClient.ship.credits).toBe(800); // 20 * 10 fee
+    expect(mockClient.sentNotifications[0].message).toContain(
+      "Refined 20 units of raw ore into 10 units of minerals",
+    );
+  });
+
+  test("handleOreRefine applies faction standings transaction tax / discount", () => {
+    // 20% discount on standing (discount rate 0.8)
+    mockRoom.factionRegistry.priceModifier = () => 0.8;
+
+    handleOreRefine(mockClient, 20, "minerals", mockRoom);
+
+    expect(mockClient.ship.credits).toBe(840); // 20 * 10 * 0.8 = 160 fee. 1000 - 160 = 840.
+  });
+
+  test("Mining Laser outfit mass impacts starship agility calculations dynamically", () => {
+    // Mining Laser has mass: 250
+    const miningLaser = DEFAULT_OUTFITS.find(
+      (o) => o.name === "Mining Laser",
+    ) || {
+      name: "Mining Laser",
+      cost: 2400,
+      type: "miner",
+      value: 1,
+      mass: 250,
+    };
+
+    // Initially, effective turn rate is 4.0
+    expect(mockClient.ship.getEffectiveTurnRate()).toBe(4.0);
+
+    // Equip Mining Laser
+    mockClient.ship.outfits.push("Mining Laser");
+    mockClient.ship.addOutfitMass(miningLaser.mass);
+
+    // Total mass becomes 2000 + 250 = 2250
+    expect(mockClient.ship.mass).toBe(2250);
+    // Agility (effective turn rate) should decrease: 4.0 * (2000 / 2250) = 3.555...
+    expect(mockClient.ship.getEffectiveTurnRate()).toBeLessThan(4.0);
+    expect(mockClient.ship.getEffectiveTurnRate()).toBeCloseTo(3.55555, 4);
   });
 });

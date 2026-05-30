@@ -26,11 +26,7 @@ import { JsonFileStore } from "./persistence/Store.js";
 import { PersistenceManager } from "./persistence/PersistenceManager.js";
 import { applyGalaxy, applyPlayer } from "./persistence/serializers.js";
 import { InMemoryPubSub } from "./net/PubSub.js";
-import {
-  applyRepair,
-  applyRefuel,
-  applyRefine,
-} from "./engine/PortServices.js";
+import { applyRepair, applyRefuel } from "./engine/PortServices.js";
 import {
   consumeJump,
   DEFAULT_HYPERDRIVE_OPTIONS,
@@ -61,6 +57,7 @@ import {
   handleOutfitSell,
   handlePresetSave,
   handlePresetLoad,
+  handleOreRefine,
 } from "./server/portHandlers.js";
 import {
   tradeOne,
@@ -1739,58 +1736,8 @@ wss.on("connection", (ws) => {
           if (r.ok) clientObj.sendStats();
         }
       }
-    } else if (msg.type === "port_refine") {
-      if (
-        clientObj.ship &&
-        clientObj.isLanded &&
-        clientObj.planetLandedOn &&
-        room
-      ) {
-        const qty = parseInt(msg.quantity, 10);
-        const targetComm = msg.targetCommodity || "minerals";
-        const registry = room.engine.factionRegistry || null;
-
-        const r = applyRefine(
-          clientObj.ship,
-          clientObj.planetLandedOn,
-          qty,
-          {},
-          registry,
-          clientObj.ship.id,
-          targetComm,
-        );
-
-        if (r.ok) {
-          clientObj.send({
-            type: "notification",
-            message: `Refined ${r.refined} units of raw ore into ${r.produced} units of ${targetComm} for ${r.cost} CR.`,
-            style: "success",
-          });
-          clientObj.sendStats();
-        } else {
-          let errorMsg = "Refining failed.";
-          if (r.reason === "no_refinery_services") {
-            errorMsg = "This planet does not possess refinery services.";
-          } else if (r.reason === "invalid_target_commodity") {
-            errorMsg = "Invalid target commodity for refining.";
-          } else if (r.reason === "invalid_quantity") {
-            errorMsg = "Invalid refine quantity specified.";
-          } else if (r.reason.startsWith("quantity_must_be_multiple_of")) {
-            errorMsg = r.reason.replace(/_/g, " ");
-          } else if (r.reason === "insufficient_ore") {
-            errorMsg = "You do not possess enough raw ore in your cargo.";
-          } else if (r.reason === "insufficient_credits") {
-            errorMsg = `Insufficient credits! Needs ${r.cost} CR.`;
-          } else if (r.reason === "cargo_full") {
-            errorMsg = "Cargo hold is full!";
-          }
-          clientObj.send({
-            type: "notification",
-            message: errorMsg,
-            style: "error",
-          });
-        }
-      }
+    } else if (msg.type === "port_refine" || msg.type === "ore_refine") {
+      handleOreRefine(clientObj, msg.quantity, msg.targetCommodity, room);
     } else if (msg.type === "jettison") {
       if (clientObj.ship && room) {
         const pod = room.jettisonFromShip(

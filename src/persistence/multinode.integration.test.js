@@ -4,6 +4,7 @@ import { InMemoryStore } from "./Store.js";
 import { RedisStore } from "./RedisStore.js";
 import { applyGalaxy } from "./serializers.js";
 import { RoomRegistry } from "../net/roomRouter.js";
+import { RedisPubSub } from "../net/PubSub.js";
 
 /**
  * Spec 019 (horizontal-scaling first slice) — prove the orchestration primitives
@@ -178,5 +179,53 @@ backends.forEach(({ name, makeStore }) => {
         roomB.destroy();
       }
     });
+  });
+});
+
+describe("RedisPubSub Integration & Cross-Process Message Routing (spec 062)", () => {
+  class FakeRedisPubSubClient {
+    constructor() {
+      this.channels = new Map();
+    }
+    async publish(channel, message) {
+      const cbs = this.channels.get(channel) || [];
+      for (const cb of cbs) {
+        cb(message);
+      }
+    }
+    async subscribe(channel, cb) {
+      let cbs = this.channels.get(channel);
+      if (!cbs) {
+        cbs = [];
+        this.channels.set(channel, cbs);
+      }
+      cbs.push(cb);
+    }
+    async unsubscribe(channel, cb) {
+      const cbs = this.channels.get(channel) || [];
+      const idx = cbs.indexOf(cb);
+      if (idx !== -1) {
+        cbs.splice(idx, 1);
+      }
+    }
+  }
+
+  test("two RedisPubSub instances sharing a pub/sub backbone can exchange messages", async () => {
+    const backbone = new FakeRedisPubSubClient();
+    const pubsub1 = new RedisPubSub({ client: backbone });
+    const pubsub2 = new RedisPubSub({ client: backbone });
+
+    const received = [];
+    await pubsub2.subscribe("chat:global", (msg) => {
+      received.push(msg);
+    });
+
+    await pubsub1.publish("chat:global", { sender: "Alice", text: "Hello!" });
+
+    // Allow macro-task queue to clear
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    expect(received).toHaveLength(1);
+    expect(received[0]).toEqual({ sender: "Alice", text: "Hello!" });
   });
 });

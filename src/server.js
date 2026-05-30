@@ -25,6 +25,7 @@ import {
 import { JsonFileStore } from "./persistence/Store.js";
 import { PersistenceManager } from "./persistence/PersistenceManager.js";
 import { applyGalaxy, applyPlayer } from "./persistence/serializers.js";
+import { InMemoryPubSub } from "./net/PubSub.js";
 import {
   applyRepair,
   applyRefuel,
@@ -237,6 +238,8 @@ function processMatchmakingQueueForRoom(room) {
 }
 const persistentSessions = new Map(); // sessionToken -> clientObj
 const clients = new Map(); // ws -> clientObj
+
+let pubsub = new InMemoryPubSub();
 
 // Persistence layer (P1): swappable Store + serializers behind a manager that
 // silently absorbs disk failures. Tests against an InMemoryStore live in
@@ -663,7 +666,7 @@ const lobbySyncInterval = setInterval(() => {
 
 // 7. Periodic Multi-worker Room Registry Heartbeat, Lease Renewal & Reaping Loop (4 seconds)
 let registryHeartbeatInterval = null;
-if (WORKERS > 1) {
+if (WORKERS > 1 || process.env.REDIS_SCALE_OUT === "1") {
   registryHeartbeatInterval = setInterval(async () => {
     const now = Date.now();
     const registry = await loadRegistry();
@@ -1072,7 +1075,7 @@ wss.on("connection", (ws) => {
 
   clients.set(ws, clientObj);
 
-  ws.on("message", (msgStr) => {
+  ws.on("message", async (msgStr) => {
     let msg;
     try {
       msg = JSON.parse(msgStr);
@@ -1849,14 +1852,10 @@ wss.on("connection", (ws) => {
           channel: "squad",
           sender: clientObj.nickname,
           text: squadText,
+          squadId: squad.id,
         };
 
-        for (const ws of wss.clients) {
-          const c = ws.clientObj;
-          if (c && squad.memberIds.has(c.id)) {
-            c.send(chatPayload);
-          }
-        }
+        await pubsub.publish("chat:squad", chatPayload);
       } else if (channel === "fleet" && room) {
         if (!clientObj.fleetName) {
           clientObj.send({
@@ -1886,9 +1885,7 @@ wss.on("connection", (ws) => {
           sender: clientObj.nickname,
           text: text,
         };
-        for (const c of room.clients.values()) {
-          c.send(chatPayload);
-        }
+        await pubsub.publish("chat:global", chatPayload);
       }
     } else if (msg.type === "warp_jump") {
       if (room) {
@@ -2315,6 +2312,26 @@ import("worker_threads")
  * @param {number} [config.workers]
  * @returns {Promise<import("http").Server>}
  */
+async function setupPubSubSubscriptions() {
+  await pubsub.subscribe("chat:global", (payload) => {
+    for (const room of instances.values()) {
+      for (const c of room.clients.values()) {
+        c.send(payload);
+      }
+    }
+  });
+
+  await pubsub.subscribe("chat:squad", (payload) => {
+    const squadId = payload.squadId;
+    for (const ws of wss.clients) {
+      const c = ws.clientObj;
+      if (c && squadManager.getSquadId(c.id) === squadId) {
+        c.send(payload);
+      }
+    }
+  });
+}
+
 export async function startServer({
   port = PORT,
   shardIndex = SHARD_INDEX,
@@ -2331,12 +2348,23 @@ export async function startServer({
       console.log(
         `🔌 Connected to shared RedisStore at ${process.env.REDIS_URL}`,
       );
+
+      if (process.env.REDIS_SCALE_OUT === "1") {
+        const { RedisPubSub } = await import("./net/PubSub.js");
+        const pubClient = createClient({ url: process.env.REDIS_URL });
+        const subClient = createClient({ url: process.env.REDIS_URL });
+        await Promise.all([pubClient.connect(), subClient.connect()]);
+        pubsub = new RedisPubSub({ pubClient, subClient });
+        console.log(`🔌 Wired sharded RedisPubSub for multi-worker routing`);
+      }
     } catch (err) {
       console.error(
         `⚠️ Failed to connect to Redis, falling back to JsonFileStore: ${err.message}`,
       );
     }
   }
+
+  await setupPubSubSubscriptions();
 
   // 2. Create Default permanent Public Arena Room ONLY if this shard owns it
   if (workers === 1 || assignShard("public", workers) === shardIndex) {

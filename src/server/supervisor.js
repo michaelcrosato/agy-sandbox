@@ -60,10 +60,11 @@ export function runSupervisor(workersCount) {
     console.log(
       `⚙️  Supervisor: Spawning child worker for Shard [${shardIndex}]...`,
     );
-    // Fork a new worker process, passing SHARD_INDEX and WORKERS env variables
+    // Fork a new worker process, passing SHARD_INDEX, WORKERS, and REDIS_SCALE_OUT env variables
     const worker = cluster.fork({
       SHARD_INDEX: String(shardIndex),
       WORKERS: String(workersCount),
+      REDIS_SCALE_OUT: process.env.REDIS_SCALE_OUT || "",
     });
 
     liveWorkers.set(worker.id, {

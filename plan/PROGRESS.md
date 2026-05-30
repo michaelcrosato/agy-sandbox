@@ -14,7 +14,7 @@ v3 Phase 0 (026–029) + Phase 1 (030–035) + Phase 2 scale-out (019b–f, 036�
 ## v3 — Next cycle (NEW · Todo) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
-- [ ] `026` CI Node 22/24/26 matrix + engines floor `>=22` — _blocked by: none_
+- [x] `026` CI Node 22/24/26 matrix + engines floor `>=22` — **done** (files: `.github/workflows/ci.yml` matrix `['22','24','26']` (dropped EOL Node 20, added Current 26) + `client-tests` job → Node 24; `package.json` `engines.node` `>=20`→`>=22`; `.nvmrc` `22`→`24` (Active LTS). Local gate green on Node 24.15; CI verifies 22/24/26 on push.)
 - [ ] `027` Pin/document the `ws` CVE-2026-45736 security floor (≥ 8.20.1) — _blocked by: none_
 - [ ] `028` Fix hit-flash armor-branch dead code (real bug, found by 021) — _blocked by: none_
 - [ ] `029` Reputation `decayAll` heartbeat hook — _blocked by: none_

@@ -74,6 +74,24 @@ export function defaultIsThreat(ent, self, opts = {}) {
   const factionPolicy = opts.factionPolicy;
   const standingPolicy = opts.standingPolicy;
 
+  // Conflict zone threat check
+  if (
+    opts.isConflictZone &&
+    opts.conflictFactionA &&
+    opts.conflictFactionB &&
+    selfFaction &&
+    targetFaction
+  ) {
+    const fA = opts.conflictFactionA;
+    const fB = opts.conflictFactionB;
+    if (
+      (selfFaction === fA && targetFaction === fB) ||
+      (selfFaction === fB && targetFaction === fA)
+    ) {
+      return true;
+    }
+  }
+
   if (factionPolicy && selfFaction && targetFaction) {
     if (factionPolicy.isHostile(selfFaction, targetFaction)) {
       return true;

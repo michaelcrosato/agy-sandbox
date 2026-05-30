@@ -654,4 +654,120 @@ describe("mission + trade faction standings (spec 032)", () => {
       ).toBe(1200);
     });
   });
+
+  describe("Faction Conflict Battlegrounds (054)", () => {
+    it("sets conflict zone variables and spawns opposing fleets", () => {
+      const room = new GameInstance("room-war", "Sector War");
+      expect(room.isConflictZone).toBe(false);
+
+      // Trigger conflict between Federation and Pirates
+      room.triggerConflictZone("Federation", "Pirates");
+      expect(room.isConflictZone).toBe(true);
+      expect(room.conflictFactionA).toBe("Federation");
+      expect(room.conflictFactionB).toBe("Pirates");
+
+      // Verify fleet combatants spawned
+      const fedShips = room.engine.entities.filter(
+        (e) =>
+          e &&
+          e.type === "ship" &&
+          e.faction === "Federation" &&
+          e.name.includes("Federation Defender"),
+      );
+      const pirateShips = room.engine.entities.filter(
+        (e) =>
+          e &&
+          e.type === "ship" &&
+          e.faction === "Pirates" &&
+          e.name.includes("Pirates Raider"),
+      );
+
+      expect(fedShips.length).toBe(3);
+      expect(pirateShips.length).toBe(3);
+    });
+
+    it("ensures opposing conflict ships perceive each other as threats override", () => {
+      const room = new GameInstance("room-war-ai", "Sector War AI");
+      room.triggerConflictZone("Federation", "Pirates");
+
+      // Grab one Federation ship and one Pirate ship
+      const fedShip = room.engine.entities.find(
+        (e) =>
+          e &&
+          e.type === "ship" &&
+          e.faction === "Federation" &&
+          e.name.includes("Federation Defender"),
+      );
+      const pirateShip = room.engine.entities.find(
+        (e) =>
+          e &&
+          e.type === "ship" &&
+          e.faction === "Pirates" &&
+          e.name.includes("Pirates Raider"),
+      );
+
+      const fedController = room.ais.find((ai) => ai.ship === fedShip);
+      const pirateController = room.ais.find((ai) => ai.ship === pirateShip);
+
+      expect(fedController).toBeDefined();
+      expect(pirateController).toBeDefined();
+
+      // Trigger sensor scan and threat assessment
+      fedController.scanSensors(room.engine.entities);
+      pirateController.scanSensors(room.engine.entities);
+
+      // Verify that they target/perceive each other as threats!
+      expect(fedController.shouldTarget(pirateShip)).toBe(true);
+      expect(pirateController.shouldTarget(fedShip)).toBe(true);
+    });
+
+    it("rewards specialized standing merits (+2.0 / -2.5) on conflict kills", () => {
+      const room = new GameInstance("room-war-kills", "Sector War Kills");
+      room.triggerConflictZone("Federation", "Pirates");
+
+      // Create a mock player client
+      const playerShip = {
+        id: "player1",
+        type: "ship",
+        position: { x: 0, y: 0 },
+      };
+      const clientObj = {
+        id: "player1",
+        ship: playerShip,
+        missionManager: {
+          checkBountyCompletion: () => null,
+        },
+        send: () => {},
+        sendStats: () => {},
+      };
+      room.clients.set("ws1", clientObj);
+
+      // Find a Pirate Raider ship to destroy
+      const targetRaider = room.engine.entities.find(
+        (e) =>
+          e &&
+          e.type === "ship" &&
+          e.faction === "Pirates" &&
+          e.name.includes("Pirates Raider"),
+      );
+
+      // Baseline standings: neutral (0)
+      expect(room.factionRegistry.getStanding("player1", "Federation")).toBe(0);
+      expect(room.factionRegistry.getStanding("player1", "Pirates")).toBe(0);
+
+      // Attrib kill and destroy the Raider
+      targetRaider.destroyedBy = "player1";
+      room.handleEntityDestroyed(targetRaider);
+
+      // Destroying a Pirate Raider:
+      // +2.0 merits to the opposing faction (Federation) -> propagates -1.0 to Pirates
+      // -2.5 merits to the destroyed faction (Pirates) -> propagates +1.25 to Federation
+      // Net Federation: 0 + 2.0 + 1.25 = 3.25
+      // Net Pirates:    0 - 1.0 - 2.5  = -3.5
+      expect(room.factionRegistry.getStanding("player1", "Federation")).toBe(
+        3.25,
+      );
+      expect(room.factionRegistry.getStanding("player1", "Pirates")).toBe(-3.5);
+    });
+  });
 });

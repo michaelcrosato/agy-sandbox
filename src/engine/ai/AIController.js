@@ -58,6 +58,11 @@ export class AIController {
     // Escort AI parameters
     this.flagship = null;
     this.escortMode = "follow"; // "follow" (defend), "hold" (stay), "attack" (target lock)
+
+    // Faction conflict zone states
+    this.isConflictZone = false;
+    this.conflictFactionA = null;
+    this.conflictFactionB = null;
   }
 
   /**
@@ -98,6 +103,9 @@ export class AIController {
       const perception = buildPerception(this.ship, entities, {
         factionPolicy: this.factionPolicy,
         standingPolicy: this.standingPolicy,
+        isConflictZone: this.isConflictZone,
+        conflictFactionA: this.conflictFactionA,
+        conflictFactionB: this.conflictFactionB,
         ...this.perceptionOptions,
       });
       this.currentGoal = selectGoal(perception).goal;

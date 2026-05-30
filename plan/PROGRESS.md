@@ -22,7 +22,7 @@ _**v8 re-audit baseline (2026-05-30, ENTIRE v7 blueprint shipped): 827 Jest test
 - [x] `056` Hyperspace Warp Lane Interdiction (tactical gravity fields) — **done** (files: `src/engine/outfitCatalog.js`, `src/engine/Hyperdrive.js`, `src/engine/ai/AIController.js`, `src/client/CanvasRenderer.js`; added Hyperdrive Interdictor Matrix outfit, integrated active hostile gravity well checks blocking warp jumps within 300 units, enabled NPC warships and guards to deploy interdictors during combat, and rendered dynamic pulsing gravity waves on canvas; 836 Jest tests green).
 
 ### Phase 2 — Scale-Out & Premium Features
-- [ ] `054` Faction Conflict Battlegrounds (emergent sector wars) — **todo** (files: `src/engine/GameInstance.js`, `src/engine/ai/AIController.js`, `src/engine/ai/buildPerception.js`; spawn clashing faction fleets; choose sides dynamically to swing local battles and standing merits).
+- [x] `054` Faction Conflict Battlegrounds (emergent sector wars) — **done** (files: `src/engine/GameInstance.js`, `src/engine/ai/AIController.js`, `src/engine/ai/buildPerception.js`, `src/engine/faction.integration.test.js`; successfully implemented sector conflict zones, spawned Federation and Pirate war fleets clashing dynamically in space battles, overrode AI threat assessment dynamically inside buildPerception, applied specialized +2.0/-2.5 standing adjustments under diplomatic propagation, and wrote comprehensive integration tests covering targeting, fleet spawning, and standings; 839 Jest tests + 22 client Vitest tests 100% green).
 
 ## v7 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

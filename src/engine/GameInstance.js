@@ -114,6 +114,9 @@ export class GameInstance {
     this.activeSectorEvent = null;
     this.lastActiveTime = Date.now();
     this.pendingTimers = new Set();
+    this.isConflictZone = false;
+    this.conflictFactionA = null;
+    this.conflictFactionB = null;
 
     // Set up engine event handlers
     this.engine.onProjectileFired = (proj, ship) => {
@@ -848,12 +851,29 @@ export class GameInstance {
         recordKill(killerClient.ship, shipBountyValue(ent));
       }
 
-      // spec 016: a kill shifts the killer's standing with the victim's faction,
-      // propagating to that faction's allies/enemies (the registry handles the
-      // spread). Killing a faction member lowers standing with them — so hunting
-      // Pirates (enemy of the law) raises your Federation/Frontier standing.
       if (this.factionRegistry && killerClient && ent.faction) {
-        this.factionRegistry.adjustStanding(killerClient.id, ent.faction, -5);
+        if (
+          this.isConflictZone &&
+          (ent.faction === this.conflictFactionA ||
+            ent.faction === this.conflictFactionB)
+        ) {
+          const friendlyFaction =
+            ent.faction === this.conflictFactionA
+              ? this.conflictFactionB
+              : this.conflictFactionA;
+          this.factionRegistry.adjustStanding(
+            killerClient.id,
+            friendlyFaction,
+            2.0,
+          );
+          this.factionRegistry.adjustStanding(
+            killerClient.id,
+            ent.faction,
+            -2.5,
+          );
+        } else {
+          this.factionRegistry.adjustStanding(killerClient.id, ent.faction, -5);
+        }
       }
 
       // Role/faction-based (name-independent) classification — null-safe.
@@ -1296,6 +1316,69 @@ export class GameInstance {
           });
         }
       }
+    }
+  }
+
+  /**
+   * Triggers a faction conflict battleground zone in this sector, spawning opposing war fleets.
+   * @param {string} [factionA="Federation"] - Primary conflict faction.
+   * @param {string} [factionB="Pirates"] - Secondary conflict faction.
+   */
+  triggerConflictZone(factionA = "Federation", factionB = "Pirates") {
+    this.isConflictZone = true;
+    this.conflictFactionA = factionA;
+    this.conflictFactionB = factionB;
+
+    // Spawn Faction A combatants
+    for (let i = 0; i < 3; i++) {
+      const aShip = new Ship({
+        name: `${factionA} Defender Mk ${i + 1}`,
+        position: new Vector2D(-250 + i * 50, (Math.random() - 0.5) * 150),
+        velocity: new Vector2D(0, 0),
+        maxShield: 500,
+        maxArmor: 350,
+        thrustPower: 22000,
+        turnRate: 3.0,
+        weaponDamage: 30,
+        weaponCooldown: 0.22,
+      });
+      aShip.faction = factionA;
+      const controller = new AIController(aShip, "guard", {
+        useUtilityAdvisor: true,
+        factionPolicy: this.factionRegistry.factionPolicy(),
+        standingPolicy: this.factionRegistry.standingPolicy(),
+      });
+      controller.isConflictZone = true;
+      controller.conflictFactionA = factionA;
+      controller.conflictFactionB = factionB;
+      this.engine.addEntity(aShip);
+      this.ais.push(controller);
+    }
+
+    // Spawn Faction B combatants
+    for (let i = 0; i < 3; i++) {
+      const bShip = new Ship({
+        name: `${factionB} Raider Mk ${i + 1}`,
+        position: new Vector2D(250 - i * 50, (Math.random() - 0.5) * 150),
+        velocity: new Vector2D(0, 0),
+        maxShield: 500,
+        maxArmor: 350,
+        thrustPower: 22000,
+        turnRate: 3.0,
+        weaponDamage: 30,
+        weaponCooldown: 0.22,
+      });
+      bShip.faction = factionB;
+      const controller = new AIController(bShip, "pirate", {
+        useUtilityAdvisor: true,
+        factionPolicy: this.factionRegistry.factionPolicy(),
+        standingPolicy: this.factionRegistry.standingPolicy(),
+      });
+      controller.isConflictZone = true;
+      controller.conflictFactionA = factionA;
+      controller.conflictFactionB = factionB;
+      this.engine.addEntity(bShip);
+      this.ais.push(controller);
     }
   }
 }

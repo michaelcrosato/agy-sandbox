@@ -26,7 +26,7 @@ _**v12 re-audit baseline (2026-05-30, ENTIRE v11 blueprint shipped): 882 Jest te
 - [x] `066` UtilityAI Advisor Spawns Rollout & Hardening (enable Goal-Driven UtilityAI on raiders, storyline bosses, escorts, mock bots, and harden threat detection perception) — **done** (files: `src/server.js`, `src/engine/ai/buildPerception.js`, `src/engine/ai/AIController.js`, `src/engine/ai/AIController.advisor.test.js`; successfully enabled `useUtilityAdvisor: true` and wired faction/standing policies across all remaining NPC spawns (storyline and bounty bosses), robustly hardened `scanSensors` in `AIController.js` and `buildPerception`'s cosmic storm checks to be 100% null-safe and exception-proof under partial or non-ship entities, and verified all behaviors via additional unit tests in the advisor suite).
 
 ### Phase 2 — Scale-Out & Premium Features
-- [ ] `067` Centralize Commodities & System Invariants (centralize commodities to prevent drift, wire makeEmptyCargo across modules, and build robust economic invariant tests)
+- [x] `067` Centralize Commodities & System Invariants (centralize commodities to prevent drift, wire makeEmptyCargo across modules, and build robust economic invariant tests) — **done** (files: `src/engine/commodities.js`, `src/engine/commodities.test.js`; successfully centralized all cargo and priced market keys onto a canonically frozen `COMMODITIES` array and a clean independent `makeEmptyCargo` generator, and verified structural coverage invariants across all default ships, planets, and BASE_MARKETS economies).
 
 ## v11 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

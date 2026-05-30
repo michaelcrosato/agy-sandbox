@@ -1251,7 +1251,9 @@ describe("mission + trade faction standings (spec 032)", () => {
         clientObj.missionManager.activeMissions = [deliveryMission];
 
         // Land on Valkyrie Depot
-        const valkyrieDepot = room.planets.find((p) => p.name === "Valkyrie Depot");
+        const valkyrieDepot = room.planets.find(
+          (p) => p.name === "Valkyrie Depot",
+        );
         expect(valkyrieDepot).toBeDefined();
         valkyrieDepot.market = { ore: 200 };
         room.baseMarkets["Valkyrie Depot"] = { ore: 10 };
@@ -1268,7 +1270,9 @@ describe("mission + trade faction standings (spec 032)", () => {
         expect(playerShip.cargo.ore).toBe(0); // ore removed
 
         // Standing adjusted
-        expect(room.factionRegistry.getStanding(playerId, "Federation")).toBe(10);
+        expect(room.factionRegistry.getStanding(playerId, "Federation")).toBe(
+          10,
+        );
         // Market price updated (marketRelief applied: 200 - 50 = 150)
         expect(valkyrieDepot.market.ore).toBe(150);
       } finally {
@@ -1334,7 +1338,9 @@ describe("mission + trade faction standings (spec 032)", () => {
         // Hunt mission completed and standing adjusted
         expect(huntMission.isCompleted).toBe(true);
         expect(playerShip.credits).toBe(4000); // 1000 + 3000
-        expect(room.factionRegistry.getStanding(playerId, "Federation")).toBe(17.5);
+        expect(room.factionRegistry.getStanding(playerId, "Federation")).toBe(
+          17.5,
+        );
       } finally {
         room.destroy();
       }
@@ -1348,7 +1354,10 @@ describe("mission + trade faction standings (spec 032)", () => {
 
         // Run room decay
         room.decayReputations(); // default rate is 0.05%
-        let fedStanding = room.factionRegistry.getStanding(playerId, "Federation");
+        let fedStanding = room.factionRegistry.getStanding(
+          playerId,
+          "Federation",
+        );
 
         expect(fedStanding).toBeLessThan(50);
         expect(fedStanding).toBeGreaterThan(0);

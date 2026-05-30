@@ -1057,8 +1057,12 @@ wss.on("connection", (ws) => {
 
     const controller = new AIController(bossShip, "pirate", {
       useUtilityAdvisor: true,
-      factionPolicy: room.factionRegistry ? room.factionRegistry.factionPolicy() : null,
-      standingPolicy: room.factionRegistry ? room.factionRegistry.standingPolicy() : null,
+      factionPolicy: room.factionRegistry
+        ? room.factionRegistry.factionPolicy()
+        : null,
+      standingPolicy: room.factionRegistry
+        ? room.factionRegistry.standingPolicy()
+        : null,
     });
     room.engine.addEntity(bossShip);
     room.ais.push(controller);
@@ -1099,8 +1103,12 @@ wss.on("connection", (ws) => {
 
     const controller = new AIController(bossShip, "pirate", {
       useUtilityAdvisor: true,
-      factionPolicy: room.factionRegistry ? room.factionRegistry.factionPolicy() : null,
-      standingPolicy: room.factionRegistry ? room.factionRegistry.standingPolicy() : null,
+      factionPolicy: room.factionRegistry
+        ? room.factionRegistry.factionPolicy()
+        : null,
+      standingPolicy: room.factionRegistry
+        ? room.factionRegistry.standingPolicy()
+        : null,
     });
     room.engine.addEntity(bossShip);
     room.ais.push(controller);

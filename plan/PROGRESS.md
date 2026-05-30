@@ -22,7 +22,7 @@ _**v14 re-audit baseline (2026-05-30, ENTIRE v13 blueprint shipped): 897 Jest te
 ## v14 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
-- [~] `071` Client-Side Input Prediction & Server Reconciliation Harness (engineer a pure deterministic reconciler simulating physics vectors, input sequences, and authoritative state snapping under packet lag)
+- [x] `071` Client-Side Input Prediction & Server Reconciliation Harness (engineer a pure deterministic reconciler simulating physics vectors, input sequences, and authoritative state snapping under packet lag) — **done** (files: `src/client/Reconciler.js`, `src/client/__tests/Reconciler.test.js`; successfully implemented a pure, deterministic Reconciler class caching sequences of enqueued local input vectors, predicting position/velocity/heading offsets instantly from control keys, and replaying unacknowledged inputs over authoritative server snapshot baselines on demand to reconcile coordinates cleanly under simulated network latency)
 
 ### Phase 1 — Core Upgrades & Feature Delivery
 - [ ] `072` Snapshot Delta Compression Network Pipeline (implement client-specific acknowledged frame baseline tracking and field-level dynamic dirty checks to compress broadcast payloads)

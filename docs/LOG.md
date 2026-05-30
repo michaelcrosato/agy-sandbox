@@ -39,6 +39,35 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T18:02 · iter-0088 · GREEN · spec-064-diplomatic-milestones
+- **Baseline:** `cb0ac27` on `feat/cosmic-storms`; 882 Jest tests green.
+- **Move:** Implement Allied tier ambassador escort missions and Nadir tier elite hostile hunter spawns (064).
+- **Changed:**
+  - Integrated procedural Allied `"escort_ambassador"` escort contracts generated when player standing with major faction exceeds 60.
+  - Programmed server-side `onEscortAccepted` hook spawning a fragile companion `"Diplomatic Transport"` NPC ship in orbit of the origin planet following the flagship.
+  - Implemented dynamic pirate raider ambush groups spawned near the transport during flight, with strict caps to prevent overcrowding.
+  - Added companion transport failure detection cleaning up active escort missions on destruction and broadcasting warnings to players.
+  - Scrambled elite faction hunters carrying interdictor matrices aggressively chasing and locking onto players with standing below -60.
+  - Rewarded high-value premium faction bounty vouchers (8,000 CR face value) on defeating elite hunters, with squad/fleet splits.
+  - Covered all standing thresholds, companion transport spawning, target locking, and rewards via robust new integration tests.
+- **Decisions:** Integrated elite hunters and escort ambushes seamlessly using existing FSM role behaviors inside the `AIController` loop, ensuring zero architectural bloating.
+- **Validation:** `npm run agent:check` -> green (882 Jest tests / 71 suites).
+- **Next:** Transition to Replenish Phase (R) to promote backlog items, research next specifications, and extend roadmap waves.
+
+## 2026-05-30T17:59 · iter-0087 · GREEN · spec-063-cosmic-storms
+- **Baseline:** `b9659d7` on `feat/cosmic-storms`; 871 Jest tests green.
+- **Move:** Implement server-authoritative wandering cosmic storm hazards with real-time HUD rendering and sensor jamming (063).
+- **Changed:**
+  - Created modular pure `CosmicStorm` class inheriting from `SpaceEntity` to enable seamless physics integration and static analysis compliance.
+  - Seeded Stellar EMP Storm and Radioactive Anomaly wandering entities in `src/engine/GameInstance.js` initialization.
+  - Programmed slow kinematic coordinate drifts and physics updates mapped inside authoritative server sector ticker loops.
+  - Implemented 50% sensor range damping in `src/engine/ai/buildPerception.js` when the ship is within a radioactive cloud.
+  - Integrated custom canvas render styling drawing beautiful transparent colored danger bounds and dust particles on the HUD.
+  - Fixed hardcoded baseline prices in `src/engine/EconomyManager.test.js` to dynamically fetch from BASE_MARKETS.
+- **Decisions:** Extended `SpaceEntity` for the `CosmicStorm` hazard to reuse core velocity-drift update logic, satisfy strict JSDoc typing, and pass static analysis compiler gates without overhead.
+- **Validation:** `npm run agent:check` -> green (879 Jest tests / 71 suites).
+- **Next:** Proceed with SPEC-064 to implement Allied escort missions and hostile hunter squads.
+
 ## 2026-05-30T17:55 · iter-0086 · GREEN · cycle-11-replenish
 - **Baseline:** `193fcc1` on `main`; 871 Jest tests green.
 - **Move:** Execute Cycle 11 Phase R (Replenish) promoting backlog items and establishing Wave v11 roadmap specifications.

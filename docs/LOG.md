@@ -39,6 +39,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T22:42 · iter-0095 · GREEN · cycle-19-npc-smuggler-fleets-evasion
+- **Baseline:** `5aee377` on `feat/procedural-missions`; 917 Jest tests green.
+- **Move:** Implement NPC smuggler fleets & underworld evasion/jamming trader AI (SPEC-086).
+- **Changed:**
+  - Integrated `isSmuggler`, `isChaffActive`, and `decoyJammerActive` attributes inside the `Ship` and `AIController` constructors.
+  - Implemented the `ESCAPE_SECURITY` utility goal in `UtilityAI.js` and `buildPerception.js`, triggering when a guard targets the smuggler within 600 units.
+  - Coded `executeEscapeSecurity` in `AIController.js`, deactivating weapons, deploying decoy chaff, and thrusting toward the nearest stargate warp point.
+  - Updated `executeCaravanAI` to load/unload contraband cargo instead of ore for smuggler caravans.
+  - Plotted visual glowing decoy jammer chaff clouds and smuggler hull colors in `CanvasRenderer.js`.
+  - Authored comprehensive test suites in `AIController.test.js` covering the smuggler evasion and cargo trade lifecycle.
+- **Decisions:** Visualized chaff particles dynamically using local frame ticks and sinusoids inside CanvasRenderer rather than heavy server-side coordinate arrays to maintain network efficiency.
+- **Validation:** `npm run agent:check` -> green (921 Jest tests / 73 suites pass; ESLint, Prettier, checkJs green).
+- **Next:** Proceed with SPEC-088 stargate slide-out HUD navigation overlay and neon-purple holographic visual gates.
+
 ## 2026-05-30T22:40 · iter-0094 · GREEN · cycle-19-dynamic-trade-profit-perception
 - **Baseline:** `b1d0b43` on `feat/procedural-missions`; 912 Jest tests green.
 - **Move:** Implement standings-aware dynamic trade profit metric in AI perception (SPEC-087).

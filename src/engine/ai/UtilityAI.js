@@ -49,6 +49,7 @@
  * rather than scattering string literals.
  */
 export const Goals = Object.freeze({
+  ESCAPE_SECURITY: "ESCAPE_SECURITY",
   ENGAGE: "ENGAGE",
   FLEE: "FLEE",
   TRADE: "TRADE",
@@ -61,6 +62,7 @@ export const Goals = Object.freeze({
  * and when breaking ties in `selectGoal`. Earlier entries win ties.
  */
 export const GOAL_ORDER = Object.freeze([
+  Goals.ESCAPE_SECURITY,
   Goals.ENGAGE,
   Goals.FLEE,
   Goals.TRADE,
@@ -330,7 +332,9 @@ export function evaluateGoals(perception, options = DEFAULT_UTILITY_OPTIONS) {
   const threats = (perception && perception.threats) || [];
   const opps = (perception && perception.opportunities) || {};
   const threatPressure = maxThreatPressure(threats, merged.sensorRange);
+  const isEscapeSecurity = !!(perception && perception.isTargetedBySecurity);
   return {
+    [Goals.ESCAPE_SECURITY]: isEscapeSecurity ? 1.0 : 0.0,
     [Goals.ENGAGE]: scoreEngage(self, opps, threatPressure, merged),
     [Goals.FLEE]: scoreFlee(self, threatPressure, merged),
     [Goals.TRADE]: scoreTrade(self, opps, threatPressure, merged),

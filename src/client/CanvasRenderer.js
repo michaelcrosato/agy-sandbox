@@ -944,6 +944,12 @@ export class CanvasRenderer {
     } else if (ship.name.includes("Guard")) {
       strokeColor = "#30d158"; // Emerald defense
       fillColor = "#08220f";
+    } else if (
+      ship.isSmuggler ||
+      (ship.name && ship.name.includes("Smuggler"))
+    ) {
+      strokeColor = "#ff9500"; // Sleek Orange smuggler
+      fillColor = "#221208"; // Deep warm outlaw theme
     } else if (ship.name && ship.name.includes("Caravan")) {
       strokeColor = "#ffb300"; // Rich Gold caravan
       fillColor = "#221908"; // Deep Gold theme
@@ -986,6 +992,28 @@ export class CanvasRenderer {
       this.ctx.beginPath();
       this.ctx.arc(0, 0, ship.radius * 1.5, 0, Math.PI * 2);
       this.ctx.stroke();
+    }
+
+    // Decoy Jammer / Chaff effect (Spec 086)
+    if ((ship.isChaffActive || ship.decoyJammerActive) && !ship.isDestroyed) {
+      this.ctx.save();
+      this.ctx.shadowBlur = 15;
+      this.ctx.shadowColor = "#ff9500";
+      this.ctx.fillStyle = "rgba(255, 149, 0, 0.45)";
+
+      const timeSec = Date.now() / 1000;
+      for (let i = 0; i < 5; i++) {
+        const offsetAngle = Math.PI + Math.sin(timeSec * (i + 1)) * 0.5;
+        const dist = ship.radius * (1.2 + Math.cos(timeSec + i) * 0.8);
+        const cx = Math.cos(offsetAngle) * dist;
+        const cy = Math.sin(offsetAngle) * dist;
+        const r = 3 + Math.abs(Math.sin(timeSec * 5 + i)) * 4;
+
+        this.ctx.beginPath();
+        this.ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        this.ctx.fill();
+      }
+      this.ctx.restore();
     }
 
     // Render interdictor pulsing gravitational distortion field

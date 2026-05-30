@@ -7,8 +7,8 @@ It records cycle transitions, key milestones, and precise next steps.
 
 ## Cycle 19 — 2026-05-30
 - **Status:** GREEN
-- **Summary:** Transitioned to Cycle 19 Phase D (Execute) and completed SPEC-087 (Standings-Aware Dynamic Trade Profit AI Perception). Refactored `defaultTradeProfit` calculation to dynamically evaluate price spreads across docked ports in the sector, factoring in standings price modifiers (discounts/surcharges), black market premiums, and transaction taxes. Wired `factionRegistry` throughout `AIController` and `GameInstance` setups, and added comprehensive unit test suites. All 917 Jest tests are 100% green.
-- **Next Action:** Implement SPEC-086 (NPC Smuggler Fleets & Underworld Trader AI) with smuggling merchant FSM, security evasion, and decoy radar jammers.
+- **Summary:** Transitioned to Cycle 19 Phase D (Execute) and completed both SPEC-087 (Standings-Aware Dynamic Trade Profit AI Perception) and SPEC-086 (NPC Smuggler Fleets & Underworld Trader AI). Implemented standings-aware, black-market and transaction-tax aware dynamic price spreads calculation. Integrated dedicated Smuggler AI attributes, FSM cargo loading, a high-priority `ESCAPE_SECURITY` utility goal, visual decoy jammer chaff particles, outlaw/smuggler style theme, and exhaustive unit tests verifying the escape, chaff, and trading logic. All 921 Jest tests are 100% green.
+- **Next Action:** Implement SPEC-088 (Navigation Computer Overlay & Stargate Slide-out NAV-computer HUD) with shortest path BFS gate routes and neon-purple holographic visual gates.
 
 ## Cycle 18 — 2026-05-30
 - **Status:** GREEN

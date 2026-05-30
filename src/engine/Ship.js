@@ -87,6 +87,9 @@ export class Ship extends SpaceEntity {
     // Status states
     this.isOverheated = false;
     this.isDisabled = false;
+    this.isSmuggler = false;
+    this.isChaffActive = false;
+    this.decoyJammerActive = false;
 
     // Trading & Economy Systems
     this.credits = credits;

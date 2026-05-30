@@ -33,6 +33,7 @@ export class AIController {
       factionRegistry = null,
       useUtilityAdvisor = false,
       perceptionOptions = null,
+      isSmuggler = false,
     } = {},
   ) {
     this.ship = ship;
@@ -42,8 +43,10 @@ export class AIController {
     // standing with the guard's faction is hostile. Null ⇒ legacy targeting.
     this.standingPolicy = standingPolicy;
     this.factionRegistry = factionRegistry;
-    this.useUtilityAdvisor = useUtilityAdvisor;
+    this.useUtilityAdvisor = useUtilityAdvisor || isSmuggler;
     this.perceptionOptions = perceptionOptions;
+    this.isSmuggler = isSmuggler;
+    this.ship.isSmuggler = isSmuggler;
 
     // Advisory goal selected on the last update (null until first tick / when
     // the advisor is disabled). Exposed for observability and tests.
@@ -128,6 +131,14 @@ export class AIController {
         ...this.perceptionOptions,
       });
       this.currentGoal = selectGoal(perception).goal;
+      if (this.currentGoal === Goals.ESCAPE_SECURITY) {
+        this.executeEscapeSecurity(entities);
+        return;
+      } else {
+        this.ship.isChaffActive = false;
+        this.ship.decoyJammerActive = false;
+      }
+
       if (this.currentGoal === Goals.FLEE) {
         this.executeFlee(entities);
         return;
@@ -135,8 +146,12 @@ export class AIController {
         this.executeRegroup(entities);
         return;
       } else if (this.currentGoal === Goals.TRADE) {
-        this.executeTrade(entities);
-        return;
+        if (this.role === "caravan" || this.isSmuggler) {
+          // Fall through to executeCaravanAI
+        } else {
+          this.executeTrade(entities);
+          return;
+        }
       } else if (this.currentGoal === Goals.ENGAGE) {
         this.executeEngage(entities, dt);
         return;
@@ -150,7 +165,7 @@ export class AIController {
       this.executeGuardAI(dt);
     } else if (this.role === "escort") {
       this.executeEscortAI(dt, entities);
-    } else if (this.role === "caravan") {
+    } else if (this.role === "caravan" || this.isSmuggler) {
       this.executeCaravanAI(dt, entities);
     } else {
       this.executeMerchantAI(dt);
@@ -453,6 +468,46 @@ export class AIController {
     );
     this.steerTowards(fleeTarget);
     this.ship.controls.isThrusting = true;
+  }
+
+  /**
+   * Smuggler escape security FSM state. Maximizes thrusters towards nearest stargate,
+   * deactivating weapons and deploying decoy jammers/chaff.
+   * @param {Array<any>} entities - All sector entities.
+   */
+  executeEscapeSecurity(entities) {
+    this.ship.controls.isFiring = false;
+    this.ship.isChaffActive = true;
+    this.ship.decoyJammerActive = true;
+
+    let nearestGate = null;
+    let bestDist = Infinity;
+    for (const ent of entities) {
+      if (ent && ent.type === "warp_gate") {
+        const dist = this.ship.position.distance(ent.position);
+        if (dist < bestDist) {
+          bestDist = dist;
+          nearestGate = ent;
+        }
+      }
+    }
+
+    if (nearestGate) {
+      this.destination = nearestGate.position;
+      this.steerTowards(this.destination);
+      this.ship.controls.isThrusting = true;
+
+      if (bestDist < 150) {
+        // Warp jump out of the sector
+        this.ship.position = nearestGate.targetPosition.clone();
+        this.ship.velocity = new Vector2D(0, 0);
+        this.destination = null;
+        this.ship.isChaffActive = false;
+        this.ship.decoyJammerActive = false;
+      }
+    } else {
+      this.executeFlee(entities);
+    }
   }
 
   /**
@@ -849,19 +904,33 @@ export class AIController {
    */
   executeCaravanAI(dt, entities) {
     if (!this.producerPlanetName || !this.consumerPlanetName) {
-      const planets = entities.filter((e) => e.type === "planet");
-      if (planets.length >= 2) {
-        const prod =
-          planets.find((p) => p.name === "New Polaris") || planets[0];
-        const cons =
-          planets.find((p) => p.name === "Sigma Draconis") || planets[1];
-        this.producerPlanetName = prod.name;
-        this.consumerPlanetName = cons.name;
+      if (this.isSmuggler) {
+        this.producerPlanetName = "Rogue's Hollow";
+        const planets = entities.filter(
+          (e) => e.type === "planet" && e.name !== "Rogue's Hollow",
+        );
+        if (planets.length > 0) {
+          this.consumerPlanetName = planets[0].name;
+        } else {
+          this.consumerPlanetName = "Sol Prime";
+        }
         this.targetPlanetName = this.producerPlanetName;
         this.caravanState = "loading";
       } else {
-        this.executeWander(dt);
-        return;
+        const planets = entities.filter((e) => e.type === "planet");
+        if (planets.length >= 2) {
+          const prod =
+            planets.find((p) => p.name === "New Polaris") || planets[0];
+          const cons =
+            planets.find((p) => p.name === "Sigma Draconis") || planets[1];
+          this.producerPlanetName = prod.name;
+          this.consumerPlanetName = cons.name;
+          this.targetPlanetName = this.producerPlanetName;
+          this.caravanState = "loading";
+        } else {
+          this.executeWander(dt);
+          return;
+        }
       }
     }
 
@@ -875,12 +944,27 @@ export class AIController {
         const speed = this.ship.velocity.magnitude();
 
         if (dist < 80 && speed < 5) {
-          // Perform transaction: buy/load ore
-          if (planet.market && planet.market.ore !== undefined) {
-            const available = planet.market.ore;
-            const toBuy = Math.min(20, available);
-            planet.market.ore = Math.max(0, planet.market.ore - toBuy);
-            this.caravanCargo = { item: "ore", amount: toBuy };
+          if (this.isSmuggler) {
+            const available = planet.market ? planet.market.contraband || 0 : 0;
+            const toBuy = Math.min(10, available || 20);
+            if (planet.market && planet.market.contraband !== undefined) {
+              planet.market.contraband = Math.max(
+                0,
+                planet.market.contraband - toBuy,
+              );
+            }
+            this.caravanCargo = { item: "contraband", amount: toBuy };
+            this.ship.cargo = this.ship.cargo || {};
+            this.ship.cargo.contraband =
+              (this.ship.cargo.contraband || 0) + toBuy;
+          } else {
+            // Perform transaction: buy/load ore
+            if (planet.market && planet.market.ore !== undefined) {
+              const available = planet.market.ore;
+              const toBuy = Math.min(20, available);
+              planet.market.ore = Math.max(0, planet.market.ore - toBuy);
+              this.caravanCargo = { item: "ore", amount: toBuy };
+            }
           }
 
           // Set target to consumer planet and compute route
@@ -901,10 +985,23 @@ export class AIController {
         const speed = this.ship.velocity.magnitude();
 
         if (dist < 80 && speed < 5) {
-          // Perform transaction: sell/unload ore
-          if (planet.market) {
+          if (this.isSmuggler) {
             const toSell = this.caravanCargo ? this.caravanCargo.amount : 0;
-            planet.market.ore = (planet.market.ore || 0) + toSell;
+            if (planet.market) {
+              planet.market.contraband =
+                (planet.market.contraband || 0) + toSell;
+            }
+            this.ship.cargo = this.ship.cargo || {};
+            this.ship.cargo.contraband = Math.max(
+              0,
+              (this.ship.cargo.contraband || 0) - toSell,
+            );
+          } else {
+            // Perform transaction: sell/unload ore
+            if (planet.market) {
+              const toSell = this.caravanCargo ? this.caravanCargo.amount : 0;
+              planet.market.ore = (planet.market.ore || 0) + toSell;
+            }
           }
           this.caravanCargo = null;
 

@@ -302,6 +302,40 @@ export const DEFAULT_PERCEPTION_OPTIONS = Object.freeze({
 });
 
 /**
+ * Helper to determine if a ship is targeted by security guards in its vicinity.
+ * @param {Object} ship - The perceiving ship.
+ * @param {Array<Object>} entities - All sector entities.
+ * @returns {boolean} True if a guard within 600 units is targeting/scanning the ship.
+ */
+export function isTargetedBySecurity(ship, entities) {
+  if (!ship || !ship.isSmuggler) return false;
+  if (!Array.isArray(entities)) return false;
+  for (const ent of entities) {
+    if (
+      ent &&
+      ent.type === "ship" &&
+      !ent.isDestroyed &&
+      ent.role === "guard"
+    ) {
+      if (ship.position && ent.position) {
+        const dist = ship.position.distance(ent.position);
+        if (dist <= 600) {
+          const isTargeting =
+            ent.target === ship ||
+            ent.targetId === ship.id ||
+            (ent.ship &&
+              (ent.ship.target === ship || ent.ship.targetId === ship.id));
+          if (isTargeting) {
+            return true;
+          }
+        }
+      }
+    }
+  }
+  return false;
+}
+
+/**
  * Builds a `UtilityAI` perception snapshot from live engine state.
  *
  * Scans `entities` once, keeping only those within `sensorRange` of `ship`, and
@@ -314,7 +348,8 @@ export const DEFAULT_PERCEPTION_OPTIONS = Object.freeze({
  * @param {Array<Object>} entities - Live entity list (ships, planets, …).
  * @param {Object} [options] - Overrides merged over `DEFAULT_PERCEPTION_OPTIONS`.
  * @returns {{self:Object, threats:Array<Object>,
- *   opportunities:{prey:Array<Object>, trades:Array<Object>}}}
+ *   opportunities:{prey:Array<Object>, trades:Array<Object>},
+ *   isTargetedBySecurity:boolean}}
  */
 export function buildPerception(ship, entities, options = {}) {
   const opts = { ...DEFAULT_PERCEPTION_OPTIONS, ...options };
@@ -378,5 +413,12 @@ export function buildPerception(ship, entities, options = {}) {
     }
   }
 
-  return { self, threats, opportunities: { prey, trades } };
+  const targetedBySecurity = isTargetedBySecurity(ship, list);
+
+  return {
+    self,
+    threats,
+    opportunities: { prey, trades },
+    isTargetedBySecurity: targetedBySecurity,
+  };
 }

@@ -40,6 +40,7 @@ import { DEFAULT_OUTFITS } from "./engine/outfitCatalog.js";
 import { tradeOne, applyHullPurchase, factionPrice } from "./engine/Trading.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import { shouldGcRoom, sanitizeNickname } from "./server/roomLifecycle.js";
+import { assignShard } from "./net/roomRouter.js";
 
 const JUMP_FUEL_COST = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost;
 
@@ -92,6 +93,8 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, "..");
 
 const PORT = process.env.PORT || 8080;
+const WORKERS = Number(process.env.WORKERS) || 1;
+const SHARD_INDEX = Number(process.env.SHARD_INDEX) || 0;
 
 // Initialize HTTP Server (static file delivery)
 const server = http.createServer((req, res) => {
@@ -147,35 +150,23 @@ const clients = new Map(); // ws -> clientObj
 // silently absorbs disk failures. Tests against an InMemoryStore live in
 // `src/persistence/PersistenceManager.test.js`; here we wire the real file
 // store so the public sector survives restarts.
-const persistenceDir = process.env.PERSISTENCE_DIR || "./data";
+let storeInstance = new JsonFileStore({
+  dir: process.env.PERSISTENCE_DIR || "./data",
+});
+
 const persistenceManager = new PersistenceManager({
-  store: new JsonFileStore({ dir: persistenceDir }),
+  store: {
+    async save(key, obj) {
+      return storeInstance.save(key, obj);
+    },
+    async load(key) {
+      return storeInstance.load(key);
+    },
+    async has(key) {
+      return storeInstance.has(key);
+    },
+  },
 });
-
-// Create Default permanent Public Arena Room
-const publicInstance = new GameInstance("public", "Public Arena");
-instances.set("public", publicInstance);
-
-// Restore any saved galaxy state for the public room. Fire-and-forget so the
-// HTTP server can start listening immediately; the heartbeat runs no sooner
-// than 8 seconds from boot which is well after this resolves. Errors are
-// already swallowed inside `loadGalaxy` so a corrupt save can't crash boot.
-persistenceManager.loadGalaxy(publicInstance.id).then((snapshot) => {
-  if (snapshot) {
-    applyGalaxy(publicInstance, snapshot);
-    console.log(
-      `💾 Restored galaxy state for [${publicInstance.name}] from ${persistenceDir}`,
-    );
-  }
-});
-
-// Periodic galaxy autosave (P1): persist every live room on a slow cadence so
-// a kill -9 only ever loses up to ~30 seconds of heartbeat aging.
-const AUTOSAVE_INTERVAL_MS = Number(process.env.AUTOSAVE_INTERVAL_MS) || 30000;
-persistenceManager.startAutosave(
-  () => instances.values(),
-  AUTOSAVE_INTERVAL_MS,
-);
 
 // Setup multi-room ticker loops
 const TICK_RATE = 30;
@@ -772,6 +763,14 @@ function joinRoom(clientObj, roomId, nickname) {
   }
 
   const room = instances.get(roomId) || instances.get("public");
+  if (!room) {
+    clientObj.send({
+      type: "notification",
+      message: `Sector [${roomId}] is hosted on a different shard!`,
+      style: "error",
+    });
+    return;
+  }
 
   clientObj.roomId = room.id;
   clientObj.nickname = sanitizeNickname(nickname);
@@ -1169,7 +1168,16 @@ wss.on("connection", (ws) => {
         });
         return;
       }
-      const newRoomId = "room-" + Math.random().toString(36).substring(2, 9);
+      let newRoomId;
+      let attempts = 0;
+      do {
+        newRoomId = "room-" + Math.random().toString(36).substring(2, 9);
+        attempts++;
+      } while (
+        WORKERS > 1 &&
+        assignShard(newRoomId, WORKERS) !== SHARD_INDEX &&
+        attempts < 100
+      );
       const newRoomInstance = new GameInstance(newRoomId, name);
       instances.set(newRoomId, newRoomInstance);
       console.log(`🌌 Created custom sector: [${name}] (${newRoomId})`);
@@ -1954,62 +1962,147 @@ const shutdown = async () => {
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 
-// Start listening
-server.listen(PORT, async () => {
-  console.log(
-    `================================================================`,
-  );
-  console.log(
-    `    NEBULA SECTOR AUTHORITATIVE MULTIPLAYER SERVER LISTENING    `,
-  );
-  console.log(
-    `    PORT: ${PORT} | Mode: Authoritative multi-instance rooms    `,
-  );
-  console.log(
-    `    URL: http://localhost:${PORT}                              `,
-  );
-  console.log(
-    `================================================================`,
-  );
-
-  // Programmatic localtunnel startup
-  if (
-    process.env.NODE_ENV !== "production" &&
-    process.env.NODE_ENV !== "test"
-  ) {
+/**
+ * Parameterized server startup (spec 019c).
+ * @param {Object} [config]
+ * @param {number} [config.port]
+ * @param {number} [config.shardIndex]
+ * @param {number} [config.workers]
+ * @returns {Promise<import("http").Server>}
+ */
+export async function startServer({
+  port = PORT,
+  shardIndex = SHARD_INDEX,
+  workers = WORKERS,
+} = {}) {
+  // 1. Lazy load RedisStore if REDIS_URL is provided
+  if (process.env.REDIS_URL) {
     try {
-      // localtunnel is an OPTIONAL dependency (not installed by default) so the
-      // vulnerable axios it bundles stays out of the dependency tree. Load it
-      // lazily; if it is absent the catch below explains the alternatives.
-      const { default: localtunnel } = await import("localtunnel");
-      console.log(`📡 Spinning up optional localtunnel...`);
-      const tunnel = await localtunnel({ port: PORT });
-      activeTunnel = tunnel;
-      console.log(`🚀 Public Multiplayer URL: ${tunnel.url}`);
-
-      exec(`echo ${tunnel.url} | clip`, (err) => {
-        if (!err) {
-          console.log(
-            "📋 Public URL successfully copied to clipboard! Share it (Ctrl+V) with friends.",
-          );
-        } else {
-          console.log("Could not copy URL to clipboard automatically.");
-        }
-      });
-
-      tunnel.on("error", (err) => {
-        console.error("⚠️ Localtunnel error encountered:", err.message);
-      });
-
-      tunnel.on("close", () => {
-        console.log("Localtunnel connection closed.");
-      });
-    } catch (e) {
+      const { createClient } = await import("redis");
+      const { RedisStore } = await import("./persistence/RedisStore.js");
+      const client = createClient({ url: process.env.REDIS_URL });
+      await client.connect();
+      storeInstance = new RedisStore({ client });
       console.log(
-        `ℹ️  Public tunnel unavailable (${e.message}). localtunnel is optional — ` +
-          `install it with \`npm i localtunnel\`, or share your game with ` +
-          `\`cloudflared tunnel --url http://localhost:${PORT}\`.`,
+        `🔌 Connected to shared RedisStore at ${process.env.REDIS_URL}`,
+      );
+    } catch (err) {
+      console.error(
+        `⚠️ Failed to connect to Redis, falling back to JsonFileStore: ${err.message}`,
       );
     }
   }
-});
+
+  // 2. Create Default permanent Public Arena Room ONLY if this shard owns it
+  if (workers === 1 || assignShard("public", workers) === shardIndex) {
+    const publicInstance = new GameInstance("public", "Public Arena");
+    instances.set("public", publicInstance);
+
+    // Restore any saved galaxy state
+    const persistenceDir = process.env.PERSISTENCE_DIR || "./data";
+    try {
+      const snapshot = await persistenceManager.loadGalaxy(publicInstance.id);
+      if (snapshot) {
+        applyGalaxy(publicInstance, snapshot);
+        console.log(
+          `💾 Restored galaxy state for [${publicInstance.name}] from ${persistenceDir}`,
+        );
+      }
+    } catch (err) {
+      console.error(`⚠️ Failed to restore public room galaxy: ${err.message}`);
+    }
+  }
+
+  // 3. Periodic galaxy autosave (P1): persist every live room
+  const AUTOSAVE_INTERVAL_MS =
+    Number(process.env.AUTOSAVE_INTERVAL_MS) || 30000;
+  persistenceManager.startAutosave(
+    () => instances.values(),
+    AUTOSAVE_INTERVAL_MS,
+  );
+
+  // 4. Start HTTP/WS listening
+  return new Promise((resolve) => {
+    server.listen(port, async () => {
+      console.log(
+        `================================================================`,
+      );
+      console.log(
+        `    NEBULA SECTOR AUTHORITATIVE MULTIPLAYER SERVER LISTENING    `,
+      );
+      console.log(
+        `    PORT: ${port} | Shard: ${shardIndex}/${workers}            `,
+      );
+      console.log(
+        `    URL: http://localhost:${port}                              `,
+      );
+      console.log(
+        `================================================================`,
+      );
+
+      // Programmatic localtunnel startup
+      if (
+        process.env.NODE_ENV !== "production" &&
+        process.env.NODE_ENV !== "test"
+      ) {
+        try {
+          const { default: localtunnel } = await import("localtunnel");
+          console.log(`📡 Spinning up optional localtunnel...`);
+          const tunnel = await localtunnel({ port: port });
+          activeTunnel = tunnel;
+          console.log(`🚀 Public Multiplayer URL: ${tunnel.url}`);
+
+          exec(`echo ${tunnel.url} | clip`, (err) => {
+            if (!err) {
+              console.log(
+                "📋 Public URL successfully copied to clipboard! Share it (Ctrl+V) with friends.",
+              );
+            } else {
+              console.log("Could not copy URL to clipboard automatically.");
+            }
+          });
+
+          tunnel.on("error", (err) => {
+            console.error("⚠️ Localtunnel error encountered:", err.message);
+          });
+
+          tunnel.on("close", () => {
+            console.log("Localtunnel connection closed.");
+          });
+        } catch (e) {
+          console.log(
+            `ℹ️  Public tunnel unavailable (${e.message}). localtunnel is optional — ` +
+              `install it with \`npm i localtunnel\`, or share your game with ` +
+              `\`cloudflared tunnel --url http://localhost:${port}\`.`,
+          );
+        }
+      }
+      resolve(server);
+    });
+  });
+}
+
+// Check if run directly or as a clustered worker
+import { isMainThread } from "worker_threads";
+import cluster from "cluster";
+
+const isMain =
+  process.argv[1] &&
+  (fileURLToPath(import.meta.url) === path.resolve(process.argv[1]) ||
+    process.argv[1].endsWith("server.js"));
+
+if (isMain) {
+  const workersCount = Number(process.env.WORKERS) || 1;
+  if (isMainThread && cluster.isPrimary && workersCount > 1) {
+    // Supervisor Mode
+    const { runSupervisor } = await import("./server/supervisor.js");
+    runSupervisor(workersCount);
+  } else {
+    // Worker / Single Process Mode
+    startServer({
+      port: Number(process.env.PORT) || 8080,
+      shardIndex: Number(process.env.SHARD_INDEX) || 0,
+      workers: workersCount,
+    });
+  }
+}

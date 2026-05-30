@@ -29,7 +29,7 @@ v3 Phase 0 (026–029) + Phase 1 (030–035) + Phase 2 scale-out (019b–f, 036�
 
 ### Phase 2 — Scale-Out & Competitive Features
 - [x] `019b` RedisStore behind `Store` — **done** (files: `src/persistence/RedisStore.js`, `src/persistence/RedisStore.test.js`, `src/persistence/multinode.integration.test.js`; implemented the Store key-value contract subclassing `Store` to target a Redis client; verified all async round-trip and isolation capabilities against a fake in-memory client; refactored the multi-node integration suite to assert identical, seamless behavior on both `InMemoryStore` and `RedisStore` backends).
-- [ ] `019c` Worker process model — _blocked by: 019b (recommended)_
+- [x] `019c` Worker process model — **done** (files: `src/server.js`, new `src/server/supervisor.js`, new `src/server/supervisor.test.js`, new `src/server/supervisor.integration.test.js`; wrapped standard server boot in parameterized `startServer` enabling optional dynamic RedisStore mapping; implemented pure planning decision policies in `planWorkers` for scaling up/down and restarts; created cluster fork supervisor self-healing daemon for `WORKERS > 1`; wrote multi-threaded isolated in-process integration tests confirming correct routing boundaries).
 - [ ] `019d` Sticky routing / LB front door — _blocked by: 019c (recommended)_
 - [ ] `019e` Cross-process presence (Redis pub/sub + leases) — _blocked by: 019b_
 - [ ] `019f` Graceful drain / zero-downtime restart — _blocked by: 019c, 019e (recommended)_

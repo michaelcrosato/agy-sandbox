@@ -227,7 +227,7 @@ export class AIController {
     let bestScore = -1;
 
     for (const ent of entities) {
-      if (ent.id === this.ship.id || ent.isDestroyed || ent.type !== "ship") {
+      if (!ent || ent.id === this.ship.id || ent.isDestroyed || ent.type !== "ship") {
         continue;
       }
 

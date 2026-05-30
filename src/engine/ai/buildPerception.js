@@ -280,7 +280,9 @@ export function buildPerception(ship, entities, options = {}) {
       if (
         ent &&
         ent.type === "cosmic_storm" &&
-        ent.hazardType === "radioactive_cloud"
+        ent.hazardType === "radioactive_cloud" &&
+        ent.position &&
+        Number.isFinite(ent.radius)
       ) {
         const dx = ship.position.x - ent.position.x;
         const dy = ship.position.y - ent.position.y;

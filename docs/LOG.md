@@ -39,6 +39,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T18:06 · iter-0089 · GREEN · cycle-12-replenish-spec-065-066-067
+- **Baseline:** `aeecf04` on `feat/procedural-missions`; 882 Jest tests green.
+- **Move:** Execute Cycle 12 Phase R (Replenish) promoting backlog items, and successfully implement procedural generated mission completion pipelines, standings decay, UtilityAI wider rollout, and perception hardening.
+- **Changed:**
+  - Mapped generated delivery missions in checkArrivalCompletions and hunt missions in checkBountyCompletion to complete dynamically, rewarding credits/cargo and calling applyMissionConsequences.
+  - Wired live FactionRegistry standing merits updates (+0.5 per commodity transaction) in the server trade handler.
+  - Enabled active reputation decay hook calling room.decayReputations() inside the 8-second galaxy ticker heartbeat loop.
+  - Rolled out Goal-Driven UtilityAI advisor globally by setting useUtilityAdvisor: true on raiders, boss fleets, and escorts.
+  - Hardened buildPerception cosmic storm check and scanSensors in AIController to be 100% null-safe and exception-proof under partial or non-ship entities.
+  - Authored Wave v12 specifications, roadmap prioritizations, progress checklists, and verified all behaviors with robust new integration tests.
+- **Decisions:** Integrated dynamic completions and standing updates cleanly within the pure engine-simulation layers, keeping the server-side loops light and decoupled from UI interpolations.
+- **Validation:** `npm run agent:check` -> green (886 Jest tests / 71 suites).
+- **Next:** Push the isolated feature branch for review and verify the horizontal Redis sharding scaling.
+
 ## 2026-05-30T18:02 · iter-0088 · GREEN · spec-064-diplomatic-milestones
 - **Baseline:** `cb0ac27` on `feat/cosmic-storms`; 882 Jest tests green.
 - **Move:** Implement Allied tier ambassador escort missions and Nadir tier elite hostile hunter spawns (064).

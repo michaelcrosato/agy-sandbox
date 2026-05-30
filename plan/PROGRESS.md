@@ -24,7 +24,7 @@ _**v10 re-audit baseline (2026-05-30, ENTIRE v9 blueprint shipped): 870 Jest tes
 - [x] `061` Dynamic Planetary Stock Caravans & Cargo Convoy AI (physical cargo transport AI fleets flying across sector warp gates to load and unload goods, modifying planetary stock levels dynamically upon arrival) — **done** (files: `src/client/CanvasRenderer.js`, `src/engine/ai/AIController.js`, `src/engine/ai/AIController.test.js`, `src/engine/ProductionModel.test.js`, `src/server.js`; implemented physical cargo caravans with stargate travel capabilities, loaded raw materials at mining producers and sold/unloaded at consuming planets with strict positive commodity inventory clamping, wired authoritative delta tracking on the server for `"market_sync"` WS broadcasts, drew custom gold visual styling for caravan ships on the client canvas, and fully covered AI route planning, FSM trading, jump teleportation, and inventory mutations via comprehensive unit and integration tests; 870 Jest tests green).
 
 ### Phase 2 — Scale-Out & Premium Features
-- [ ] `062` High-Concurrency Multi-Worker Redis Cluster State Sync (fully wire supervisor processes and consistent load balancing to run clustered sharded Redis Pub/Sub networks behind a flag) — **todo**.
+- [~] `062` High-Concurrency Multi-Worker Redis Cluster State Sync (fully wire supervisor processes and consistent load balancing to run clustered sharded Redis Pub/Sub networks behind a flag) — **in progress**.
 
 ## v9 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

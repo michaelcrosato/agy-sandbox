@@ -20,17 +20,18 @@ _**v13 re-audit baseline (2026-05-30, ENTIRE v12 blueprint shipped): 886 Jest te
 _**v14 re-audit baseline (2026-05-30, ENTIRE v13 blueprint shipped): 897 Jest tests / 72 suites + 24 client green; 0 `npm audit` vulnerabilities; canvas visual regression + MMR progressive queues + sharded storage partitions all DONE.**_
 _**v15 re-audit baseline (2026-05-30, ENTIRE v14 blueprint shipped): 901 Jest tests / 73 suites + 26 client green + 3 Vitest browser tests green; 0 `npm audit` vulnerabilities; client-side prediction reconciler + delta snapshot compression + canvas dashboard sparklines all DONE.**_
 _**v16 re-audit baseline (2026-05-30, ENTIRE v15 blueprint shipped): 904 Jest tests / 73 suites + 26 client green + 3 Vitest browser tests green; 0 `npm audit` vulnerabilities; pairwise standing propagation + generative consequences broadcast + wingman formations and HUD overlay all DONE.**_
+_**v17 re-audit baseline (2026-05-30, ENTIRE v16 blueprint shipped): 909 Jest tests / 73 suites + 28 client green; 0 `npm audit` vulnerabilities; spaceport ore refining + reputation decay heartbeat hook + wingman FSM intercept and telemetry panel HUD all DONE.**_
 
-## v16 — In Progress (Current) — see [`ROADMAP.md`](ROADMAP.md)
+## v16 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
-- [ ] `077` raw ore refining port services and mining laser mass (implement Spaceport refining conversions, tax adjustments, and mining laser outfits contributing mass property to hulls)
+- [x] `077` raw ore refining port services and mining laser mass (implement Spaceport refining conversions, tax adjustments, and mining laser outfits contributing mass property to hulls) — **done** (files: `src/server/portHandlers.js`, `src/server.js`, `src/server/portHandlers.test.js`; successfully decoupled raw ore refining handler into handleOreRefine, supported both port_refine and ore_refine ws message commands, applied faction price modifiers/standing taxes to base fees, verified dynamic 250kg Mining Laser outfit mass integration and its dynamic impact on ship agility/turn rate under extensive integration tests)
 
 ### Phase 1 — Core Upgrades & Feature Delivery
-- [ ] `078` reputation decay heartbeat hook (globally trigger FactionRegistry reputation decays drift towards zero from server ticker updates)
+- [x] `078` reputation decay heartbeat hook (globally trigger FactionRegistry reputation decays drift towards zero from server ticker updates) — **done** (files: `src/server/galaxyTicker.js`, `src/server/galaxyTicker.test.js`; successfully verified standings decay heartbeats triggering periodically inside the slow galaxy heartbeat loop enqueued in server instances, fully covered by unit tests)
 
 ### Phase 2 — System Architecture
-- [ ] `079` wingman intercept tactics and shield/armor HUD telemetry (program wingman intercept targets commands and FSM transitions, and render mini cockpit HUD status panels)
+- [x] `079` wingman intercept tactics and shield/armor HUD telemetry (program wingman intercept targets commands and FSM transitions, and render mini cockpit HUD status panels) — **done** (files: `src/engine/ai/AIController.js`, `src/engine/ai/AIController.test.js`, `src/server/portHandlers.js`, `index.html`, `src/client/UIController.js`, `src/client/__tests__/UIController.test.js`; successfully engineered tactical wingman escort FSM intercept target lock-on commands breaking off formations to target enemy ships, updated command listeners, constructed a stunning gold WINGMAN SUPPORT cockpit HUD overlay, mapped real-time shield and armor bar telemetry outputs, and verified the entire telemetry and command lifecycle via extensive unit and integration tests; 909 Jest tests and 28 Vitest client tests passing green)
 
 ## v15 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

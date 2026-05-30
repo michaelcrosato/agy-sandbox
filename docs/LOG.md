@@ -39,6 +39,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-30T16:30 · iter-0069 · GREEN · align-afk-autonomous-readiness
+
+- **Baseline:** `cb2d231` on `main`; 798 Jest tests green / all gates green.
+- **Move:** Harden the repository architecture and governance documentation for fully autonomous AFK coding loops, resolving all active ESLint warnings, aligning shell/PowerShell test gates, and defining three new unblocked roadmap tickets.
+- **Changed:**
+  - Modified `scripts/agent/check.sh` and `scripts/agent/check.ps1` to run the JSDoc checkJs `typecheck` step, fully matching the package.json `agent:check` command.
+  - Created `.cursorrules` in the root directory pointing to `AGENTS.md` as a canonical entry point thin pointer.
+  - Modified `src/engine/PortServices.test.js`, `src/engine/ai/buildPerception.js`, and `src/server.js` prefixing or resolving unused parameters/bindings to eliminate 100% of ESLint compiler warnings.
+  - Updated `docs/GOAL.md` incorporating clear Non-Goals, Constraints & Assumptions, Agent Guidance, and detailed Definition of Done criteria.
+  - Updated `ROADMAP.md` transitioning all historic completed tickets to DONE, and mapping three new open developer tickets.
+  - Created `tickets/TICKET015.md` (Self-healing non-finite prices), `tickets/TICKET016.md` (Kill-Restart persistence integration test), and `tickets/TICKET017.md` (Reputational dynamic market prices).
+- **Decisions:** Structured `check.sh` and `check.ps1` to mirror CI gates identically. Resolved unused parameters by either optional catch bindings (ES2019) or standard `_opts;` self-references to guarantee strict ESM and JSDoc compliance without modifying runtime contracts.
+- **Validation:** `npm run agent:check` -> green (798 Jest tests / 65 suites). Zero ESLint warnings, zero formatting errors, and JSDoc type checking passes cleanly.
+- **Next:** Execute TICKET015 to protect the living universe economy against non-finite price drift.
+
 ## 2026-05-30T14:50 · iter-0068 · GREEN · spec-043-matchmaking-queue-lifecycle
 
 - **Baseline:** `0643b47` on `main`; 796 Jest / 65 suites green. Executing `plan/specs/043` — Matchmaking queue disconnect-rejoin lifecycle.

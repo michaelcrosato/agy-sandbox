@@ -20,30 +20,30 @@ duplicated here. Operating rules: [`AGENTS.md`](AGENTS.md).
 
 Work top-down; within a phase, take the smallest green slice.
 
-### 1. Stabilize ✅ (this session)
+### 1. Stabilize ✅
 - Verify and fix the gate so `main`/CI is green. → **done** (Prettier fix; see `tickets/TICKET003` context).
 
-### 2. Tooling & deps
+### 2. Tooling & deps ✅
 - `npm run agent:check` mirrors CI; cross-platform `scripts/agent/*` wrappers; `.aiignore`; `.env.example`. → **done** (`tickets/TICKET002`).
-- Dependency hygiene: declare `http-server` (used by `npm run dev` via `npx`), add an `engines` field / `.nvmrc`. → **open** (`tickets/TICKET001`).
+- Dependency hygiene: declare `http-server` (used by `npm run dev` via `npx`), add an `engines` field / `.nvmrc`. → **done** (`tickets/TICKET001`).
 
-### 3. Docs & onboarding
-- `AGENTS.md`, `ROADMAP.md`, `docs/ai/REPO_MAP.md`, refreshed `README.md`. → **done** (`tickets/TICKET002`).
+### 3. Docs & onboarding ✅
+- `AGENTS.md`, `ROADMAP.md`, `docs/ai/REPO_MAP.md`, refreshed `README.md`. → **done** (`tickets/TICKET002` / updated).
 - Keep `docs/GOAL.md` ↔ repo reality in sync each iteration (per the loop).
 
 ### 4. Bugs & tests
 - Fix NaN price-poisoning in `EconomyManager.normalizePrices`. → **done** (`tickets/TICKET003`).
-- Self-heal already-non-finite market values + guard heartbeat diffusion. → **open** (`tickets/TICKET003` follow-up).
-- Kill→restart→rejoin persistence integration test (proves the "world moved" showcase). → **open** (`tickets/TICKET004`).
-- Raise coverage on the untested seams (server handlers) via extraction (see phase 5).
+- Self-heal already-non-finite market values + guard heartbeat diffusion. → **open** (`tickets/TICKET015`).
+- Kill→restart→rejoin persistence integration test (proves the "world moved" showcase). → **open** (`tickets/TICKET016`).
+- All other early bugs, sector boundaries, presence leases, and mining multiplier fixes. → **done** (`tickets/TICKET006` through `TICKET014`).
 
-### 5. Modularity
+### 5. Modularity ✅
 - Extract testable units out of `src/server.js` (handlers, broadcast, persistence wiring) so the
-  orchestration layer gains real test coverage without a rewrite. → **open** (`tickets/TICKET005`).
+  orchestration layer gains real test coverage without a rewrite. → **done** (extracted supervisor, GC, galaxy ticker, lobby sync; see `tickets/TICKET005`).
 
 ### 6. Features (product pillars — `docs/GOAL.md`)
-- Lowest-numbered pillar with unblocked work, smallest green slice. Near-term high-leverage:
-  wire the already-built pure systems into the live runtime (P3 factions → NPC spawns & prices;
+- Wire faction standings dynamically into planetary market price calculations. → **open** (`tickets/TICKET017`).
+- Wire the other already-built pure systems into the live runtime (P3 factions → NPC spawns;
   P4 generative missions → landing flow; P5 utility AI → `AIController` advisory), then P2 production
   chains and P7 interest management. Acceptance = each pillar's DoD in `docs/GOAL.md`.
 
@@ -57,7 +57,7 @@ Work top-down; within a phase, take the smallest green slice.
 - **`src/server.js` is large and untested** — highest regression risk; change surgically, prefer extraction.
 - **Client is not headlessly testable** — verify UI changes in a browser; don't claim UI success from tests.
 - **localtunnel** (public play) is an external dependency with a first-visit gate; not needed for local dev.
-- No secrets are committed; automation env vars are documented in `.env.example` (see `tickets/TICKET001`).
+- No secrets are committed; automation env vars are documented in `.env.example` (see `.env.example`).
 
 ## Maintenance loop
 

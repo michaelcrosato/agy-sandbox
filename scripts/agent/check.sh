@@ -6,13 +6,16 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
-echo "[check] 1/3 format (prettier --check)..."
+echo "[check] 1/4 format (prettier --check)..."
 npm run --silent format:check
 
-echo "[check] 2/3 lint (eslint)..."
+echo "[check] 2/4 lint (eslint)..."
 npm run --silent lint
 
-echo "[check] 3/3 test (jest)..."
+echo "[check] 3/4 typecheck (tsc --noEmit)..."
+npm run --silent typecheck
+
+echo "[check] 4/4 test (jest)..."
 npm test
 
 echo "[check] ALL GREEN — safe to commit"

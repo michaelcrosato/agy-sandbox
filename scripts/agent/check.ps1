@@ -5,15 +5,19 @@
 $ErrorActionPreference = 'Stop'
 Set-Location (Join-Path $PSScriptRoot '..\..')
 
-Write-Host '[check] 1/3 format (prettier --check)...'
+Write-Host '[check] 1/4 format (prettier --check)...'
 npm run --silent format:check
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-Write-Host '[check] 2/3 lint (eslint)...'
+Write-Host '[check] 2/4 lint (eslint)...'
 npm run --silent lint
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-Write-Host '[check] 3/3 test (jest)...'
+Write-Host '[check] 3/4 typecheck (tsc --noEmit)...'
+npm run --silent typecheck
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+Write-Host '[check] 4/4 test (jest)...'
 npm test
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 

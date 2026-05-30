@@ -110,7 +110,7 @@ describe("PortServices (EW5)", () => {
 
       // With mock FactionRegistry and friendly standing (discount)
       const mockRegistry = {
-        priceModifier: (playerId, faction, mode) => 0.8, // 20% discount
+        priceModifier: (_playerId, _faction, _mode) => 0.8, // 20% discount
       };
       expect(refineCost(20, {}, mockRegistry, "player1", "Federation")).toBe(
         160,

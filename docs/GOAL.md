@@ -97,3 +97,35 @@ These are the demos that prove the North Star — steer increments toward making
 3. Choose the lowest-numbered pillar with unfinished, unblocked work; within it, the smallest slice that lands green and visibly advances the North Star or a Showcase Moment.
 4. Implement + test, force the validation gate; on green, commit and log the truth per `docs/LOG.md` rules.
 5. If blocked or red: archive, roll back to last green, log the pivot, pick a different slice.
+
+---
+
+## Non-Goals
+- **Single-player offline-only mode:** The game is architected around an authoritative server-side simulation. We do not support offline client-only simulations.
+- **High-fidelity 3D graphics:** The client uses a pure, high-performance 2D Canvas. Porting to WebGL/3D is a non-goal.
+- **Custom low-level network protocols:** Standard WebSockets (`ws` library) are used. Custom TCP/UDP layers are out of scope.
+- **Commercialization assets:** Anti-cheat, licensing, or payment processors are not part of the sandbox scope.
+
+## Constraints & Assumptions
+- **Node.js Environment:** The engine pins Node >= 20. Plain ECMAScript Modules (ESM) with JSDoc checkJs typings. No CommonJS or runtime compilation.
+- **Math.random Prohibition:** The core simulation packages (`src/engine`, `src/physics`, `src/net`) must be deterministic. Randomness must be injected or generated from seeded PRNGs (`createSeededRng`).
+- **Single-Threaded Shard Boundaries:** Each shard node runs in an isolated single thread (or worker). State synchronization between shards uses Redis Pub/Sub and lease registry.
+
+## Agent Guidance
+- **Read-First Order:** Agents MUST read files in the exact order documented in `AGENTS.md §1` (AGENTS.md -> AXIOMS.md -> AGENT-LOOP.md -> GOAL.md -> ROADMAP.md -> REPO_MAP.md -> tickets/ -> LOG.md).
+- **Patterns to Follow:**
+  - Keep modules pure, headless, and unit-tested next to their source files (`*.test.js`).
+  - Rely on JSDoc type comments for TypeScript checks (`checkJs: true`).
+  - Prefix unused variables or parameters with `_` to satisfy ESLint rules.
+- **Patterns to Avoid:**
+  - NEVER import `ws`, `http`, `fs`, `document`, or use timers in `src/engine/`.
+  - Avoid large monolithic blocks; prefer small, isolated extractions.
+  - Do NOT modify any write-protected substrate files.
+
+## Definition of Done (Pillar Slices)
+A slice or tick is considered DONE when:
+1. `npm run agent:check` (or `scripts/agent/check.sh`) is fully green (prettier, eslint, typecheck, tests).
+2. The added feature has complete deterministic unit and integration test coverage.
+3. The specific ticket's checkboxes in `tickets/` are fully updated and marked complete.
+4. An entry programmatically compliant with `docs/LOG.md` is appended.
+5. Unused files or debug statements are fully cleaned up; no code placeholders remain.

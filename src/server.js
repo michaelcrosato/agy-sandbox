@@ -2008,7 +2008,7 @@ const shutdown = async () => {
                 setTimeout(() => {
                   try {
                     client.ws.close();
-                  } catch (_) {
+                  } catch {
                     // Ignore socket close errors
                   }
                 }, 100);

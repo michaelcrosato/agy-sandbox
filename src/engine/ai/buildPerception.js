@@ -101,6 +101,7 @@ export function defaultIsThreat(ent, self, opts = {}) {
  * @returns {number}
  */
 export function defaultThreatLevel(ent, self, _opts = {}) {
+  _opts;
   return clamp01(0.8 * armorFraction(ent));
 }
 
@@ -141,6 +142,7 @@ export function defaultIsPrey(ent, self, opts = {}) {
  * @returns {number}
  */
 export function defaultPreyWeakness(ent, self, _opts = {}) {
+  _opts;
   return clamp01(0.6 + 0.4 * (1 - armorFraction(ent)));
 }
 

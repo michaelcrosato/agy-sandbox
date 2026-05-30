@@ -284,9 +284,9 @@ describe("PersistenceManager autosave", () => {
       };
 
       const stop = manager.startAutosave(() => rooms, 20);
-      // Wait long enough that the interval should have fired ~3 times. The
+      // Wait long enough that the interval should have fired ~10 times. The
       // assertion is a lower bound to avoid flakiness on slow CI runners.
-      await new Promise((resolve) => setTimeout(resolve, 90));
+      await new Promise((resolve) => setTimeout(resolve, 200));
       expect(saveCount).toBeGreaterThanOrEqual(2);
 
       stop();

@@ -1,6 +1,6 @@
 # SPEC-091 — Authoritative Game Invariant Verifier & Self-Healing Loop
 
-- **Status:** Todo
+- **Status:** Done
 - **Wave:** v20 — Phase 1
 - **Priority:** Medium
 - **Product Pillar:** P1 — Persistent Living Universe (Data Integrity & Self-Healing Core)

@@ -5,10 +5,10 @@ It records cycle transitions, key milestones, and precise next steps.
 
 ---
 
-## Cycle 21 — 2026-05-30
+## Cycle 21 — 2026-05-31
 - **Status:** GREEN
-- **Summary:** Successfully shipped the entire sandbox security and execution hardening wave: SPEC-092 (Automated Zombie Process Reaper & Orphan Port Cleanup), SPEC-093 (State Leakage Defender & Workspace Isolation), and SPEC-090 (Event-Loop Latency Monitoring & dynamic backpressure shedding). Developed `ProcessReaper.js` and `cleanup-orphans.ps1` to automatically track and force-kill leaked child processes and free locked socket ports on Windows hosts. Developed `workspace-sanitize.ps1` to detect and recursively clean untracked test directories (`data-test-*`, `.vitest-attachments`) while keeping critical plan files intact, automatically wired into git hooks (`pre-commit`, `post-checkout`, `pre-push`). Built the `LatencyMonitor.js` engine to actively measure event-loop lag and dynamically trigger client-level backpressure (shedding chat, system alerts, asteroid state updates, and environmental heartbeats under lag), exposed via `/metrics` HTTP endpoint. Fully covered all systems with custom integration and unit test suites.
-- **Next Action:** Transition to SPEC-091 (Game Invariant Verifier & Heartbeat Self-Healing Loop).
+- **Summary:** Successfully shipped the entire sandbox infrastructure and security wave: SPEC-092 (Automated Process Reaper & Orphan Port Cleanup), SPEC-093 (State Leakage Defender & Workspace Isolation), SPEC-090 (Event-Loop Latency Monitoring & Backpressure Shedding), SPEC-091 (Game Invariant Verifier & Heartbeat Self-Healing), and SPEC-094 (LLM Observability & Sandbox Resource Telemetry Recorder). Built the authoritative `InvariantVerifier` class silently auditing and self-healing credit integrity, cargo bay overflows, infinite/NaN physics coordinates, and outfitting fittings slot caps, wired to execute periodically on server Heartbeats. Engineered the `SandboxTelemetry` recorder compiling real-time CPU percentages, heap/RSS memory peaks, repository folder sizes via recursive fs scans, and long-term memory leak rates, integrated directly into `/metrics` REST outputs and custom rose-glassmorphic `dashboard.html` visual charts. Hardened multiple integration tests against environment timing races. All 953 tests are completely green.
+- **Next Action:** Transition to Cycle 22 Phase R (Replenish) to review Backlogs, run AUDIT/RESEARCH, and author the next wave of frontier-grade sandbox specifications.
 
 ## Cycle 20 — 2026-05-30
 - **Status:** GREEN

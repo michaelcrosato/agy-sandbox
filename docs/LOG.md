@@ -39,6 +39,18 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
  
+## 2026-05-31T00:00 · iter-0103 · GREEN · cycle-21-spec-094-observability-sandbox-telemetry
+- **Baseline:** `1e6a9ea` on `feat/procedural-missions`; 947 Jest green.
+- **Move:** Implement Sandbox Resource Telemetry Recorder & observabilty dashboard integrations (SPEC-094).
+- **Changed:**
+  - Coded `src/net/SandboxTelemetry.js` leveraging native Node process metrics (`memoryUsage()`, `cpuUsage()`) and recursive directory footprints via `fs.statSync` (defensively skipping `node_modules` and `.git` bounds to conserve I/O) to monitor peak footprints and estimate long-term memory leaks.
+  - Wired `SandboxTelemetry` to start at server startup inside `src/server.js`, aggregate compiled metrics directly into the `/metrics` API JSON payload, and stop cleanly upon graceful shutdown.
+  - Added CSS style declarations, HTML card structure, and live rolling telemetry arrays in `dashboard.html` plotting real-time MB memory usage sparklines.
+  - Wrote Jest unit suite `src/net/SandboxTelemetry.test.js` and server integration suite `src/server/sandboxTelemetry.integration.test.js` validating all telemetry calculations and `/metrics` JSON endpoint aggregation.
+  - Hardened existing WebSocket schema validation integration tests (`schemaValidation.integration.test.js`) and autosave persistence tests (`PersistenceManager.test.js`) against environment race-conditions.
+- **Decisions:** Integrated peak-updating direct memory scans in `getMetrics()` to ensure peak metrics are mathematically bounds-consistent with current process usage.
+- **Validation:** `npm run agent:check` → 953 Jest tests + 57 Vitest client tests green with 0 ESLint warnings and typecheck green.
+
 ## 2026-05-30T23:45 · iter-0102 · GREEN · cycle-21-spec-091-invariant-verifier-healing
 - **Baseline:** `652c124` on `feat/procedural-missions`; 943 Jest green.
 - **Move:** Implement Authoritative Game Invariant Verifier & Heartbeat Self-Healing Loop (SPEC-091).

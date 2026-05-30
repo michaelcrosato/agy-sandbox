@@ -1,6 +1,6 @@
 # SPEC-094 — LLM Observability & Sandbox Resource Telemetry Recorder
 
-- **Status:** Todo
+- **Status:** Done
 - **Wave:** v21 — Phase 2
 - **Priority:** Medium
 - **Product Pillar:** P1 — Persistent Living Universe / Sandbox Architecture (Observability & Telemetry)

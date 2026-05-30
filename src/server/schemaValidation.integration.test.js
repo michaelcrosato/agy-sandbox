@@ -53,7 +53,12 @@ describe("WebSocket Schema Validation Integration Tests (SPEC-089)", () => {
       });
 
       ws.on("message", (data) => {
-        const msg = JSON.parse(data.toString());
+        let msg;
+        try {
+          msg = JSON.parse(data.toString());
+        } catch (e) {
+          return; // Ignore binary state broadcasts
+        }
         if (msg.type === "init") {
           expect(msg.nickname).toBe("Tracer");
           ws.close();
@@ -84,7 +89,12 @@ describe("WebSocket Schema Validation Integration Tests (SPEC-089)", () => {
       });
 
       ws.on("message", (data) => {
-        const msg = JSON.parse(data.toString());
+        let msg;
+        try {
+          msg = JSON.parse(data.toString());
+        } catch (e) {
+          return; // Ignore binary state broadcasts
+        }
         if (msg.type === "notification") {
           expect(msg.style).toBe("error");
           expect(msg.message).toContain("Invalid network payload");
@@ -118,7 +128,12 @@ describe("WebSocket Schema Validation Integration Tests (SPEC-089)", () => {
 
       let joined = false;
       ws.on("message", (data) => {
-        const msg = JSON.parse(data.toString());
+        let msg;
+        try {
+          msg = JSON.parse(data.toString());
+        } catch (e) {
+          return; // Ignore binary state broadcasts
+        }
         if (msg.type === "init") {
           joined = true;
           // Send invalid trade command

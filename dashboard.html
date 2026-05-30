@@ -227,6 +227,7 @@
     .card-purple:hover::before { background: var(--color-purple); }
     .card-emerald:hover::before { background: var(--color-emerald); }
     .card-amber:hover::before { background: var(--color-amber); }
+    .card-crimson:hover::before { background: var(--color-crimson); }
 
     .card-header {
       display: flex;
@@ -638,6 +639,30 @@
           <span>Pilots waiting in queue</span>
         </div>
       </div>
+
+      <!-- Sandbox Containment & Telemetry Card (SPEC-094) -->
+      <div class="card card-crimson" id="card-sandbox">
+        <div class="card-header">
+          <span class="card-title">Sandbox Containment</span>
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-crimson)" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <path d="M9 3v18M15 3v18M3 9h18M3 15h18"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="card-value" id="val-sandbox-mem">0.00 <span style="font-size: 1rem; color: #64748b;">MB</span></div>
+        <div style="font-size: 0.85rem; color: #94a3b8; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 0.5rem; margin-bottom: 0.25rem;">
+          <div>CPU: <strong id="val-sandbox-cpu">0.0%</strong></div>
+          <div>Disk: <strong id="val-sandbox-disk">0.0 MB</strong></div>
+          <div>Peak: <strong id="val-sandbox-peak">0.0 MB</strong></div>
+          <div>Leak: <strong id="val-sandbox-leak">0 B/m</strong></div>
+        </div>
+        <canvas id="sparkline-sandbox" width="280" height="40" style="width: 100%; height: 40px; border-radius: 4px; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.03); margin-top: 0.5rem;"></canvas>
+        <div class="card-footer">
+          <span>Containment telemetry: <span id="val-sandbox-uptime">0s</span> uptime</span>
+        </div>
+      </div>
     </section>
 
     <!-- Detail Grid: Active Rooms Table & System Events -->
@@ -708,6 +733,7 @@
     const tickHistory = [];
     const bandwidthHistory = [];
     const queueHistory = [];
+    const sandboxHistory = [];
     
     // UI Elements mapping
     const elConnections = document.getElementById("val-connections");
@@ -791,6 +817,32 @@
       drawSparkline("sparkline-tick", tickHistory, "var(--color-emerald)");
       drawSparkline("sparkline-bandwidth", bandwidthHistory, "var(--color-amber)");
       drawSparkline("sparkline-queue", queueHistory, "var(--color-purple)");
+
+      // Sandbox Telemetry live update
+      if (data.sandbox_telemetry) {
+        const tele = data.sandbox_telemetry;
+        const heapMb = tele.memory.heapUsed / 1024 / 1024;
+        const peakMb = tele.memory.peakHeapUsed / 1024 / 1024;
+        const diskMb = tele.disk.repositorySizeBytes / 1024 / 1024;
+        
+        const elSandboxMem = document.getElementById("val-sandbox-mem");
+        const elSandboxCpu = document.getElementById("val-sandbox-cpu");
+        const elSandboxDisk = document.getElementById("val-sandbox-disk");
+        const elSandboxPeak = document.getElementById("val-sandbox-peak");
+        const elSandboxLeak = document.getElementById("val-sandbox-leak");
+        const elSandboxUptime = document.getElementById("val-sandbox-uptime");
+
+        if (elSandboxMem) elSandboxMem.innerHTML = `${heapMb.toFixed(2)} <span style="font-size: 1rem; color: #64748b;">MB</span>`;
+        if (elSandboxCpu) elSandboxCpu.innerText = `${tele.cpu_percent.toFixed(1)}%`;
+        if (elSandboxDisk) elSandboxDisk.innerText = `${diskMb.toFixed(1)} MB`;
+        if (elSandboxPeak) elSandboxPeak.innerText = `${peakMb.toFixed(1)} MB`;
+        if (elSandboxLeak) elSandboxLeak.innerText = `${tele.memory.leakRateBytesPerMin.toFixed(0)} B/m`;
+        if (elSandboxUptime) elSandboxUptime.innerText = `${tele.uptimeSeconds}s`;
+
+        sandboxHistory.push(heapMb);
+        if (sandboxHistory.length > maxHistoryPoints) sandboxHistory.shift();
+        drawSparkline("sparkline-sandbox", sandboxHistory, "var(--color-crimson)");
+      }
 
       // Build active rooms table
       if (data.rooms && data.rooms.length > 0) {
@@ -880,6 +932,31 @@
       drawSparkline("sparkline-tick", tickHistory, "var(--color-emerald)");
       drawSparkline("sparkline-bandwidth", bandwidthHistory, "var(--color-amber)");
       drawSparkline("sparkline-queue", queueHistory, "var(--color-purple)");
+
+      // Simulated Sandbox Telemetry
+      const mockMem = 35.4 + Math.sin(fallbackCounter / 20) * 1.5;
+      const mockCpu = 1.2 + Math.random() * 0.5;
+      const mockDisk = 124.5;
+      const mockPeak = 38.2;
+      const mockLeak = 0;
+      
+      const elSandboxMem = document.getElementById("val-sandbox-mem");
+      const elSandboxCpu = document.getElementById("val-sandbox-cpu");
+      const elSandboxDisk = document.getElementById("val-sandbox-disk");
+      const elSandboxPeak = document.getElementById("val-sandbox-peak");
+      const elSandboxLeak = document.getElementById("val-sandbox-leak");
+      const elSandboxUptime = document.getElementById("val-sandbox-uptime");
+
+      if (elSandboxMem) elSandboxMem.innerHTML = `${mockMem.toFixed(2)} <span style="font-size: 1rem; color: #64748b;">MB</span>`;
+      if (elSandboxCpu) elSandboxCpu.innerText = `${mockCpu.toFixed(1)}%`;
+      if (elSandboxDisk) elSandboxDisk.innerText = `${mockDisk.toFixed(1)} MB`;
+      if (elSandboxPeak) elSandboxPeak.innerText = `${mockPeak.toFixed(1)} MB`;
+      if (elSandboxLeak) elSandboxLeak.innerText = `${mockLeak.toFixed(0)} B/m`;
+      if (elSandboxUptime) elSandboxUptime.innerText = `${fallbackCounter}s`;
+
+      sandboxHistory.push(mockMem);
+      if (sandboxHistory.length > maxHistoryPoints) sandboxHistory.shift();
+      drawSparkline("sparkline-sandbox", sandboxHistory, "var(--color-crimson)");
 
       // Render custom mock rooms table
       elRoomsTable.innerHTML = `

@@ -46,6 +46,7 @@ import { sendDecision } from "./net/backpressure.js";
 import { createRegistry } from "./net/metrics.js";
 import { createLogger } from "./net/logger.js";
 import { LatencyMonitor } from "./net/LatencyMonitor.js";
+import { SandboxTelemetry } from "./net/SandboxTelemetry.js";
 import { applyOutfitStats } from "./engine/Outfitting.js";
 import { DEFAULT_OUTFITS } from "./engine/outfitCatalog.js";
 import {
@@ -109,6 +110,8 @@ const metrics = createRegistry();
 const logger = createLogger({ level: process.env.LOG_LEVEL || "info" });
 const latencyMonitor = new LatencyMonitor();
 latencyMonitor.start();
+const sandboxTelemetry = new SandboxTelemetry();
+sandboxTelemetry.start();
 
 // ws inbound hardening (spec 002): cap inbound frame size to blunt memory-DoS,
 // and accept only same-origin upgrades + an optional ALLOWED_ORIGINS allowlist
@@ -163,6 +166,7 @@ const server = http.createServer((req, res) => {
       matchmaking_queue_size: matchmakingQueue.size,
       event_loop_latency_ms: latencyMonitor.getLatency(),
       event_loop_status: latencyMonitor.getStatus(),
+      sandbox_telemetry: sandboxTelemetry.getMetrics(),
       rooms: buildLobbyRoomsList(instances).map((r) => ({
         ...r,
         players: r.playersCount,
@@ -2386,6 +2390,7 @@ let activeTunnel = null;
 const shutdown = async () => {
   console.log("\n🔌 Shutting down server gracefully...");
   latencyMonitor.stop();
+  sandboxTelemetry.stop();
 
   // Clear all heartbeat and simulation intervals immediately to prevent race conditions during teardown (spec 019f)
   clearInterval(physicsInterval);

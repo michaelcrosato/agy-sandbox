@@ -21,8 +21,20 @@ _**v14 re-audit baseline (2026-05-30, ENTIRE v13 blueprint shipped): 897 Jest te
 _**v15 re-audit baseline (2026-05-30, ENTIRE v14 blueprint shipped): 901 Jest tests / 73 suites + 26 client green + 3 Vitest browser tests green; 0 `npm audit` vulnerabilities; client-side prediction reconciler + delta snapshot compression + canvas dashboard sparklines all DONE.**_
 _**v16 re-audit baseline (2026-05-30, ENTIRE v15 blueprint shipped): 904 Jest tests / 73 suites + 26 client green + 3 Vitest browser tests green; 0 `npm audit` vulnerabilities; pairwise standing propagation + generative consequences broadcast + wingman formations and HUD overlay all DONE.**_
 _**v17 re-audit baseline (2026-05-30, ENTIRE v16 blueprint shipped): 909 Jest tests / 73 suites + 28 client green; 0 npm audit vulnerabilities; spaceport ore refining + reputation decay heartbeat hook + wingman FSM intercept and telemetry panel HUD all DONE.**_
+_**v18 re-audit baseline (2026-05-30, ENTIRE v17 blueprint shipped): 912 Jest tests / 73 suites + 30 client green; 0 npm audit vulnerabilities; tractor outfit mass + black market spaceports + standing-aware trade advisor HUD all DONE.**_
 
-## v17 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
+## v18 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
+
+### Phase 0 — Quick Wins & Safety
+- [ ] `083` client-side entity interpolation & remote ship smoothing (implement smooth LERP/SLERP interpolation buffer caching for remote entities inside CanvasRenderer to eliminate movement stuttering)
+
+### Phase 1 — Core Upgrades & Feature Delivery
+- [ ] `084` emergency distress beacons & emergent rescue caravans (catalog Emergency Distress Beacon outfit, program distress beacon server listener, spawn allied refuel tankers or hostile rim pirate ambushers based on local standing)
+
+### Phase 2 — System Architecture
+- [ ] `085` underworld smuggling contracts & standing propagation (procedurally generate smuggling contracts at Rogue's Hollow, attach negative standing consequences to major law factions, and verify propagation on completion)
+
+## v17 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
 - [x] `080` tractor outfit mass correction (ensure the Tractor Beam Matrix outfit correctly applies its 200 kg mass to the ship's hull on buy or salvage) — **done** (files: `src/engine/Outfitting.js`, `src/engine/Outfitting.test.js`; verified that Tractor Beam Matrix correctly applies 200 kg mass under existing unit tests)
@@ -31,7 +43,7 @@ _**v17 re-audit baseline (2026-05-30, ENTIRE v16 blueprint shipped): 909 Jest te
 - [x] `081` outlaw spaceports and black market contraband pricing (configure Pirate Haven / Rogue's Hollow with blackMarket services, refuse docking to players with negative underworld standing, and award a 1.5x price premium on contraband sales) — **done** (files: `src/engine/GameInstance.js`, `src/server.js`, `src/engine/faction.integration.test.js`; successfully configured Rogue's Hollow with services.blackMarket: true, enforced underworld faction standing docking blocks for hostile players, scaled contraband sales base price by 1.5x at Black Market ports on the server, and verified via extensive integration tests)
 
 ### Phase 2 — System Architecture
-- [ ] `082` faction-aware trade advisor HUD panel (implement TradeAdvisor calculation engine sorting top 3 trade routes by standing-adjusted net profits, and render as a dynamic gold HUD cockpit panel)
+- [x] `082` faction-aware trade advisor HUD panel (implement TradeAdvisor calculation engine sorting top 3 trade routes by standing-adjusted net profits, and render as a dynamic gold HUD cockpit panel) — **done** (files: `src/engine/Trading.js`, `src/engine/Trading.test.js`, `index.html`, `index.css`, `src/client/UIController.js`, `src/client/__tests__/UIController.test.js`; successfully implemented the findBestTradeRoutes margin sorting engine, designed a premium dark-gold glassmorphic HUD cockpit advisory overlay, wired live client-side route updates factoring in standings discounts and transaction taxes, and fully verified with unit and integration tests; 912 Jest tests and 30 Vitest client tests passing 100% green)
 
 ## v16 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

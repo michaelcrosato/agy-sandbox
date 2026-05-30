@@ -114,18 +114,18 @@ flowchart TD
 
 ---
 
-## EXECUTION WAVES (v17)
+## EXECUTION WAVES (v18)
 
-Completed waves (`001–079`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
+Completed waves (`001–082`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
 
-### Phase 0 — Quick Wins & Safety — `080`
-`080` tractor outfit mass correction (ensure the Tractor Beam Matrix outfit correctly applies its 200 kg mass to the ship's hull on buy or salvage).
+### Phase 0 — Quick Wins & Safety — `083`
+`083` client-side entity interpolation & remote ship smoothing (implement smooth LERP/SLERP interpolation buffer caching for remote entities inside CanvasRenderer to eliminate movement stuttering).
 
-### Phase 1 — Core Upgrades & Feature Delivery — `081`
-`081` outlaw spaceports and black market contraband pricing (configure Pirate Haven / Rogue's Hollow with blackMarket services, refuse docking to players with negative underworld standing, and award a 1.5x price premium on contraband sales).
+### Phase 1 — Core Upgrades & Feature Delivery — `084`
+`084` emergency distress beacons & emergent rescue caravans (catalog Emergency Distress Beacon outfit, program distress beacon server listener, spawn allied refuel tankers or hostile rim pirate ambushers based on local standing).
 
-### Phase 2 — System Architecture — `082`
-`082` faction-aware trade advisor HUD panel (implement TradeAdvisor calculation engine sorting top 3 trade routes by standing-adjusted net profits, and render as a dynamic gold HUD cockpit panel).
+### Phase 2 — System Architecture — `085`
+`085` underworld smuggling contracts & standing propagation (procedurally generate smuggling contracts at Rogue's Hollow, attach negative standing consequences to major law factions, and verify propagation on completion).
 
 ---
 
@@ -135,11 +135,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 080 | Tractor Outfit Mass Correction | 0 | 4 | 5 | 5 | 5 | 19 |
-| 081 | Outlaw Spaceports & Black Markets | 1 | 5 | 5 | 4 | 5 | 19 |
-| 082 | Faction-Aware Trade Advisor | 2 | 5 | 4 | 5 | 5 | 19 |
+| 083 | Client-Side Entity Interpolation | 0 | 5 | 4 | 4 | 5 | 18 |
+| 084 | Emergency Distress Beacons | 1 | 5 | 5 | 4 | 5 | 19 |
+| 085 | Underworld Smuggling Contracts | 2 | 5 | 5 | 5 | 5 | 20 |
 
-**Recommended start:** `080` (Σ19 — tractor mass), then proceed to `081` (Σ19) for outlaw spaceports, and finally `082` (Σ19) for faction-aware trade advisor.
+**Recommended start:** `085` (Σ20 — underworld smuggling), then proceed to `084` (Σ19) for distress beacons, and finally `083` (Σ18) for client-side entity interpolation.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

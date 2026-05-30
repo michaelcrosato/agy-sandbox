@@ -2,53 +2,11 @@
 
 Items noticed mid-spec that are out of the current spec's scope. Triage into `specs/` when prioritized.
 
-- **Tractor outfit mass (noticed during spec 020):** `engine/Outfitting.applyOutfitStats` only adds an
-  outfit's `mass` for a *matched* stat type, so the stat-less `tractor` type (Tractor Beam Matrix, 200 kg)
-  no longer contributes hull mass on buy/salvage. This was an incidental behaviour change when spec 007
-  extracted the inline `outfit_buy` switch (the original applied mass unconditionally). Buy and salvage are
-  now *consistent* (both skip it), so it's not a correctness regression between paths — but if tractor
-  *should* add mass, add `case "tractor": break;` to `applyOutfitStats` (so `applied` is true and the mass
-  branch runs) and add a regression test. Low priority.
+- **NPC Smuggler Fleets & Underworld Trader AI (P5 - Goal-Driven NPCs):**
+  Configure Goal-Driven UtilityAI merchants to occasionally smuggle contraband cargo between Rogue's Hollow and major faction worlds, selecting evasion maneuvers and using decoy jammers if pursued by security guards.
 
+- **Dynamic Trade Profit Metric in AI Perception (P5):**
+  Feed actual, live standings-adjusted market price spreads directly into `buildPerception`'s `tradeProfit` (currently a flat 0.6) so that NPC traders actively seek and run the top-yielding sector trade routes.
 
-- **Typecheck rollout to the engine (from spec 024):** the `checkJs` gate (`tsc --noEmit`) currently
-  covers the import-isolated `src/net/**`, `src/physics/**`, `src/server/**` (green, in `agent:check` + CI).
-  Extending it to `src/engine`/`src/persistence` needs JSDoc work on the stateful classes (~70 findings):
-  GameInstance/Ship/Planet have untyped `{...parentParams}` constructor configs (TS rejects extra fields —
-  give the config param `@param {Object}` or per-field `@typedef`s); SpaceEngine/MissionManager/Economy
-  reference `{SpaceEntity}`/`{Ship}`/`{Planet}` in JSDoc without importing the type (use
-  `{import("./X.js").X}`); FactionRegistry/Boarding init `{}` then index it (annotate
-  `@type {Record<string, number>}`); GenerativeMissions/PersistenceManager have `{}`-vs-required-field call
-  sites. Ratchet up dir-by-dir by widening `tsconfig.json` `include`, fixing JSDoc — never `@ts-nocheck`.
-
-- **Widen the UtilityAI advisor rollout + goal→action mapping (from spec 017):** the `useUtilityAdvisor`
-  flag is enabled only at the `GameInstance` merchant/guard/pirate spawns, and only the FLEE goal currently
-  overrides the role FSM (with an evade). Two follow-ups: (1) opt the remaining NPC spawns in —
-  `server.js` raider/boss (≈566/909/947) and escort (≈1712), and `main.js` single-player spawns — so every
-  agent gets the advisory layer; (2) map the other goals to richer actions instead of falling through to
-  the legacy FSM: REGROUP→break-off-and-recharge, TRADE→pick a profitable destination planet (today a
-  merchant with the advisor still wanders when not fleeing), ENGAGE→prefer the highest-`weakness` prey
-  rather than the nearest target. Also consider feeding live market spreads into `buildPerception`'s
-  `tradeProfit` (currently a flat 0.6) and `factionPolicy` into `isThreat` once spec 016 lands. Medium
-  priority — the FLEE slice already delivers the GOAL P5 "changes its plan" showcase.
-
-- **Mission/trade-driven faction standings (from spec 016):** spec 016 wired standing changes on *kills*
-  (`GameInstance.handleEntityDestroyed` → `adjustStanding`), plus faction pricing and hostile-docking
-  refusal. The DoD also lists *missions* and *trades* adjusting standings. Trades are unwired (a small
-  reputation bump for trading at a faction's port would be easy in the `server.js` trade handler). Missions
-  are blocked on a deeper gap: `MissionManager.completeGeneratedMission` already computes a `factionChanges`
-  array, but **nothing in `server.js` calls `completeGeneratedMission`** — the generated-mission consequence
-  pipeline isn't connected to the live server yet (the land handler uses `checkArrivalCompletions`). Wiring
-  missions means first connecting that pipeline, then feeding `factionChanges` into
-  `room.factionRegistry.adjustStanding`. Also: `decayAll` (reputation healing over time) isn't called from
-  the galaxy heartbeat yet — hook it for slow reputation recovery. Medium priority.
-
-- **Centralize the commodity list into a `COMMODITIES` constant (from spec 018):** spec 018 added the 7th
-  commodity `ore` by extending each hardcoded literal directly (`Ship.cargo`, `Trading.applyHullPurchase`
-  reset, `Planet` default market, the 8 `BASE_MARKETS`). The spec suggested (optional) a single
-  `COMMODITIES` names array to drive the zero-init cargo maps and prevent future drift — the priced maps
-  (per-planet markets) still need per-commodity values, but the cargo/reset maps could be built from
-  `COMMODITIES.reduce(...)`. Low priority (pure refactor; current state is consistent and green). When done,
-  add a table-invariant test asserting every `BASE_MARKETS` entry and `Ship.cargo` covers exactly
-  `COMMODITIES`. Also nice: a `refinePort`/Mining-Laser config so players can refine carried `ore` → minerals
-  at an industrial dock (today ore only refines via the planet production profiles, not player action).
+- **Stargate Navigation NAV-computer Overlay (P8 - Presentation & Game Feel):**
+  Add a navigation map helper tab inside the cockpit HUD calculating the shortest stargate pathfinding route between sectors, highlighting stargates dynamically on the navigation HUD.

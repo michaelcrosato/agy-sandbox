@@ -18,8 +18,8 @@
     "typecheck": "tsc --noEmit",
     "agent:bootstrap": "npm ci",
     "agent:verify-substrate": "node scripts/agent/verify-substrate.mjs",
-    "agent:check": "npm run agent:verify-substrate && npm run format:check && npm run lint && npm run typecheck && npm test",
-    "agent:check:full": "npm run agent:check && npm run test:client"
+    "agent:check:core": "npm run agent:verify-substrate && npm run format:check && npm run lint && npm run typecheck && npm test",
+    "agent:check": "npm run agent:check:core && npm run test:client"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

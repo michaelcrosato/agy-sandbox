@@ -42,3 +42,14 @@ Items noticed mid-spec that are out of the current spec's scope. Triage into `sp
   rather than the nearest target. Also consider feeding live market spreads into `buildPerception`'s
   `tradeProfit` (currently a flat 0.6) and `factionPolicy` into `isThreat` once spec 016 lands. Medium
   priority — the FLEE slice already delivers the GOAL P5 "changes its plan" showcase.
+
+- **Mission/trade-driven faction standings (from spec 016):** spec 016 wired standing changes on *kills*
+  (`GameInstance.handleEntityDestroyed` → `adjustStanding`), plus faction pricing and hostile-docking
+  refusal. The DoD also lists *missions* and *trades* adjusting standings. Trades are unwired (a small
+  reputation bump for trading at a faction's port would be easy in the `server.js` trade handler). Missions
+  are blocked on a deeper gap: `MissionManager.completeGeneratedMission` already computes a `factionChanges`
+  array, but **nothing in `server.js` calls `completeGeneratedMission`** — the generated-mission consequence
+  pipeline isn't connected to the live server yet (the land handler uses `checkArrivalCompletions`). Wiring
+  missions means first connecting that pipeline, then feeding `factionChanges` into
+  `room.factionRegistry.adjustStanding`. Also: `decayAll` (reputation healing over time) isn't called from
+  the galaxy heartbeat yet — hook it for slow reputation recovery. Medium priority.

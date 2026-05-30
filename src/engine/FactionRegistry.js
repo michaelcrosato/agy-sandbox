@@ -375,6 +375,34 @@ export class FactionRegistry {
   }
 
   /**
+   * Returns a headless policy view over PER-PLAYER standings — distinct from
+   * `factionPolicy`, which is faction-to-faction relations. AI controllers use
+   * this so a guard can treat a *player* whose standing with the guard's faction
+   * is hostile as a valid target, even though players carry no `faction` tag.
+   * The view closes over `this`, so it always reflects the latest
+   * `adjustStanding` without the caller holding a registry reference.
+   *
+   * Shape:
+   *   {
+   *     classify(playerId, faction) -> 'hostile' | 'neutral' | 'friendly',
+   *     isHostile(playerId, faction) -> boolean,
+   *     isFriendly(playerId, faction) -> boolean,
+   *   }
+   *
+   * @returns {Object} Frozen policy view.
+   */
+  standingPolicy() {
+    const classify = (playerId, faction) => this.classify(playerId, faction);
+    return Object.freeze({
+      classify,
+      isHostile: (playerId, faction) =>
+        classify(playerId, faction) === "hostile",
+      isFriendly: (playerId, faction) =>
+        classify(playerId, faction) === "friendly",
+    });
+  }
+
+  /**
    * Pulls every standing for a single player a fraction of the way toward
    * zero. `rate` is the fraction removed per call; `1.0` snaps to zero,
    * `0.0` is a no-op. Positive standings shrink, negative standings grow.

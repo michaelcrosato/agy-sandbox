@@ -28,6 +28,7 @@ export class AIController {
     role = "merchant",
     {
       factionPolicy = null,
+      standingPolicy = null,
       useUtilityAdvisor = false,
       perceptionOptions = null,
     } = {},
@@ -35,6 +36,9 @@ export class AIController {
     this.ship = ship;
     this.role = role;
     this.factionPolicy = factionPolicy;
+    // Per-player standing view (spec 016) — lets a guard target a player whose
+    // standing with the guard's faction is hostile. Null ⇒ legacy targeting.
+    this.standingPolicy = standingPolicy;
     this.useUtilityAdvisor = useUtilityAdvisor;
     this.perceptionOptions = perceptionOptions;
 
@@ -152,6 +156,18 @@ export class AIController {
     }
 
     if (this.role === "guard") {
+      // Standing-aware: a player whose standing with our faction is hostile is
+      // a valid target even though players carry no faction tag (this keys on
+      // per-player standings, not faction relations). NPCs aren't in the
+      // standings map, so this is a no-op for them.
+      if (
+        this.standingPolicy &&
+        selfFaction &&
+        ent.id != null &&
+        this.standingPolicy.isHostile(ent.id, selfFaction)
+      ) {
+        return true;
+      }
       if (factionPathAvailable) {
         return this.factionPolicy.isHostile(selfFaction, targetFaction);
       }

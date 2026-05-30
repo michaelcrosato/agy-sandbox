@@ -30,7 +30,7 @@ import { createRegistry } from "./net/metrics.js";
 import { createLogger } from "./net/logger.js";
 import { applyOutfitStats } from "./engine/Outfitting.js";
 import { DEFAULT_OUTFITS } from "./engine/outfitCatalog.js";
-import { tradeOne, applyHullPurchase } from "./engine/Trading.js";
+import { tradeOne, applyHullPurchase, factionPrice } from "./engine/Trading.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import { shouldGcRoom, sanitizeNickname } from "./server/roomLifecycle.js";
 
@@ -1135,6 +1135,23 @@ wss.on("connection", (ws) => {
           p.canLand(clientObj.ship),
         );
         if (targetPlanet) {
+          // spec 016: refuse docking when the player's standing with the
+          // planet's controlling faction is hostile.
+          if (
+            room.factionRegistry &&
+            targetPlanet.faction &&
+            !room.factionRegistry.dockingPermitted(
+              clientObj.id,
+              targetPlanet.faction,
+            )
+          ) {
+            clientObj.send({
+              type: "notification",
+              message: `Docking refused at ${targetPlanet.name}: ${targetPlanet.faction} considers you hostile.`,
+              style: "error",
+            });
+            return;
+          }
           const completed = clientObj.missionManager.checkArrivalCompletions(
             targetPlanet.name,
             clientObj.ship,
@@ -1253,8 +1270,17 @@ wss.on("connection", (ws) => {
         room
       ) {
         const p = clientObj.planetLandedOn;
-        const price = p.market[msg.item];
-        if (price === undefined) return;
+        const basePrice = p.market[msg.item];
+        if (basePrice === undefined) return;
+        // spec 016: friendly standing discounts buys / lifts sells at a faction
+        // dock; hostile standing does the inverse. No-op without a faction.
+        const price = factionPrice(
+          basePrice,
+          room.factionRegistry,
+          clientObj.id,
+          p.faction,
+          msg.action,
+        );
 
         const result = tradeOne(clientObj.ship, msg.item, msg.action, price);
         if (result.ok) {

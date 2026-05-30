@@ -25,6 +25,7 @@ export class Planet extends SpaceEntity {
     shipyard = [],
     landingRadius,
     sector = null,
+    faction = null,
     services = { repair: true, refuel: true },
     ...parentParams
   }) {
@@ -40,6 +41,8 @@ export class Planet extends SpaceEntity {
     this.description = description;
     this.color = color;
     this.sector = sector;
+    // Controlling faction (spec 016) — drives faction pricing + docking rights.
+    this.faction = faction;
     // Port services offered here (EW5): hull repair and hyperdrive refuel.
     this.services = services;
 

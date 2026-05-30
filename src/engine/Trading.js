@@ -33,6 +33,39 @@ export function tradeOne(ship, item, action, price) {
 }
 
 /**
+ * Applies a faction price modifier to a base market price (spec 016). Friendly
+ * standings discount buys / raise sells; hostile standings do the inverse. A
+ * missing registry or planet faction is a no-op (returns the base price), so the
+ * trade path is byte-identical where factions aren't configured.
+ * @param {number} basePrice - The planet market unit price.
+ * @param {Object|null} registry - FactionRegistry-like exposing
+ *   `priceModifier(playerId, faction, mode)`.
+ * @param {string} playerId - The trading player's id.
+ * @param {string|null} faction - The planet's controlling faction.
+ * @param {"buy"|"sell"} [mode="buy"]
+ * @returns {number} The adjusted price, rounded and floored at 1.
+ */
+export function factionPrice(
+  basePrice,
+  registry,
+  playerId,
+  faction,
+  mode = "buy",
+) {
+  if (
+    !Number.isFinite(basePrice) ||
+    !registry ||
+    !faction ||
+    typeof registry.priceModifier !== "function"
+  ) {
+    return basePrice;
+  }
+  const adjusted = basePrice * registry.priceModifier(playerId, faction, mode);
+  if (!Number.isFinite(adjusted)) return basePrice;
+  return Math.max(1, Math.round(adjusted));
+}
+
+/**
  * Applies a shipyard hull purchase: charges the cost, swaps the hull stats, and
  * resets the cargo hold. No-op (insufficient_credits) if the ship can't afford it.
  * @param {Object} ship - Ship-like (mutated on success).

@@ -6,6 +6,7 @@ import { SpaceEntity } from "./SpaceEntity.js";
 import { AIController } from "./ai/AIController.js";
 import { CargoPod } from "./CargoPod.js";
 import { EconomyManager } from "./EconomyManager.js";
+import { FactionRegistry } from "./FactionRegistry.js";
 import { GalaxyHeartbeat } from "./GalaxyHeartbeat.js";
 import { PLANET_PROFILES } from "./ProductionModel.js";
 import { recordKill, shipBountyValue } from "./CombatRating.js";
@@ -117,8 +118,16 @@ export class GameInstance {
       this.handleEntityDestroyed(ent);
     };
 
+    // Per-player faction standings + pairwise relations (spec 016). Created
+    // before seedGalaxy so NPC spawns can hand their controllers the policy
+    // views (faction relations + per-player standings) for disposition targeting.
+    this.factionRegistry = new FactionRegistry();
+
     // Seed initial entities
     this.seedGalaxy();
+
+    // Assign each seeded planet a controlling faction (static config).
+    this.assignPlanetFactions();
 
     // Initialize the dynamic economy manager
     this.economyManager = new EconomyManager(this.planets);
@@ -333,6 +342,7 @@ export class GameInstance {
         turnRate: isHeavy ? 1.2 : 1.5,
       });
 
+      mShip.faction = "Independents";
       const controller = new AIController(mShip, "merchant", {
         useUtilityAdvisor: true,
       });
@@ -376,11 +386,35 @@ export class GameInstance {
         weaponCooldown: isDestroyer ? 0.3 : 0.25,
       });
 
+      gShip.faction = "Federation";
       const controller = new AIController(gShip, "guard", {
         useUtilityAdvisor: true,
+        factionPolicy: this.factionRegistry.factionPolicy(),
+        standingPolicy: this.factionRegistry.standingPolicy(),
       });
       this.engine.addEntity(gShip);
       this.ais.push(controller);
+    }
+  }
+
+  /**
+   * Assigns each seeded planet a controlling faction (spec 016). Static config
+   * keyed by planet name — re-derived every boot, so it needn't persist.
+   * Planets not listed fall back to the unaligned Independents.
+   */
+  assignPlanetFactions() {
+    const byName = {
+      Sol: "Federation",
+      "Valkyrie Depot": "Federation",
+      "New Polaris": "Frontier League",
+      "Sigma Draconis": "Frontier League",
+      "Aurelia Mining Hub": "Frontier League",
+      "Kaelis Colony": "Independents",
+      "Tenebris Prime": "Independents",
+      "Rogue's Hollow": "Pirates",
+    };
+    for (const planet of this.planets) {
+      planet.faction = byName[planet.name] || "Independents";
     }
   }
 
@@ -442,9 +476,11 @@ export class GameInstance {
     // Tag the role so threat/loot classification and respawn are
     // name-independent (procedurally-named pirates are still recognised).
     pShip.role = "pirate";
+    pShip.faction = "Pirates";
 
     const controller = new AIController(pShip, "pirate", {
       useUtilityAdvisor: true,
+      factionPolicy: this.factionRegistry.factionPolicy(),
     });
     this.engine.addEntity(pShip);
     this.ais.push(controller);
@@ -503,8 +539,11 @@ export class GameInstance {
           weaponDamage: 25,
           weaponCooldown: 0.25,
         });
+        gShip.faction = "Federation";
         const controller = new AIController(gShip, "guard", {
           useUtilityAdvisor: true,
+          factionPolicy: this.factionRegistry.factionPolicy(),
+          standingPolicy: this.factionRegistry.standingPolicy(),
         });
         this.engine.addEntity(gShip);
         this.ais.push(controller);
@@ -527,6 +566,7 @@ export class GameInstance {
           thrustPower: 11000,
           turnRate: 1.5,
         });
+        mShip.faction = "Independents";
         const controller = new AIController(mShip, "merchant", {
           useUtilityAdvisor: true,
         });
@@ -747,6 +787,14 @@ export class GameInstance {
       // EW1: credit the attributed killer with the victim's worth + a kill.
       if (killerClient && killerClient.ship) {
         recordKill(killerClient.ship, shipBountyValue(ent));
+      }
+
+      // spec 016: a kill shifts the killer's standing with the victim's faction,
+      // propagating to that faction's allies/enemies (the registry handles the
+      // spread). Killing a faction member lowers standing with them — so hunting
+      // Pirates (enemy of the law) raises your Federation/Frontier standing.
+      if (this.factionRegistry && killerClient && ent.faction) {
+        this.factionRegistry.adjustStanding(killerClient.id, ent.faction, -5);
       }
 
       // Role/faction-based (name-independent) classification — null-safe.

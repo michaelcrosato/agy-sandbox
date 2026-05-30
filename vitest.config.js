@@ -10,6 +10,7 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     include: ["src/client/**/*.test.js"],
+    exclude: ["src/client/**/*.browser.test.js", "**/node_modules/**"],
     // Explicit imports from "vitest" in each spec — no implicit globals.
     globals: false,
   },

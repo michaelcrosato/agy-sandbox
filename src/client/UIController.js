@@ -78,6 +78,13 @@ export class UIController {
     // Trade Route Advisor Panel (SPEC-082)
     this.tradeAdvisorPanel = document.getElementById("trade-advisor-panel");
     this.tradeRoutesList = document.getElementById("trade-routes-list");
+
+    // NAV-Computer Slide-Out Panel (SPEC-088)
+    this.navComputerPanel = document.getElementById("nav-computer-panel");
+    this.navComputerDest = document.getElementById("nav-computer-dest");
+    this.navComputerStatus = document.getElementById("nav-computer-status");
+    this.navComputerProgress = document.getElementById("nav-computer-progress");
+    this.navComputerRoute = document.getElementById("nav-computer-route");
   }
 
   /**
@@ -147,6 +154,8 @@ export class UIController {
    * @param {Array} [nebulae] - Nebula hazards active.
    * @param {Array} [entities] - Active physics engine entities for proximity checks.
    * @param {Array} [activeMissions] - Active missions list for bounty tracking.
+   * @param {string} [navTargetSector] - Target sector name.
+   * @param {Array} [navRoute] - Remaining jump path.
    */
   update(
     player,
@@ -155,6 +164,8 @@ export class UIController {
     nebulae = [],
     entities = [],
     activeMissions = [],
+    navTargetSector = null,
+    navRoute = [],
   ) {
     if (!player) return;
 
@@ -630,6 +641,75 @@ export class UIController {
             this.tradeRoutesList.appendChild(row);
           }
         }
+      }
+    }
+
+    // 10. Update NAV-computer Slide-out Panel (SPEC-088)
+    if (this.navComputerPanel) {
+      const targetSector = navTargetSector || this.navTargetSector;
+      const route = navRoute || this.navRoute || [];
+
+      if (targetSector) {
+        this.navComputerPanel.classList.remove("hidden");
+        if (this.navComputerDest) {
+          this.navComputerDest.innerText = targetSector.toUpperCase();
+        }
+
+        let statusText = "EN ROUTE";
+        let progressPct;
+
+        if (route.length === 0) {
+          statusText = "ARRIVED";
+          progressPct = 100;
+        } else {
+          const totalJumps = 2; // Maximum hops in sector layout
+          const completed = Math.max(0, totalJumps - route.length);
+          progressPct = Math.round((completed / totalJumps) * 100);
+        }
+
+        if (this.navComputerStatus) {
+          this.navComputerStatus.innerText = statusText;
+          if (statusText === "ARRIVED") {
+            this.navComputerStatus.style.color = "var(--color-green)";
+          } else {
+            this.navComputerStatus.style.color = "#ffb300";
+          }
+        }
+
+        if (this.navComputerProgress) {
+          this.navComputerProgress.style.width = `${progressPct}%`;
+        }
+
+        if (this.navComputerRoute) {
+          if (route.length === 0) {
+            this.navComputerRoute.innerHTML = `
+              <div style="color: var(--color-green); font-weight: bold; text-align: center;">DESTINATION ARRIVED!</div>
+            `;
+          } else {
+            const getSectorFromPosition = (pos) => {
+              if (!pos) return "core";
+              if (pos.x > 10000 && pos.y > 10000) return "frontier";
+              if (pos.x < -10000 && pos.y < -10000) return "rim";
+              return "core";
+            };
+            const currentSectorName = getSectorFromPosition(player.position);
+            let pathHtml = `<span style="color: #ffb300;">[${currentSectorName.toUpperCase()}]</span>`;
+            for (let i = 0; i < route.length; i++) {
+              pathHtml += ` ➔ <span style="color: #ffffff;">${route[i].toUpperCase()}</span>`;
+            }
+            this.navComputerRoute.innerHTML = `
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <div style="font-weight: bold; margin-bottom: 2px;">PATH PLOTTED:</div>
+                <div style="font-size: 10px; line-height: 1.5;">${pathHtml}</div>
+                <div style="font-size: 8px; color: rgba(255, 179, 0, 0.6); margin-top: 4px; font-style: italic;">
+                  Immediate Jump: TO ${route[0].toUpperCase()}
+                </div>
+              </div>
+            `;
+          }
+        }
+      } else {
+        this.navComputerPanel.classList.add("hidden");
       }
     }
   }

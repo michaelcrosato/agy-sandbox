@@ -1443,6 +1443,8 @@ network.onStatsReceived = (msg) => {
     NEBULAE,
     engine.entities,
     missionManager ? missionManager.activeMissions : [],
+    navTargetSector,
+    navRoute,
   );
   spaceportUI.refreshActiveTab();
 };
@@ -2127,6 +2129,8 @@ function gameLoop(time) {
     NEBULAE,
     engine.entities,
     missionManager ? missionManager.activeMissions : [],
+    navTargetSector,
+    navRoute,
   );
 
   requestAnimationFrame(gameLoop);

@@ -26,6 +26,13 @@ function mountHud() {
     <div id="wingman-list"></div>
     <div id="trade-advisor-panel"></div>
     <div id="trade-routes-list"></div>
+    
+    <!-- Nav Computer DOM -->
+    <div id="nav-computer-panel" class="hidden"></div>
+    <div id="nav-computer-dest"></div>
+    <div id="nav-computer-status"></div>
+    <div id="nav-computer-progress"></div>
+    <div id="nav-computer-route"></div>
   `;
   return new UIController();
 }
@@ -444,6 +451,72 @@ describe("UIController combat-feedback HUD transitions", () => {
       expect(routeRow.innerHTML).toContain("food");
       expect(routeRow.innerHTML).toContain("Sol");
       expect(routeRow.innerHTML).toContain("Valkyrie Depot");
+    });
+  });
+
+  describe("UIController — SPEC-088 Stargate Navigation Overlay", () => {
+    function createMockNavPlayer(overrides = {}) {
+      return {
+        shield: 100,
+        maxShield: 100,
+        armor: 100,
+        maxArmor: 100,
+        energy: 100,
+        maxEnergy: 100,
+        heat: 0,
+        maxHeat: 100,
+        credits: 5000,
+        cargoCapacity: 20,
+        getCargoWeight: () => 0,
+        velocity: { magnitude: () => 0 },
+        position: { x: 0, y: 0 },
+        heading: 0,
+        outfits: [],
+        squad: [],
+        ...overrides,
+      };
+    }
+
+    it("hides nav-computer panel when there is no targeted sector", () => {
+      const player = createMockNavPlayer({
+        position: { x: 0, y: 0 },
+      });
+      ui.update(player, null, [], [], [], [], null, []);
+      expect(ui.navComputerPanel.classList.contains("hidden")).toBe(true);
+    });
+
+    it("displays nav-computer panel with plotted paths and en-route status", () => {
+      const player = createMockNavPlayer({
+        position: { x: 0, y: 0 }, // core
+      });
+      ui.update(player, null, [], [], [], [], "rim", ["frontier", "rim"]);
+
+      expect(ui.navComputerPanel.classList.contains("hidden")).toBe(false);
+      expect(ui.navComputerDest.innerText).toBe("RIM");
+      expect(ui.navComputerStatus.innerText).toBe("EN ROUTE");
+      expect(ui.navComputerStatus.style.color).toBe("rgb(255, 179, 0)"); // #ffb300
+      expect(ui.navComputerProgress.style.width).toBe("0%");
+      expect(ui.navComputerRoute.innerHTML).toContain("PATH PLOTTED");
+      expect(ui.navComputerRoute.innerHTML).toContain("[CORE]");
+      expect(ui.navComputerRoute.innerHTML).toContain("FRONTIER");
+      expect(ui.navComputerRoute.innerHTML).toContain("RIM");
+      expect(ui.navComputerRoute.innerHTML).toContain(
+        "Immediate Jump: TO FRONTIER",
+      );
+    });
+
+    it("displays arrived status and 100% progress when route connects successfully", () => {
+      const player = createMockNavPlayer({
+        position: { x: 20000, y: 20000 }, // frontier/rim region
+      });
+      ui.update(player, null, [], [], [], [], "rim", []);
+
+      expect(ui.navComputerPanel.classList.contains("hidden")).toBe(false);
+      expect(ui.navComputerDest.innerText).toBe("RIM");
+      expect(ui.navComputerStatus.innerText).toBe("ARRIVED");
+      expect(ui.navComputerStatus.style.color).toBe("var(--color-green)");
+      expect(ui.navComputerProgress.style.width).toBe("100%");
+      expect(ui.navComputerRoute.innerHTML).toContain("DESTINATION ARRIVED!");
     });
   });
 });

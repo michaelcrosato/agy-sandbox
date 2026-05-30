@@ -114,18 +114,18 @@ flowchart TD
 
 ---
 
-## EXECUTION WAVES (v18)
+## EXECUTION WAVES (v19)
 
-Completed waves (`001–082`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
+Completed waves (`001–085`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
 
-### Phase 0 — Quick Wins & Safety — `083`
-`083` client-side entity interpolation & remote ship smoothing (implement smooth LERP/SLERP interpolation buffer caching for remote entities inside CanvasRenderer to eliminate movement stuttering).
+### Phase 0 — Quick Wins & Safety — `087`
+`087` dynamic trade profit metric in AI perception (calculate price spreads across docked ports in sector, apply standings discounts, and feed normalized profitability score directly to buildPerception's tradeProfit perception value).
 
-### Phase 1 — Core Upgrades & Feature Delivery — `084`
-`084` emergency distress beacons & emergent rescue caravans (catalog Emergency Distress Beacon outfit, program distress beacon server listener, spawn allied refuel tankers or hostile rim pirate ambushers based on local standing).
+### Phase 1 — Core Upgrades & Feature Delivery — `086`
+`086` NPC smuggler fleets & underworld trader AI (design smuggler merchant AI loading contraband cargo, pathing through outlaw ports, and activating decoy radar jammers to escape security space patrols).
 
-### Phase 2 — System Architecture — `085`
-`085` underworld smuggling contracts & standing propagation (procedurally generate smuggling contracts at Rogue's Hollow, attach negative standing consequences to major law factions, and verify propagation on completion).
+### Phase 2 — System Architecture — `088`
+`088` stargate navigation NAV-computer overlay (construct slide-out gold glassmorphic HUD nav-computer card, calculate shortest path BFS gate routes to hud target sector, and draw neon-purple holographic visual gates brackets).
 
 ---
 
@@ -135,11 +135,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 083 | Client-Side Entity Interpolation | 0 | 5 | 4 | 4 | 5 | 18 |
-| 084 | Emergency Distress Beacons | 1 | 5 | 5 | 4 | 5 | 19 |
-| 085 | Underworld Smuggling Contracts | 2 | 5 | 5 | 5 | 5 | 20 |
+| 087 | Dynamic Trade Profit Metric in AI | 0 | 5 | 5 | 5 | 5 | 20 |
+| 086 | NPC Smuggler Fleets & Trader AI | 1 | 5 | 5 | 4 | 5 | 19 |
+| 088 | Stargate Navigation Overlay HUD | 2 | 5 | 4 | 4 | 5 | 18 |
 
-**Recommended start:** `085` (Σ20 — underworld smuggling), then proceed to `084` (Σ19) for distress beacons, and finally `083` (Σ18) for client-side entity interpolation.
+**Recommended start:** `087` (Σ20 — dynamic trade profit perception), then proceed to `086` (Σ19) for smuggler fleets, and finally `088` (Σ18) for the stargate nav computer overlay.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

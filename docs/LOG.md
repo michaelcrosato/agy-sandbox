@@ -38,6 +38,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - Entries **SHOULD** target 150–350 words, and **MUST NOT** exceed 500 words unless labeled an `INCIDENT` or `ROLLBACK`.
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
+ 
+## 2026-05-30T22:45 · iter-0096 · GREEN · cycle-19-stargate-navigation-overlay
+- **Baseline:** `8f26045` on `feat/procedural-missions`; 921 Jest + 54 Vitest client tests green.
+- **Move:** Implement stargate navigation NAV-computer HUD overlay (SPEC-088) with shortest path BFS gate routes.
+- **Changed:**
+  - Constructed the gold glassmorphic slide-out `#nav-computer-panel` container styled in `index.html` and `index.css`.
+  - Wired dynamic BFS calculation `calculateShortestPath` into the client UIController and main loop updating targets.
+  - Plotted dynamic neon-purple pulsing dashed holographic guide brackets around the targeted jump stargate in `CanvasRenderer.js`.
+  - Upgraded `src/client/UIController.js` to render step-by-step plotted path checkpoints and update en-route/arrived progress.
+  - Refactored `src/client/__tests__/UIController.test.js` to assert fully-formed mock player interfaces and 100% green route assertions.
+- **Decisions:** Integrated localized mock helper inside SPEC-088 tests to mirror complete production player properties, preventing speed display magnitude failures.
+- **Validation:** `npm run agent:check` -> green (921 Jest tests green); `npm run test:client` -> green (57 tests green); `npm run test:client:browser` -> green (3 tests green).
+- **Next:** Push feature branch `feat/procedural-missions` to origin, conclude Cycle 19, and initiate Cycle 20.
 
 ## 2026-05-30T22:42 · iter-0095 · GREEN · cycle-19-npc-smuggler-fleets-evasion
 - **Baseline:** `5aee377` on `feat/procedural-missions`; 917 Jest tests green.

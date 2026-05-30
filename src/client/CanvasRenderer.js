@@ -1743,6 +1743,63 @@ export class CanvasRenderer {
       );
     }
 
+    // Neon-purple pulsing dashed holographic brackets (Spec 088)
+    if (
+      this.navigationTarget &&
+      (this.navigationTarget.id === gate.id ||
+        (this.navigationTarget.position &&
+          this.navigationTarget.position.x === gate.position.x &&
+          this.navigationTarget.position.y === gate.position.y))
+    ) {
+      this.ctx.save();
+      const timeMs = Date.now();
+      const pulse = Math.sin(timeMs * 0.005) * 0.2 + 0.8;
+      this.ctx.strokeStyle = `rgba(224, 64, 251, ${pulse})`;
+      this.ctx.shadowBlur = 15;
+      this.ctx.shadowColor = "#e040fb";
+      this.ctx.lineWidth = 3;
+
+      const r = gate.radius * 1.5;
+      const bracketLen = 15;
+      const x = gate.position.x;
+      const y = gate.position.y;
+
+      // Top Left
+      this.ctx.beginPath();
+      this.ctx.moveTo(x - r, y - r + bracketLen);
+      this.ctx.lineTo(x - r, y - r);
+      this.ctx.lineTo(x - r + bracketLen, y - r);
+      this.ctx.stroke();
+
+      // Top Right
+      this.ctx.beginPath();
+      this.ctx.moveTo(x + r, y - r + bracketLen);
+      this.ctx.lineTo(x + r, y - r);
+      this.ctx.lineTo(x + r - bracketLen, y - r);
+      this.ctx.stroke();
+
+      // Bottom Left
+      this.ctx.beginPath();
+      this.ctx.moveTo(x - r, y + r - bracketLen);
+      this.ctx.lineTo(x - r, y + r);
+      this.ctx.lineTo(x - r + bracketLen, y + r);
+      this.ctx.stroke();
+
+      // Bottom Right
+      this.ctx.beginPath();
+      this.ctx.moveTo(x + r, y + r - bracketLen);
+      this.ctx.lineTo(x + r, y + r);
+      this.ctx.lineTo(x + r - bracketLen, y + r);
+      this.ctx.stroke();
+
+      // Pulsing dotted guide circle
+      this.ctx.setLineDash([4, 6]);
+      this.ctx.beginPath();
+      this.ctx.arc(x, y, r * 1.25, 0, Math.PI * 2);
+      this.ctx.stroke();
+      this.ctx.restore();
+    }
+
     this.ctx.restore();
   }
 

@@ -1,4 +1,9 @@
-import { assignShard, hashString, RoomRegistry } from "./roomRouter.js";
+import {
+  assignShard,
+  hashString,
+  RoomRegistry,
+  routeConnection,
+} from "./roomRouter.js";
 
 describe("assignShard (spec 019 router)", () => {
   test("is deterministic — same room + shard count yields the same shard", () => {
@@ -90,5 +95,36 @@ describe("RoomRegistry (room ownership / presence)", () => {
     const restored = RoomRegistry.fromJSON(snapshot);
     expect(restored.owner("public")).toBe("nodeA");
     expect(restored.owner("alpha")).toBe("nodeB");
+  });
+});
+
+describe("routeConnection (spec 019d load balancer/router)", () => {
+  test("falls back to assignShard for unclaimed rooms", () => {
+    const reg = new RoomRegistry();
+    const targetIdx = assignShard("myroom", 4);
+    const route = routeConnection({
+      roomId: "myroom",
+      registry: reg,
+      shardCount: 4,
+    });
+    expect(route).toBe(`node-${targetIdx}`);
+  });
+
+  test("uses dynamic registry owner if claimed", () => {
+    const reg = new RoomRegistry();
+    reg.claim("myroom", "node-3");
+
+    // Static hash might route to node-1, but because it is claimed,
+    // it must route to node-3!
+    const route = routeConnection({
+      roomId: "myroom",
+      registry: reg,
+      shardCount: 4,
+    });
+    expect(route).toBe("node-3");
+  });
+
+  test("returns node-0 if roomId is empty or null", () => {
+    expect(routeConnection({ roomId: null, shardCount: 4 })).toBe("node-0");
   });
 });

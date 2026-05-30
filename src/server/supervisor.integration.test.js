@@ -116,4 +116,85 @@ describe("Supervisor process model integration (spec 019c)", () => {
 
     expect(ownerResponse.roomId).toBe("public");
   });
+
+  test("asserts a client dynamically routes and is accepted by its owner under dynamic room ownership", async () => {
+    // Shard 0 owns room "room-A" or "room-B" depending on FNV-1a.
+    // Let's find room IDs that deterministically map to Shard 0 and Shard 1 respectively.
+    let roomForShard0 = "room-0";
+
+    for (let i = 0; i < 100; i++) {
+      const rid = `room-${i}`;
+      if (assignShard(rid, 2) === 0) {
+        roomForShard0 = rid;
+      }
+    }
+
+    // 1. Client trying to join roomForShard0 on Worker 1 (port1) must fail (hosted on a different shard)
+    const wsFail = new WebSocket(`ws://localhost:${port1}`);
+    const failRes = await new Promise((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error("Timeout waiting for join failure")),
+        4000,
+      );
+
+      wsFail.on("open", () => {
+        wsFail.send(
+          JSON.stringify({
+            type: "join_room",
+            roomId: roomForShard0,
+            nickname: "TesterFail",
+          }),
+        );
+      });
+
+      wsFail.on("message", (data) => {
+        const msg = JSON.parse(data.toString());
+        if (msg.type === "notification" && msg.style === "error") {
+          clearTimeout(timeout);
+          resolve(msg);
+          wsFail.close();
+        }
+      });
+
+      wsFail.on("error", (err) => {
+        clearTimeout(timeout);
+        reject(err);
+      });
+    });
+    expect(failRes.message).toContain("hosted on a different shard");
+
+    // 2. Client joining roomForShard0 on Worker 0 (port0) must succeed
+    const wsSuccess = new WebSocket(`ws://localhost:${port0}`);
+    const okRes = await new Promise((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error("Timeout waiting for join success")),
+        4000,
+      );
+
+      wsSuccess.on("open", () => {
+        wsSuccess.send(
+          JSON.stringify({
+            type: "join_room",
+            roomId: roomForShard0,
+            nickname: "TesterOk",
+          }),
+        );
+      });
+
+      wsSuccess.on("message", (data) => {
+        const msg = JSON.parse(data.toString());
+        if (msg.type === "init") {
+          clearTimeout(timeout);
+          resolve(msg);
+          wsSuccess.close();
+        }
+      });
+
+      wsSuccess.on("error", (err) => {
+        clearTimeout(timeout);
+        reject(err);
+      });
+    });
+    expect(okRes.roomId).toBe(roomForShard0);
+  });
 });

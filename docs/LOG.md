@@ -41,6 +41,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-30T12:20 · iter-0059 · GREEN · spec-019d-sticky-routing-lb-front-door
+
+- **Baseline:** `bf24fae` on `main`; 736 Jest / 56 suites + 18 client green. Executing `plan/specs/019d` — Sticky routing / LB front door.
+- **Move:** Implement stateless connection routing helper `routeConnection` with dynamic override fallback to FNV-1a, document NGINX/HAProxy sticky consistent-hashing, and add websocket integration sharded boundaries routing tests.
+- **Changed:**
+  - Added stateless connection routing helper `routeConnection({ roomId, registry, shardCount })` to `src/net/roomRouter.js` checking dynamic presence before fallback.
+  - Added unit tests in `src/net/roomRouter.test.js` validating dynamic overrides, missing room IDs, and static hashing.
+  - Wrote detailed NGINX and HAProxy load balancer configuration snippets with `least_conn` and URI sticky query parameter mapping in `plan/specs/019d_sticky_routing_lb.md`.
+  - Added WebSocket dynamic routing verification integration test in `src/server/supervisor.integration.test.js` asserting correct multi-worker port acceptance/rejection.
+  - Improved `joinRoom` in `src/server.js` to correctly validate shard ownership and dynamically instantiate custom room instances on their owning shard under multi-worker configuration.
+- **Decisions:** Extended `joinRoom` logic to dynamically instantiate a requested room ID on its owning shard if it hashes to the current worker and doesn't exist, preventing silent fallback to the public sector and preserving isolated routing tests. Eliminated unused `_roomForShard1` variable inside the supervisor integration tests to comply with ESLint unused variable check.
+- **Validation:** `npm run agent:check` -> green (**740 Jest tests / 56 suites**). Formatting check, ESLint with zero warnings, JSDoc type safety check, and Vitest client tests all passed.
+- **Notes:** Substrate files untouched. Kept routing pure.
+- **Next:** Spec `019e` Cross-process presence (Redis pub/sub + leases).
+
 ## 2026-05-30T12:10 · iter-0058 · GREEN · spec-019c-worker-process-model-and-supervisor
 
 - **Baseline:** `2c985df` on `main`; 730 Jest / 54 suites + 18 client JSDOM + 2 browser green. Executing `plan/specs/019c` — Worker process model.

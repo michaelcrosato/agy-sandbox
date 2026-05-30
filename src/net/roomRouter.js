@@ -155,3 +155,29 @@ export class RoomRegistry {
     return new RoomRegistry(data);
   }
 }
+
+/**
+ * Stateless connection router (spec 019d).
+ * Decides which node currently owns or should own a given room.
+ * Consults the registry for dynamic presence/ownership, falling back to
+ * FNV-1a assignShard for unclaimed rooms.
+ *
+ * @param {Object} params
+ * @param {string} params.roomId - The room to connect to.
+ * @param {RoomRegistry} [params.registry] - Current dynamic registry.
+ * @param {number} params.shardCount - Total number of shards (WORKERS).
+ * @returns {string} The target worker/node id (e.g. "node-0", "node-1").
+ */
+export function routeConnection({ roomId, registry, shardCount }) {
+  if (!roomId) return "node-0";
+
+  // 1. Consult registry for active dynamic ownership
+  if (registry) {
+    const owner = registry.owner(roomId);
+    if (owner) return owner;
+  }
+
+  // 2. Fall back to FNV-1a static assignment
+  const shardIdx = assignShard(roomId, shardCount);
+  return `node-${shardIdx}`;
+}

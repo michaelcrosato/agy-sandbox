@@ -762,7 +762,28 @@ function joinRoom(clientObj, roomId, nickname) {
     }
   }
 
-  const room = instances.get(roomId) || instances.get("public");
+  let room = instances.get(roomId);
+  if (!room && WORKERS > 1 && roomId) {
+    if (assignShard(roomId, WORKERS) === SHARD_INDEX) {
+      room = new GameInstance(roomId, `Sector ${roomId}`);
+      instances.set(roomId, room);
+      console.log(
+        `🌌 Dynamically instantiated custom sector on owning shard: [${room.name}] (${roomId})`,
+      );
+    } else {
+      clientObj.send({
+        type: "notification",
+        message: `Sector [${roomId}] is hosted on a different shard!`,
+        style: "error",
+      });
+      return;
+    }
+  }
+
+  if (!room) {
+    room = instances.get("public");
+  }
+
   if (!room) {
     clientObj.send({
       type: "notification",

@@ -41,6 +41,16 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ---
 == LOG-ANCHOR ==
 
+## 2026-05-29T22:58 · iter-0044 · GREEN · spec-025-server-extraction-trade-shipbuy
+
+- **Baseline:** `19e1e75` on `main`; 619 tests / 43 suites green; `server.js` 1,979 LOC. Executing `plan/specs/025` (Wave A, continues 007).
+- **Move:** Extract more of the untested socket monolith into tested pure units.
+- **Changed:** New `src/engine/Trading.js` — `tradeOne(ship, item, action, price)` (buy/sell: credit + cargo mutation, returns `{ok, reason}`) and `applyHullPurchase(ship, hull)` (shipyard hull-stat swap + cargo reset + charge, `{ok, reason}`). `server.js`: the `trade` and `ship_buy` handlers now delegate to these — the market `registerBuy/registerSell`, notifications, `sendStats`, and `market_sync` broadcast stay in the handler; only the ship-side math moved. Behaviour is byte-identical (same messages, same success/error paths). +9 deterministic tests. `server.js` 1,979 → 1,938 LOC.
+- **Decisions:** Kept the side-effects (market mutation, sockets) in `server.js` and lifted only the pure ship math, mirroring spec 007. The trade handler's `unknown_action` reason maps to "no error notification" to preserve the original behaviour (the old switch silently ignored a non buy/sell action).
+- **Validation:** `npm run agent:check` → green (628 tests / 44 suites, prettier clean). `PORT=18212 NODE_ENV=test node src/server.js` → boots and listens. `python scripts/validate-log-compliance.py` → PASS.
+- **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 025 done. Across 020+025, `server.js` is down 148 lines (2,086 → 1,938) with the trade/ship_buy/salvage cores now unit-tested.
+- **Next:** `plan/specs/024` (JSDoc typecheck gate), then `021` (client test harness) — the last two Wave A items.
+
 ## 2026-05-29T22:48 · iter-0043 · GREEN · spec-023-dotenv-17-bump
 
 - **Baseline:** `7e4c8aa` on `main`; 619 tests / 43 suites green. Executing `plan/specs/023` (Wave A) — the last `npm outdated` entry.

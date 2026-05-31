@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T15:30:06.401Z",
+  "generatedAt": "2026-05-31T16:27:58.433Z",
   "stats": {
     "totalSourceFiles": 102,
     "totalTestFiles": 133,
     "totalSpecFiles": 173,
-    "totalLoc": 23755,
-    "totalTests": 1715,
+    "totalLoc": 23763,
+    "totalTests": 1717,
     "untestedCoreFilesCount": 6
   },
   "files": [
@@ -1336,7 +1336,7 @@
     },
     {
       "path": "src/net/ConfigWatcher.js",
-      "loc": 285,
+      "loc": 287,
       "classes": [
         {
           "name": "ConfigWatcher",
@@ -1346,7 +1346,7 @@
       ],
       "exports": [],
       "testFile": "src/net/ConfigWatcher.test.js",
-      "testCasesCount": 6,
+      "testCasesCount": 7,
       "referencingSpecs": [
         "plan/specs/125_hot_config_reload.md"
       ],
@@ -1460,7 +1460,7 @@
     },
     {
       "path": "src/net/GuestRunner.js",
-      "loc": 478,
+      "loc": 484,
       "classes": [],
       "exports": [
         {
@@ -1471,7 +1471,7 @@
         }
       ],
       "testFile": "src/net/GuestRunner.test.js",
-      "testCasesCount": 19,
+      "testCasesCount": 20,
       "referencingSpecs": [
         "plan/specs/136_isolated_guest_runner.md"
       ],

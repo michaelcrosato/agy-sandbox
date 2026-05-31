@@ -262,18 +262,33 @@ The secure hardening and sharded benchmark wave:
 
 ---
 
-## EXECUTION WAVES (v31)
+## EXECUTION WAVES (v31) — Completed (DONE)
 
 The memory leak sentry, cluster dashboard telemetry, and deterministic loop audit wave:
 
 ### Phase 0 — Self-Healing Memory Sentry — `121`
-- `121` Automated Memory Leak Sentry & Self-Healing Garbage Collection (build a lightweight memory leak governance sentinel polling heap growth rates, scheduling GC sweeps under active load, and exposing diagnostics in telemetry).
+- `121` Automated Memory Leak Sentry & Self-Healing Garbage Collection (build a lightweight memory leak governance sentinel polling heap growth rates, scheduling GC sweeps under active load, and exposing diagnostics in telemetry) — **done**.
 
 ### Phase 1 — Cluster Observability — `122`
-- `122` Multi-Process Cluster Live-Dashboard Stream (enhance the Codex Dashboard to concurrently poll metrics from all sharded cluster workers and render aggregate network, memory, and latency SVGs).
+- `122` Multi-Process Cluster Live-Dashboard Stream (enhance the Codex Dashboard to concurrently poll metrics from all sharded cluster workers and render aggregate network, memory, and latency SVGs) — **done**.
 
 ### Phase 2 — Core Simulation Determinism — `123`
-- `123` Game Loop Physics Determinism Audit Sentry (implement a high-performance physics-loop determinism auditing utility that hashes coordinates using FNV-1a, alerting on drifts).
+- `123` Game Loop Physics Determinism Audit Sentry (implement a high-performance physics-loop determinism auditing utility that hashes coordinates using FNV-1a, alerting on drifts) — **done**.
+
+---
+
+## EXECUTION WAVES (v32)
+
+The sandbox security and self-healing telemetry wave:
+
+### Phase 0 — Statistical Observability — `124`
+- `124` Automated Telemetry Anomaly Detector & Z-Score Sentry (build statistical rolling-window z-score anomalies monitor tracking active connections and latency metrics, logging warnings on deviations).
+
+### Phase 1 — Dynamic Configurations — `125`
+- `125` Zero-Downtime Hot Config Reloading Engine (implement secure disk watcher polling plan/config.json, dynamically parsing and propagating safe rate limit parameters across workers).
+
+### Phase 2 — Defense Visualization — `126`
+- `126` Egress Firewall Rules Cockpit Dashboard Card (draw elegant glassmorphic defense dashboard panel displaying allowlisted domains and neon-red block meters on the Codex HUD).
 
 ---
 
@@ -283,11 +298,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 121 | Memory Leak Sentry | 0 | 5 | 5 | 5 | 5 | 20 |
-| 122 | Cluster Dashboard Stream | 1 | 5 | 4 | 5 | 5 | 19 |
-| 123 | Loop Determinism Audit | 2 | 5 | 4 | 5 | 5 | 19 |
+| 124 | Telemetry Anomaly Sentry | 0 | 5 | 5 | 5 | 5 | 20 |
+| 125 | Hot Config Reloading | 1 | 5 | 4 | 5 | 5 | 19 |
+| 126 | Firewall Dashboard Panel | 2 | 4 | 5 | 5 | 5 | 19 |
 
-**Recommended start:** `121` (Σ20 — Memory Leak Sentry) immediately.
+**Recommended start:** `124` (Σ20 — Telemetry Anomaly Sentry) immediately.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

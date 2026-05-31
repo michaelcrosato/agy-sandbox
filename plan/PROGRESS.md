@@ -28,7 +28,13 @@ _**v22 re-audit baseline (2026-05-31, ENTIRE v22 sandbox blueprint shipped): 979
 _**v23 re-audit baseline (2026-05-31, ENTIRE v23 blueprint shipped): 1,013 Jest tests / 91 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; Living Codex + Interactive Ontological Tree + Centralized Commodities Schema Registry + Emergent Faction Territory Control + Fittings Presets all DONE.**_
 _**v28 re-audit baseline (2026-05-31): 1,129 Jest tests / 102 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; all previous specs completed with perfect Living Codex coverage.**_
 
-## v31 — Self-Healing Memory & Observability Wave (TO DO) — see [`ROADMAP.md`](ROADMAP.md)
+## v32 — Sandbox Security & Self-Healing Telemetry Wave (TO DO) — see [`ROADMAP.md`](ROADMAP.md)
+
+- [ ] `124` Automated Telemetry Anomaly Detector & Z-Score Sentry (build statistical rolling-window z-score anomalies monitor tracking active connections and latency metrics, logging warnings on deviations)
+- [ ] `125` Zero-Downtime Hot Config Reloading Engine (implement secure disk watcher polling plan/config.json, dynamically parsing and propagating safe rate limit parameters across workers)
+- [ ] `126` Egress Firewall Rules Cockpit Dashboard Card (draw elegant glassmorphic defense dashboard panel displaying allowlisted domains and neon-red block meters on the Codex HUD)
+
+## v31 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 - [x] `121` Automated Memory Leak Sentry & Self-Healing Garbage Collection (build a lightweight memory leak governance sentinel polling heap growth rates, scheduling GC sweeps under active load, and exposing diagnostics in telemetry) — **done** (designed pure, modular `src/net/MemoryLeakSentry.js` polling heap memory growth rates computed by `SandboxTelemetry`, automatically scheduling `global.gc()` sweeps when Simulated leak velocity exceeds 5MB/minute under active workload connections, exposing alerts count and leak diagnostics under `/metrics`, and authoring high-fidelity ESM unit and integration tests in `MemoryLeakSentry.test.js` and `sandboxTelemetry.integration.test.js`)
 - [x] `122` Multi-Process Cluster Live-Dashboard Stream (enhance the Codex Dashboard to concurrently poll metrics from all sharded cluster workers and render aggregate network, memory, and latency SVGs) — **done** (modified `updateTelemetry` in `dashboard-codex.html` to concurrently fetch `/metrics` across all sharded cluster worker ports dynamically, aggregating connection counts and RSS/heap memory usages, finding worst-case loop latency, falling back gracefully to simulation if completely offline, drawing a dedicated glassmorphic neon-orange Cluster Memory card, and verifying page output elements under existing integration tests)

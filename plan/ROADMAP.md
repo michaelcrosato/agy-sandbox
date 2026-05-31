@@ -367,18 +367,33 @@ The sandbox resource hardening, CPU budgeting, and environment variables masking
 
 ---
 
+## EXECUTION WAVES (v39)
+
+The secure guest RPC channel and workspace integrity self-healing wave:
+
+### Phase 0 — Guest RPC Sentry — `145`
+- `145` Secure Sandboxed Guest RPC Channel Sentry (establish schema-validated allowlisted IPC channel for guest state queries and block prototype injection escapes).
+
+### Phase 1 — Workspace Drift Self-Healer — `146`
+- `146` Workspace Drift Auditing Sentinel & Integrity Self-Healer (take baseline copy-on-write directory snapshots and purge untracked file leaks or modifications post-execution).
+
+### Phase 2 — Guest RPC & Drift HUD Card — `147`
+- `147` Golden-Glassmorphic Guest RPC & Workspace Drift HUD Card (enhance dashboard with visual RPC logger feed and real-time sandbox drift self-healing gauges).
+
+---
+
 ## EXECUTION WAVES (v38)
 
 The guest sandbox observability, network containment, and ESM module loader jailing wave:
 
 ### Phase 0 — Guest Footprint HUD Gauge — `142`
-- `142` Golden-Glassmorphic Guest Sandbox Footprint HUD Gauge (enhance cockpit dashboard with visual Guest Sentry card showing circular SVG memory allocation and CPU budget usage rings).
+- `142` Golden-Glassmorphic Guest Sandbox Footprint HUD Gauge (enhance cockpit dashboard with visual Guest Sentry card showing circular SVG memory allocation and CPU budget usage rings) — **done**.
 
 ### Phase 1 — Guest Egress Sandboxing — `143`
-- `143` Guest Outbound Egress Sandboxing & Network Containment (pre-activate zero-trust SandboxFirewall in child workers, ensuring absolute network isolation of guest processes).
+- `143` Guest Outbound Egress Sandboxing & Network Containment (pre-activate zero-trust SandboxFirewall in child workers, ensuring absolute network isolation of guest processes) — **done**.
 
 ### Phase 2 — Guest Module Loader Sentry — `144`
-- `144` Secure Dynamic Guest Module Loader Sentry & ESM Import Jail (harden ESM sub-module loading in guest processes to intercept dynamic imports and restrict resolutions strictly inside sandbox bounds).
+- `144` Secure Dynamic Guest Module Loader Sentry & ESM Import Jail (harden ESM sub-module loading in guest processes to intercept dynamic imports and restrict resolutions strictly inside sandbox bounds) — **done**.
 
 ---
 
@@ -386,13 +401,14 @@ The guest sandbox observability, network containment, and ESM module loader jail
 
 Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + Fit.
 
-| Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
-| --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 142 | Guest Footprint HUD Gauge | 0 | 5 | 5 | 5 | 5 | 20 |
-| 143 | Guest Egress Sandboxing | 1 | 5 | 5 | 5 | 5 | 20 |
-| 144 | Guest Module Loader Sentry | 2 | 5 | 5 | 5 | 5 | 20 |
-
-**Recommended start:** `142` (Σ20 — Guest Sandbox Footprint HUD Gauge) immediately.
+| Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ | Status |
+| --- | --- | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
+| 145 | Guest RPC Sentry | 0 | 5 | 5 | 5 | 5 | 20 | Pending |
+| 146 | Workspace Drift Self-Healer | 1 | 5 | 5 | 5 | 5 | 20 | Pending |
+| 147 | Guest RPC & Drift HUD Card | 2 | 4 | 5 | 5 | 5 | 19 | Pending |
+| 142 | Guest Footprint HUD Gauge | 0 | 5 | 5 | 5 | 5 | 20 | **DONE** |
+| 143 | Guest Egress Sandboxing | 1 | 5 | 5 | 5 | 5 | 20 | **DONE** |
+| 144 | Guest Module Loader Sentry | 2 | 5 | 5 | 5 | 5 | 20 | **DONE** |
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

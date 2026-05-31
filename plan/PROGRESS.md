@@ -30,13 +30,21 @@ _**v28 re-audit baseline (2026-05-31): 1,129 Jest tests / 102 suites + 57 client
 _**v35 re-audit baseline (2026-05-31, ENTIRE v35 blueprint shipped): 1,198 Jest tests / 115 suites green; all CPU watchdog, prototype sentry, and cockpit visual alarm gauges fully complete and green.**_
 _**v36 re-audit baseline (2026-05-31, ENTIRE v36 blueprint shipped): 1,209 Jest tests / 117 suites green; host-isolated process guest runner, dynamic egress firewall admin controls, and strict absolute filesystem path jailing all DONE.**_
 _**v37 re-audit baseline (2026-05-31, ENTIRE v37 blueprint shipped): 1,213 Jest tests / 117 suites green; V8 memory caps, cumulative CPU time-slice budget policing, and environment variable sanitization masking all DONE.**_
+_**v38 re-audit baseline (2026-05-31, ENTIRE v38 blueprint shipped): 1,216 Jest tests / 117 suites green; golden-glassmorphic resource HUD telemetry gauge panel, pre-activated zero-trust outbound firewall containment, and ESM dynamic loader module jailing all 100% DONE.**_
 
 
-## v38 — Guest Sandbox Observability, Network Containment & ESM Loader Jailing Wave (TO DO) — see [`ROADMAP.md`](ROADMAP.md)
+## v39 — Secure Guest RPC Channel & Workspace Integrity Self-Healing Wave (TO DO) — see [`ROADMAP.md`](ROADMAP.md)
 
-- [ ] `142` Golden-Glassmorphic Guest Sandbox Footprint HUD Gauge (enhance cockpit dashboard with visual Guest Sentry card showing circular SVG memory allocation and CPU budget usage rings)
-- [ ] `143` Guest Outbound Egress Sandboxing & Network Containment (pre-activate zero-trust SandboxFirewall in child workers, ensuring absolute network isolation of guest processes)
-- [ ] `144` Secure Dynamic Guest Module Loader Sentry & ESM Import Jail (harden ESM sub-module loading in guest processes to intercept dynamic imports and restrict resolutions strictly inside sandbox bounds)
+- [ ] `145` Secure Sandboxed Guest RPC Channel Sentry (establish schema-validated allowlisted IPC channel for guest state queries and block prototype injection escapes)
+- [ ] `146` Workspace Drift Auditing Sentinel & Integrity Self-Healer (take baseline copy-on-write directory snapshots and purge untracked file leaks or modifications post-execution)
+- [ ] `147` Golden-Glassmorphic Guest RPC & Workspace Drift HUD Card (enhance dashboard with visual RPC logger feed and real-time sandbox drift self-healing gauges)
+
+
+## v38 — Guest Sandbox Observability, Network Containment & ESM Loader Jailing Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
+
+- [x] `142` Golden-Glassmorphic Guest Sandbox Footprint HUD Gauge (enhance cockpit dashboard with visual Guest Sentry card showing circular SVG memory allocation and CPU budget usage rings) — **done** (exposed active/recent guest run resource telemetry inside GET /metrics endpoint in server.js, integrated golden-glassmorphic guest resource sentry card onto dashboard cockpit displaying memory and CPU utilization SVG radial rings and offline random simulations, and verified element presence in HTTP integration tests)
+- [x] `143` Guest Outbound Egress Sandboxing & Network Containment (pre-activate zero-trust SandboxFirewall in child workers, ensuring absolute network isolation of guest processes) — **done** (pre-activated SandboxFirewall inside GuestRunnerWorker.js prior to importing dynamic scripts to guarantee absolute network isolation of guest executions, and verified outbound egress blocks using Jest tests)
+- [x] `144` Secure Dynamic Guest Module Loader Sentry & ESM Import Jail (harden ESM sub-module loading in guest processes to intercept dynamic imports and restrict resolutions strictly inside sandbox bounds) — **done** (engineered and registered custom GuestLoader.js ESM programmatic loader hook in the worker process, securely resolving and verifying all file URLs against sandbox bounds via ProcessSentinel.checkPath, and verified blocked jumps in integration tests)
 
 ## v37 — Sandbox Hardware Caps & Resource Guarding Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

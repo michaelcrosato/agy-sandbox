@@ -3,6 +3,16 @@
 This is the machine-readable execution ledger for the autonomous-engineering loop in `agy-sandbox`.
 It records cycle transitions, key milestones, and precise next steps.
 
+## Cycle 40 — 2026-05-31
+- **Status:** GREEN
+- **Summary:** Initiated Cycle 40 under the role of Autonomous Principal AI/Infrastructure Engineer & Sandbox Architect. Transitioned into the Replenish [R] phase by performing structural boundaries audits, studying secure child process IPC practices, and formulating the new Wave v39 (Secure Guest RPC Channel & Workspace Integrity Self-Healing Wave) specs on disk: SPEC-145 (Secure Sandboxed Guest RPC Channel Sentry), SPEC-146 (Workspace Drift Auditing Sentinel & Integrity Self-Healer), and SPEC-147 (Golden-Glassmorphic Guest RPC & Workspace Drift HUD Card). Refreshed master priority tables, execution checklists, progress registers, and planning logs to launch development.
+- **Next Action:** Transition to Cycle 40 Phase D (Execute) to claim and implement SPEC-145 (Secure Sandboxed Guest RPC Channel Sentry) on a dedicated branch.
+
+## Cycle 39 — 2026-05-31
+- **Status:** GREEN
+- **Summary:** Completed the entire Wave v38 (Guest Sandbox Observability, Network Containment & ESM Loader Jailing Wave) with a 100% green CI gate across 1,216 Jest tests, ESLint, and Prettier checks. Shipped SPEC-142 (Golden-Glassmorphic Guest Sandbox Footprint HUD Gauge) exposing active/recent guest run resource telemetry inside GET /metrics in server.js, designing a premium gold-glassmorphic HUD cockpit card displaying memory and CPU utilization SVG radial progress rings and simulated offline states, and asserting presence under HTTP integration tests; SPEC-143 (Guest Outbound Egress Sandboxing & Network Containment) pre-activating zero-trust SandboxFirewall in child workers before guest scripts load, blocking all egress resolves and sockets with security violation logs; and SPEC-144 (Secure Dynamic Guest Module Loader Sentry & ESM Import Jail) implementing custom GuestLoader.js ESM resolving hook in the worker process, securely checking all file URLs against sandbox directory bounds via ProcessSentinel.checkPath.
+- **Next Action:** Transition to Cycle 39 Phase R (Replenish) to promote backlogs, perform structural boundaries audits, and formulate the new Wave v39 specifications.
+
 ## Cycle 38 — 2026-05-31
 - **Status:** GREEN
 - **Summary:** Successfully initiated Cycle 38 under the role of Autonomous Principal AI/Infrastructure Engineer & Sandbox Architect. Completed the entire Wave v37 (Sandbox Hardware Caps & Resource Guarding Wave) with a 100% green CI gate across 1,213 Jest tests, typecheck, and formatting checks. Shipped SPEC-139 (Safe Guest V8 Memory Limits) enforcing strict `--max-old-space-size=N` memory allocation budgets when spawning untrusted guest scripts to prevent V8 heap OOM leaks, SPEC-140 (Guest CPU Time-Slice Budget Monitor) implementing user/system CPU usage IPC heartbeats in GuestRunnerWorker.js and blocked event-loop watchdog checks in GuestRunner.js to forcefully SIGKILL pegged loops, and SPEC-141 (Guest Sandbox Environment Variable Mask) establishing a secure environment variables filter in GuestRunner.js to completely mask host private API keys and database credentials while exposing whitelisted discovery parameters.

@@ -69,7 +69,12 @@ function checkPath(filePath, isWrite = false) {
   if (isCheckingPath) return;
   isCheckingPath = true;
   try {
-    if (!activeSandboxDir || !filePath) return;
+    const sandboxDir =
+      activeSandboxDir ||
+      (process.env.GUEST_SANDBOX_DIR
+        ? path.resolve(process.env.GUEST_SANDBOX_DIR)
+        : null);
+    if (!sandboxDir || !filePath) return;
     let pStr;
     if (filePath instanceof URL) {
       pStr = fileURLToPath(filePath);
@@ -86,7 +91,7 @@ function checkPath(filePath, isWrite = false) {
       const errMsg = `[SECURITY ACCESS DENIED] Traversal pattern '..' detected in path: [${pStr}]`;
       SandboxSecurityRegistry.logViolation("filesystem", "fs_access", {
         path: pStr,
-        sandboxDir: activeSandboxDir,
+        sandboxDir: sandboxDir,
         reason: errMsg,
       });
       throw new Error(errMsg);
@@ -95,17 +100,17 @@ function checkPath(filePath, isWrite = false) {
     const resolved = path.resolve(pStr);
 
     // 1. If it resolved inside the active sandboxDir, it's always allowed (read/write)
-    if (resolved.startsWith(activeSandboxDir)) {
+    if (resolved.startsWith(sandboxDir)) {
       return;
     }
 
     // 2. If it's a write operation and outside the sandboxDir, block it instantly!
     if (isWrite) {
       stats.blockedCount++;
-      const errMsg = `[SECURITY ACCESS DENIED] Write attempt outside sandboxed directory: path [${resolved}] is outside [${activeSandboxDir}]`;
+      const errMsg = `[SECURITY ACCESS DENIED] Write attempt outside sandboxed directory: path [${resolved}] is outside [${sandboxDir}]`;
       SandboxSecurityRegistry.logViolation("filesystem", "fs_access", {
         path: resolved,
-        sandboxDir: activeSandboxDir,
+        sandboxDir: sandboxDir,
         reason: errMsg,
       });
       throw new Error(errMsg);
@@ -117,10 +122,7 @@ function checkPath(filePath, isWrite = false) {
     }
 
     // (a) allowed read-only scopes: project's node_modules directory
-    const rootNodeModules = path.resolve(
-      activeSandboxDir,
-      "../../node_modules",
-    );
+    const rootNodeModules = path.resolve(sandboxDir, "../../node_modules");
     const workspaceNodeModules = path.resolve(process.cwd(), "node_modules");
     if (
       resolved.startsWith(rootNodeModules) ||
@@ -147,10 +149,10 @@ function checkPath(filePath, isWrite = false) {
 
     // Otherwise, deny access!
     stats.blockedCount++;
-    const errMsg = `[SECURITY ACCESS DENIED] Read attempt outside sandboxed directory: path [${resolved}] is outside [${activeSandboxDir}]`;
+    const errMsg = `[SECURITY ACCESS DENIED] Read attempt outside sandboxed directory: path [${resolved}] is outside [${sandboxDir}]`;
     SandboxSecurityRegistry.logViolation("filesystem", "fs_access", {
       path: resolved,
-      sandboxDir: activeSandboxDir,
+      sandboxDir: sandboxDir,
       reason: errMsg,
     });
     throw new Error(errMsg);
@@ -342,6 +344,15 @@ export function validateCommand(command, args = []) {
  * @type {object}
  */
 export const ProcessSentinel = {
+  /**
+   * Externally validates a path against sandbox directory boundaries.
+   * @param {any} filePath
+   * @param {boolean} [isWrite=false]
+   */
+  checkPath(filePath, isWrite = false) {
+    return checkPath(filePath, isWrite);
+  },
+
   /**
    * Returns security statistics of monitored spawns.
    * @returns {{ allowedCount: number, blockedCount: number }}

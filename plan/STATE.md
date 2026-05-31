@@ -2,10 +2,10 @@
 
 To remain token-efficient, this file represents the absolute minimum context required for any downstream agent to resume the execution loop cleanly.
 
-- **CYCLE:** v25 (Iteration 2)
-- **CURRENT_TASK:** EXECUTE
-- **SPEC_FILE:** plan/specs/106_sandbox_containment_sentinel.md
-- **STATUS:** Completed SPEC-106; transitioning to SPEC-105
+- **CYCLE:** Cycle 40
+- **CURRENT_TASK:** REPLENISH COMPLETED · TRANSITIONING TO EXECUTE (SPEC-145)
+- **SPEC_FILE:** plan/specs/145_secure_guest_rpc_sentry.md
+- **STATUS:** Completed Wave v38 (SPEC-142, SPEC-143, SPEC-144). Formulated Wave v39 (SPEC-145, SPEC-146, SPEC-147).
 - **VERIFY_COMMAND:** npm run agent:check
-- **LAST_VERIFIED:** 1,035 Jest backend tests green, 57 client Vitest tests green, 3 browser tests green
-- **IMMEDIATE_OBJECTIVE:** Execute SPEC-105 Cockpit Onboarding Tutorial under Cycle 25 Iteration 2.
+- **LAST_VERIFIED:** 1,216 Jest tests green, all 117 suites green, linter 0 errors, Prettier verified.
+- **IMMEDIATE_OBJECTIVE:** Execute SPEC-145 Secure Sandboxed Guest RPC Channel Sentry under Cycle 40.

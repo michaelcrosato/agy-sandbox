@@ -23,9 +23,35 @@ describe("GuestRunner", () => {
   const tempOomScript = path.join(__dirname, "temp_guest_oom.js");
   const tempCpuScript = path.join(__dirname, "temp_guest_cpu.js");
   const tempEnvScript = path.join(__dirname, "temp_guest_env.js");
+  const tempNetworkScript = path.join(__dirname, "temp_guest_net.js");
+  const tempImportScript = path.join(__dirname, "temp_guest_import.js");
   const sandboxDir = path.resolve("./.sandbox-runner-test-dir");
 
   beforeAll(() => {
+    // Write out mock guest scripts dynamically
+    fs.writeFileSync(
+      tempNetworkScript,
+      `import dns from "dns";
+dns.lookup("google.com", (err) => {
+  if (err) {
+    console.log("NET_BLOCKED: " + err.message);
+  } else {
+    console.log("NET_SUCCESS");
+  }
+});`,
+      "utf8",
+    );
+
+    fs.writeFileSync(
+      tempImportScript,
+      `try {
+  await import("../../src/server.js");
+  console.log("IMPORT_SUCCESS");
+} catch (err) {
+  console.log("IMPORT_BLOCKED: " + err.message);
+}`,
+      "utf8",
+    );
     // Write out mock guest scripts dynamically
     fs.writeFileSync(
       tempOkScript,
@@ -108,6 +134,8 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
       tempOomScript,
       tempCpuScript,
       tempEnvScript,
+      tempNetworkScript,
+      tempImportScript,
     ];
     for (const f of files) {
       try {
@@ -275,5 +303,39 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
       delete process.env.SECRET_API_TOKEN;
       delete process.env.DATABASE_PRIVATE_URI;
     }
+  });
+
+  test("should pre-activate outbound firewall inside guest process and block egress network attempts (SPEC-143)", async () => {
+    const result = await GuestRunner.runScript(tempNetworkScript, {
+      timeoutMs: 3000,
+    });
+
+    expect(result.status).toBe("success");
+    expect(result.stdout).toContain(
+      "NET_BLOCKED: Outbound firewall blocked non-allowlisted host domain: google.com",
+    );
+
+    // Network violation trigger must be persistently recorded in security registry disk file
+    const auditFile = result.childAuditFile || testAuditFile;
+    expect(fs.existsSync(auditFile)).toBe(true);
+    const content = fs.readFileSync(auditFile, "utf8");
+    const logs = JSON.parse(content);
+    const firewallViolation = logs.find(
+      (v) => v.category === "firewall" && v.action === "connect",
+    );
+    expect(firewallViolation).toBeDefined();
+    expect(firewallViolation.details.host).toBe("google.com");
+  });
+
+  test("should block dynamic imports targeting host codebase modules outside sandbox jails (SPEC-144)", async () => {
+    const result = await GuestRunner.runScript(tempImportScript, {
+      sandboxDir,
+      timeoutMs: 3000,
+    });
+
+    expect(result.status).toBe("success");
+    expect(result.stdout).toContain(
+      "IMPORT_BLOCKED: [SECURITY ACCESS DENIED] ESM Import Violation: [SECURITY ACCESS DENIED] Read attempt outside sandboxed directory:",
+    );
   });
 });

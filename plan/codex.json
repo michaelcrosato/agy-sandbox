@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-05-31T05:59:21.807Z",
+  "generatedAt": "2026-05-31T06:05:06.811Z",
   "stats": {
-    "totalSourceFiles": 95,
+    "totalSourceFiles": 96,
     "totalTestFiles": 124,
     "totalSpecFiles": 150,
-    "totalLoc": 20822,
-    "totalTests": 1614,
-    "untestedCoreFilesCount": 3
+    "totalLoc": 20935,
+    "totalTests": 1617,
+    "untestedCoreFilesCount": 4
   },
   "files": [
     {
@@ -1388,8 +1388,18 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/net/GuestLoader.js",
+      "loc": 25,
+      "classes": [],
+      "exports": [],
+      "testFile": null,
+      "testCasesCount": 0,
+      "referencingSpecs": [],
+      "missingJsDocSymbols": []
+    },
+    {
       "path": "src/net/GuestRunner.js",
-      "loc": 250,
+      "loc": 307,
       "classes": [],
       "exports": [
         {
@@ -1400,7 +1410,7 @@
         }
       ],
       "testFile": "src/net/GuestRunner.test.js",
-      "testCasesCount": 9,
+      "testCasesCount": 11,
       "referencingSpecs": [
         "plan/specs/136_isolated_guest_runner.md"
       ],
@@ -1414,7 +1424,7 @@
     },
     {
       "path": "src/net/GuestRunnerWorker.js",
-      "loc": 55,
+      "loc": 75,
       "classes": [],
       "exports": [],
       "testFile": null,
@@ -1702,26 +1712,26 @@
     },
     {
       "path": "src/net/ProcessSentinel.js",
-      "loc": 751,
+      "loc": 762,
       "classes": [],
       "exports": [
         {
           "name": "parseCommandString",
           "type": "function",
           "jsdoc": "/**\n* Parses a full command string into a binary name and an array of arguments,\n* respecting basic quotes.\n* @param {string} cmdStr - Full shell command string.\n* @returns {ParsedCommand}\n*/",
-          "line": 188
+          "line": 190
         },
         {
           "name": "validateCommand",
           "type": "function",
           "jsdoc": "/**\n* Validates whether a command and its arguments are permitted under the strict security whitelist.\n* @param {string} command - The command or binary path under evaluation.\n* @param {string[]} [args=[]] - Optional array of arguments passed to the command.\n* @returns {{ allowed: boolean, reason?: string }}\n*/",
-          "line": 232
+          "line": 234
         },
         {
           "name": "ProcessSentinel",
           "type": "constant",
           "jsdoc": "/**\n* ProcessSentinel (spec 106) — child process security sentinel whitelister.\n* @type {object}\n*/",
-          "line": 344
+          "line": 346
         }
       ],
       "testFile": "src/net/ProcessSentinel.test.js",
@@ -4453,6 +4463,7 @@
   ],
   "epistemicDebt": {
     "untestedCoreFiles": [
+      "src/net/GuestLoader.js",
       "src/net/GuestRunnerWorker.js",
       "src/net/MainThreadWatchdogWorker.js",
       "src/net/mockFreezeScript.js"

@@ -4,9 +4,11 @@
  */
 
 import path from "path";
-import { pathToFileURL } from "url";
+import { pathToFileURL, fileURLToPath } from "url";
+import { register } from "node:module";
 import { ProcessSentinel } from "./ProcessSentinel.js";
 import { IntegrityGuard } from "./IntegrityGuard.js";
+import { SandboxFirewall, activateFirewall } from "./SandboxFirewall.js";
 
 async function bootstrap() {
   const scriptPath = process.env.GUEST_SCRIPT_PATH;
@@ -20,11 +22,22 @@ async function bootstrap() {
   }
 
   try {
+    // 0. Register secure ESM dynamic loader sentry (SPEC-144)
+    const loaderPath = path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "GuestLoader.js",
+    );
+    register(pathToFileURL(loaderPath).href);
+
     // 1. Initialize and activate boundary containment
     if (sandboxDir) {
       ProcessSentinel.activate();
       ProcessSentinel.setSandboxDirectory(path.resolve(sandboxDir));
     }
+
+    // 1.5 Pre-activate zero-trust network containment firewall (SPEC-143)
+    const firewall = new SandboxFirewall({ allowlistDomains: [] });
+    activateFirewall(firewall);
 
     // 2. Lock down global prototypes and monitor scope pollution
     IntegrityGuard.start(25); // High-frequency polling for guest runs
@@ -34,8 +47,15 @@ async function bootstrap() {
     const cpuTimer = setInterval(() => {
       const usage = process.cpuUsage(startCpuUsage);
       const cpuTimeMs = (usage.user + usage.system) / 1000;
+      const memUsage = process.memoryUsage();
       if (process.send) {
-        process.send({ type: "cpu_heartbeat", cpuTimeMs });
+        process.send({
+          type: "cpu_heartbeat",
+          cpuTimeMs,
+          rssBytes: memUsage.rss,
+          heapUsedBytes: memUsage.heapUsed,
+          heapTotalBytes: memUsage.heapTotal,
+        });
       }
     }, 50);
     cpuTimer.unref();

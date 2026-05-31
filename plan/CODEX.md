@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T05:59:21.807Z` · Baseline: `20,822 LOC` across `95 source files`
+> Generated: `2026-05-31T06:05:06.811Z` · Baseline: `20,935 LOC` across `96 source files`
 
 ---
 
@@ -9,12 +9,12 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `20,822 LOC` | 🟢 Healthy |
-| **Source Modules** | `95 files` | 🟢 Structured |
+| **Total Code Volume** | `20,935 LOC` | 🟢 Healthy |
+| **Source Modules** | `96 files` | 🟢 Structured |
 | **Test Suites** | `124 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1614 cases` | 🟢 Deterministic |
+| **Total Test Cases** | `1617 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `150 specifications` | 🟢 Traceable |
-| **Untested Core Modules** | `3 files` | ⚠️ Debt Pending |
+| **Untested Core Modules** | `4 files` | ⚠️ Debt Pending |
 
 ---
 
@@ -83,8 +83,9 @@
 | [ConnectionFloodSentry.js](file:///C:/dev/agy-sandbox/src/net/ConnectionFloodSentry.js) | 81 | `class ConnectionFloodSentry` | [ConnectionFloodSentry.test.js](file:///C:/dev/agy-sandbox/src/net/ConnectionFloodSentry.test.js) | [`127_connection_flood_protection`](file:///C:/dev/agy-sandbox/plan/specs/127_connection_flood_protection.md) |
 | [DeltaStateCodec.js](file:///C:/dev/agy-sandbox/src/net/DeltaStateCodec.js) | 120 | `class DeltaStateCodec` | [DeltaStateCodec.test.js](file:///C:/dev/agy-sandbox/src/net/DeltaStateCodec.test.js) | [`072_snapshot_delta_compression`](file:///C:/dev/agy-sandbox/plan/specs/072_snapshot_delta_compression.md) |
 | [EphemeralSandbox.js](file:///C:/dev/agy-sandbox/src/net/EphemeralSandbox.js) | 113 | `class EphemeralSandbox` | [EphemeralSandbox.test.js](file:///C:/dev/agy-sandbox/src/net/EphemeralSandbox.test.js) | [`115_ephemeral_workspace_sandbox`](file:///C:/dev/agy-sandbox/plan/specs/115_ephemeral_workspace_sandbox.md) |
-| [GuestRunner.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.js) | 250 | `constant GuestRunner` | [GuestRunner.test.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.test.js) | [`136_isolated_guest_runner`](file:///C:/dev/agy-sandbox/plan/specs/136_isolated_guest_runner.md) |
-| [GuestRunnerWorker.js](file:///C:/dev/agy-sandbox/src/net/GuestRunnerWorker.js) | 55 | _None_ | ❌ _Untested_ | _None_ |
+| [GuestLoader.js](file:///C:/dev/agy-sandbox/src/net/GuestLoader.js) | 25 | _None_ | ❌ _Untested_ | _None_ |
+| [GuestRunner.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.js) | 307 | `constant GuestRunner` | [GuestRunner.test.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.test.js) | [`136_isolated_guest_runner`](file:///C:/dev/agy-sandbox/plan/specs/136_isolated_guest_runner.md) |
+| [GuestRunnerWorker.js](file:///C:/dev/agy-sandbox/src/net/GuestRunnerWorker.js) | 75 | _None_ | ❌ _Untested_ | _None_ |
 | [heartbeat.js](file:///C:/dev/agy-sandbox/src/net/heartbeat.js) | 30 | `constant DEFAULT_HEARTBEAT_MS`, `function selectDeadSockets` | [heartbeat.test.js](file:///C:/dev/agy-sandbox/src/net/heartbeat.test.js) | [`003_ws_connection_heartbeat`](file:///C:/dev/agy-sandbox/plan/specs/003_ws_connection_heartbeat.md) |
 | [IntegrityGuard.js](file:///C:/dev/agy-sandbox/src/net/IntegrityGuard.js) | 205 | `constant IntegrityGuard` | [IntegrityGuard.test.js](file:///C:/dev/agy-sandbox/src/net/IntegrityGuard.test.js) | [`134_global_prototype_freeze_sentry`](file:///C:/dev/agy-sandbox/plan/specs/134_global_prototype_freeze_sentry.md) |
 | [interest.js](file:///C:/dev/agy-sandbox/src/net/interest.js) | 170 | `constant DEFAULT_INTEREST_RADIUS`, `function interestFilter`, `function buildSpatialGrid` | [interest.test.js](file:///C:/dev/agy-sandbox/src/net/interest.test.js) | [`014_interest_management`](file:///C:/dev/agy-sandbox/plan/specs/014_interest_management.md)<br>[`049_interest_management_grid_optimization`](file:///C:/dev/agy-sandbox/plan/specs/049_interest_management_grid_optimization.md)<br>[`059_alliance_fleets`](file:///C:/dev/agy-sandbox/plan/specs/059_alliance_fleets.md) |
@@ -99,7 +100,7 @@
 | [originPolicy.js](file:///C:/dev/agy-sandbox/src/net/originPolicy.js) | 60 | `function isAllowedOrigin` | [originPolicy.test.js](file:///C:/dev/agy-sandbox/src/net/originPolicy.test.js) | [`002_ws_inbound_hardening`](file:///C:/dev/agy-sandbox/plan/specs/002_ws_inbound_hardening.md) |
 | [PortReclaimer.js](file:///C:/dev/agy-sandbox/src/net/PortReclaimer.js) | 105 | _None_ | [PortReclaimer.test.js](file:///C:/dev/agy-sandbox/src/net/PortReclaimer.test.js) | [`106_sandbox_containment_sentinel`](file:///C:/dev/agy-sandbox/plan/specs/106_sandbox_containment_sentinel.md) |
 | [ProcessReaper.js](file:///C:/dev/agy-sandbox/src/net/ProcessReaper.js) | 160 | `constant ProcessReaper` | [ProcessReaper.test.js](file:///C:/dev/agy-sandbox/src/net/ProcessReaper.test.js) | [`092_zombie_reaper_orphan_cleanup`](file:///C:/dev/agy-sandbox/plan/specs/092_zombie_reaper_orphan_cleanup.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
-| [ProcessSentinel.js](file:///C:/dev/agy-sandbox/src/net/ProcessSentinel.js) | 751 | `function parseCommandString`, `function validateCommand`, `constant ProcessSentinel` | [ProcessSentinel.test.js](file:///C:/dev/agy-sandbox/src/net/ProcessSentinel.test.js) | [`106_sandbox_containment_sentinel`](file:///C:/dev/agy-sandbox/plan/specs/106_sandbox_containment_sentinel.md)<br>[`138_strict_path_jailing`](file:///C:/dev/agy-sandbox/plan/specs/138_strict_path_jailing.md) |
+| [ProcessSentinel.js](file:///C:/dev/agy-sandbox/src/net/ProcessSentinel.js) | 762 | `function parseCommandString`, `function validateCommand`, `constant ProcessSentinel` | [ProcessSentinel.test.js](file:///C:/dev/agy-sandbox/src/net/ProcessSentinel.test.js) | [`106_sandbox_containment_sentinel`](file:///C:/dev/agy-sandbox/plan/specs/106_sandbox_containment_sentinel.md)<br>[`138_strict_path_jailing`](file:///C:/dev/agy-sandbox/plan/specs/138_strict_path_jailing.md) |
 | [PubSub.js](file:///C:/dev/agy-sandbox/src/net/PubSub.js) | 198 | `class PubSub`, `class InMemoryPubSub`, `class RedisPubSub` | [PubSub.test.js](file:///C:/dev/agy-sandbox/src/net/PubSub.test.js) | [`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
 | [ResourceLimiter.js](file:///C:/dev/agy-sandbox/src/net/ResourceLimiter.js) | 157 | `class ResourceLimiter` | [ResourceLimiter.test.js](file:///C:/dev/agy-sandbox/src/net/ResourceLimiter.test.js) | [`116_resource_backpressure_limiter`](file:///C:/dev/agy-sandbox/plan/specs/116_resource_backpressure_limiter.md)<br>[`128_adaptive_backpressure`](file:///C:/dev/agy-sandbox/plan/specs/128_adaptive_backpressure.md) |
 | [roomRouter.js](file:///C:/dev/agy-sandbox/src/net/roomRouter.js) | 304 | `class RoomRegistry`, `function hashString`, `function assignShard`, `function routeConnection`, `function planDrain` | [roomRouter.test.js](file:///C:/dev/agy-sandbox/src/net/roomRouter.test.js) | [`019a_scaling_decomposition`](file:///C:/dev/agy-sandbox/plan/specs/019a_scaling_decomposition.md)<br>[`019d_sticky_routing_lb`](file:///C:/dev/agy-sandbox/plan/specs/019d_sticky_routing_lb.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
@@ -149,7 +150,8 @@
 
 ## ⚡ EPISTEMIC DEBT & STALE LOGIC REPORT
 
-### ⚠️ Untested Core Modules (3)
+### ⚠️ Untested Core Modules (4)
+- [ ] `src/net/GuestLoader.js` is missing a unit test suite.
 - [ ] `src/net/GuestRunnerWorker.js` is missing a unit test suite.
 - [ ] `src/net/MainThreadWatchdogWorker.js` is missing a unit test suite.
 - [ ] `src/net/mockFreezeScript.js` is missing a unit test suite.

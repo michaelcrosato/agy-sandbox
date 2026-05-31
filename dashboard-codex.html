@@ -1842,6 +1842,158 @@
               </span>
             </div>
           </div>
+
+          <!-- SPEC-142: Guest Sandbox Footprint HUD Gauge Card -->
+          <div
+            id="guest-sandbox-panel"
+            style="
+              background: rgba(251, 191, 36, 0.02);
+              border: 1px solid rgba(251, 191, 36, 0.15);
+              border-radius: 8px;
+              padding: 1.25rem;
+              box-shadow: 0 0 15px rgba(251, 191, 36, 0.05);
+              margin-top: 1rem;
+            "
+          >
+            <div
+              style="
+                font-family: &quot;Space Grotesk&quot;, sans-serif;
+                font-size: 0.85rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #fbbf24;
+                margin-bottom: 1rem;
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+              "
+            >
+              🛡️ Guest Sentry Resources Monitor
+            </div>
+
+            <!-- Two SVG Circular Progress Rings side by side -->
+            <div style="display: flex; justify-content: space-around; align-items: center; margin-bottom: 1rem;">
+              
+              <!-- Memory Allocation Ring -->
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                <div style="position: relative; width: 80px; height: 80px;">
+                  <svg width="80" height="80" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="32" stroke="rgba(255,255,255,0.05)" stroke-width="6" fill="transparent" />
+                    <circle
+                      id="ring-guest-memory"
+                      cx="40"
+                      cy="40"
+                      r="32"
+                      stroke="#fbbf24"
+                      stroke-width="6"
+                      fill="transparent"
+                      stroke-dasharray="201"
+                      stroke-dashoffset="201"
+                      stroke-linecap="round"
+                      transform="rotate(-90 40 40)"
+                      style="transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease; filter: drop-shadow(0 0 4px rgba(251,191,36,0.4));"
+                    />
+                  </svg>
+                  <div
+                    id="guest-memory-text"
+                    style="
+                      position: absolute;
+                      top: 50%;
+                      left: 50%;
+                      transform: translate(-50%, -50%);
+                      font-family: monospace;
+                      font-size: 0.75rem;
+                      font-weight: 700;
+                      color: #fff;
+                    "
+                  >
+                    0%
+                  </div>
+                </div>
+                <div style="font-size: 0.7rem; color: var(--color-text-muted); font-weight: 700; text-transform: uppercase;">
+                  Memory (V8)
+                </div>
+              </div>
+
+              <!-- CPU Budget Ring -->
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                <div style="position: relative; width: 80px; height: 80px;">
+                  <svg width="80" height="80" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="32" stroke="rgba(255,255,255,0.05)" stroke-width="6" fill="transparent" />
+                    <circle
+                      id="ring-guest-cpu"
+                      cx="40"
+                      cy="40"
+                      r="32"
+                      stroke="#fbbf24"
+                      stroke-width="6"
+                      fill="transparent"
+                      stroke-dasharray="201"
+                      stroke-dashoffset="201"
+                      stroke-linecap="round"
+                      transform="rotate(-90 40 40)"
+                      style="transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease; filter: drop-shadow(0 0 4px rgba(251,191,36,0.4));"
+                    />
+                  </svg>
+                  <div
+                    id="guest-cpu-text"
+                    style="
+                      position: absolute;
+                      top: 50%;
+                      left: 50%;
+                      transform: translate(-50%, -50%);
+                      font-family: monospace;
+                      font-size: 0.75rem;
+                      font-weight: 700;
+                      color: #fff;
+                    "
+                  >
+                    0%
+                  </div>
+                </div>
+                <div style="font-size: 0.7rem; color: var(--color-text-muted); font-weight: 700; text-transform: uppercase;">
+                  CPU Budget
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Active / Recent Guest Info details -->
+            <div
+              id="guest-status-details"
+              style="
+                padding: 0.5rem;
+                background: rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.02);
+                border-radius: 4px;
+                font-size: 0.7rem;
+                font-family: monospace;
+                color: var(--color-text-muted);
+              "
+            >
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                <span>Active runs:</span>
+                <span id="guest-active-count" style="color: #fbbf24; font-weight: 700;">0</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                <span>V8 Heap Used:</span>
+                <span id="guest-heap-display" style="color: #fff;">0.00 MB / 128 MB</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                <span>CPU Time:</span>
+                <span id="guest-cpu-display" style="color: #fff;">0 ms / 2000 ms</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.25rem; margin-top: 0.25rem;">
+                <span>Last Script:</span>
+                <span id="guest-last-script" style="color: #6b7280; font-weight: 700;">none</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>Last Status:</span>
+                <span id="guest-last-status" style="color: #6b7280; font-weight: 700; text-transform: uppercase;">none</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2843,6 +2995,108 @@
               }
             }
 
+            // SPEC-142: Guest Sandbox Footprint HUD Gauge Card Update
+            const guestSandbox = data.guest_sandbox || { active_runs: [], recent_runs: [] };
+            
+            const activeCountEl = document.getElementById("guest-active-count");
+            if (activeCountEl) {
+              activeCountEl.innerText = guestSandbox.active_runs.length;
+            }
+
+            let activeMemUsed = 0;
+            let activeMemLimit = 128; // MB
+            let activeCpuUsed = 0;
+            let activeCpuBudget = 2000; // ms
+            let lastScript = "none";
+            let lastStatus = "none";
+
+            if (guestSandbox.active_runs.length > 0) {
+              const run = guestSandbox.active_runs[0];
+              activeMemUsed = (run.heapUsedBytes || 0) / (1024 * 1024); // to MB
+              activeMemLimit = run.maxMemoryMb || 128;
+              activeCpuUsed = run.cpuTimeMs || 0;
+              activeCpuBudget = run.cpuTimeBudgetMs || 2000;
+              lastScript = run.script;
+              lastStatus = run.status;
+            } else if (guestSandbox.recent_runs.length > 0) {
+              const run = guestSandbox.recent_runs[0];
+              activeMemUsed = (run.heapUsedBytes || 0) / (1024 * 1024);
+              activeMemLimit = run.maxMemoryMb || 128;
+              activeCpuUsed = run.cpuTimeMs || 0;
+              activeCpuBudget = run.cpuTimeBudgetMs || 2000;
+              lastScript = run.script;
+              lastStatus = run.status;
+            }
+
+            // Memory Ring & text update
+            const ringMemoryEl = document.getElementById("ring-guest-memory");
+            const memoryTextEl = document.getElementById("guest-memory-text");
+            const heapDisplayEl = document.getElementById("guest-heap-display");
+            
+            const memPct = Math.min(100, Math.max(0, (activeMemUsed / activeMemLimit) * 100));
+            if (memoryTextEl) {
+              memoryTextEl.innerText = `${Math.round(memPct)}%`;
+            }
+            if (ringMemoryEl) {
+              // Circumference is 201
+              const offset = 201 - (201 * memPct) / 100;
+              ringMemoryEl.setAttribute("stroke-dashoffset", offset);
+              if (memPct > 80) {
+                ringMemoryEl.setAttribute("stroke", "#ef4444");
+              } else if (memPct > 50) {
+                ringMemoryEl.setAttribute("stroke", "#f59e0b");
+              } else {
+                ringMemoryEl.setAttribute("stroke", "#fbbf24");
+              }
+            }
+            if (heapDisplayEl) {
+              heapDisplayEl.innerText = `${activeMemUsed.toFixed(2)} MB / ${activeMemLimit} MB`;
+            }
+
+            // CPU Ring & text update
+            const ringCpuEl = document.getElementById("ring-guest-cpu");
+            const cpuTextEl = document.getElementById("guest-cpu-text");
+            const cpuDisplayEl = document.getElementById("guest-cpu-display");
+
+            const cpuPct = Math.min(100, Math.max(0, (activeCpuUsed / activeCpuBudget) * 100));
+            if (cpuTextEl) {
+              cpuTextEl.innerText = `${Math.round(cpuPct)}%`;
+            }
+            if (ringCpuEl) {
+              const offset = 201 - (201 * cpuPct) / 100;
+              ringCpuEl.setAttribute("stroke-dashoffset", offset);
+              if (cpuPct > 80) {
+                ringCpuEl.setAttribute("stroke", "#ef4444");
+              } else if (cpuPct > 50) {
+                ringCpuEl.setAttribute("stroke", "#f59e0b");
+              } else {
+                ringCpuEl.setAttribute("stroke", "#fbbf24");
+              }
+            }
+            if (cpuDisplayEl) {
+              cpuDisplayEl.innerText = `${Math.round(activeCpuUsed)} ms / ${activeCpuBudget} ms`;
+            }
+
+            // Info details update
+            const lastScriptEl = document.getElementById("guest-last-script");
+            if (lastScriptEl) {
+              lastScriptEl.innerText = lastScript;
+              lastScriptEl.style.color = lastScript !== "none" ? "#fff" : "#6b7280";
+            }
+            const lastStatusEl = document.getElementById("guest-last-status");
+            if (lastStatusEl) {
+              lastStatusEl.innerText = lastStatus;
+              if (lastStatus === "success") {
+                lastStatusEl.style.color = "#10b981";
+              } else if (lastStatus === "running") {
+                lastStatusEl.style.color = "#3b82f6";
+              } else if (lastStatus !== "none") {
+                lastStatusEl.style.color = "#ef4444";
+              } else {
+                lastStatusEl.style.color = "#6b7280";
+              }
+            }
+
             // SPEC-132: Render Containment Breaches Logs in Sentry Console
             const security = data.sandbox_security || {
               security_violations_total: 0,
@@ -3060,6 +3314,97 @@
               pollutionStatusEl.innerText = "CLEAN";
               pollutionStatusEl.style.color = "#10b981";
               pollutionStatusEl.style.textShadow = "0 0 4px rgba(16, 185, 129, 0.4)";
+            }
+          }
+
+          // SPEC-142: Simulated Guest Sandbox Footprint HUD Gauge updates
+          const activeCountEl = document.getElementById("guest-active-count");
+          if (activeCountEl) {
+            const hasActiveSim = Math.random() > 0.6;
+            activeCountEl.innerText = hasActiveSim ? "1" : "0";
+
+            let activeMemUsed = 0;
+            let activeMemLimit = 128;
+            let activeCpuUsed = 0;
+            let activeCpuBudget = 2000;
+            let lastScript = "none";
+            let lastStatus = "none";
+
+            if (hasActiveSim) {
+              activeMemUsed = 10 + Math.random() * 40; // 10-50 MB
+              activeCpuUsed = Math.random() * 800; // 0-800 ms
+              lastScript = "sandbox_sim_agent.js";
+              lastStatus = "running";
+            } else if (Math.random() > 0.5) {
+              activeMemUsed = 42.5;
+              activeCpuUsed = 1240;
+              lastScript = "legacy_worker_run.js";
+              lastStatus = "success";
+            }
+
+            const ringMemoryEl = document.getElementById("ring-guest-memory");
+            const memoryTextEl = document.getElementById("guest-memory-text");
+            const heapDisplayEl = document.getElementById("guest-heap-display");
+            
+            const memPct = Math.min(100, Math.max(0, (activeMemUsed / activeMemLimit) * 100));
+            if (memoryTextEl) {
+              memoryTextEl.innerText = `${Math.round(memPct)}%`;
+            }
+            if (ringMemoryEl) {
+              const offset = 201 - (201 * memPct) / 100;
+              ringMemoryEl.setAttribute("stroke-dashoffset", offset);
+              if (memPct > 80) {
+                ringMemoryEl.setAttribute("stroke", "#ef4444");
+              } else if (memPct > 50) {
+                ringMemoryEl.setAttribute("stroke", "#f59e0b");
+              } else {
+                ringMemoryEl.setAttribute("stroke", "#fbbf24");
+              }
+            }
+            if (heapDisplayEl) {
+              heapDisplayEl.innerText = `${activeMemUsed.toFixed(2)} MB / ${activeMemLimit} MB`;
+            }
+
+            const ringCpuEl = document.getElementById("ring-guest-cpu");
+            const cpuTextEl = document.getElementById("guest-cpu-text");
+            const cpuDisplayEl = document.getElementById("guest-cpu-display");
+
+            const cpuPct = Math.min(100, Math.max(0, (activeCpuUsed / activeCpuBudget) * 100));
+            if (cpuTextEl) {
+              cpuTextEl.innerText = `${Math.round(cpuPct)}%`;
+            }
+            if (ringCpuEl) {
+              const offset = 201 - (201 * cpuPct) / 100;
+              ringCpuEl.setAttribute("stroke-dashoffset", offset);
+              if (cpuPct > 80) {
+                ringCpuEl.setAttribute("stroke", "#ef4444");
+              } else if (cpuPct > 50) {
+                ringCpuEl.setAttribute("stroke", "#f59e0b");
+              } else {
+                ringCpuEl.setAttribute("stroke", "#fbbf24");
+              }
+            }
+            if (cpuDisplayEl) {
+              cpuDisplayEl.innerText = `${Math.round(activeCpuUsed)} ms / ${activeCpuBudget} ms`;
+            }
+
+            const lastScriptEl = document.getElementById("guest-last-script");
+            if (lastScriptEl) {
+              lastScriptEl.innerText = lastScript;
+              lastScriptEl.style.color = lastScript !== "none" ? "#fff" : "#6b7280";
+            }
+            const lastStatusEl = document.getElementById("guest-last-status");
+            if (lastStatusEl) {
+              lastStatusEl.innerText = lastStatus;
+              if (lastStatus === "success") {
+                lastStatusEl.style.color = "#10b981";
+              } else if (lastStatus === "running") {
+                lastStatusEl.style.color = "#3b82f6";
+              } else if (lastStatus !== "none") {
+                lastStatusEl.style.color = "#ef4444";
+              } else {
+                lastStatusEl.style.color = "#6b7280";
+              }
             }
           }
 

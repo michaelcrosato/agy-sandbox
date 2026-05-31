@@ -176,4 +176,28 @@ describe("Sandbox Telemetry Observability Integration Tests (SPEC-094)", () => {
         .on("error", reject);
     });
   });
+
+  test("metrics endpoint exposes guest sandbox telemetry metrics (SPEC-142)", () => {
+    return new Promise((resolve, reject) => {
+      http
+        .get(`http://localhost:${port}/metrics`, (res) => {
+          expect(res.statusCode).toBe(200);
+          let body = "";
+          res.on("data", (chunk) => {
+            body += chunk;
+          });
+          res.on("end", () => {
+            const metrics = JSON.parse(body);
+            expect(metrics).toHaveProperty("guest_sandbox");
+
+            const gs = metrics.guest_sandbox;
+            expect(Array.isArray(gs.active_runs)).toBe(true);
+            expect(Array.isArray(gs.recent_runs)).toBe(true);
+
+            resolve();
+          });
+        })
+        .on("error", reject);
+    });
+  });
 });

@@ -40,6 +40,7 @@ import { AnomalyDetector } from "./net/AnomalyDetector.js";
 import { ConfigWatcher } from "./net/ConfigWatcher.js";
 import { ConnectionFloodSentry } from "./net/ConnectionFloodSentry.js";
 import { SandboxSecurityRegistry } from "./net/SandboxSecurityRegistry.js";
+import { GuestRunner } from "./net/GuestRunner.js";
 import {
   handleOutfitBuy,
   handleShipBuy,
@@ -255,6 +256,10 @@ const server = http.createServer((req, res) => {
       anomaly_triggers_total: anomalyDetector.anomalyTriggersTotal,
       anomaly_detector: anomalyDetector.getDiagnostics(),
       sandbox_security: SandboxSecurityRegistry.getMetrics(),
+      guest_sandbox: {
+        active_runs: Array.from(GuestRunner.activeRuns.values()),
+        recent_runs: GuestRunner.recentRuns,
+      },
       rooms: buildLobbyRoomsList(instances).map((r) => ({
         ...r,
         players: r.playersCount,

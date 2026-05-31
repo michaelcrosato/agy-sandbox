@@ -121,6 +121,18 @@ describe("Living Codex & Dashboard HTTP Integration Tests (SPEC-102)", () => {
           expect(body).toContain('id="prototype-sentry-status"');
           expect(body).toContain('id="global-pollution-status"');
 
+          // SPEC-142 Guest Sandbox Footprint HUD Gauge Card elements validation
+          expect(body).toContain('id="guest-sandbox-panel"');
+          expect(body).toContain('id="ring-guest-memory"');
+          expect(body).toContain('id="guest-memory-text"');
+          expect(body).toContain('id="ring-guest-cpu"');
+          expect(body).toContain('id="guest-cpu-text"');
+          expect(body).toContain('id="guest-active-count"');
+          expect(body).toContain('id="guest-heap-display"');
+          expect(body).toContain('id="guest-cpu-display"');
+          expect(body).toContain('id="guest-last-script"');
+          expect(body).toContain('id="guest-last-status"');
+
           resolve();
         });
 

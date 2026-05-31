@@ -14,6 +14,9 @@ const __dirname = path.dirname(__filename);
 const workerPath = path.join(__dirname, "GuestRunnerWorker.js");
 
 export const GuestRunner = {
+  activeRuns: new Map(), // pid -> info
+  recentRuns: [], // array of completed run summaries, keep last 15
+
   /**
    * Run an untrusted guest script in an isolated child process.
    * @param {string} scriptPath - Absolute or relative path to the guest script.
@@ -76,6 +79,43 @@ export const GuestRunner = {
         stdio: "pipe",
       });
 
+      const startTime = Date.now();
+      const runInfo = {
+        pid: child.pid,
+        script: path.basename(resolvedScriptPath),
+        fullScriptPath: resolvedScriptPath,
+        timeoutMs,
+        maxMemoryMb,
+        cpuTimeBudgetMs,
+        rssBytes: 0,
+        heapUsedBytes: 0,
+        cpuTimeMs: 0,
+        status: "running",
+        startTime,
+      };
+
+      if (child.pid) {
+        GuestRunner.activeRuns.set(child.pid, runInfo);
+      }
+
+      function recordCompletion(pid, finalStatus, errorMsg = null) {
+        if (!pid) return;
+        const current = GuestRunner.activeRuns.get(pid);
+        if (current) {
+          GuestRunner.activeRuns.delete(pid);
+          current.status = finalStatus;
+          current.endTime = Date.now();
+          current.durationMs = current.endTime - current.startTime;
+          if (errorMsg) {
+            current.error = errorMsg;
+          }
+          GuestRunner.recentRuns.unshift(current);
+          if (GuestRunner.recentRuns.length > 15) {
+            GuestRunner.recentRuns.pop();
+          }
+        }
+      }
+
       // Register the child process with ProcessReaper to prevent host leaks
       ProcessReaper.registerProcess(child);
 
@@ -119,6 +159,8 @@ export const GuestRunner = {
           reason: errMsg,
         });
 
+        recordCompletion(child.pid, "killed_cpu", errMsg);
+
         try {
           if (child.pid) {
             if (process.platform === "win32") {
@@ -154,6 +196,15 @@ export const GuestRunner = {
         if (m && m.type === "cpu_heartbeat") {
           lastHeartbeatTime = Date.now();
           lastCpuTimeMs = m.cpuTimeMs;
+          if (child.pid) {
+            const current = GuestRunner.activeRuns.get(child.pid);
+            if (current) {
+              current.cpuTimeMs = m.cpuTimeMs;
+              current.rssBytes = m.rssBytes || 0;
+              current.heapUsedBytes = m.heapUsedBytes || 0;
+              current.heapTotalBytes = m.heapTotalBytes || 0;
+            }
+          }
         } else if (m && (m.status === "success" || m.status === "error")) {
           IPCData = m;
         }
@@ -186,6 +237,9 @@ export const GuestRunner = {
           reason: `Guest script execution exceeded time budget of ${timeoutMs}ms`,
         });
 
+        const errMsg = `Execution timeout after ${timeoutMs}ms`;
+        recordCompletion(child.pid, "timeout", errMsg);
+
         // Forcefully SIGKILL the child and its entire process tree
         try {
           if (child.pid) {
@@ -209,7 +263,7 @@ export const GuestRunner = {
           status: "timeout",
           exitCode: null,
           signal: "SIGKILL",
-          error: `Execution timeout after ${timeoutMs}ms`,
+          error: errMsg,
           stdout: stdoutData,
           stderr: stderrData,
           childAuditFile,
@@ -223,6 +277,7 @@ export const GuestRunner = {
         clearTimeout(timeoutTimer);
 
         if (code === 0) {
+          recordCompletion(child.pid, "success");
           resolve({
             status: "success",
             exitCode: 0,
@@ -232,11 +287,13 @@ export const GuestRunner = {
             childAuditFile,
           });
         } else {
+          const errMsg = IPCData?.error || `Process exited with code ${code}`;
+          recordCompletion(child.pid, "error", errMsg);
           resolve({
             status: "error",
             exitCode: code,
             signal,
-            error: IPCData?.error || `Process exited with code ${code}`,
+            error: errMsg,
             stack: IPCData?.stack,
             stdout: stdoutData,
             stderr: stderrData,

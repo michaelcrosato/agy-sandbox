@@ -137,4 +137,43 @@ describe("Sandbox Telemetry Observability Integration Tests (SPEC-094)", () => {
         .on("error", reject);
     });
   });
+
+  test("metrics endpoint exposes sandbox security registry violations (SPEC-131)", () => {
+    return new Promise((resolve, reject) => {
+      http
+        .get(`http://localhost:${port}/metrics`, (res) => {
+          expect(res.statusCode).toBe(200);
+          let body = "";
+          res.on("data", (chunk) => {
+            body += chunk;
+          });
+          res.on("end", () => {
+            const metrics = JSON.parse(body);
+            expect(metrics).toHaveProperty("sandbox_security");
+
+            const sec = metrics.sandbox_security;
+            expect(sec).toHaveProperty("security_violations_total");
+            expect(sec).toHaveProperty("security_violations_by_category");
+            expect(Array.isArray(sec.recent_violations)).toBe(true);
+
+            expect(typeof sec.security_violations_total).toBe("number");
+            expect(sec.security_violations_by_category).toHaveProperty(
+              "filesystem",
+            );
+            expect(sec.security_violations_by_category).toHaveProperty(
+              "firewall",
+            );
+            expect(sec.security_violations_by_category).toHaveProperty(
+              "rate_limit",
+            );
+            expect(sec.security_violations_by_category).toHaveProperty(
+              "process",
+            );
+
+            resolve();
+          });
+        })
+        .on("error", reject);
+    });
+  });
 });

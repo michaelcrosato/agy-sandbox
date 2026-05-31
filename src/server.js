@@ -38,6 +38,8 @@ import { ResourceLimiter } from "./net/ResourceLimiter.js";
 import { MemoryLeakSentry } from "./net/MemoryLeakSentry.js";
 import { AnomalyDetector } from "./net/AnomalyDetector.js";
 import { ConfigWatcher } from "./net/ConfigWatcher.js";
+import { ConnectionFloodSentry } from "./net/ConnectionFloodSentry.js";
+import { SandboxSecurityRegistry } from "./net/SandboxSecurityRegistry.js";
 import {
   handleOutfitBuy,
   handleShipBuy,
@@ -252,6 +254,7 @@ const server = http.createServer((req, res) => {
       memory_leak_alerts: memoryLeakSentry.getDiagnostics(),
       anomaly_triggers_total: anomalyDetector.anomalyTriggersTotal,
       anomaly_detector: anomalyDetector.getDiagnostics(),
+      sandbox_security: SandboxSecurityRegistry.getMetrics(),
       rooms: buildLobbyRoomsList(instances).map((r) => ({
         ...r,
         players: r.playersCount,
@@ -464,12 +467,18 @@ export const wsRateLimitConfig = {
   maxPerSecond: 100,
 };
 
+export const connectionFloodSentry = new ConnectionFloodSentry({
+  maxConnectionsPerIp: 5,
+});
+
 let configWatcher = null;
 configWatcher = new ConfigWatcher("plan/config.json", {
   apiRateLimiter,
   sandboxFirewall,
   wsRateLimitConfig,
   instances,
+  connectionFloodSentry,
+  resourceLimiter,
 });
 configWatcher.start();
 
@@ -1200,23 +1209,67 @@ async function joinRoom(clientObj, roomId, nickname) {
   room.broadcastRosterUpdate();
 }
 
+export function verifyWebSocketClient(info, cb) {
+  const req = info.req;
+
+  // 1. Raw upgrade URI length validation (>2048)
+  if (req && req.url && req.url.length > 2048) {
+    console.warn(
+      `[ws] rejected upgrade: request URI length (${req.url.length}) exceeds maximum limit (2048)`,
+    );
+    return cb(false, 414, "URI Too Long");
+  }
+
+  // 2. Raw Content-Length validation (>4096)
+  if (req && req.headers) {
+    const contentLengthHeader = req.headers["content-length"];
+    if (contentLengthHeader) {
+      const contentLength = parseInt(contentLengthHeader, 10);
+      if (!isNaN(contentLength) && contentLength > 4096) {
+        console.warn(
+          `[ws] rejected upgrade: request Content-Length (${contentLength}) exceeds maximum limit (4096)`,
+        );
+        return cb(false, 413, "Payload Too Large");
+      }
+    }
+  }
+
+  // 3. Origin checking
+  const allowed = isAllowedOrigin(info.origin, {
+    host: req && req.headers ? req.headers.host : "",
+    allow: ALLOWED_ORIGINS,
+  });
+  if (!allowed) {
+    console.warn(
+      `[ws] rejected upgrade from disallowed origin: ${info.origin}`,
+    );
+    return cb(false, 403, "Forbidden");
+  }
+
+  // 4. Inbound Connection Flood Protection & Active IP Sentry
+  const ip = req
+    ? req.headers["x-forwarded-for"]
+      ? req.headers["x-forwarded-for"].split(",")[0].trim()
+      : req.socket
+        ? req.socket.remoteAddress
+        : "unknown"
+    : "unknown";
+
+  const floodCheck = connectionFloodSentry.register(ip);
+  if (!floodCheck.allowed) {
+    console.warn(`[ws] rejected upgrade from ${ip}: ${floodCheck.reason}`);
+    return cb(false, 429, "Too Many Requests");
+  }
+
+  cb(true);
+}
+
 // 6. WebSockets Server Core Implementation
 const wss = new WebSocketServer({
   server,
   maxPayload: WS_MAX_PAYLOAD,
   perMessageDeflate: perMessageDeflateOption(WS_COMPRESSION),
-  verifyClient: (info) => {
-    const allowed = isAllowedOrigin(info.origin, {
-      host: info.req && info.req.headers ? info.req.headers.host : "",
-      allow: ALLOWED_ORIGINS,
-    });
-    if (!allowed) {
-      console.warn(
-        `[ws] rejected upgrade from disallowed origin: ${info.origin}`,
-      );
-    }
-    return allowed;
-  },
+  verifyClient: verifyWebSocketClient,
 });
 
 // Liveness heartbeat (spec 003): ping every socket each interval; any socket that
@@ -1240,7 +1293,7 @@ const heartbeatInterval = setInterval(() => {
 }, DEFAULT_HEARTBEAT_MS);
 heartbeatInterval.unref();
 
-wss.on("connection", (ws) => {
+wss.on("connection", (ws, req) => {
   ws.isAlive = true;
   ws.on("pong", () => {
     ws.isAlive = true;
@@ -1248,12 +1301,22 @@ wss.on("connection", (ws) => {
   metrics.inc("connections_total");
   logger.info("client_connected", { clients: wss.clients.size });
 
+  const clientIp =
+    req && req.headers
+      ? req.headers["x-forwarded-for"]
+        ? req.headers["x-forwarded-for"].split(",")[0].trim()
+        : req.socket
+          ? req.socket.remoteAddress
+          : "unknown"
+      : "unknown";
+
   const clientId = "player-" + Math.random().toString(36).substring(2, 9);
 
   const clientObj = {
     ws,
     id: clientId,
     nickname: "Pilot",
+    ip: clientIp,
     ship: null,
     missionManager: new MissionManager(),
     isLanded: false,
@@ -1641,6 +1704,9 @@ wss.on("connection", (ws) => {
 
   ws.on("close", () => {
     const activeClient = clients.get(ws) || clientObj;
+    if (activeClient && activeClient.ip) {
+      connectionFloodSentry.deregister(activeClient.ip);
+    }
 
     // Prune this client from the matchmaking queue immediately on disconnect
     matchmakingQueue.remove(activeClient);

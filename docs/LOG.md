@@ -39,6 +39,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T22:40 · iter-0123 · GREEN · spec-131-centralized-security-audit-ledger
+- **Baseline:** `d7fd24e` on `feat/procedural-missions`; 1,190 Jest green.
+- **Move:** Implement SPEC-131 to establish a centralized security registry SandboxSecurityRegistry.js that captures filesystem, egress, and rate limiter blocks into a persistent JSON ledger on disk, exposing these metrics in /metrics.
+- **Changed:**
+  - Created `src/net/SandboxSecurityRegistry.js` persisting Millisecond-timestamped security block events with full callstacks and category groupings inside `plan/security_audit.json`, auto-compacted to keep the last 500 records.
+  - Integrated SandboxSecurityRegistry logging into `checkPath` filesystem boundary checks and command whitelisting checks in `src/net/ProcessSentinel.js`.
+  - Integrated SandboxSecurityRegistry logging into DNS and connect block methods in `src/net/SandboxFirewall.js`.
+  - Integrated SandboxSecurityRegistry logging into request block check paths in `src/net/ApiRateLimiter.js`.
+  - Exposed `sandbox_security` telemetry metric counters and recent logs in `/metrics` within `src/server.js`.
+  - Created complete unit tests in `src/net/SandboxSecurityRegistry.test.js` and added integration assertions inside `src/server/sandboxTelemetry.integration.test.js`.
+  - Marked SPEC-131 as done in `plan/PROGRESS.md`.
+- **Decisions:** Structured SandboxSecurityRegistry with asynchronous/silent non-blocking disk operations to ensure core game and sandbox systems degrade gracefully and run offline without active disk locks during ledger writes.
+- **Validation:** Verified code via `npm run agent:check` confirming 100% green gate across all 1,190 Jest tests, ESLint, JSDoc typechecking, and Prettier checks.
+- **Next:** Proceed with SPEC-132 implementation for the Golden-Glassmorphic Codex "Containment Breaches Log" Console.
+
 ## 2026-05-31T22:30 · iter-0122 · GREEN · spec-130-autonomic-process-tree-reaper
 - **Baseline:** `5d9f075` on `feat/procedural-missions`; 1,186 Jest green.
 - **Move:** Implement SPEC-130 to automatically register spawned child processes in ProcessReaper and recursively kill nested process trees on Windows and Unix.

@@ -1,5 +1,6 @@
 import http from "http";
 import https from "https";
+import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
 
 /**
  * ApiRateLimiter (P0).
@@ -54,9 +55,14 @@ export class ApiRateLimiter {
 
     if (!isAllowed) {
       this.blockCount++;
+      const reason = `Outbound sentinel blocked non-allowlisted domain: ${host}`;
+      SandboxSecurityRegistry.logViolation("rate_limit", "api_call", {
+        url: urlString,
+        reason,
+      });
       return {
         allowed: false,
-        reason: `Outbound sentinel blocked non-allowlisted domain: ${host}`,
+        reason,
       };
     }
 
@@ -75,18 +81,28 @@ export class ApiRateLimiter {
     ).length;
     if (callsInLastMinute >= this.maxPerMinute) {
       this.blockCount++;
+      const reason = `API Rate Limit Exceeded: max ${this.maxPerMinute} per minute. (Calls in last minute: ${callsInLastMinute})`;
+      SandboxSecurityRegistry.logViolation("rate_limit", "api_call", {
+        url: urlString,
+        reason,
+      });
       return {
         allowed: false,
-        reason: `API Rate Limit Exceeded: max ${this.maxPerMinute} per minute. (Calls in last minute: ${callsInLastMinute})`,
+        reason,
       };
     }
 
     const callsInLastHour = this.requestTimestamps.length;
     if (callsInLastHour >= this.maxPerHour) {
       this.blockCount++;
+      const reason = `API Rate Limit Exceeded: max ${this.maxPerHour} per hour. (Calls in last hour: ${callsInLastHour})`;
+      SandboxSecurityRegistry.logViolation("rate_limit", "api_call", {
+        url: urlString,
+        reason,
+      });
       return {
         allowed: false,
-        reason: `API Rate Limit Exceeded: max ${this.maxPerHour} per hour. (Calls in last hour: ${callsInLastHour})`,
+        reason,
       };
     }
 

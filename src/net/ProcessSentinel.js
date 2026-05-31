@@ -9,6 +9,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { ProcessReaper } from "./ProcessReaper.js";
+import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
 
 // Store original native child_process functions
 const originalSpawn = childProcess.spawn;
@@ -65,10 +66,27 @@ function checkPath(filePath) {
   const resolved = path.resolve(pStr);
   if (!resolved.startsWith(activeSandboxDir)) {
     stats.blockedCount++;
-    throw new Error(
-      `[SECURITY ACCESS DENIED] Isolation boundary escape attempt detected: path [${resolved}] is outside sandboxed directory [${activeSandboxDir}]`,
-    );
+    const errMsg = `[SECURITY ACCESS DENIED] Isolation boundary escape attempt detected: path [${resolved}] is outside sandboxed directory [${activeSandboxDir}]`;
+    SandboxSecurityRegistry.logViolation("filesystem", "fs_access", {
+      path: resolved,
+      sandboxDir: activeSandboxDir,
+      reason: errMsg,
+    });
+    throw new Error(errMsg);
   }
+}
+
+/**
+ * Logs a process sentinel whitelisting violation.
+ * @param {string} command
+ * @param {string[]} args
+ * @param {string} reason
+ */
+function logProcessBlock(command, args, reason) {
+  SandboxSecurityRegistry.logViolation("process", command, {
+    args,
+    reason,
+  });
 }
 
 /**
@@ -269,6 +287,7 @@ export const ProcessSentinel = {
         const validation = validateCommand(command, actualArgs);
         if (!validation.allowed) {
           stats.blockedCount++;
+          logProcessBlock(command, actualArgs, validation.reason);
           throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
         }
         stats.allowedCount++;
@@ -283,6 +302,7 @@ export const ProcessSentinel = {
         const validation = validateCommand(command, actualArgs);
         if (!validation.allowed) {
           stats.blockedCount++;
+          logProcessBlock(command, actualArgs, validation.reason);
           throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
         }
         stats.allowedCount++;
@@ -297,6 +317,11 @@ export const ProcessSentinel = {
         const validation = validateCommand("node", [modulePath, ...actualArgs]);
         if (!validation.allowed) {
           stats.blockedCount++;
+          logProcessBlock(
+            "node",
+            [modulePath, ...actualArgs],
+            validation.reason,
+          );
           throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
         }
         stats.allowedCount++;
@@ -314,9 +339,10 @@ export const ProcessSentinel = {
         const forbiddenShellChars = /[&|;><$]/;
         if (forbiddenShellChars.test(command)) {
           stats.blockedCount++;
-          const err = new Error(
-            `[SECURITY ACCESS DENIED] Shell metacharacters are forbidden in sandbox execution`,
-          );
+          const reason =
+            "Shell metacharacters are forbidden in sandbox execution";
+          logProcessBlock(command, [], reason);
+          const err = new Error(`[SECURITY ACCESS DENIED] ${reason}`);
           if (typeof actualCallback === "function") {
             actualCallback(err, "", "");
             return;
@@ -329,6 +355,7 @@ export const ProcessSentinel = {
         const validation = validateCommand(parsed.command, parsed.args);
         if (!validation.allowed) {
           stats.blockedCount++;
+          logProcessBlock(parsed.command, parsed.args, validation.reason);
           const err = new Error(
             `[SECURITY ACCESS DENIED] ${validation.reason}`,
           );
@@ -350,15 +377,17 @@ export const ProcessSentinel = {
         const forbiddenShellChars = /[&|;><$]/;
         if (forbiddenShellChars.test(command)) {
           stats.blockedCount++;
-          throw new Error(
-            `[SECURITY ACCESS DENIED] Shell metacharacters are forbidden in sandbox execution`,
-          );
+          const reason =
+            "Shell metacharacters are forbidden in sandbox execution";
+          logProcessBlock(command, [], reason);
+          throw new Error(`[SECURITY ACCESS DENIED] ${reason}`);
         }
 
         const parsed = parseCommandString(command);
         const validation = validateCommand(parsed.command, parsed.args);
         if (!validation.allowed) {
           stats.blockedCount++;
+          logProcessBlock(parsed.command, parsed.args, validation.reason);
           throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
         }
 
@@ -374,6 +403,7 @@ export const ProcessSentinel = {
         const validation = validateCommand(file, actualArgs);
         if (!validation.allowed) {
           stats.blockedCount++;
+          logProcessBlock(file, actualArgs, validation.reason);
           const actualCallback =
             typeof options === "function" ? options : callback;
           const err = new Error(
@@ -397,6 +427,7 @@ export const ProcessSentinel = {
         const validation = validateCommand(file, actualArgs);
         if (!validation.allowed) {
           stats.blockedCount++;
+          logProcessBlock(file, actualArgs, validation.reason);
           throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
         }
         stats.allowedCount++;

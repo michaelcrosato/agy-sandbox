@@ -9,6 +9,7 @@
 
 import dns from "dns";
 import net from "net";
+import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
 
 export class SandboxFirewall {
   /**
@@ -112,6 +113,10 @@ export class SandboxFirewall {
       this.blockCount++;
       const reason = `Outbound firewall blocked connection to private IP range: ${host}`;
       this.blockedEvents.push({ host, timestamp: Date.now(), reason });
+      SandboxSecurityRegistry.logViolation("firewall", "connect", {
+        host,
+        reason,
+      });
       return { allowed: false, reason };
     }
 
@@ -124,6 +129,10 @@ export class SandboxFirewall {
       this.blockCount++;
       const reason = `Outbound firewall blocked non-allowlisted host domain: ${host}`;
       this.blockedEvents.push({ host, timestamp: Date.now(), reason });
+      SandboxSecurityRegistry.logViolation("firewall", "connect", {
+        host,
+        reason,
+      });
       return { allowed: false, reason };
     }
 
@@ -145,6 +154,10 @@ export class SandboxFirewall {
       this.blockCount++;
       const reason = `Outbound firewall blocked resolved private IP: ${ip}`;
       this.blockedEvents.push({ host: ip, timestamp: Date.now(), reason });
+      SandboxSecurityRegistry.logViolation("firewall", "connect", {
+        host: ip,
+        reason,
+      });
       return { allowed: false, reason };
     }
 

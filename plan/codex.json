@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T05:48:26.994Z",
+  "generatedAt": "2026-05-31T05:58:19.246Z",
   "stats": {
     "totalSourceFiles": 95,
     "totalTestFiles": 124,
     "totalSpecFiles": 147,
-    "totalLoc": 20712,
-    "totalTests": 1610,
+    "totalLoc": 20822,
+    "totalTests": 1614,
     "untestedCoreFilesCount": 3
   },
   "files": [
@@ -1389,7 +1389,7 @@
     },
     {
       "path": "src/net/GuestRunner.js",
-      "loc": 148,
+      "loc": 250,
       "classes": [],
       "exports": [
         {
@@ -1400,7 +1400,7 @@
         }
       ],
       "testFile": "src/net/GuestRunner.test.js",
-      "testCasesCount": 5,
+      "testCasesCount": 9,
       "referencingSpecs": [
         "plan/specs/136_isolated_guest_runner.md"
       ],
@@ -1414,7 +1414,7 @@
     },
     {
       "path": "src/net/GuestRunnerWorker.js",
-      "loc": 50,
+      "loc": 55,
       "classes": [],
       "exports": [],
       "testFile": null,
@@ -1449,7 +1449,7 @@
     },
     {
       "path": "src/net/IntegrityGuard.js",
-      "loc": 202,
+      "loc": 205,
       "classes": [],
       "exports": [
         {

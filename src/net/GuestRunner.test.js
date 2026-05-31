@@ -20,6 +20,9 @@ describe("GuestRunner", () => {
   const tempEvilScript = path.join(__dirname, "temp_guest_evil.js");
   const tempTamperScript = path.join(__dirname, "temp_guest_tamper.js");
   const tempFreezeScript = path.join(__dirname, "temp_guest_freeze.js");
+  const tempOomScript = path.join(__dirname, "temp_guest_oom.js");
+  const tempCpuScript = path.join(__dirname, "temp_guest_cpu.js");
+  const tempEnvScript = path.join(__dirname, "temp_guest_env.js");
   const sandboxDir = path.resolve("./.sandbox-runner-test-dir");
 
   beforeAll(() => {
@@ -57,6 +60,39 @@ try {
 
     fs.writeFileSync(tempFreezeScript, `while (true) {}`, "utf8");
 
+    fs.writeFileSync(
+      tempOomScript,
+      `// Allocate plain JS objects in a loop to trigger V8 old space heap OOM
+const chunks = [];
+for (let i = 0; i < 1000000; i++) {
+  chunks.push({ a: i, b: String(i) });
+}`,
+      "utf8",
+    );
+
+    fs.writeFileSync(
+      tempCpuScript,
+      `// High CPU script that periodically yields back to event loop but eats CPU
+function runCpu() {
+  const start = Date.now();
+  while (Date.now() - start < 50) {
+    Math.sqrt(Math.random() * 1000);
+  }
+  setTimeout(runCpu, 10);
+}
+runCpu();`,
+      "utf8",
+    );
+
+    fs.writeFileSync(
+      tempEnvScript,
+      `// Try to read parent's secret variables or common keys
+console.log("SECRET_KEY:" + process.env.SECRET_API_TOKEN);
+console.log("DB_URI:" + process.env.DATABASE_PRIVATE_URI);
+console.log("NODE_ENV:" + process.env.NODE_ENV);`,
+      "utf8",
+    );
+
     if (!fs.existsSync(sandboxDir)) {
       fs.mkdirSync(sandboxDir, { recursive: true });
     }
@@ -69,6 +105,9 @@ try {
       tempEvilScript,
       tempTamperScript,
       tempFreezeScript,
+      tempOomScript,
+      tempCpuScript,
+      tempEnvScript,
     ];
     for (const f of files) {
       try {
@@ -163,5 +202,78 @@ try {
     expect(metrics.security_violations_total).toBe(1);
     expect(metrics.recent_violations[0].category).toBe("cpu");
     expect(metrics.recent_violations[0].action).toBe("guest_timeout");
+  });
+
+  test("should forcefully terminate or fail a guest script that exceeds the V8 memory limit", async () => {
+    const result = await GuestRunner.runScript(tempOomScript, {
+      maxMemoryMb: 16, // extremely low limit
+      timeoutMs: 4000,
+    });
+
+    // The script must crash or exit with a non-zero code when it hits the 16MB heap limit
+    expect(result.status).toBe("error");
+    expect(result.exitCode).not.toBe(0);
+    // Standard V8 OOM prints allocation failures to stdout/stderr
+    expect(result.stdout + result.stderr).toContain("Allocation failed");
+  });
+
+  test("should forcefully terminate a blocked guest script exceeding CPU time-slice budget", async () => {
+    const result = await GuestRunner.runScript(tempFreezeScript, {
+      cpuTimeBudgetMs: 300,
+      timeoutMs: 4000,
+    });
+
+    expect(result.status).toBe("error");
+    expect(result.signal).toBe("SIGKILL");
+    expect(result.error).toContain("exceeded cumulative CPU budget");
+    expect(result.error).toContain("(blocked)");
+
+    // Should log a cpu_exhaustion violation
+    const metrics = SandboxSecurityRegistry.getMetrics();
+    const violation = metrics.recent_violations.find(
+      (v) => v.category === "cpu" && v.action === "cpu_exhaustion",
+    );
+    expect(violation).toBeDefined();
+  });
+
+  test("should forcefully terminate a cooperative high-CPU guest script exceeding accumulated budget", async () => {
+    const result = await GuestRunner.runScript(tempCpuScript, {
+      cpuTimeBudgetMs: 400,
+      timeoutMs: 4000,
+    });
+
+    expect(result.status).toBe("error");
+    expect(result.signal).toBe("SIGKILL");
+    expect(result.error).toContain("exceeded cumulative CPU budget");
+    expect(result.error).toContain("(accumulated)");
+
+    // Should log a cpu_exhaustion violation
+    const metrics = SandboxSecurityRegistry.getMetrics();
+    const violation = metrics.recent_violations.find(
+      (v) => v.category === "cpu" && v.action === "cpu_exhaustion",
+    );
+    expect(violation).toBeDefined();
+  });
+
+  test("should completely mask and sanitize host environment variables in guest processes", async () => {
+    // Inject mock sensitive keys in host process environment
+    process.env.SECRET_API_TOKEN = "parent_secret_abc123";
+    process.env.DATABASE_PRIVATE_URI = "mongodb://parent_secret_db";
+
+    try {
+      const result = await GuestRunner.runScript(tempEnvScript, {
+        timeoutMs: 3000,
+      });
+
+      expect(result.status).toBe("success");
+      // Assert that parent secret keys resolve to undefined inside guest worker stdout
+      expect(result.stdout).toContain("SECRET_KEY:undefined");
+      expect(result.stdout).toContain("DB_URI:undefined");
+      // Whitelisted keys must still be preserved correctly
+      expect(result.stdout).toContain("NODE_ENV:test");
+    } finally {
+      delete process.env.SECRET_API_TOKEN;
+      delete process.env.DATABASE_PRIVATE_URI;
+    }
   });
 });

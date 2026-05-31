@@ -39,6 +39,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T23:59 · iter-0130 · GREEN · spec-139-140-141-sandbox-resource-limits
+- **Baseline:** `2e272db` on `feat/procedural-missions`; 1,209 Jest green.
+- **Move:** Implement SPEC-139, SPEC-140, and SPEC-141 to deliver V8 memory caps, cumulative CPU time-slice budget policing, and environment variable sanitization masking for host-isolated guest execution runs.
+- **Changed:**
+  - Configured `GuestRunner.js` to accept a `maxMemoryMb` option (defaulting to 128MB) and pass a filtered `--max-old-space-size=N` V8 flag dynamically in `execArgv`.
+  - Upgraded `GuestRunnerWorker.js` to emit high-frequency process CPU usage telemetry via an IPC heartbeat loop, unref-ing its timer to allow clean natural process exits.
+  - Implemented CPU time-slice budgets (`cpuTimeBudgetMs`, default 2s) in `GuestRunner.js` performing periodic checks to detect blocked event loops (no heartbeats) and kill pegged scripts recursively via ProcessReaper.
+  - Coded secure environment variable whitelist filtering in `GuestRunner.js` which strips host private keys, home variables, and DB URIs, exposing only whitelisted keys (like PATH and NODE_ENV).
+  - Unref-ed `IntegrityGuard` global pollution sweeping interval timer globally to allow clean natural process exits.
+  - Authored robust, deterministic unit and integration tests inside `src/net/GuestRunner.test.js` validating V8 Old Space heap limit OOM crashes, blocked event loop watchdog kills, cooperative high-CPU budget kills, and parent environment masking parameters.
+- **Decisions:** Restricting resources requires strict isolation. Passing V8 heap limits on spawn guarantees host safety without execution polling overheads. Heartbeat polling tracks cumulative CPU time across cooperatives, while blocked-loop checks detect pegs, fully preventing runaway execution workloads.
+- **Validation:** Executed `npm run agent:check` confirming a 100% green gate across 1,213 Jest tests, ESLint formatting, and strict `tsc --noEmit` type-checking.
+- **Next:** Proceed to Phase R (Replenish) to promote backlogs, perform structural boundaries audits, and formulate Wave v38 specifications.
+
 ## 2026-05-31T23:59 · iter-0129 · GREEN · spec-138-strict-path-jailing
 - **Baseline:** `7b90527` on `feat/procedural-missions`; 1,205 Jest green.
 - **Move:** Implement SPEC-138 to securely resolve and strictly constrain guest file access within active sandbox directories, whitelisting reads on dependency node_modules and native bootstrap contexts.

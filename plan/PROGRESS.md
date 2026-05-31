@@ -29,13 +29,14 @@ _**v23 re-audit baseline (2026-05-31, ENTIRE v23 blueprint shipped): 1,013 Jest 
 _**v28 re-audit baseline (2026-05-31): 1,129 Jest tests / 102 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; all previous specs completed with perfect Living Codex coverage.**_
 _**v35 re-audit baseline (2026-05-31, ENTIRE v35 blueprint shipped): 1,198 Jest tests / 115 suites green; all CPU watchdog, prototype sentry, and cockpit visual alarm gauges fully complete and green.**_
 _**v36 re-audit baseline (2026-05-31, ENTIRE v36 blueprint shipped): 1,209 Jest tests / 117 suites green; host-isolated process guest runner, dynamic egress firewall admin controls, and strict absolute filesystem path jailing all DONE.**_
+_**v37 re-audit baseline (2026-05-31, ENTIRE v37 blueprint shipped): 1,213 Jest tests / 117 suites green; V8 memory caps, cumulative CPU time-slice budget policing, and environment variable sanitization masking all DONE.**_
 
 
-## v37 — Sandbox Hardware Caps & Resource Guarding Wave (TO DO) — see [`ROADMAP.md`](ROADMAP.md)
+## v37 — Sandbox Hardware Caps & Resource Guarding Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
-- [ ] `139` Safe Guest V8 Memory Limits & Heap Size Allocation Control (enforce `--max-old-space-size` memory budgeting options during guest forks to protect hosts from heap leak exploits)
-- [ ] `140` Guest CPU Time-Slice Budget Monitor & Watchdog (police user/system CPU times on spawned guest processes, terminating infinite tight loops via recursive SIGKILL teardowns)
-- [ ] `141` Guest Sandbox Environment Variable Sanitization Mask (mask and sanitize all parent environment variables during child process forks, whitelisting only essential discovery paths)
+- [x] `139` Safe Guest V8 Memory Limits & Heap Size Allocation Control (enforce `--max-old-space-size` memory budgeting options during guest forks to protect hosts from heap leak exploits) — **done** (configured filtered execArgv arguments inside GuestRunner.js to pass --max-old-space-size bounds dynamically to child worker processes, and verified that guest scripts exceeding heap bounds trigger immediate V8 OOM crashed terminations under 155ms in unit tests)
+- [x] `140` Guest CPU Time-Slice Budget Monitor & Watchdog (police user/system CPU times on spawned guest processes, terminating infinite tight loops via recursive SIGKILL teardowns) — **done** (implemented a periodic user/system CPU usage IPC heartbeat loop inside GuestRunnerWorker.js and unref-ed its timer to allow clean natural worker process exits, developed blocked event-loop detection and accumulated CPU budget watchdogs inside GuestRunner.js, and verified correct SIGKILL process-tree reaping and violation logs inside unit tests)
+- [x] `141` Guest Sandbox Environment Variable Sanitization Mask (mask and sanitize all parent environment variables during child process forks, whitelisting only essential discovery paths) — **done** (implemented a secure whitelisted keys environment mask dictionary inside GuestRunner.js passing only essential variables like NODE_ENV and PATH while completely stripping sensitive home variables and API keys, and verified absolute variable masking using stdout assertions in GuestRunner.test.js)
 
 ## v36 — Autonomous Process Isolation & Path Jailing Hardening Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

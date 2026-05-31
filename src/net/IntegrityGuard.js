@@ -135,6 +135,9 @@ export const IntegrityGuard = {
       pollutionInterval = setInterval(() => {
         this.checkGlobalPollution();
       }, pollutionCheckIntervalMs);
+      if (pollutionInterval && typeof pollutionInterval.unref === "function") {
+        pollutionInterval.unref();
+      }
     }
   },
 

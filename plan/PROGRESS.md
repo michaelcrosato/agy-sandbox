@@ -37,7 +37,7 @@ _**v43 re-audit baseline (2026-05-31, ENTIRE v42 blueprint shipped): 1,247 Jest 
 
 ## v43 — Outfitting Presets, Interactive Onboarding, and Economic Invariants Wave (PENDING) — see [`ROADMAP.md`](ROADMAP.md)
 
-- [ ] `157` Outfitting Presets & Fittings Storage Server Modularization & Test Expansion (extract outfitting preset endpoints and validation checks from server monolith into modular handlers, authoring robust preset CRUD integration tests)
+- [x] `157` Outfitting Presets & Fittings Storage Server Modularization & Test Expansion (extract outfitting preset endpoints and validation checks from server monolith into modular handlers, authoring robust preset CRUD integration tests) — **done** (extracted handlePresetSave and handlePresetLoad from portHandlers.js and server.js, designed new handlePresetDelete CRUD endpoint with full validation constraints, and covered behavior in a brand new integration/unit test suite outfittingPresetHandlers.test.js with 10 passing tests)
 - [ ] `158` Guided Interactive Tutorial Mission & Flight-Deck Onboarding HUD Cards (build interactable multi-step guided interactive tutorial mission tracking throttle/lock/shoot/salvage/docking objectives, presented in an exquisite golden-glassmorphic onboarding HUD cockpit card)
 - [ ] `159` Centralized Commodities Schema Registry & Real-Time Production Chain Invariant Monitor Sentry (establish centralized commodities validation schema and heartbeat monitor sweeps ensuring non-negative assets and safe margins, logging anomalies to SandboxSecurityRegistry)
 

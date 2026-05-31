@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T13:47:43.289Z",
+  "generatedAt": "2026-05-31T13:49:21.527Z",
   "stats": {
-    "totalSourceFiles": 100,
-    "totalTestFiles": 128,
+    "totalSourceFiles": 101,
+    "totalTestFiles": 129,
     "totalSpecFiles": 165,
-    "totalLoc": 22517,
-    "totalTests": 1655,
+    "totalLoc": 22549,
+    "totalTests": 1663,
     "untestedCoreFilesCount": 6
   },
   "files": [
@@ -2662,67 +2662,86 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/server/outfittingPresetHandlers.js",
+      "loc": 192,
+      "classes": [],
+      "exports": [
+        {
+          "name": "handlePresetSave",
+          "type": "function",
+          "jsdoc": "/**\n* Saves current outfitting configuration to a custom preset slot.\n* @param {Object} clientObj - The socket client connection object.\n* @param {number} presetIndex - Index of the preset to save (0, 1, or 2).\n* @param {string|null} [presetName=null] - Custom name for the preset.\n*/",
+          "line": 11
+        },
+        {
+          "name": "handlePresetLoad",
+          "type": "function",
+          "jsdoc": "/**\n* Loads a custom preset configuration, enforcing transactions, slots, power constraints, and stock availability.\n* @param {Object} clientObj - The socket client connection object.\n* @param {number} presetIndex - Index of the preset to load (0, 1, or 2).\n* @param {Object} targetPlanet - The planet entity player is landed on.\n* @param {Object|null} [room=null] - Dynamic GameInstance room.\n*/",
+          "line": 51
+        },
+        {
+          "name": "handlePresetDelete",
+          "type": "function",
+          "jsdoc": "/**\n* Deletes a custom preset from a slot.\n* @param {Object} clientObj - The socket client connection object.\n* @param {number} presetIndex - Index of the preset to delete (0, 1, or 2).\n*/",
+          "line": 164
+        }
+      ],
+      "testFile": "src/server/outfittingPresetHandlers.test.js",
+      "testCasesCount": 14,
+      "referencingSpecs": [
+        "plan/specs/157_outfitting_presets_modularization.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
       "path": "src/server/portHandlers.js",
-      "loc": 689,
+      "loc": 529,
       "classes": [],
       "exports": [
         {
           "name": "handleOutfitBuy",
           "type": "function",
           "jsdoc": "/**\n* Handles purchase of an outfit from a planet.\n* @param {Object} clientObj - The socket client connection object.\n* @param {string} outfitName - Name of the outfit to purchase.\n* @param {Object} targetPlanet - The planet entity.\n* @param {Object|null} [room=null] - Dynamic GameInstance room.\n*/",
-          "line": 28
+          "line": 27
         },
         {
           "name": "handleShipBuy",
           "type": "function",
           "jsdoc": "/**\n* Handles purchase of a new ship hull from a shipyard.\n* @param {Object} clientObj - The socket client connection object.\n* @param {string} shipName - Name of the ship hull type.\n* @param {Object} targetPlanet - The planet entity.\n* @param {Object|null} [room=null] - Dynamic GameInstance room.\n*/",
-          "line": 132
+          "line": 131
         },
         {
           "name": "handleEscortCommand",
           "type": "function",
           "jsdoc": "/**\n* Handles transmitting tactical orders to player escorts.\n* @param {Object} clientObj - The socket client connection object.\n* @param {Object} msg - The command message payload containing \"command\" and optional \"targetId\".\n* @param {Object} room - Dynamic GameInstance room.\n*/",
-          "line": 186
+          "line": 185
         },
         {
           "name": "handleVoucherRedeem",
           "type": "function",
           "jsdoc": "/**\n* Handles redemption of bounty vouchers.\n* @param {Object} clientObj - Client connection object.\n* @param {Object|null} [room=null] - Dynamic room.\n*/",
-          "line": 217
+          "line": 216
         },
         {
           "name": "handleOutfitSell",
           "type": "function",
           "jsdoc": "/**\n* Handles sale of an equipped outfit back to the planet.\n* @param {Object} clientObj - The socket client connection object.\n* @param {string} outfitName - Name of the outfit to sell.\n* @param {Object} targetPlanet - The planet entity.\n* @param {Object|null} [room=null] - Dynamic GameInstance room.\n*/",
-          "line": 264
-        },
-        {
-          "name": "handlePresetSave",
-          "type": "function",
-          "jsdoc": "/**\n* Saves current outfitting configuration to a custom preset slot.\n* @param {Object} clientObj - The socket client connection object.\n* @param {number} presetIndex - Index of the preset to save (0, 1, or 2).\n* @param {string|null} [presetName=null] - Custom name for the preset.\n*/",
-          "line": 349
-        },
-        {
-          "name": "handlePresetLoad",
-          "type": "function",
-          "jsdoc": "/**\n* Loads a custom preset configuration, enforcing transactions, slots, power constraints, and stock availability.\n* @param {Object} clientObj - The socket client connection object.\n* @param {number} presetIndex - Index of the preset to load (0, 1, or 2).\n* @param {Object} targetPlanet - The planet entity player is landed on.\n* @param {Object|null} [room=null] - Dynamic GameInstance room.\n*/",
-          "line": 389
+          "line": 263
         },
         {
           "name": "handleOreRefine",
           "type": "function",
           "jsdoc": "/**\n* Handles refining raw ore into minerals (or machinery) on command.\n* @param {Object} clientObj - The socket client connection object.\n* @param {number} quantity - Quantity of raw 'ore' to refine.\n* @param {string} targetCommodity - Target refined commodity.\n* @param {Object} room - Dynamic GameInstance room.\n*/",
-          "line": 504
+          "line": 344
         },
         {
           "name": "handleDistressBeacon",
           "type": "function",
           "jsdoc": "/**\n* Handles the distress beacon trigger.\n* @param {Object} clientObj - The socket client connection object.\n* @param {Object} room - The Dynamic GameInstance room.\n*/",
-          "line": 569
+          "line": 409
         }
       ],
       "testFile": "src/server/portHandlers.test.js",
-      "testCasesCount": 38,
+      "testCasesCount": 32,
       "referencingSpecs": [
         "plan/specs/046_modularize_port_mission_handlers.md",
         "plan/specs/050_wingman_tactical_formation_controls.md",
@@ -4928,13 +4947,6 @@
         "spec": "plan/specs/145_secure_guest_rpc_sentry.md",
         "brokenFiles": [
           "src/net/GuestRpcSentry.test.js"
-        ]
-      },
-      {
-        "spec": "plan/specs/157_outfitting_presets_modularization.md",
-        "brokenFiles": [
-          "src/server/outfittingPresetHandlers.js",
-          "src/server/outfittingPresetHandlers.test.js"
         ]
       },
       {

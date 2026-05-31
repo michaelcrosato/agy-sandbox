@@ -44,6 +44,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-05-31T13:50 · iter-0137 · GREEN · spec-157-outfitting-presets-modularization
+
+- **Baseline:** `9a3f719` on `feat/procedural-missions`; 1,252 Jest green.
+- **Move:** Implement SPEC-157 to extract outfitting preset endpoints, request processing, and validation bounds from the server monolith into a dedicated, unit-tested modular system.
+- **Changed:**
+  - Decoupled `handlePresetSave` and `handlePresetLoad` from `src/server/portHandlers.js` into a new modular file `src/server/outfittingPresetHandlers.js`.
+  - Engineered a brand new `handlePresetDelete` CRUD message handler to support complete presets lifecycle deletions inside `src/server/outfittingPresetHandlers.js`.
+  - Updated `src/server.js` imports and routed the dynamic websocket message dispatchers for `preset_save`, `preset_load`, and the new `preset_delete` commands.
+  - Removed outdated preset test cases from `src/server/portHandlers.test.js`.
+  - Authored a comprehensive new unit and integration test suite `src/server/outfittingPresetHandlers.test.js` verifying preset saves, naming defaults, credits delta transactions, power limits, slot capacities, and deletions.
+- **Decisions:** Separating preset configuration management from general spaceport action routers conforms to modular design principles and significantly reduces server monolith complexity.
+- **Validation:** Executed `npm run agent:check` confirming a 100% green gate across 1,252 Jest tests, ESLint, Prettier, and strict type check compiles.
+- **Next:** Claim and implement SPEC-158 to build the interactive guided onboarding tutorial mission and gold-glassmorphic Cockpit HUD cards.
+
 ## 2026-05-31T13:46 · iter-0136 · GREEN · spec-156-faction-vengeance-hunter-spawner
 
 - **Baseline:** `3bd2134` on `feat/procedural-missions`; 1,247 Jest green.

@@ -49,11 +49,14 @@ import {
   handleShipBuy,
   handleVoucherRedeem,
   handleOutfitSell,
-  handlePresetSave,
-  handlePresetLoad,
   handleOreRefine,
   handleDistressBeacon,
 } from "./server/portHandlers.js";
+import {
+  handlePresetSave,
+  handlePresetLoad,
+  handlePresetDelete,
+} from "./server/outfittingPresetHandlers.js";
 import {
   handleMissionAccept,
   handleMissionAbandon,
@@ -1974,6 +1977,8 @@ wss.on("connection", (ws, req) => {
         clientObj.planetLandedOn,
         room,
       );
+    } else if (msg.type === "preset_delete") {
+      handlePresetDelete(clientObj, msg.presetIndex);
     } else if (msg.type === "ship_buy") {
       handleShipBuy(clientObj, msg.shipName, clientObj.planetLandedOn, room);
     } else if (

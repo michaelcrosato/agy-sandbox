@@ -3,43 +3,66 @@
 ## Page 1: Rules of the Log (Specification v1.0)
 
 ### 1. Conformance Tier Matrix
+
 - **MUST / REQUIRED**: Mandatory. Failing this item makes the file non-compliant.
 - **SHOULD / RECOMMENDED**: Strong recommendation. Valid exceptions can exist, but implications must be understood and noted.
 - **MAY / OPTIONAL**: Permissive. Truly optional fields or sections.
 - **MUST NOT / SHALL NOT**: Absolute prohibition. Doing this breaks compliance or forensic safety.
 
 ### 2. File and Ordering Constraints
+
 - This file (`docs/LOG.md`) **MUST** be the single source of truth for repository history.
 - Root-level log files or duplicate files (like `LOOP_LOG.md`) **MUST NOT** exist in the workspace.
-- Entries **MUST** be written in **newest-first (reverse-chronological)** order. 
+- Entries **MUST** be written in **newest-first (reverse-chronological)** order.
 - New entries **MUST** be programmatically prepended immediately below the `== LOG-ANCHOR ==` line.
 - Agents and humans **MUST NOT** free-hand rewrite or hand-edit older historical entries.
 
 ### 3. Entry Content & Structure Rules
+
 - An entry **MUST** be generated only when product code changes, gate status transitions, or a material architecture decision is made.
 - Relational or no-op loop triggers that result in no codebase modification **MUST NOT** log an entry.
 - Every entry **MUST** use this strict multiline markdown schema:
   `## YYYY-MM-DDThh:mm · iter-NNNN · STATUS · lowercase-kebab-slug`
-  * `- **Baseline:**` (Git SHA and starting state)
-  * `- **Move:**` (One sentence defining the loop iteration objective)
-  * `- **Changed:**` (Bulleted changes list)
-  * `- **Decisions:**` (tradeoffs made, or "none")
-  * `- **Validation:**` (Command executed and its precise exit/response text)
-  * `- **Notes:**` (**OPTIONAL / MAY** — Sandbox area for agent/human thoughts, commentary, or context)
-  * `- **Next:**` (1-3 subsequent engineering paths)
+  - `- **Baseline:**` (Git SHA and starting state)
+  - `- **Move:**` (One sentence defining the loop iteration objective)
+  - `- **Changed:**` (Bulleted changes list)
+  - `- **Decisions:**` (tradeoffs made, or "none")
+  - `- **Validation:**` (Command executed and its precise exit/response text)
+  - `- **Notes:**` (**OPTIONAL / MAY** — Sandbox area for agent/human thoughts, commentary, or context)
+  - `- **Next:**` (1-3 subsequent engineering paths)
 
 ### 4. Status Vocabulary
-The `STATUS` token in the header line **MUST** be exactly one of: 
+
+The `STATUS` token in the header line **MUST** be exactly one of:
 `GREEN` (Passed) | `AMBER` (Caveats) | `RED` (Failed) | `BLOCKED` (Waiting) | `INCIDENT` (System Error) | `ROLLBACK` (Reset).
 
 ### 5. Size Hard Boundaries
+
 - Individual text lines **MUST NOT** exceed 2,000 characters (guards against single-line data dumps).
 - Lines **SHOULD** wrap at or under 120 characters for clean terminal and diff presentation where practical.
 - Entries **SHOULD** target 150–350 words, and **MUST NOT** exceed 500 words unless labeled an `INCIDENT` or `ROLLBACK`.
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
-== LOG-ANCHOR ==
+  == LOG-ANCHOR ==
+
+## 2026-05-31T23:59 · iter-0131 · GREEN · spec-145-146-147-guest-rpc-workspace-drift-sentry
+
+- **Baseline:** `ed83216` on `feat/procedural-missions`; 1,216 Jest green.
+- **Move:** Implement SPEC-145, SPEC-146, and SPEC-147 to establish schema-validated Guest RPC channel, workspace drift auditing, self-healing sandbox restoration, and golden-glassmorphic cockpit dashboard HUD card.
+- **Changed:**
+  - Designed `GuestRpcSentry.js` validating permitted RPC queries (`GET_SECTOR_STATE`, `GET_FACTION_STANDINGS`) and blocking prototype-pollution key sequences.
+  - Wired parent process IPC listener inside `GuestRunner.js` and exposed `globalThis.guestRpcQuery` inside `GuestRunnerWorker.js`.
+  - Created `WorkspaceDriftSentry.js` and `WorkspaceDriftSentry.test.js` to recursive-snapshot sandbox workspaces, audit drifts (added, modified, deleted), and restore baseline files.
+  - Excluded `security_audit_child.json` and persistent security logs from being purged during workspace self-healing in `WorkspaceDriftSentry.js`.
+  - Integrated `WorkspaceDriftSentry` into `GuestRunner.js` executing automated pre-run snapshots and post-run auditing/self-healing cleanups.
+  - Exposed cumulative RPC request, block, and self-healing restoration metrics inside `/metrics` under `src/server.js`.
+  - Integrated gold-glassmorphic `Guest RPC & Integrity Sentry` cockpit card on `dashboard-codex.html` rendering circular workspace purity SVG ring, live RPC feeds, and offline simulation mode.
+  - Extended integration test suite inside `src/server/codexDashboard.integration.test.js` to assert structural DOM presence of all new panel elements.
+- **Decisions:** Workspace self-healing must keep security audit files intact for telemetry and compliance analysis. Using a promise-based IPC wrapper with strict schemas prevents arbitrary code escapes or prototype pollution. Redefining `resolve` dynamically in `runScript` provides a centralized post-run self-healing integration hook with minimal code mutations.
+- **Validation:** Executed `npm run agent:check` confirming a 100% green gate across all 118 test suites and 1,222 tests, Prettier formatting, ESLint rules, and type-checking.
+- **Next:** Proceed to Phase R (Replenish) to promote backlogs, perform structural boundaries audits, and formulate Wave v40 specifications on disk.
 
 ## 2026-05-31T23:59 · iter-0130 · GREEN · spec-139-140-141-sandbox-resource-limits
+
 - **Baseline:** `2e272db` on `feat/procedural-missions`; 1,209 Jest green.
 - **Move:** Implement SPEC-139, SPEC-140, and SPEC-141 to deliver V8 memory caps, cumulative CPU time-slice budget policing, and environment variable sanitization masking for host-isolated guest execution runs.
 - **Changed:**
@@ -54,6 +77,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Proceed to Phase R (Replenish) to promote backlogs, perform structural boundaries audits, and formulate Wave v38 specifications.
 
 ## 2026-05-31T23:59 · iter-0129 · GREEN · spec-138-strict-path-jailing
+
 - **Baseline:** `7b90527` on `feat/procedural-missions`; 1,205 Jest green.
 - **Move:** Implement SPEC-138 to securely resolve and strictly constrain guest file access within active sandbox directories, whitelisting reads on dependency node_modules and native bootstrap contexts.
 - **Changed:**
@@ -69,6 +93,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Proceed to Phase R (Replenish) to promote backlogs, perform codebase boundaries audit, and formulate Wave v37 specifications.
 
 ## 2026-05-31T23:55 · iter-0128 · GREEN · spec-137-dynamic-egress-firewall-admin
+
 - **Baseline:** `12ff9ba` on `feat/procedural-missions`; 1,202 Jest green.
 - **Move:** Implement SPEC-137 to deliver dynamic egress firewall administrative controls, exposing CORS preflights, zero-downtime Whitelist/Block rules modification endpoints, and an interactive gold-glassmorphic sentry dashboard cockpit panel.
 - **Changed:**
@@ -82,6 +107,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Transition to SPEC-138 implementation to deliver strict sandboxed path jailing and whitelisted reads.
 
 ## 2026-05-31T23:45 · iter-0127 · GREEN · spec-136-host-isolated-process-guest-runner
+
 - **Baseline:** `b7cd8b0` on `feat/procedural-missions`; 1,198 Jest green.
 - **Move:** Implement SPEC-136 to securely execute untrusted guest scripts in a dedicated low-privilege child process with environment controls, pre-activating ProcessSentinel/IntegrityGuard boundaries, and enforcing hard SIGKILL watchdog budgets.
 - **Changed:**
@@ -96,6 +122,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Transition to SPEC-137 implementation for Dynamic Egress Firewall Admin visual whitelisting card & server control API.
 
 ## 2026-05-31T23:30 · iter-0126 · GREEN · cycle-36-replenish-spec-136-137-138
+
 - **Baseline:** `4f17452` on `feat/procedural-missions`; 1,198 Jest green.
 - **Move:** Perform Cycle 36 Phase R (Replenish) to promote backlogs, conduct sandbox boundary audits, and formulate the new Wave v36 specifications.
 - **Changed:**
@@ -110,6 +137,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Proceed with SPEC-136 implementation under a dedicated branch to build the host-isolated guest runner.
 
 ## 2026-05-31T23:15 · iter-0125 · GREEN · spec-134-global-prototype-tamper-proofing-integrity-guard
+
 - **Baseline:** `1f3c6a0` on `feat/procedural-missions`; 1,194 Jest green.
 - **Move:** Implement SPEC-134 to recursively freeze all core JavaScript built-in constructors and prototypes, monkey-patch Object mutation APIs to intercept prototype pollution, and periodically sweep global scope variable pollution.
 - **Changed:**
@@ -125,6 +153,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Proceed with SPEC-135 implementation to design and build a golden-glassmorphic cockpit dashboard visualizer gauge for event loop heartbeat latency and prototype/tamper sentry logs.
 
 ## 2026-05-31T22:45 · iter-0124 · GREEN · spec-133-autonomic-cpu-exhaustion-watchdog
+
 - **Baseline:** `1f3c6a0` on `feat/procedural-missions`; 1,191 Jest green.
 - **Move:** Implement SPEC-133 to develop an autonomic background worker-thread main event loop watchdog preventing CPU exhaustion and synchronous guest freeze exploits.
 - **Changed:**
@@ -139,6 +168,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Proceed with SPEC-134 implementation to design and build global prototype tamper-proofing and object integrity guards.
 
 ## 2026-05-31T22:40 · iter-0123 · GREEN · spec-131-centralized-security-audit-ledger
+
 - **Baseline:** `d7fd24e` on `feat/procedural-missions`; 1,190 Jest green.
 - **Move:** Implement SPEC-131 to establish a centralized security registry SandboxSecurityRegistry.js that captures filesystem, egress, and rate limiter blocks into a persistent JSON ledger on disk, exposing these metrics in /metrics.
 - **Changed:**
@@ -154,6 +184,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Proceed with SPEC-132 implementation for the Golden-Glassmorphic Codex "Containment Breaches Log" Console.
 
 ## 2026-05-31T22:30 · iter-0122 · GREEN · spec-130-autonomic-process-tree-reaper
+
 - **Baseline:** `5d9f075` on `feat/procedural-missions`; 1,186 Jest green.
 - **Move:** Implement SPEC-130 to automatically register spawned child processes in ProcessReaper and recursively kill nested process trees on Windows and Unix.
 - **Changed:**
@@ -166,6 +197,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Proceed with SPEC-131 implementation for the Centralized Security Audit Registry & Observability Ledger.
 
 ## 2026-05-31T22:20 · iter-0121 · GREEN · cycle-33-replenish-spec-127-128-129
+
 - **Baseline:** `cec3c59` on `feat/procedural-missions`; 1,175 Jest green.
 - **Move:** Perform Cycle 32 Phase R (Replenish) to promote backlog ideas and establish Wave v33 blueprints.
 - **Changed:**
@@ -178,6 +210,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Claim and execute SPEC-127 (Inbound Connection Flood Protection & Active IP Sentry) under a dedicated branch.
 
 ## 2026-05-31T22:15 · iter-0120 · GREEN · cycle-32-spec-125-126-hot-config-reload-egress-dashboard
+
 - **Baseline:** `7f5116b` on `feat/procedural-missions`; 1,171 Jest green.
 - **Move:** Implement SPEC-125 (Zero-Downtime Hot Config Reloading Engine) and SPEC-126 (Egress Firewall Rules Cockpit Dashboard Card) to complete Wave v32.
 - **Changed:**
@@ -194,6 +227,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Transition to perpetual Replenish phase [R] to promote backlogs and generate Wave v33 blueprints.
 
 ## 2026-05-31T22:00 · iter-0119 · GREEN · cycle-32-spec-124-telemetry-anomaly-detector
+
 - **Baseline:** `cb59136` on `feat/procedural-missions`; 1,162 Jest green.
 - **Move:** Implement SPEC-124 (Automated Telemetry Anomaly Detector & Z-Score Sentry) to detect latency, memory allocation, and connection spikes.
 - **Changed:**
@@ -208,6 +242,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Claim and execute SPEC-125 (Zero-Downtime Hot Config Reloading Engine).
 
 ## 2026-05-31T21:58 · iter-0118 · GREEN · cycle-31-spec-121-122-123-memory-leak-cluster-determinism
+
 - **Baseline:** `4ffe339` on `feat/procedural-missions`; 1,140 Jest green.
 - **Move:** Implement SPEC-121 (Memory Leak Sentry), SPEC-122 (Cluster Dashboard Stream), and SPEC-123 (Physics Determinism Audit Sentry) to complete Wave v31.
 - **Changed:**
@@ -222,6 +257,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Replenish the next engineering wave of specifications (Phase R).
 
 ## 2026-05-31T21:44 · iter-0117 · GREEN · cycle-28-spec-117-websocket-rate-limiter-telemetry
+
 - **Baseline:** `b01a583` on `feat/procedural-missions`; 1,139 Jest green.
 - **Move:** Implement SPEC-117 (Zero-Trust WebSocket Rate Limiter & Observability Telemetry).
 - **Changed:**
@@ -235,6 +271,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Replenish the next engineering wave of specifications (Phase R).
 
 ## 2026-05-31T21:42 · iter-0116 · GREEN · cycle-28-spec-116-resource-backpressure-limiter
+
 - **Baseline:** `ef63b34` on `feat/procedural-missions`; 1,134 Jest green.
 - **Move:** Implement SPEC-116 (Resource Allocation Limits & Memory/CPU Backpressure Sentinels).
 - **Changed:**
@@ -248,6 +285,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Proceed to SPEC-117 (Zero-Trust WebSocket Rate Limiter & Observability Telemetry).
 
 ## 2026-05-31T21:40 · iter-0115 · GREEN · cycle-28-spec-115-ephemeral-workspace-sandbox
+
 - **Baseline:** `8de9b47` on `feat/procedural-missions`; 1,130 Jest green.
 - **Move:** Implement SPEC-115 (Ephemeral Workspace Isolation Layer & Sandbox Cloner).
 - **Changed:**
@@ -260,6 +298,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Proceed to SPEC-116 (Resource Allocation Limits & Memory/CPU Backpressure Sentinels).
 
 ## 2026-05-31T21:32 · iter-0114 · GREEN · cycle-28-spec-114-faction-decay-chronicle
+
 - **Baseline:** `eb7c021` on `feat/procedural-missions`; 1,129 Jest green.
 - **Move:** Implement SPEC-114 (Faction Standing Decays & Real-Time Galactic Chronicles Integration).
 - **Changed:**
@@ -268,7 +307,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
   - Added a new exception-proof, JSDoc-compliant helper `findNicknameForPlayer` in `galaxyTicker.js`
     resolving client IDs to nicknames from online clients or active ship entities.
   - Generates dynamic, context-specific news messages such as: `"Commander Valeria's standing with
-    Rim Cartel drifted toward neutral due to inactive standings decay."`
+Rim Cartel drifted toward neutral due to inactive standings decay."`
   - Wrote a comprehensive Jest unit test inside `src/server/galaxyTicker.test.js` validating
     correct GalacticChronicle triggers, categories, titles, and descriptions on decay pulses.
 - **Decisions:** Integrated standing decays under the `"system"` category inside the chronicle to
@@ -276,7 +315,6 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Validation:** Executed `npm run agent:check` confirming that Prettier, ESLint, TypeScript
   checkJs, and all 1,130 Jest tests pass 100% green.
 - **Next:** Transition to SPEC-113 (Authoritative Multi-Process Cluster Test Harness & Orchestration Smoke).
-
 
 ## 2026-05-31T02:03 · iter-0112 · GREEN · spec-105-interactive-onboarding-tutorial
 
@@ -293,6 +331,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** REPLENISH phase — audit for next v26 blueprint specs; focus on remaining P8 game-feel items and residual tech debt
 
 ## 2026-05-31T06:20 · iter-0111 · GREEN · cycle-25-spec-106-sandbox-containment-port-reclaimer
+
 - **Baseline:** `13dfb19` on `feat/procedural-missions`; 1,025 Jest green.
 - **Move:** Implement SPEC-106 (Sandbox Containment: Strict Process Spawn Sentinel & Self-Healing Port Reclaimer).
 - **Changed:**
@@ -308,6 +347,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Transition to Cycle 25 Iteration 2 to implement SPEC-105 (Interactive Onboarding Tutorial & Cockpit HUD Guide).
 
 ## 2026-05-31T05:40 · iter-0110 · GREEN · cycle-24-spec-103-104-server-modularization-codex-hygiene
+
 - **Baseline:** `dca04cb` on `feat/procedural-missions`; 1,013 Jest green.
 - **Move:** Implement SPEC-103 (Modularize WebSocket gameplay action routines) and SPEC-104 (Living Codex Hygiene & JSDoc Audit).
 - **Changed:**
@@ -322,6 +362,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Transition to Cycle 25 Phase R (Replenish) to promote backlog items, run AUDIT and RESEARCH, and author the next wave of specifications.
 
 ## 2026-05-31T02:30 · iter-0109 · GREEN · cycle-23-spec-098-emergent-faction-territory-control
+
 - **Baseline:** `cdca04c` on `feat/procedural-missions`; 989 Jest green.
 - **Move:** Implement Emergent Faction Territory Control & Dynamic Sector Borders (SPEC-098).
 - **Changed:**
@@ -343,6 +384,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
   - Author and execute next-wave specifications inside the perpetual R/Replenish loop.
 
 ## 2026-05-31T01:45 · iter-0108 · GREEN · cycle-23-spec-099-centralized-commodities-schema-registry
+
 - **Baseline:** `a1db4a0` on `feat/procedural-missions`; 984 Jest green.
 - **Move:** Implement Centralized Commodities & Unified Schema Registry (SPEC-099).
 - **Changed:**
@@ -363,6 +405,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
   - File/execute Phase 1 emerge operational specs (SPEC-098 Emergent Faction Territory Control & Dynamic Sector Borders).
 
 ## 2026-05-31T01:30 · iter-0107 · GREEN · cycle-23-spec-101-living-codex-semantic-registry
+
 - **Baseline:** `5214232` on `feat/procedural-missions`; 979 Jest green.
 - **Move:** Implement the Self-Synchronizing Codebase "Living Codex" & Semantic Registry (SPEC-101).
 - **Changed:**
@@ -379,6 +422,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
   - Execute SPEC-099 (Centralized Commodities & Unified Schema Registry) under Cycle 23.
 
 ## 2026-05-31T01:10 · iter-0106 · GREEN · cycle-22-spec-097-guest-isolation-api-limiter
+
 - **Baseline:** `b53cd1c` on `feat/procedural-missions`; 968 Jest green.
 - **Move:** Implement the Sandboxed Outbound API Rate Limiter & Network Domain Sentinel (SPEC-097).
 - **Changed:**
@@ -399,6 +443,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
   - Transition to Replenish Phase (Phase R), re-audit baseline, and author the next wave of specs (Cycle 23).
 
 ## 2026-05-31T00:45 · iter-0105 · GREEN · cycle-22-spec-096-galactic-chronicle
+
 - **Baseline:** `6782496` on `feat/procedural-missions`; 961 Jest green.
 - **Move:** Implement the persistent GalacticChronicle ledger and neon-gold timeline sidebar (SPEC-096).
 - **Changed:**
@@ -413,6 +458,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Proceed to SPEC-097 (Sandboxed Outbound API Rate Limiter & Network Domain Sentinel).
 
 ## 2026-05-31T00:15 · iter-0104 · GREEN · cycle-22-spec-095-concurrency-stress-latency
+
 - **Baseline:** `0f7de03` on `feat/procedural-missions`; 953 Jest green.
 - **Move:** Implement Concurrency Stress-Testing load spawner and Network Latency Injector (SPEC-095).
 - **Changed:**
@@ -425,6 +471,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Validation:** `npm run agent:check` → 955 Jest tests + 57 Vitest client tests green with 0 ESLint errors and typecheck green.
 
 ## 2026-05-31T00:00 · iter-0103 · GREEN · cycle-21-spec-094-observability-sandbox-telemetry
+
 - **Baseline:** `1e6a9ea` on `feat/procedural-missions`; 947 Jest green.
 - **Move:** Implement Sandbox Resource Telemetry Recorder & observabilty dashboard integrations (SPEC-094).
 - **Changed:**
@@ -437,6 +484,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Validation:** `npm run agent:check` → 953 Jest tests + 57 Vitest client tests green with 0 ESLint warnings and typecheck green.
 
 ## 2026-05-30T23:45 · iter-0102 · GREEN · cycle-21-spec-091-invariant-verifier-healing
+
 - **Baseline:** `652c124` on `feat/procedural-missions`; 943 Jest green.
 - **Move:** Implement Authoritative Game Invariant Verifier & Heartbeat Self-Healing Loop (SPEC-091).
 - **Changed:**
@@ -445,7 +493,9 @@ The `STATUS` token in the header line **MUST** be exactly one of:
   - Coded Jest unit suite `src/engine/InvariantVerifier.test.js` validating all invariant boundaries, healing actions, and stat corrections.
 - **Decisions:** Used deterministic sort keys during cargo pruning to keep self-healing perfectly repeatable. Integrated with `Outfitting.js` to automatically reduce ship physical stats upon fittings un-equipping.
 - **Validation:** `npm run agent:check` → 947 Jest tests + 57 Vitest client tests green with 0 ESLint warnings on the new code.
+
 ## 2026-05-30T23:30 · iter-0101 · GREEN · cycle-21-spec-093-workspace-sanitize-latency-monitor
+
 - **Baseline:** `0cc5d78` on `feat/procedural-missions`; 936 Jest green.
 - **Move:** Implement State Leakage Defender (SPEC-093) and Event-Loop Latency Monitoring (SPEC-090).
 - **Changed:**
@@ -456,7 +506,9 @@ The `STATUS` token in the header line **MUST** be exactly one of:
   - Created Jest suites `src/net/WorkspaceSanitizer.test.js` and `src/net/LatencyMonitor.test.js` along with server-level integration tests.
 - **Decisions:** Made sanitization run by default in Git lifecycle hooks to prevent untracked state drift; isolated all temp visual artifacts in `.gitignore`.
 - **Validation:** `npm run agent:check` → 943 Jest tests + 57 Vitest client + 3 Vitest browser tests completely green.
+
 ## 2026-05-30T23:15 · iter-0100 · GREEN · cycle-21-spec-092-zombie-process-reaper
+
 - **Baseline:** `0cc5d78` on `feat/procedural-missions`; 933 Jest + 57 Vitest client tests green.
 - **Move:** Implement Automated Zombie Process Reaper & Orphan Port Cleanup Subsystem (SPEC-092).
 - **Changed:**
@@ -470,6 +522,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Claim and execute SPEC-093 state leakage sanitizer to completely clean local filesystem untracked noise.
 
 ## 2026-05-30T23:10 · iter-0099 · GREEN · cycle-21-replenish-sandbox-architecture-sec
+
 - **Baseline:** `44e6030` on `feat/procedural-missions`; 933 Jest + 57 Vitest client + 3 Vitest browser tests green.
 - **Move:** Initiate Cycle 21 Phase R (Replenish) targeting hyper-secure, deterministic agent sandbox infrastructure.
 - **Changed:**
@@ -484,6 +537,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Claim and execute SPEC-092 to build the ProcessReaper and powershell cleanup reapers.
 
 ## 2026-05-30T23:05 · iter-0098 · GREEN · cycle-20-spec-089-zero-trust-websocket-validation
+
 - **Baseline:** `847e565` on `feat/procedural-missions`; 921 Jest + 57 Vitest client tests green.
 - **Move:** Implement Zero-Trust WebSocket Input Schema Validation (SPEC-089) with performant parameters sanitation.
 - **Changed:**
@@ -498,6 +552,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Claim and implement SPEC-090 to monitor event-loop latency and trigger dynamic packet-shedding backpressures.
 
 ## 2026-05-30T23:00 · iter-0097 · GREEN · cycle-20-replenish-zero-trust-latency-invariants
+
 - **Baseline:** `515e672` on `feat/procedural-missions`; 921 Jest + 57 Vitest client + 3 Vitest browser tests green.
 - **Move:** Initiate Cycle 20 Phase R (Replenish): audit stack, search 2026 guidelines, and author SPEC-089, SPEC-090, and SPEC-091.
 - **Changed:**
@@ -512,6 +567,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Create a dedicated branch, claim SPEC-089, build `src/net/SchemaValidator.js`, and wire it into the websocket inbound handler.
 
 ## 2026-05-30T22:45 · iter-0096 · GREEN · cycle-19-stargate-navigation-overlay
+
 - **Baseline:** `8f26045` on `feat/procedural-missions`; 921 Jest + 54 Vitest client tests green.
 - **Move:** Implement stargate navigation NAV-computer HUD overlay (SPEC-088) with shortest path BFS gate routes.
 - **Changed:**
@@ -525,6 +581,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Push feature branch `feat/procedural-missions` to origin, conclude Cycle 19, and initiate Cycle 20.
 
 ## 2026-05-30T22:42 · iter-0095 · GREEN · cycle-19-npc-smuggler-fleets-evasion
+
 - **Baseline:** `5aee377` on `feat/procedural-missions`; 917 Jest tests green.
 - **Move:** Implement NPC smuggler fleets & underworld evasion/jamming trader AI (SPEC-086).
 - **Changed:**
@@ -539,6 +596,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Proceed with SPEC-088 stargate slide-out HUD navigation overlay and neon-purple holographic visual gates.
 
 ## 2026-05-30T22:40 · iter-0094 · GREEN · cycle-19-dynamic-trade-profit-perception
+
 - **Baseline:** `b1d0b43` on `feat/procedural-missions`; 912 Jest tests green.
 - **Move:** Implement standings-aware dynamic trade profit metric in AI perception (SPEC-087).
 - **Changed:**
@@ -551,6 +609,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Proceed with implementing SPEC-086 (NPC Smuggler Fleets & Underworld Trader AI) and SPEC-088 (Stargate Navigation Overlay HUD).
 
 ## 2026-05-30T14:35 · iter-0093 · GREEN · cycle-18-client-side-entity-interpolation
+
 - **Baseline:** `49e61c4` on `feat/procedural-missions`; 916 Jest + 54 Vitest tests green.
 - **Move:** Implement client-side entity interpolation (SPEC-083) to smooth remote ship positions and heading rotations under network updates.
 - **Changed:**
@@ -566,6 +625,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Proceed with committing these changes to the feature branch for human review and final verification.
 
 ## 2026-05-30T18:40 · iter-0092 · GREEN · cycle-17-outlaw-black-markets-trade-advisor
+
 - **Baseline:** `92172e3` on `feat/procedural-missions`; 909 Jest tests green.
 - **Move:** Implement Outlaw Black Market Spaceports with docking standing gates, scale contraband sell prices by 1.5x, and build a standings-aware Trade Advisor cockpit HUD panel.
 - **Changed:**
@@ -581,6 +641,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Push the green feature branch for review and initiate the next Cycle 18 Replenish phase.
 
 ## 2026-05-30T18:16 · iter-0091 · GREEN · cycle-14-reconciler-delta-sparklines
+
 - **Baseline:** `c48a616` on `feat/procedural-missions`; 897 Jest tests green.
 - **Move:** Implement lightweight glowing vector sparkline line-graph charts on dashboard.html showing tick rates, egress bandwidth, and matchmaking queue size telemetry.
 - **Changed:**
@@ -594,6 +655,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Start Cycle 15 Phase R (Replenish) to author the next wave of specifications and roadmaps on disk.
 
 ## 2026-05-30T18:11 · iter-0090 · GREEN · cycle-13-visual-mmr-sharded
+
 - **Baseline:** `84534de` on `feat/procedural-missions`; 886 Jest tests green.
 - **Move:** Execute Cycle 13 Phase R (Replenish) promoting backlog items, and successfully implement canvas visual smoke tests, MMR matchmaking progressive queues, and horizontal partitioned database sharding.
 - **Changed:**
@@ -606,6 +668,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Continue re-running audits on performance/routing optimizations and extend scale-out sharding drivers.
 
 ## 2026-05-30T18:06 · iter-0089 · GREEN · cycle-12-replenish-spec-065-066-067
+
 - **Baseline:** `aeecf04` on `feat/procedural-missions`; 882 Jest tests green.
 - **Move:** Execute Cycle 12 Phase R (Replenish) promoting backlog items, and successfully implement procedural generated mission completion pipelines, standings decay, UtilityAI wider rollout, and perception hardening.
 - **Changed:**
@@ -620,6 +683,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Push the isolated feature branch for review and verify the horizontal Redis sharding scaling.
 
 ## 2026-05-30T18:02 · iter-0088 · GREEN · spec-064-diplomatic-milestones
+
 - **Baseline:** `cb0ac27` on `feat/cosmic-storms`; 882 Jest tests green.
 - **Move:** Implement Allied tier ambassador escort missions and Nadir tier elite hostile hunter spawns (064).
 - **Changed:**
@@ -635,6 +699,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Transition to Replenish Phase (R) to promote backlog items, research next specifications, and extend roadmap waves.
 
 ## 2026-05-30T17:59 · iter-0087 · GREEN · spec-063-cosmic-storms
+
 - **Baseline:** `b9659d7` on `feat/cosmic-storms`; 871 Jest tests green.
 - **Move:** Implement server-authoritative wandering cosmic storm hazards with real-time HUD rendering and sensor jamming (063).
 - **Changed:**
@@ -649,6 +714,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Next:** Proceed with SPEC-064 to implement Allied escort missions and hostile hunter squads.
 
 ## 2026-05-30T17:55 · iter-0086 · GREEN · cycle-11-replenish
+
 - **Baseline:** `193fcc1` on `main`; 871 Jest tests green.
 - **Move:** Execute Cycle 11 Phase R (Replenish) promoting backlog items and establishing Wave v11 roadmap specifications.
 - **Changed:**
@@ -705,7 +771,6 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Decisions:** Enforced rank locks on premium military destroyers and advanced weaponry on the server layer to guarantee anti-exploit safety.
 - **Validation:** `npm run agent:check` -> green (866 Jest tests / 69 suites).
 - **Next:** Proceed with SPEC-061 to implement Dynamic Planetary Stock Caravans.
-
 
 ## 2026-05-30T10:55 · iter-0082 · GREEN · spec-059-multiplayer-squads-shared-standing
 
@@ -866,7 +931,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 ## 2026-05-30T17:30 · iter-0072 · GREEN · spec-049-interest-management-grid-optimization
 
 - **Baseline:** `1a251e8` on `main`; 816 Jest tests green.
-- **Move:** Optimize the O(M * N) culling complexity of per-client AoI broadcasts to O(N + M) using spatial hash grids (049).
+- **Move:** Optimize the O(M \* N) culling complexity of per-client AoI broadcasts to O(N + M) using spatial hash grids (049).
 - **Changed:**
   - Redesigned `interestFilter` in `src/net/interest.js` to segment space into cells of size equal to the active radius.
   - Added the `buildSpatialGrid` broad-phase utility to segment and partition all coordinates in a single run.
@@ -889,7 +954,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
   - Wrote a new cooperation test inside `src/engine/ai/AIController.test.js` verifying the new tactical strike behavior.
 - **Decisions:** Exposed active target locks directly on `Ship` instances, creating a clean flagship target replication paradigm. Modularized escort commands out of the server socket dispatch closure to reduce complexity.
 - **Validation:** `npm run agent:check` -> green (816 Jest tests / 66 suites). All ESLint and type compilation checks pass.
-- **Next:** Claim and implement SPEC-049 to optimize AoI interest culling from O(N*M) linear sweeps to O(N+M) spatial hashing grids.
+- **Next:** Claim and implement SPEC-049 to optimize AoI interest culling from O(N\*M) linear sweeps to O(N+M) spatial hashing grids.
 
 ## 2026-05-30T17:00 · iter-0070 · GREEN · spec-045-046-047-contraband-port-handlers-patrol-spawns
 
@@ -933,7 +998,6 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Validation:** `npm run agent:check` -> green (**798 Jest tests / 65 suites**). Lints cleanly, compiles green, and formats correctly.
 - **Notes:** Substrate files untouched. This completes the entire v4 lifecycle, draining the /plan/ spec backlog!
 - **Next:** Emit final handoff report; codebase completely green and fully compliant.
-
 
 ## 2026-05-30T14:40 · iter-0067 · GREEN · spec-042-server-monolith-extraction
 
@@ -1187,7 +1251,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Baseline:** `2cd4f79` on `main`; 648 tests / 46 suites + 17 client green. `FactionRegistry` was a complete, tested model but **not consulted** by the live game — no NPC spawn, price, or hostility read it. Executing `plan/specs/016` (Phase 2, GOAL P3).
 - **Move:** Wire the registry end-to-end so a sequence of player actions moves a standing that demonstrably changes BOTH NPC behaviour and prices (the "it remembers" showcase).
 - **Changed:** `GameInstance` now owns a `FactionRegistry` (built **before** `seedGalaxy` so spawns can hand controllers their policy views), tags every planet with a controlling faction (new `assignPlanetFactions()`) and every NPC ship by role (Pirates/Federation/Independents), passes guards a `standingPolicy()`+`factionPolicy()` and pirates a `factionPolicy()`, and on every NPC kill adjusts the killer's standing with the victim's faction (`handleEntityDestroyed` → `adjustStanding(-5)`, which propagates to that faction's allies/enemies). New `FactionRegistry.standingPolicy()` exposes a per-player disposition view; `AIController` gains a `standingPolicy` option (default null → legacy) so a **guard targets a player whose standing with the guard's faction is hostile** (players carry no faction tag, so this keys on per-player standings, not faction relations). New pure `Trading.factionPrice()` multiplies the base market price by the standing modifier (friendly discount on buys / premium on sells; hostile inverts), applied in the `server.js` trade handler; the `server.js` land handler refuses docking when hostile. `Planet` gains a `faction` field. The persistence serializers already round-trip `factionRegistry` (verified end-to-end). +9 tests (`faction.integration.test.js`) incl. the scripted DoD: a single standing swing flips both guard targeting and dock price; plus a galaxy-serializer standings round-trip.
-- **Decisions:** Tagging NPC factions + handing guards/pirates `factionPolicy` preserves existing NPC-vs-NPC targeting *outcomes* (Federation–enemy→Pirates still targets; Federation–ally→Independents still doesn't), so no legacy regression — verified by the green AIController suite. The standing-aware path is additive and guard-only (the clean "law responds to your rep" case). Mission- and trade-driven standing changes (DoD lists kills/missions/trades) are **deferred to BACKLOG**: kills are wired, but the generated-mission consequence pipeline (`MissionManager.completeGeneratedMission`'s `factionChanges`) is **not called anywhere in `server.js`** yet, so wiring missions means first connecting that pipeline — out of scope for this spec. Reputation `decayAll` hook also noted.
+- **Decisions:** Tagging NPC factions + handing guards/pirates `factionPolicy` preserves existing NPC-vs-NPC targeting _outcomes_ (Federation–enemy→Pirates still targets; Federation–ally→Independents still doesn't), so no legacy regression — verified by the green AIController suite. The standing-aware path is additive and guard-only (the clean "law responds to your rep" case). Mission- and trade-driven standing changes (DoD lists kills/missions/trades) are **deferred to BACKLOG**: kills are wired, but the generated-mission consequence pipeline (`MissionManager.completeGeneratedMission`'s `factionChanges`) is **not called anywhere in `server.js`** yet, so wiring missions means first connecting that pipeline — out of scope for this spec. Reputation `decayAll` hook also noted.
 - **Validation:** `npm run agent:check` → green (prettier + eslint + typecheck (server.js in scope) + **657 tests / 47 suites**). Touched-suite run (faction + ai + registry + trading + persistence) → 206 passed. `timeout 6 node src/server.js` → boots and listens on 8080. `python scripts/validate-log-compliance.py` → PASS.
 - **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 016 done; `plan/BACKLOG.md` records the mission/trade/decay follow-ups.
 - **Next:** Continue Phase 2 — `plan/specs/018` (production chains + ore commodity), `015` (binary wire protocol), `014` (interest management / per-client framing), `019` (horizontal scaling epic).
@@ -1257,7 +1321,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Baseline:** `03a90c3` on `main`; 614 tests / 42 suites green. Executing `plan/specs/020` (Wave A).
 - **Move:** Remove the outfit-catalogue duplication between `Planet` and the server salvage handler, and fix the latent bug where salvaged newer outfits applied no stats.
 - **Changed:** New `src/engine/outfitCatalog.js` exporting a frozen `DEFAULT_OUTFITS` (the canonical 16-outfit catalogue) — the single source. `Planet.js` now uses it as its default outfitter (inline array removed). `server.js` salvage branch: deleted its inline `defaultCatalog` (a stale 12-outfit subset) and its inline stat switch, and now does `applyOutfitStats(ship, DEFAULT_OUTFITS.find(...))`. This fixes a real bug — the old salvage catalogue was missing Ion Disruptor / Ramscoop / Auxiliary Fuel Cells / Mining Laser, so salvaging them applied no stats. `server.js` dropped 107 lines (2,086 → 1,979). +5 tests (`outfitCatalog.test.js`: frozen/shape, Planet single-source, EW outfits now apply, all stat-bearing outfits apply).
-- **Decisions:** Made `DEFAULT_OUTFITS` frozen so the shared reference can't be mutated across planets. Noted (BACKLOG) that the stat-less `tractor` type doesn't add hull mass via `applyOutfitStats` (an incidental spec-007 change) — buy and salvage are now *consistent*, which is the DoD ("same result as buying"), so left as-is.
+- **Decisions:** Made `DEFAULT_OUTFITS` frozen so the shared reference can't be mutated across planets. Noted (BACKLOG) that the stat-less `tractor` type doesn't add hull mass via `applyOutfitStats` (an incidental spec-007 change) — buy and salvage are now _consistent_, which is the DoD ("same result as buying"), so left as-is.
 - **Validation:** `npm run agent:check` → green (619 tests / 43 suites, prettier clean). `PORT=18211 NODE_ENV=test node src/server.js` → boots and listens. `python scripts/validate-log-compliance.py` → PASS.
 - **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 020 done; `plan/BACKLOG.md` created.
 - **Next:** `plan/specs/022` (CI Node LTS matrix) + `023` (dotenv 17) — fast safe wins, then `025`/`024`/`021`.
@@ -1294,10 +1358,10 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 
 ## 2026-05-29T21:49 · iter-0037 · INCIDENT · restore-clobbered-ledger-history
 
-- **Baseline:** `368bbfd` on branch `overnight/bugfix-and-coverage`. A non-conventional commit (`368bbfd`, "feat: implement spec 013 …") that landed the genai migration **also rewrote `docs/LOG.md`, truncating it from 476 lines / 32 entries (iter-0001…0035) to 52 lines** — it matched the `== LOG-ANCHOR ==` *substring inside the Rules text* (line 15) and prepended its entry there, splitting the rule sentence and dropping the entire ledger below the real anchor.
+- **Baseline:** `368bbfd` on branch `overnight/bugfix-and-coverage`. A non-conventional commit (`368bbfd`, "feat: implement spec 013 …") that landed the genai migration **also rewrote `docs/LOG.md`, truncating it from 476 lines / 32 entries (iter-0001…0035) to 52 lines** — it matched the `== LOG-ANCHOR ==` _substring inside the Rules text_ (line 15) and prepended its entry there, splitting the rule sentence and dropping the entire ledger below the real anchor.
 - **Move:** Recover the full ledger history without rewriting git history (forward fix only).
-- **Changed:** Restored `docs/LOG.md` from the last-good blob `c3baf92:docs/LOG.md` (476 lines, iters 0001–0035, real `== LOG-ANCHOR ==` intact), then re-recorded the genai migration as a correctly-placed `iter-0036` below the real anchor (the spec-013 *code* in `368bbfd` — `scripts/run-agent.js`, `package.json`, lockfile — was correct and is untouched).
-- **Decisions:** Used `git checkout c3baf92 -- docs/LOG.md` (forward-fixing restore) rather than `reset`/`rebase`, per the repo's "new commit per change, never rewrite history" rule. Status `INCIDENT` because it is a system-error recovery, not a normal green increment. Root cause: a ledger writer must anchor on the *standalone* `== LOG-ANCHOR ==` line, never the first substring match (which lives in the Rules text).
+- **Changed:** Restored `docs/LOG.md` from the last-good blob `c3baf92:docs/LOG.md` (476 lines, iters 0001–0035, real `== LOG-ANCHOR ==` intact), then re-recorded the genai migration as a correctly-placed `iter-0036` below the real anchor (the spec-013 _code_ in `368bbfd` — `scripts/run-agent.js`, `package.json`, lockfile — was correct and is untouched).
+- **Decisions:** Used `git checkout c3baf92 -- docs/LOG.md` (forward-fixing restore) rather than `reset`/`rebase`, per the repo's "new commit per change, never rewrite history" rule. Status `INCIDENT` because it is a system-error recovery, not a normal green increment. Root cause: a ledger writer must anchor on the _standalone_ `== LOG-ANCHOR ==` line, never the first substring match (which lives in the Rules text).
 - **Validation:** restored `wc -l` → 476; `python scripts/validate-log-compliance.py` → PASS. No product code lost — only the ledger markdown, now recovered.
 - **Notes:** Substrate untouched. No push/merge. A parallel/rogue writer appears to have operated on the same tree; future runs should serialize ledger edits.
 - **Next:** Continue Phase 1 — `plan/specs/011` (ESLint 10), then `012` (Jest 30).
@@ -1337,7 +1401,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Baseline:** `4df2a60`-pre; 590 tests / 37 suites green. Threat/loot classification keyed on ship-name substrings (fragile; a nameless ship once crashed the tick; blocked procedural NPC names). Executing `plan/specs/009`.
 - **Move:** Make pirate/threat classification role-based and name-independent, then give NPC pirates procedural names.
 - **Changed:** `AIController.isPirateShip(ent)` now returns true for `ent.role === "pirate"`, false for any other explicit role (decoupled from name), and only falls back to the `"Pirate"/"Raider"` name heuristic for un-roled entities; fully null-safe. `GameInstance.handleEntityDestroyed` pirate-loot branch routes through `isPirateShip` (kills the `ent.name.includes` crash class). `spawnNPCPirate` now tags `pShip.role = "pirate"` (which also repairs role-based respawn) and names regular pirates via `NameGenerator.shipName` (heavy boss keeps "Pirate Boss Gallows"). +3 AIController tests (role precedence, roled-non-pirate decoupling, null-safety).
-- **Decisions:** Left **faction** out of `isPirateShip` — an existing P3 test asserts faction tags are ignored without a `factionPolicy`, and faction *disposition* belongs to the policy layer, not this classifier. Role is the single decoupling mechanism and is set on spawns. Kept the boss's recognizable name for flavor/mini-boss legibility.
+- **Decisions:** Left **faction** out of `isPirateShip` — an existing P3 test asserts faction tags are ignored without a `factionPolicy`, and faction _disposition_ belongs to the policy layer, not this classifier. Role is the single decoupling mechanism and is set on spawns. Kept the boss's recognizable name for flavor/mini-boss legibility.
 - **Validation:** `npm run agent:check` → green (592 tests / 37 suites, prettier clean). Boot smoke (exercises the pirate spawn path at room construction) → listens, no crash. `python scripts/validate-log-compliance.py` → PASS.
 - **Notes:** Substrate untouched. No push/merge. `plan/PROGRESS.md` 009 done.
 - **Next:** `plan/specs/010` — observability (structured logging + runtime metrics).
@@ -1599,8 +1663,6 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Notes:** Substrate untouched. No push/merge — local on the feature branch for human review. `./data` is `.gitignore`d and the bootcheck dir was cleaned up before the commit. Player restore deliberately defaults to the public room when the saved sector is a custom room that's been GC'd, which is the only sane fallback given the dynamic-room model. The `join`-with-token-but-not-in-memory branch returns early so the existing in-memory rejoin path stays exactly as it was for the normal reconnect case.
 - **Next:** Add a `markets.test.js`-style integration that simulates a kill-restart-rejoin cycle through `loadGalaxy/applyGalaxy + loadPlayer/applyPlayer` end-to-end against a tmp `JsonFileStore` so the showcase "the world moved" demo is provably reproducible from CI. Persist `factionRegistry` once P3 lands and wire its `serialize/fromJSON` into the boot restore. Promote `data/` to a configurable directory tree (per-room subdirs) once the file count starts mattering, or swap in a `SqliteStore` behind the same interface.
 
-
-
 - **Baseline:** `15d68b4` on branch `overnight/bugfix-and-coverage`; 453 tests / 24 suites green at HEAD; persistence layer is the next P1 slice listed in `docs/GOAL.md` (`Frontier gaps: state is in-memory (lost on restart — the next P1 slice)`).
 - **Move:** Build the storage-agnostic persistence layer behind a swappable `Store` interface plus pure serializers, so a future server wire-up can checkpoint and restore galaxy + player state without coupling the engine to any one backend.
 - **Changed:**
@@ -1612,8 +1674,6 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Validation:** `npm test` → 479 passed (26 suites); `npm run lint` → clean.
 - **Notes:** Substrate untouched. No push/merge — local on the feature branch for human review. No `./data` directory created; tests stay in `os.tmpdir()` and clean up in `afterEach`. `Store.js` uses `_key`/`_obj` underscore-prefixed unused params on the abstract methods so ESLint's `no-unused-vars` stays quiet without weakening the rule.
 - **Next:** Wire `JsonFileStore` into `server.js` — checkpoint per-room galaxy snapshots on the heartbeat interval (or a coarser interval) and per-player snapshots on land/launch/disconnect, then restore on server boot and on session-token rejoin so a returning pilot finds the world they left. Add an envelope migration helper (`SNAPSHOT_VERSION` bump path) before the first real schema change. Consider a `SqliteStore` once disk-file count becomes a concern for large player counts.
-
-
 
 - **Baseline:** `1274b97` on branch `overnight/bugfix-and-coverage`; 440 tests / 23 suites green.
 - **Move:** Stop sending the full world every tick — frame the authoritative broadcast as keyframes + deltas backed by the P7 `StateCodec`, so a quiet sector ships only what changed and any client desync self-heals within ~1s without breaking gameplay or visuals.
@@ -1635,12 +1695,10 @@ The `STATUS` token in the header line **MUST** be exactly one of:
   - New `src/engine/WeaponArchetypes.js` exporting: frozen `WeaponArchetype` enum and `WEAPON_ARCHETYPE_ORDER`; `WEAPON_ARCHETYPE_PROFILES` (deep-frozen archetype → `{damageScale, speedScale, rangeScale, cooldownScale, shieldPierce, energyCost, heatCost}`) — KINETIC `0.85/1.2/1.0/0.6, pierce=0, 3e/5h` (cheap, fast, no pierce, snappy cooldown), ENERGY `1.0/1.0/1.1/1.0, pierce=0.25, 6e/8h` (balanced baseline, matches legacy costs), BEAM `1.4/3.0/0.45/1.6, pierce=0.15, 9e/18h` (near-hitscan: tripled speed, sub-half range so lifetime ≈0.18s; heaviest heat per shot), MISSILE `2.2/0.55/1.4/2.0, pierce=0.4, 12e/10h` (slow, long-range, heaviest damage and pierce, long cooldown); `DEFAULT_WEAPON_COSTS` frozen at `{6, 8}` matching the legacy fireWeapon constants; `getArchetypeProfile(name)` lookup (null on unknown / non-string); and `applyArchetypeToShip(ship, archetype)` which sets `ship.weaponArchetype`, multiplies `weaponDamage/Speed/Range/Cooldown` by the profile scales in place, and writes absolute `weaponShieldPierce`, `weaponEnergyCost`, `weaponHeatCost`. Returns `false` on unknown archetype or missing ship — no mutation in either case.
   - `src/engine/SpaceEngine.js` `fireWeapon` reads `ship.weaponEnergyCost ?? DEFAULT_WEAPON_COSTS.energyCost` and `ship.weaponHeatCost ?? DEFAULT_WEAPON_COSTS.heatCost`, so ships without an archetype keep the legacy 6 energy / 8 heat per shot and the existing `SpaceEngine.fireWeapon` test ("100 → 94 energy, heat=8") still holds verbatim. Projectile damage / speed / range / shieldPierce already came from the ship's weapon stats, so scaling those stats via the archetype helper is what drives the per-archetype projectile shape.
   - New `src/engine/WeaponArchetypes.test.js` — 23 deterministic Jest cases: archetype identifier surface (frozen enum, canonical order); table invariants (every archetype has all profile fields as finite numbers; outer + inner objects deep-frozen); per-archetype shape guards (KINETIC has zero pierce + fastest non-BEAM speed + cheapest energy + snappiest cooldown vs ENERGY; ENERGY is the `1.0/1.0/1.0` baseline with non-zero pierce; BEAM has the highest heat cost of all archetypes and range scale < 1; MISSILE has the strictly highest `damageScale` AND `shieldPierce` of all archetypes plus slow speed and long cooldown); `DEFAULT_WEAPON_COSTS` matches legacy `{6, 8}` and is frozen; `getArchetypeProfile` returns the matching profile by name and `null` for unknown/non-string/null/undefined/numeric inputs; `applyArchetypeToShip` scales each weapon stat correctly and writes the tag/pierce/energy/heat fields (verified with a real `Ship` instance), KINETIC strips a pre-existing `weaponShieldPierce=0.5` ion loadout, unknown archetypes are a strict no-op, missing ship is a strict no-op, repeated application keeps stats finite; `SpaceEngine.fireWeapon` end-to-end produces projectiles matching each archetype's expected damage / shieldPierce / lifetime / velocity / cooldown / energy / heat, a legacy un-archetyped ship still spends 6e/8h and emits an unscaled projectile, and a MISSILE-equipped ship with `energy < 12` is refused (no projectile, no cooldown set).
-- **Decisions:** Made archetype stats multiplicative on existing ship loadouts (rather than absolute overrides) so a destroyer's MISSILE outhits a frigate's MISSILE in proportion to its base loadout — the archetype is *identity*, the hull is *tuning*. Kept `shieldPierce`/`energyCost`/`heatCost` absolute because those represent the weapon's intrinsic character and shouldn't be hull-modulated. Modeled BEAM as a very fast, short-range, high-cooldown projectile rather than a new entity type so `Projectile`/`fireWeapon`/client renderer all stay untouched and the "instant-feeling" comes from the lifetime falling to ~0.18s (speedScale 3, rangeScale 0.45 → 270 units divided by 1500 unit/s muzzle). Implemented backward compatibility through `??` defaults rather than feature-flagging — a ship with no archetype tag has `weaponEnergyCost === undefined`, falls through to the frozen `DEFAULT_WEAPON_COSTS`, and produces the exact same energy/heat numbers the existing `SpaceEngine.test.js` already asserts. Did not auto-apply archetypes to existing `main.js` ship factories — that's a runtime wire-up choice the next slice can make once the data model is stable; today's change is strictly the headless foundation.
+- **Decisions:** Made archetype stats multiplicative on existing ship loadouts (rather than absolute overrides) so a destroyer's MISSILE outhits a frigate's MISSILE in proportion to its base loadout — the archetype is _identity_, the hull is _tuning_. Kept `shieldPierce`/`energyCost`/`heatCost` absolute because those represent the weapon's intrinsic character and shouldn't be hull-modulated. Modeled BEAM as a very fast, short-range, high-cooldown projectile rather than a new entity type so `Projectile`/`fireWeapon`/client renderer all stay untouched and the "instant-feeling" comes from the lifetime falling to ~0.18s (speedScale 3, rangeScale 0.45 → 270 units divided by 1500 unit/s muzzle). Implemented backward compatibility through `??` defaults rather than feature-flagging — a ship with no archetype tag has `weaponEnergyCost === undefined`, falls through to the frozen `DEFAULT_WEAPON_COSTS`, and produces the exact same energy/heat numbers the existing `SpaceEngine.test.js` already asserts. Did not auto-apply archetypes to existing `main.js` ship factories — that's a runtime wire-up choice the next slice can make once the data model is stable; today's change is strictly the headless foundation.
 - **Validation:** `npm test` → 440 passed (23 suites); `npm run lint` → clean; `npx prettier --check src/engine/WeaponArchetypes.js src/engine/WeaponArchetypes.test.js src/engine/SpaceEngine.js` → clean (no `--write` needed).
 - **Notes:** Substrate untouched. No push/merge — local on the feature branch for human review. Pre-existing prettier drift on `FactionRegistry.js`/`FactionRegistry.test.js`/`ProductionModel.js` from prior iterations is unchanged — this commit added no new files that require fixing those.
 - **Next:** Wire `applyArchetypeToShip` into `main.js` ship factories (Federation destroyers → BEAM, pirates → KINETIC, capital escorts → MISSILE) so live rooms feel the loadout difference; expose `weaponArchetype` through the outfitting UI in `src/client/SpaceportUI.js` so players can re-archetype their loadout pre-launch; let `AIController` factor `weaponArchetype` into engagement range — MISSILE preferred stand-off, BEAM preferred knife-fight.
-
-
 
 - **Baseline:** `24b0e70` on branch `overnight/bugfix-and-coverage`; 386 tests / 21 suites green.
 - **Move:** Land Pillar P4's foundation — a pure, seeded mission generator that composes missions from live world state (real price shortages → delivery contracts; named bounty NPCs → hunt missions), with completion mutating both economy and faction standing so the loop closes.
@@ -1675,7 +1733,7 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - **Changed:**
   - `src/engine/ai/UtilityAI.js` (new) exports `Goals` (ENGAGE/FLEE/TRADE/REGROUP/PATROL), `GOAL_ORDER`, `DEFAULT_UTILITY_OPTIONS` (frozen tuning knobs: `sensorRange`, `engageBoost`, `engageThreatPenalty`, `fleeArmorWeight`/`fleeThreatBase`/`fleeThreatArmorWeight`, `tradeThreatPower`, `regroupBoost`/`regroupArmorFloor`/`regroupArmorDamp`, `patrolBaseline`, `readinessArmorWeight`/`readinessShieldWeight`), helper primitives (`clamp01`, `proximityFactor`, `maxThreatPressure`, `bestOpportunity`, `combatReadiness`, `normalizeSelf`, `selfStateFromShip`), per-goal scorers (`scoreEngage`, `scoreFlee`, `scoreTrade`, `scoreRegroup`, `scorePatrol`), and the two top-level entry points `evaluateGoals(perception, options?)` and `selectGoal(perception, options?)`. ENGAGE = `bestPrey * readiness * (1 - engageThreatPenalty * threat) * engageBoost`, readiness = `armor * (armorW + shieldW * shield)` (multiplicative in armor so a glass-cannon never reads ready). FLEE = `armorPanic * fleeArmorWeight + threat * (fleeThreatBase + fleeThreatArmorWeight * armorPanic)` with `armorPanic = (1 - armor)^2` (sharp ramp). TRADE = `bestTrade * (1 - threat)^tradeThreatPower` (collapses near hostiles). REGROUP = `(1 - shield) * armorOK * (1 - threat)^2 * regroupBoost` where armorOK damps to `regroupArmorDamp` below `regroupArmorFloor` so FLEE wins at critical armor. PATROL = constant `patrolBaseline`. Pure JS — no DOM/sockets/`Math.random`; option merging via `{ ...DEFAULT, ...options }` so partial overrides stay safe.
   - `src/engine/ai/UtilityAI.test.js` (new) — 32 deterministic Jest cases covering: primitive bounds (clamp01 rejects non-finite, proximity is 1 at touch and 0 at sensor edge), threat aggregation (max not sum, ignores out-of-range), best-opportunity scoring, monotonic FLEE in armor and threat, ENGAGE rising with prey weakness/proximity and falling under threat, TRADE collapsing near hostiles, REGROUP rewarding shield-deficit+safety but damped when armor is critical or hostiles loom, PATROL as a tunable constant baseline. Five "representative situations" assert end-to-end goal selection: healthy + weak prey → ENGAGE, critical armor + threat → FLEE (even when tempting prey is available), idle (no opps, no threats) → PATROL, safe + juicy trade → TRADE, low-shield + healthy armor + safe → REGROUP, plus a threat-saturated case and a weak-far-prey case that confirms ENGAGE doesn't always dominate. Determinism is locked down: same perception → identical output across calls, `evaluateGoals` accepts deeply-frozen inputs without throwing (no mutation), ties broken by `GOAL_ORDER`, partial option overrides correctly merge with defaults, `DEFAULT_UTILITY_OPTIONS` is frozen. `selfStateFromShip` is verified against a real `Ship` instance (full and wounded).
-- **Decisions:** Made ENGAGE's readiness *multiplicative* in armor (not weighted-sum) so the spec's "FLEE dominates ENGAGE at critical armor" property holds robustly without needing a hard FLEE override — at armor=0.1 the engage ceiling drops below 0.12 even with full shields/energy and a perfect prey, while FLEE rises past 0.9 with any threat. Used `(1 - armor)^2` rather than a linear ramp for FLEE so a wounded but not yet critical agent doesn't panic, but a critical one does — a *legible* sharp curve. Picked `max(threat * proximity)` over a sum for threat pressure to keep the scale in [0,1] regardless of crowd size (a single close fighter and a swarm of distant ones both produce coherent scores). Broke ties by a fixed `GOAL_ORDER` instead of insertion order on a Map so the determinism property is documented and testable. Kept `AIController` untouched — the task asked for a consultable helper, and tangling the FSM with this would risk regressions in the existing 36 AIController tests.
+- **Decisions:** Made ENGAGE's readiness _multiplicative_ in armor (not weighted-sum) so the spec's "FLEE dominates ENGAGE at critical armor" property holds robustly without needing a hard FLEE override — at armor=0.1 the engage ceiling drops below 0.12 even with full shields/energy and a perfect prey, while FLEE rises past 0.9 with any threat. Used `(1 - armor)^2` rather than a linear ramp for FLEE so a wounded but not yet critical agent doesn't panic, but a critical one does — a _legible_ sharp curve. Picked `max(threat * proximity)` over a sum for threat pressure to keep the scale in [0,1] regardless of crowd size (a single close fighter and a swarm of distant ones both produce coherent scores). Broke ties by a fixed `GOAL_ORDER` instead of insertion order on a Map so the determinism property is documented and testable. Kept `AIController` untouched — the task asked for a consultable helper, and tangling the FSM with this would risk regressions in the existing 36 AIController tests.
 - **Validation:** `npm test` → 361 passed (21 suites); `npm run lint` → clean; `npx prettier --check src/engine/ai/UtilityAI.js src/engine/ai/UtilityAI.test.js` → clean after `--write`.
 - **Notes:** Substrate untouched. No push/merge — local on the feature branch for human review. Pre-existing prettier drift on `src/engine/FactionRegistry.js`, `FactionRegistry.test.js`, and `ProductionModel.js` is unchanged — out of scope.
 - **Next:** Wire `selectGoal` into `AIController` as an advisory layer behind a feature flag — e.g. let pirates consult UtilityAI each scan to decide whether to keep chasing or break off; have merchants reroute when FLEE clears a threshold near a known threat. Build `buildPerception(ship, entities)` so callers don't hand-roll the snapshot. Extend the goal catalogue with PURSUE (long-range chase distinct from ENGAGE) and DOCK (when a planet/station is nearby and cargo is high).

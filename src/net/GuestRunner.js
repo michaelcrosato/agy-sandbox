@@ -251,13 +251,11 @@ export const GuestRunner = {
         // If event loop has been blocked with no heartbeat ticks, that constitutes active CPU pegging.
         // Also check if cumulative reported CPU exceeds the budget.
         if (
-          elapsedSinceLastHeartbeat > cpuTimeBudgetMs ||
-          lastCpuTimeMs > cpuTimeBudgetMs
+          lastCpuTimeMs > cpuTimeBudgetMs ||
+          elapsedSinceLastHeartbeat > cpuTimeBudgetMs
         ) {
           killCpuExhausted(
-            elapsedSinceLastHeartbeat > cpuTimeBudgetMs
-              ? "blocked"
-              : "accumulated",
+            lastCpuTimeMs > cpuTimeBudgetMs ? "accumulated" : "blocked",
           );
         }
       }, 50);

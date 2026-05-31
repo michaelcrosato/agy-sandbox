@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-05-31T14:38:19.774Z",
+  "generatedAt": "2026-05-31T14:56:34.842Z",
   "stats": {
     "totalSourceFiles": 101,
     "totalTestFiles": 131,
     "totalSpecFiles": 166,
-    "totalLoc": 23112,
+    "totalLoc": 23110,
     "totalTests": 1684,
     "untestedCoreFilesCount": 6
   },
@@ -1460,7 +1460,7 @@
     },
     {
       "path": "src/net/GuestRunner.js",
-      "loc": 480,
+      "loc": 478,
       "classes": [],
       "exports": [
         {

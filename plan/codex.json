@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T05:41:03.801Z",
+  "generatedAt": "2026-05-31T05:47:02.772Z",
   "stats": {
     "totalSourceFiles": 95,
     "totalTestFiles": 124,
     "totalSpecFiles": 144,
-    "totalLoc": 20574,
-    "totalTests": 1606,
+    "totalLoc": 20712,
+    "totalTests": 1610,
     "untestedCoreFilesCount": 3
   },
   "files": [
@@ -1702,30 +1702,30 @@
     },
     {
       "path": "src/net/ProcessSentinel.js",
-      "loc": 613,
+      "loc": 751,
       "classes": [],
       "exports": [
         {
           "name": "parseCommandString",
           "type": "function",
           "jsdoc": "/**\n* Parses a full command string into a binary name and an array of arguments,\n* respecting basic quotes.\n* @param {string} cmdStr - Full shell command string.\n* @returns {ParsedCommand}\n*/",
-          "line": 105
+          "line": 188
         },
         {
           "name": "validateCommand",
           "type": "function",
           "jsdoc": "/**\n* Validates whether a command and its arguments are permitted under the strict security whitelist.\n* @param {string} command - The command or binary path under evaluation.\n* @param {string[]} [args=[]] - Optional array of arguments passed to the command.\n* @returns {{ allowed: boolean, reason?: string }}\n*/",
-          "line": 149
+          "line": 232
         },
         {
           "name": "ProcessSentinel",
           "type": "constant",
           "jsdoc": "/**\n* ProcessSentinel (spec 106) — child process security sentinel whitelister.\n* @type {object}\n*/",
-          "line": 261
+          "line": 344
         }
       ],
       "testFile": "src/net/ProcessSentinel.test.js",
-      "testCasesCount": 9,
+      "testCasesCount": 13,
       "referencingSpecs": [
         "plan/specs/106_sandbox_containment_sentinel.md",
         "plan/specs/138_strict_path_jailing.md"

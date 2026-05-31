@@ -39,6 +39,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T23:59 · iter-0129 · GREEN · spec-138-strict-path-jailing
+- **Baseline:** `7b90527` on `feat/procedural-missions`; 1,205 Jest green.
+- **Move:** Implement SPEC-138 to securely resolve and strictly constrain guest file access within active sandbox directories, whitelisting reads on dependency node_modules and native bootstrap contexts.
+- **Changed:**
+  - Enhanced `checkPath` in `src/net/ProcessSentinel.js` to securely resolve absolute file paths and strictly enforce directory containment limits.
+  - Implemented absolute traversal checks blocking relative directory jumps (`..`) and double-dot path segments.
+  - Enforced strict write-jailing whenever an active sandbox is provisioned and read-jailing during active guest execution processes.
+  - Created whitelisted exceptions for node_modules dependencies, core native libraries, and parent bootstrap contexts required by the V8 isolated guest runner.
+  - Protected the registry against infinite recursive fs check loops when logging violations to `SandboxSecurityRegistry` by utilizing a checking state latch boolean latch.
+  - Removed stray and untracked test output artifacts from the workspace directory.
+  - Authored comprehensive deterministic unit and integration tests in `src/net/ProcessSentinel.test.js` covering absolute escapes, relative traversals, write containment, and dependency whitelists.
+- **Decisions:** Restricting guest file system operations requires strict jailing checks. Enforcing writes globally when a sandbox is active keeps workspaces intact, while read-only limits are reserved strictly for untrusted guest contexts to prevent Jest test environments from locking down core Node loading functions.
+- **Validation:** Executed `npm run agent:check` confirming a 100% green gate across 1,209 Jest tests, ESLint formatting, and strict `tsc --noEmit` TypeScript type-checking.
+- **Next:** Proceed to Phase R (Replenish) to promote backlogs, perform codebase boundaries audit, and formulate Wave v37 specifications.
+
 ## 2026-05-31T23:55 · iter-0128 · GREEN · spec-137-dynamic-egress-firewall-admin
 - **Baseline:** `12ff9ba` on `feat/procedural-missions`; 1,202 Jest green.
 - **Move:** Implement SPEC-137 to deliver dynamic egress firewall administrative controls, exposing CORS preflights, zero-downtime Whitelist/Block rules modification endpoints, and an interactive gold-glassmorphic sentry dashboard cockpit panel.

@@ -33,6 +33,12 @@ const originalRename = fs.rename;
 const originalRenameSync = fs.renameSync;
 const originalCreateWriteStream = fs.createWriteStream;
 
+const originalReadFile = fs.readFile;
+const originalReadFileSync = fs.readFileSync;
+const originalReaddir = fs.readdir;
+const originalReaddirSync = fs.readdirSync;
+const originalCreateReadStream = fs.createReadStream;
+
 // Store original promises fs functions
 const originalPromisesWriteFile = fs.promises ? fs.promises.writeFile : null;
 const originalPromisesMkdir = fs.promises ? fs.promises.mkdir : null;
@@ -40,8 +46,12 @@ const originalPromisesRm = fs.promises ? fs.promises.rm : null;
 const originalPromisesUnlink = fs.promises ? fs.promises.unlink : null;
 const originalPromisesRename = fs.promises ? fs.promises.rename : null;
 
+const originalPromisesReadFile = fs.promises ? fs.promises.readFile : null;
+const originalPromisesReaddir = fs.promises ? fs.promises.readdir : null;
+
 let isPatched = false;
 let activeSandboxDir = null;
+let isCheckingPath = false;
 
 const stats = {
   allowedCount: 0,
@@ -49,30 +59,103 @@ const stats = {
 };
 
 /**
- * Asserts that the given file path resides strictly within the active sandbox containment directory.
+ * Asserts that the given file path resides strictly within the active sandbox containment directory,
+ * resolving directory traversals and whitelisting read-only dependency paths.
  * Throws a security boundary isolation error if an escape is detected.
  * @param {any} filePath - Path to check.
+ * @param {boolean} [isWrite=false] - True if path is evaluated for a write/delete action.
  */
-function checkPath(filePath) {
-  if (!activeSandboxDir || !filePath) return;
-  let pStr;
-  if (filePath instanceof URL) {
-    pStr = fileURLToPath(filePath);
-  } else if (typeof filePath === "string") {
-    pStr = filePath;
-  } else {
-    pStr = String(filePath);
-  }
-  const resolved = path.resolve(pStr);
-  if (!resolved.startsWith(activeSandboxDir)) {
+function checkPath(filePath, isWrite = false) {
+  if (isCheckingPath) return;
+  isCheckingPath = true;
+  try {
+    if (!activeSandboxDir || !filePath) return;
+    let pStr;
+    if (filePath instanceof URL) {
+      pStr = fileURLToPath(filePath);
+    } else if (typeof filePath === "string") {
+      pStr = filePath;
+    } else {
+      pStr = String(filePath);
+    }
+
+    // Intercept and reject relative directory traversal strings containing '..'
+    const normalizedStr = pStr.replace(/\\/g, "/");
+    if (normalizedStr.split("/").includes("..")) {
+      stats.blockedCount++;
+      const errMsg = `[SECURITY ACCESS DENIED] Traversal pattern '..' detected in path: [${pStr}]`;
+      SandboxSecurityRegistry.logViolation("filesystem", "fs_access", {
+        path: pStr,
+        sandboxDir: activeSandboxDir,
+        reason: errMsg,
+      });
+      throw new Error(errMsg);
+    }
+
+    const resolved = path.resolve(pStr);
+
+    // 1. If it resolved inside the active sandboxDir, it's always allowed (read/write)
+    if (resolved.startsWith(activeSandboxDir)) {
+      return;
+    }
+
+    // 2. If it's a write operation and outside the sandboxDir, block it instantly!
+    if (isWrite) {
+      stats.blockedCount++;
+      const errMsg = `[SECURITY ACCESS DENIED] Write attempt outside sandboxed directory: path [${resolved}] is outside [${activeSandboxDir}]`;
+      SandboxSecurityRegistry.logViolation("filesystem", "fs_access", {
+        path: resolved,
+        sandboxDir: activeSandboxDir,
+        reason: errMsg,
+      });
+      throw new Error(errMsg);
+    }
+
+    // 3. For read operations, only jail if we are running inside a guest script process
+    if (!process.env.GUEST_SCRIPT_PATH) {
+      return;
+    }
+
+    // (a) allowed read-only scopes: project's node_modules directory
+    const rootNodeModules = path.resolve(
+      activeSandboxDir,
+      "../../node_modules",
+    );
+    const workspaceNodeModules = path.resolve(process.cwd(), "node_modules");
+    if (
+      resolved.startsWith(rootNodeModules) ||
+      resolved.startsWith(workspaceNodeModules)
+    ) {
+      return;
+    }
+
+    // (b) the active guest script itself (for ESM loader importing)
+    const guestScript = process.env.GUEST_SCRIPT_PATH
+      ? path.resolve(process.env.GUEST_SCRIPT_PATH)
+      : null;
+    if (guestScript && resolved === guestScript) {
+      return;
+    }
+
+    // (c) the worker's bootstrap files (in the same directory)
+    const workerFile = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+    );
+    if (resolved.startsWith(workerFile)) {
+      return;
+    }
+
+    // Otherwise, deny access!
     stats.blockedCount++;
-    const errMsg = `[SECURITY ACCESS DENIED] Isolation boundary escape attempt detected: path [${resolved}] is outside sandboxed directory [${activeSandboxDir}]`;
+    const errMsg = `[SECURITY ACCESS DENIED] Read attempt outside sandboxed directory: path [${resolved}] is outside [${activeSandboxDir}]`;
     SandboxSecurityRegistry.logViolation("filesystem", "fs_access", {
       path: resolved,
       sandboxDir: activeSandboxDir,
       reason: errMsg,
     });
     throw new Error(errMsg);
+  } finally {
+    isCheckingPath = false;
   }
 }
 
@@ -439,7 +522,7 @@ export const ProcessSentinel = {
     // Monkeypatch synchronous/callback fs write operations
     fs.writeFile = /** @type {any} */ (
       function (file, ...args) {
-        checkPath(file);
+        checkPath(file, true);
         return originalWriteFile.apply(this, arguments);
       }
     );
@@ -448,13 +531,13 @@ export const ProcessSentinel = {
     }
 
     fs.writeFileSync = function (file, ...args) {
-      checkPath(file);
+      checkPath(file, true);
       return originalWriteFileSync.apply(this, arguments);
     };
 
     fs.mkdir = /** @type {any} */ (
       function (dir, ...args) {
-        checkPath(dir);
+        checkPath(dir, true);
         return originalMkdir.apply(this, arguments);
       }
     );
@@ -463,13 +546,13 @@ export const ProcessSentinel = {
     }
 
     fs.mkdirSync = function (dir, ...args) {
-      checkPath(dir);
+      checkPath(dir, true);
       return originalMkdirSync.apply(this, arguments);
     };
 
     fs.rm = /** @type {any} */ (
       function (p, ...args) {
-        checkPath(p);
+        checkPath(p, true);
         return originalRm.apply(this, arguments);
       }
     );
@@ -478,13 +561,13 @@ export const ProcessSentinel = {
     }
 
     fs.rmSync = function (p, ...args) {
-      checkPath(p);
+      checkPath(p, true);
       return originalRmSync.apply(this, arguments);
     };
 
     fs.unlink = /** @type {any} */ (
       function (p, ...args) {
-        checkPath(p);
+        checkPath(p, true);
         return originalUnlink.apply(this, arguments);
       }
     );
@@ -493,14 +576,14 @@ export const ProcessSentinel = {
     }
 
     fs.unlinkSync = function (p, ...args) {
-      checkPath(p);
+      checkPath(p, true);
       return originalUnlinkSync.apply(this, arguments);
     };
 
     fs.rename = /** @type {any} */ (
       function (oldPath, newPath, ...args) {
-        checkPath(oldPath);
-        checkPath(newPath);
+        checkPath(oldPath, true);
+        checkPath(newPath, true);
         return originalRename.apply(this, arguments);
       }
     );
@@ -509,42 +592,88 @@ export const ProcessSentinel = {
     }
 
     fs.renameSync = function (oldPath, newPath, ...args) {
-      checkPath(oldPath);
-      checkPath(newPath);
+      checkPath(oldPath, true);
+      checkPath(newPath, true);
       return originalRenameSync.apply(this, arguments);
     };
 
     fs.createWriteStream = function (pathName, ...args) {
-      checkPath(pathName);
+      checkPath(pathName, true);
       return originalCreateWriteStream.apply(this, arguments);
+    };
+
+    // Monkeypatch synchronous/callback fs read operations
+    fs.readFile = /** @type {any} */ (
+      function (file, ...args) {
+        checkPath(file, false);
+        return originalReadFile.apply(this, arguments);
+      }
+    );
+    if (originalReadFile && originalReadFile.__promisify__) {
+      fs.readFile.__promisify__ = originalReadFile.__promisify__;
+    }
+
+    fs.readFileSync = function (file, ...args) {
+      checkPath(file, false);
+      return originalReadFileSync.apply(this, arguments);
+    };
+
+    fs.readdir = /** @type {any} */ (
+      function (dir, ...args) {
+        checkPath(dir, false);
+        return originalReaddir.apply(this, arguments);
+      }
+    );
+    if (originalReaddir && originalReaddir.__promisify__) {
+      fs.readdir.__promisify__ = originalReaddir.__promisify__;
+    }
+
+    fs.readdirSync = function (dir, ...args) {
+      checkPath(dir, false);
+      return originalReaddirSync.apply(this, arguments);
+    };
+
+    fs.createReadStream = function (pathName, ...args) {
+      checkPath(pathName, false);
+      return originalCreateReadStream.apply(this, arguments);
     };
 
     // Monkeypatch fs.promises if available
     if (fs.promises) {
       fs.promises.writeFile = function (file, ...args) {
-        checkPath(file);
+        checkPath(file, true);
         return originalPromisesWriteFile.apply(this, arguments);
       };
 
       fs.promises.mkdir = function (dir, ...args) {
-        checkPath(dir);
+        checkPath(dir, true);
         return originalPromisesMkdir.apply(this, arguments);
       };
 
       fs.promises.rm = function (p, ...args) {
-        checkPath(p);
+        checkPath(p, true);
         return originalPromisesRm.apply(this, arguments);
       };
 
       fs.promises.unlink = function (p, ...args) {
-        checkPath(p);
+        checkPath(p, true);
         return originalPromisesUnlink.apply(this, arguments);
       };
 
       fs.promises.rename = function (oldPath, newPath, ...args) {
-        checkPath(oldPath);
-        checkPath(newPath);
+        checkPath(oldPath, true);
+        checkPath(newPath, true);
         return originalPromisesRename.apply(this, arguments);
+      };
+
+      fs.promises.readFile = function (file, ...args) {
+        checkPath(file, false);
+        return originalPromisesReadFile.apply(this, arguments);
+      };
+
+      fs.promises.readdir = function (dir, ...args) {
+        checkPath(dir, false);
+        return originalPromisesReaddir.apply(this, arguments);
       };
     }
 
@@ -597,6 +726,12 @@ export const ProcessSentinel = {
     fs.renameSync = originalRenameSync;
     fs.createWriteStream = originalCreateWriteStream;
 
+    fs.readFile = originalReadFile;
+    fs.readFileSync = originalReadFileSync;
+    fs.readdir = originalReaddir;
+    fs.readdirSync = originalReaddirSync;
+    fs.createReadStream = originalCreateReadStream;
+
     // Restore promises functions
     if (fs.promises) {
       fs.promises.writeFile = originalPromisesWriteFile;
@@ -604,6 +739,9 @@ export const ProcessSentinel = {
       fs.promises.rm = originalPromisesRm;
       fs.promises.unlink = originalPromisesUnlink;
       fs.promises.rename = originalPromisesRename;
+
+      fs.promises.readFile = originalPromisesReadFile;
+      fs.promises.readdir = originalPromisesReaddir;
     }
 
     activeSandboxDir = null;

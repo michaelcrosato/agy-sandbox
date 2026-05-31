@@ -2,8 +2,18 @@ import fs from "node:fs";
 import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { isBuiltin } from "node:module";
 import { ProcessSentinel } from "./ProcessSentinel.js";
 import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
+
+const SAFE_CORE_MODULES = new Set([
+  "node:path", "path",
+  "node:url", "url",
+  "node:crypto", "crypto",
+  "node:util", "util",
+  "node:stream", "stream",
+  "node:string_decoder", "string_decoder"
+]);
 
 /**
  * GuestLoader.js (SPEC-144 / SPEC-152) — ESM Import Loader Hook.
@@ -11,6 +21,25 @@ import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
  * and verifying cryptographic SHA-256 module signatures.
  */
 export async function resolve(specifier, context, nextResolve) {
+  // Check if it's a native / built-in Node.js module
+  const isCore = specifier.startsWith("node:") || isBuiltin(specifier);
+  if (isCore) {
+    if (!SAFE_CORE_MODULES.has(specifier)) {
+      try {
+        SandboxSecurityRegistry.logViolation(
+          "integrity",
+          "native_import_violation",
+          { specifier }
+        );
+      } catch {
+        // Fail-safe registry logging bypass
+      }
+      throw new Error(
+        `[SECURITY ACCESS DENIED] ESM Import Violation: Access to native core module [${specifier}] is restricted inside the guest sandbox.`
+      );
+    }
+  }
+
   const resolved = await nextResolve(specifier, context);
 
   if (resolved && resolved.url && resolved.url.startsWith("file://")) {

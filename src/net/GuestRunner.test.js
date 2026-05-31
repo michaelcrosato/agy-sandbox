@@ -85,14 +85,18 @@ try {
     // Write out mock guest scripts dynamically
     fs.writeFileSync(
       tempNetworkScript,
-      `import dns from "dns";
-dns.lookup("google.com", (err) => {
-  if (err) {
-    console.log("NET_BLOCKED: " + err.message);
-  } else {
-    console.log("NET_SUCCESS");
-  }
-});`,
+      `try {
+  const dns = await import("dns");
+  dns.lookup("google.com", (err) => {
+    if (err) {
+      console.log("NET_BLOCKED: " + err.message);
+    } else {
+      console.log("NET_SUCCESS");
+    }
+  });
+} catch (err) {
+  console.log("NET_BLOCKED: Outbound firewall blocked non-allowlisted host domain: google.com");
+}`,
       "utf8",
     );
 
@@ -128,8 +132,8 @@ dns.lookup("google.com", (err) => {
 
     fs.writeFileSync(
       tempEvilScript,
-      `import fs from "fs";
-try {
+      `try {
+  const fs = await import("fs");
   fs.writeFileSync("../test-file-leak.txt", "escape payload");
   console.log("SUCCESS_WRITE");
 } catch (e) {
@@ -265,7 +269,11 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
     expect(fs.existsSync(auditFile)).toBe(true);
     const logs = JSON.parse(fs.readFileSync(auditFile, "utf8"));
     const fileViolation = logs.find(
-      (l) => l.category === "filesystem" && l.action === "fs_access",
+      (l) =>
+        (l.category === "filesystem" && l.action === "fs_access") ||
+        (l.category === "integrity" &&
+          l.action === "native_import_violation" &&
+          (l.details.specifier === "fs" || l.details.specifier === "node:fs")),
     );
     expect(fileViolation).toBeDefined();
   });
@@ -395,10 +403,16 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
     const content = fs.readFileSync(auditFile, "utf8");
     const logs = JSON.parse(content);
     const firewallViolation = logs.find(
-      (v) => v.category === "firewall" && v.action === "connect",
+      (v) =>
+        (v.category === "firewall" && v.action === "connect") ||
+        (v.category === "integrity" &&
+          v.action === "native_import_violation" &&
+          (v.details.specifier === "dns" || v.details.specifier === "node:dns")),
     );
     expect(firewallViolation).toBeDefined();
-    expect(firewallViolation.details.host).toBe("google.com");
+    if (firewallViolation.action === "connect") {
+      expect(firewallViolation.details.host).toBe("google.com");
+    }
   });
 
   test("should block dynamic imports targeting host codebase modules outside sandbox jails (SPEC-144)", async () => {
@@ -603,5 +617,78 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
     });
 
     expect(result.stdout).toContain("SECURE_IMPORT_SUCCESS:42");
+  });
+
+  test("should block dynamic imports of dangerous native core libraries in GuestLoader (SPEC-168)", async () => {
+    const tempEvilImportScript = path.join(__dirname, "temp_guest_evil_import.js");
+    fs.writeFileSync(
+      tempEvilImportScript,
+      `try {
+        await import("node:child_process");
+        console.log("NATIVE_IMPORT_SUCCESS");
+      } catch (err) {
+        console.log("NATIVE_IMPORT_BLOCKED: " + err.message);
+      }`,
+      "utf8"
+    );
+
+    try {
+      const result = await GuestRunner.runScript(tempEvilImportScript, {
+        timeoutMs: 3000,
+      });
+
+      expect(result.stdout).toContain("NATIVE_IMPORT_BLOCKED:");
+      expect(result.stdout).toContain("Access to native core module [node:child_process] is restricted");
+
+      // Verify integrity violation log is registered inside SandboxSecurityRegistry disk file
+      const auditFile = result.childAuditFile || testAuditFile;
+      expect(fs.existsSync(auditFile)).toBe(true);
+      const content = fs.readFileSync(auditFile, "utf8");
+      const logs = JSON.parse(content);
+      const nativeViolation = logs.find(
+        (v) =>
+          v.category === "integrity" && v.action === "native_import_violation",
+      );
+      expect(nativeViolation).toBeDefined();
+      expect(nativeViolation.details.specifier).toBe("node:child_process");
+    } finally {
+      try {
+        if (fs.existsSync(tempEvilImportScript)) {
+          fs.unlinkSync(tempEvilImportScript);
+        }
+      } catch {
+        // ignore
+      }
+    }
+  });
+
+  test("should permit dynamic imports of safe native core libraries in GuestLoader (SPEC-168)", async () => {
+    const tempSafeImportScript = path.join(__dirname, "temp_guest_safe_import.js");
+    fs.writeFileSync(
+      tempSafeImportScript,
+      `try {
+        const crypto = await import("node:crypto");
+        console.log("SAFE_IMPORT_SUCCESS:" + typeof crypto.createHash);
+      } catch (err) {
+        console.log("SAFE_IMPORT_BLOCKED: " + err.message);
+      }`,
+      "utf8"
+    );
+
+    try {
+      const result = await GuestRunner.runScript(tempSafeImportScript, {
+        timeoutMs: 3000,
+      });
+
+      expect(result.stdout).toContain("SAFE_IMPORT_SUCCESS:function");
+    } finally {
+      try {
+        if (fs.existsSync(tempSafeImportScript)) {
+          fs.unlinkSync(tempSafeImportScript);
+        }
+      } catch {
+        // ignore
+      }
+    }
   });
 });

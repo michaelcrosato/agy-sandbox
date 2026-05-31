@@ -46,7 +46,7 @@ for (const builtin of coreBuiltins) {
 let isSentryActivated = false;
 let initialGlobals = new Set();
 let pollutionInterval = null;
-const allowedGlobals = new Set(["gc"]);
+const allowedGlobals = new Set(["gc", "guestRpcQuery"]);
 
 export const IntegrityGuard = {
   /**

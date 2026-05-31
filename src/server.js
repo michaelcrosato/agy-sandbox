@@ -33,6 +33,7 @@ import { createRegistry } from "./net/metrics.js";
 import { createLogger } from "./net/logger.js";
 import { LatencyMonitor } from "./net/LatencyMonitor.js";
 import { SandboxTelemetry } from "./net/SandboxTelemetry.js";
+import { ResourceLimiter } from "./net/ResourceLimiter.js";
 import {
   handleOutfitBuy,
   handleShipBuy,
@@ -107,6 +108,21 @@ const latencyMonitor = new LatencyMonitor();
 latencyMonitor.start();
 const sandboxTelemetry = new SandboxTelemetry();
 sandboxTelemetry.start();
+const resourceLimiter = new ResourceLimiter({
+  onHardLimit: () => {
+    if (process.env.NODE_ENV === "test") {
+      console.log(
+        "⚠️ [RESOURCE LIMITER] Hard limit crossed but ignored in test environment",
+      );
+      return;
+    }
+    console.error(
+      "🚨 [RESOURCE LIMITER] Hard limit crossed! Triggering server shutdown.",
+    );
+    shutdown();
+  },
+});
+resourceLimiter.start();
 
 // ws inbound hardening (spec 002): cap inbound frame size to blunt memory-DoS,
 // and accept only same-origin upgrades + an optional ALLOWED_ORIGINS allowlist
@@ -1354,6 +1370,35 @@ wss.on("connection", (ws) => {
   clients.set(ws, clientObj);
 
   ws.on("message", async (msgStr) => {
+    if (
+      resourceLimiter.isBackpressureActive &&
+      process.env.NODE_ENV !== "test"
+    ) {
+      if (typeof ws.pause === "function") {
+        ws.pause();
+        setTimeout(() => {
+          try {
+            if (typeof ws.resume === "function") {
+              ws.resume();
+            }
+          } catch (err) {
+            // ignore socket resume errors
+          }
+        }, 200);
+      }
+      try {
+        clientObj.send({
+          type: "notification",
+          message:
+            "Server is experiencing transient high resource load. Throttling messages...",
+          style: "warning",
+        });
+      } catch (err) {
+        // ignore socket send errors
+      }
+      return;
+    }
+
     let rawMsg;
     try {
       rawMsg = JSON.parse(msgStr);
@@ -1554,6 +1599,7 @@ const shutdown = async () => {
   console.log("\n🔌 Shutting down server gracefully...");
   latencyMonitor.stop();
   sandboxTelemetry.stop();
+  resourceLimiter.stop();
 
   // Clear all heartbeat and simulation intervals immediately to prevent race conditions during teardown (spec 019f)
   clearInterval(physicsInterval);

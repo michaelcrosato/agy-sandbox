@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T04:38:58.636Z",
+  "generatedAt": "2026-05-31T04:41:27.072Z",
   "stats": {
-    "totalSourceFiles": 81,
-    "totalTestFiles": 110,
+    "totalSourceFiles": 82,
+    "totalTestFiles": 111,
     "totalSpecFiles": 123,
-    "totalLoc": 18490,
-    "totalTests": 1521,
+    "totalLoc": 18647,
+    "totalTests": 1527,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -1555,6 +1555,24 @@
       "testCasesCount": 7,
       "referencingSpecs": [
         "plan/specs/104_living_codex_hygiene_jsdoc_audit.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/net/ResourceLimiter.js",
+      "loc": 157,
+      "classes": [
+        {
+          "name": "ResourceLimiter",
+          "jsdoc": "/**\n* ResourceLimiter (spec 116) — light-overhead resource monitor and backpressure sentinel\n* that regularly polls host system/thread health metrics (memory usage, CPU event loop latency)\n* and actively prevents runaway infinite loops or Out-Of-Memory (OOM) failures.\n*/",
+          "line": 8
+        }
+      ],
+      "exports": [],
+      "testFile": "src/net/ResourceLimiter.test.js",
+      "testCasesCount": 6,
+      "referencingSpecs": [
+        "plan/specs/116_resource_backpressure_limiter.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -3872,13 +3890,6 @@
     "untestedCoreFiles": [],
     "missingJsDocs": [],
     "staleSpecReferences": [
-      {
-        "spec": "plan/specs/116_resource_backpressure_limiter.md",
-        "brokenFiles": [
-          "src/net/ResourceLimiter.js",
-          "src/net/ResourceLimiter.test.js"
-        ]
-      },
       {
         "spec": "plan/specs/117_websocket_rate_limiter_telemetry.md",
         "brokenFiles": [

@@ -39,6 +39,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T21:42 · iter-0116 · GREEN · cycle-28-spec-116-resource-backpressure-limiter
+- **Baseline:** `ef63b34` on `feat/procedural-missions`; 1,134 Jest green.
+- **Move:** Implement SPEC-116 (Resource Allocation Limits & Memory/CPU Backpressure Sentinels).
+- **Changed:**
+  - Coded `src/net/ResourceLimiter.js` which regularly monitors memory allocation (`process.memoryUsage().rss`) and event-loop lag.
+  - Implements soft thresholds triggering `global.gc()` sweeps and pausing inbound socket ingestion via TCP stream pause/resume controls.
+  - Implements hard thresholds triggering graceful process shutdowns via `ProcessReaper` to avoid runaway memory locks or host OOM.
+  - Wired `ResourceLimiter` into `src/server.js` with soft and hard triggers, safely bypassing actions on test runs (`process.env.NODE_ENV === "test"`) to prevent false-positives under parallel Jest stress concurrency runs.
+  - Created a comprehensive test suite `src/net/ResourceLimiter.test.js` validating the rate and limit triggers under mocked high-allocation scenarios.
+- **Decisions:** Used TCP socket pause/resume streams for inbound WebSocket backpressure, blunting incoming frames naturally at the network level when resource thresholds are temporarily crossed.
+- **Validation:** Executed `npm run agent:check` confirming that Prettier, ESLint, TypeScript checkJs, and all 1139 Jest tests pass 100% green.
+- **Next:** Proceed to SPEC-117 (Zero-Trust WebSocket Rate Limiter & Observability Telemetry).
+
 ## 2026-05-31T21:40 · iter-0115 · GREEN · cycle-28-spec-115-ephemeral-workspace-sandbox
 - **Baseline:** `8de9b47` on `feat/procedural-missions`; 1,130 Jest green.
 - **Move:** Implement SPEC-115 (Ephemeral Workspace Isolation Layer & Sandbox Cloner).

@@ -9,6 +9,12 @@ import { Worker } from "worker_threads";
 const activeWorkers = new Set();
 const activeProcesses = new Set();
 
+/**
+ * ProcessReaper (spec 092) — pure, modular lifecycle manager to track
+ * and aggressively terminate background workers, child processes, and
+ * sockets to prevent memory leaks and zombie locks in the AI sandbox.
+ * @type {object}
+ */
 export const ProcessReaper = {
   /**
    * Registers an active Worker thread to the cleanup ledger.

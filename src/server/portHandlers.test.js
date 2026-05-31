@@ -548,9 +548,12 @@ describe("portHandlers.handlePresetSave & handlePresetLoad (spec 058)", () => {
   test("saves presets successfully", () => {
     handlePresetSave(mockClient, 0);
 
-    expect(mockClient.presets[0]).toEqual(["Basic Laser", "Heavy Shields"]);
+    expect(mockClient.presets[0]).toEqual({
+      name: "Preset Slot 1",
+      outfits: ["Basic Laser", "Heavy Shields"],
+    });
     expect(mockClient.sentNotifications[0].message).toContain(
-      "Saved Loadout Preset 1!",
+      'Saved Preset: "Preset Slot 1"!',
     );
   });
 

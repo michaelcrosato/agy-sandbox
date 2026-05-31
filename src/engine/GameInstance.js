@@ -2,6 +2,7 @@ import { Vector2D } from "../physics/Vector2D.js";
 import { Ship } from "./Ship.js";
 import { Planet } from "./Planet.js";
 import { SpaceEngine } from "./SpaceEngine.js";
+import { TerritoryControl } from "./TerritoryControl.js";
 import { SpaceEntity } from "./SpaceEntity.js";
 import { AIController } from "./ai/AIController.js";
 import { DEFAULT_OUTFITS } from "./outfitCatalog.js";
@@ -17,88 +18,36 @@ import { mineYield } from "./Mining.js";
 import { shipName, createSeededRng } from "./NameGenerator.js";
 import { squadManager } from "../server/SquadManager.js";
 
-// Which sectors share trade routes (warp-gate connected) for economic diffusion.
+/**
+ * Map defining which sectors share direct warp-gate trade route adjacency links.
+ * Used for simulated economic and price diffusion.
+ * @type {Record<string, Array<string>>}
+ */
 export const SECTOR_ADJACENCY = {
   core: ["frontier"],
   frontier: ["core", "rim"],
   rim: ["frontier"],
 };
 
-export const BASE_MARKETS = {
-  Sol: {
-    food: 100,
-    electronics: 300,
-    minerals: 150,
-    luxuries: 600,
-    contraband: 250,
-    machinery: 100,
-    ore: 90,
-  },
-  "New Polaris": {
-    food: 220,
-    electronics: 320,
-    minerals: 50,
-    luxuries: 650,
-    contraband: 300,
-    machinery: 220,
-    ore: 55,
-  },
-  "Sigma Draconis": {
-    food: 120,
-    electronics: 120,
-    minerals: 250,
-    luxuries: 500,
-    contraband: 200,
-    machinery: 160,
-    ore: 130,
-  },
-  "Kaelis Colony": {
-    food: 40,
-    electronics: 420,
-    minerals: 180,
-    luxuries: 550,
-    contraband: 280,
-    machinery: 190,
-    ore: 85,
-  },
-  "Aurelia Mining Hub": {
-    food: 150,
-    electronics: 290,
-    minerals: 70,
-    luxuries: 580,
-    contraband: 260,
-    machinery: 150,
-    ore: 50,
-  },
-  "Tenebris Prime": {
-    food: 160,
-    electronics: 450,
-    minerals: 200,
-    luxuries: 220,
-    contraband: 400,
-    machinery: 240,
-    ore: 95,
-  },
-  "Valkyrie Depot": {
-    food: 110,
-    electronics: 380,
-    minerals: 190,
-    luxuries: 520,
-    contraband: 220,
-    machinery: 80,
-    ore: 125,
-  },
-  "Rogue's Hollow": {
-    food: 250,
-    electronics: 220,
-    minerals: 160,
-    luxuries: 450,
-    contraband: 60,
-    machinery: 180,
-    ore: 80,
-  },
-};
+import { BASE_MARKETS } from "../net/SchemaRegistry.js";
+export { BASE_MARKETS };
 
+/**
+ * Utility helper to identify a sector ID from 2D vector coordinate bounds.
+ * @param {object} pos Coordinate point containing x and y coordinates.
+ * @returns {string} The sector name identifier.
+ */
+export function getSectorFromPosition(pos) {
+  if (!pos) return "core";
+  if (pos.x > 10000 && pos.y > 10000) return "frontier";
+  if (pos.x < -10000 && pos.y < -10000) return "rim";
+  return "core";
+}
+
+/**
+ * Authoritative sandbox game instance simulator managing sectors, entities,
+ * economies, and dynamic galactic factions.
+ */
 export class GameInstance {
   constructor(id, name) {
     this.id = id;
@@ -145,7 +94,13 @@ export class GameInstance {
     // before seedGalaxy so NPC spawns can hand their controllers the policy
     // views (faction relations + per-player standings) for disposition targeting.
     this.factionRegistry = new FactionRegistry();
-    this.baseMarkets = BASE_MARKETS;
+    this.baseMarkets = { ...BASE_MARKETS };
+
+    this.territoryControl = new TerritoryControl();
+    this.factionRegistry.territoryControl = this.territoryControl;
+    this.territoryControl.onControlShift = (sectorId, oldOwner, newOwner) => {
+      this.handleControlShift(sectorId, oldOwner, newOwner);
+    };
 
     // Seed initial entities
     this.seedGalaxy();
@@ -422,7 +377,10 @@ export class GameInstance {
         weaponCooldown: isDestroyer ? 0.3 : 0.25,
       });
 
-      gShip.faction = "Federation";
+      const sectorId = getSectorFromPosition(spawnPos);
+      gShip.faction = this.territoryControl
+        ? this.territoryControl.sectors[sectorId].controllingFaction
+        : "Federation";
       const controller = new AIController(gShip, "guard", {
         useUtilityAdvisor: true,
         factionPolicy: this.factionRegistry.factionPolicy(),
@@ -482,6 +440,42 @@ export class GameInstance {
     };
     for (const planet of this.planets) {
       planet.faction = byName[planet.name] || "Independents";
+    }
+  }
+
+  handleControlShift(sectorId, oldOwner, newOwner) {
+    // Shift factions of planets in this sector belonging to oldOwner to newOwner
+    for (const planet of this.planets) {
+      if (planet.sector === sectorId && planet.faction === oldOwner) {
+        planet.faction = newOwner;
+      }
+    }
+
+    // Broadcast global chat comms and warning notifications announcing the conquest.
+    this.broadcast({
+      type: "chat",
+      sender: "GALAXY NEWS",
+      message: `📢 SECTOR CONQUEST: Faction [${newOwner}] has seized control of the [${sectorId.toUpperCase()}] sector from [${oldOwner}]!`,
+      color: "#ffaa00",
+    });
+
+    this.broadcastNotification(
+      `Sector ${sectorId.toUpperCase()} has been captured by ${newOwner}!`,
+      "warning",
+    );
+
+    if (this.chronicle) {
+      this.chronicle.recordEvent({
+        sector: sectorId,
+        category: "faction_conquest",
+        title: `Sector Conquered: ${sectorId.toUpperCase()}`,
+        description: `Faction ${newOwner} has conquered the ${sectorId.toUpperCase()} sector from ${oldOwner}.`,
+        impactMetrics: {
+          sector: sectorId,
+          oldOwner,
+          newOwner,
+        },
+      });
     }
   }
 
@@ -640,7 +634,10 @@ export class GameInstance {
           weaponDamage: 25,
           weaponCooldown: 0.25,
         });
-        gShip.faction = "Federation";
+        const sectorId = getSectorFromPosition(spawnPos);
+        gShip.faction = this.territoryControl
+          ? this.territoryControl.sectors[sectorId].controllingFaction
+          : "Federation";
         const controller = new AIController(gShip, "guard", {
           useUtilityAdvisor: true,
           factionPolicy: this.factionRegistry.factionPolicy(),
@@ -729,7 +726,7 @@ export class GameInstance {
   broadcast(data) {
     const str = JSON.stringify(data);
     for (const client of this.clients.values()) {
-      if (client.ws.readyState === client.ws.OPEN) {
+      if (client.ws && client.ws.readyState === client.ws.OPEN) {
         client.ws.send(str);
       }
     }
@@ -989,6 +986,47 @@ export class GameInstance {
               ent.faction,
               -5,
             );
+          }
+        }
+      }
+
+      if (this.territoryControl && ent.position) {
+        const sectorId = getSectorFromPosition(ent.position);
+        const sector = this.territoryControl.sectors[sectorId];
+        if (sector) {
+          const isPirate = AIController.isPirateShip(ent);
+          if (isPirate) {
+            const currentController = sector.controllingFaction;
+            this.territoryControl.adjustInfluence(
+              sectorId,
+              currentController,
+              3.0,
+            );
+            this.territoryControl.adjustInfluence(sectorId, "Pirates", -3.0);
+            this.broadcast({
+              type: "territory_sync",
+              sectors: this.territoryControl.sectors,
+            });
+          } else if (ent.faction && ent.faction !== "Independents") {
+            this.territoryControl.adjustInfluence(sectorId, ent.faction, -5.0);
+            let opposingFaction = sector.controllingFaction;
+            if (this.isConflictZone) {
+              opposingFaction =
+                ent.faction === this.conflictFactionA
+                  ? this.conflictFactionB
+                  : this.conflictFactionA;
+            }
+            if (opposingFaction && opposingFaction !== ent.faction) {
+              this.territoryControl.adjustInfluence(
+                sectorId,
+                opposingFaction,
+                5.0,
+              );
+            }
+            this.broadcast({
+              type: "territory_sync",
+              sectors: this.territoryControl.sectors,
+            });
           }
         }
       }

@@ -1,6 +1,6 @@
 # SPEC-098 — Faction: Emergent Faction Territory Control & Dynamic Sector Borders
 
-- **Status:** Todo
+- **Status:** Completed
 - **Wave:** v23 — Phase 1
 - **Priority:** High
 - **Product Pillar:** P3 — Faction & Reputation Web / emergence

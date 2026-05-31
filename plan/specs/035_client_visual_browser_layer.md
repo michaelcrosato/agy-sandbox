@@ -22,7 +22,7 @@ suites can't.
 
 ## Implementation Approach
 - Add devDeps `@vitest/browser` + `playwright`; a `vitest.browser.config.js` (or a `projects` entry) scoped
-  to `src/client/**/*.browser.test.js`; a `test:client:browser` script.
+  to `src/client/__tests/CanvasRenderer.browser.test.js`; a `test:client:browser` script.
 - Extract any remaining pure logic from the entangled client files where cheap (mirror `007`/`021`), and use
   the browser runner only where real DOM/canvas is required.
 

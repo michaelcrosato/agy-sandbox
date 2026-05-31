@@ -45,6 +45,8 @@ export class NetworkHandler {
     this.onPingReceived = null;
     this.onLobbySync = null;
     this.onConnectionStatusChange = null;
+    this.onTerritorySync = null;
+    this.sectors = null;
 
     // Persisted session token for recovery
     this.sessionToken = localStorage.getItem("nebula_session_token") || null;
@@ -249,6 +251,11 @@ export class NetworkHandler {
         case "warp_success":
           if (this.onWarpSuccess) this.onWarpSuccess(msg);
           break;
+
+        case "territory_sync":
+          this.sectors = msg.sectors;
+          if (this.onTerritorySync) this.onTerritorySync(msg);
+          break;
       }
     };
 
@@ -371,10 +378,11 @@ export class NetworkHandler {
    * Save current starship outfitting to a preset slot.
    * @param {number} presetIndex - Index of preset slot (0-2).
    */
-  requestPresetSave(presetIndex) {
+  requestPresetSave(presetIndex, presetName = null) {
     this.send({
       type: "preset_save",
       presetIndex,
+      presetName,
     });
   }
 

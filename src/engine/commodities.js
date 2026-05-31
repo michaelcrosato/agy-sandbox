@@ -13,16 +13,9 @@
  * only the *set of keys* is centralized here.
  */
 
-/** The canonical, frozen commodity list (order is the historical wire order). */
-export const COMMODITIES = Object.freeze([
-  "food",
-  "electronics",
-  "minerals",
-  "luxuries",
-  "contraband",
-  "machinery",
-  "ore",
-]);
+import { COMMODITIES } from "../net/SchemaRegistry.js";
+
+export { COMMODITIES };
 
 /**
  * Builds a fresh, zero-initialized cargo map keyed by every commodity. A new

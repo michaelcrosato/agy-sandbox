@@ -21,6 +21,10 @@
  * Pure: no DOM, sockets, timers, or randomness.
  */
 
+/**
+ * The wire protocol version header for schema delta state compression.
+ * @type {number}
+ */
 export const SCHEMA_PROTOCOL_VERSION = 1;
 
 // Value type tags. Note: T_STRING's payload is a varint INDEX into the string
@@ -39,6 +43,10 @@ const INT_LIMIT = 0x7fffffff;
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
+/**
+ * High-performance byte serialization stream supporting varints,
+ * zig-zag encoding, and IEEE 754 float64 primitives.
+ */
 class ByteWriter {
   constructor() {
     this.bytes = [];
@@ -73,6 +81,10 @@ class ByteWriter {
   }
 }
 
+/**
+ * High-performance byte deserialization stream wrapping standard DataView
+ * for decoding compressed wire structures safely.
+ */
 class ByteReader {
   constructor(u8) {
     this.u8 = u8;

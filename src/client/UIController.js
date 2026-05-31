@@ -1,3 +1,5 @@
+import { COMMODITIES } from "../net/SchemaRegistry.js";
+
 /**
  * Bridges the background space physics engine variables with the HTML HUD dashboard elements.
  */
@@ -550,15 +552,7 @@ export class UIController {
         };
 
         const routes = [];
-        const commodities = [
-          "food",
-          "electronics",
-          "minerals",
-          "luxuries",
-          "contraband",
-          "machinery",
-          "ore",
-        ];
+        const commodities = COMMODITIES;
 
         for (let i = 0; i < planets.length; i++) {
           const pA = planets[i];
@@ -710,6 +704,116 @@ export class UIController {
         }
       } else {
         this.navComputerPanel.classList.add("hidden");
+      }
+    }
+
+    // Update Territory Control HUD Card
+    this.updateTerritoryControl(player);
+  }
+
+  /**
+   * Refreshes the territory control overlay and HUD panel cards (SPEC-098).
+   * @param {Ship} player
+   */
+  updateTerritoryControl(player) {
+    if (!this.territoryControlPanel) {
+      // Lazy load elements if they aren't bound in the constructor
+      this.territoryControlPanel = document.getElementById(
+        "territory-control-panel",
+      );
+      this.currentSectorOwner = document.getElementById("current-sector-owner");
+      this.currentSectorSecurity = document.getElementById(
+        "current-sector-security",
+      );
+      this.currentSectorTax = document.getElementById("current-sector-tax");
+      this.influenceBars = document.getElementById("influence-bars");
+    }
+
+    if (!this.territoryControlPanel) return;
+
+    // Determine current sector from player position
+    const getSectorFromPosition = (pos) => {
+      if (!pos) return "core";
+      if (pos.x > 10000 && pos.y > 10000) return "frontier";
+      if (pos.x < -10000 && pos.y < -10000) return "rim";
+      return "core";
+    };
+
+    const currentSector = getSectorFromPosition(player.position);
+
+    // Retrieve sector control data from NetworkHandler / window
+    const sectors = window.networkHandler
+      ? window.networkHandler.sectors
+      : null;
+    if (!sectors || !sectors[currentSector]) {
+      this.territoryControlPanel.style.display = "none";
+      return;
+    }
+
+    this.territoryControlPanel.style.display = "block";
+    const sectorData = sectors[currentSector];
+    const owner = sectorData.controllingFaction;
+
+    // Get security, tax based on owner
+    let security = "medium";
+    let taxRate = "8%";
+    let factionColor = "var(--color-gold)"; // Default Frontier League
+
+    if (owner === "Federation") {
+      security = "HIGH";
+      taxRate = "12%";
+      factionColor = "var(--color-cyan)";
+    } else if (owner === "Frontier League") {
+      security = "MEDIUM";
+      taxRate = "8%";
+      factionColor = "var(--color-gold)";
+    } else if (owner === "Pirates") {
+      security = "LAWLESS";
+      taxRate = "20%";
+      factionColor = "#ff3b30"; // Red
+    } else if (owner === "Independents") {
+      security = "LOW";
+      taxRate = "5%";
+      factionColor = "#a0a5b5"; // Muted Gray
+    }
+
+    if (this.currentSectorOwner) {
+      this.currentSectorOwner.innerText = owner.toUpperCase();
+      this.currentSectorOwner.style.color = factionColor;
+    }
+    if (this.currentSectorSecurity) {
+      this.currentSectorSecurity.innerText = security;
+      this.currentSectorSecurity.style.color = factionColor;
+    }
+    if (this.currentSectorTax) {
+      this.currentSectorTax.innerText = taxRate;
+      this.currentSectorTax.style.color = factionColor;
+    }
+
+    if (this.influenceBars) {
+      this.influenceBars.innerHTML = "";
+      for (const [faction, score] of Object.entries(sectorData.influence)) {
+        let fColor = "#a0a5b5";
+        if (faction === "Federation") fColor = "var(--color-cyan)";
+        else if (faction === "Frontier League") fColor = "var(--color-gold)";
+        else if (faction === "Pirates") fColor = "#ff3b30";
+
+        const row = document.createElement("div");
+        row.style.display = "flex";
+        row.style.flexDirection = "column";
+        row.style.gap = "2px";
+        row.style.fontSize = "0.75em";
+
+        row.innerHTML = `
+          <div style="display: flex; justify-content: space-between; color: rgba(255,255,255,0.7);">
+            <span>${faction.toUpperCase()}</span>
+            <span>${Math.round(score)}%</span>
+          </div>
+          <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+            <div style="width: ${score}%; height: 100%; background: ${fColor}; box-shadow: 0 0 4px ${fColor}; transition: width 0.3s ease-out;"></div>
+          </div>
+        `;
+        this.influenceBars.appendChild(row);
       }
     }
   }

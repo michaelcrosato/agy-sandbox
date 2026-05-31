@@ -171,6 +171,8 @@ export class FactionRegistry {
     this.relations = relations;
     this.options = { ...DEFAULT_OPTIONS, ...options };
     this.standings = standings;
+    /** @type {any} */
+    this.territoryControl = null;
   }
 
   /**

@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-30T23:58:27.541Z",
+  "generatedAt": "2026-05-31T00:42:58.789Z",
   "stats": {
-    "totalSourceFiles": 67,
-    "totalTestFiles": 94,
-    "totalSpecFiles": 108,
-    "totalLoc": 15601,
-    "totalTests": 1313,
+    "totalSourceFiles": 71,
+    "totalTestFiles": 98,
+    "totalSpecFiles": 110,
+    "totalLoc": 16791,
+    "totalTests": 1366,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -319,20 +319,14 @@
     },
     {
       "path": "src/engine/commodities.js",
-      "loc": 38,
+      "loc": 31,
       "classes": [],
       "exports": [
-        {
-          "name": "COMMODITIES",
-          "type": "constant",
-          "jsdoc": "/** The canonical, frozen commodity list (order is the historical wire order). */",
-          "line": 17
-        },
         {
           "name": "makeEmptyCargo",
           "type": "function",
           "jsdoc": "/**\n* Builds a fresh, zero-initialized cargo map keyed by every commodity. A new\n* object is returned each call so ships never share a cargo reference.\n* @returns {Object<string, number>}\n*/",
-          "line": 32
+          "line": 25
         }
       ],
       "testFile": "src/engine/commodities.test.js",
@@ -382,7 +376,7 @@
     },
     {
       "path": "src/engine/FactionRegistry.js",
-      "loc": 481,
+      "loc": 483,
       "classes": [
         {
           "name": "FactionRegistry",
@@ -473,26 +467,26 @@
     },
     {
       "path": "src/engine/GameInstance.js",
-      "loc": 1746,
+      "loc": 1784,
       "classes": [
         {
           "name": "GameInstance",
-          "jsdoc": null,
-          "line": 102
+          "jsdoc": "/**\n* Authoritative sandbox game instance simulator managing sectors, entities,\n* economies, and dynamic galactic factions.\n*/",
+          "line": 51
         }
       ],
       "exports": [
         {
           "name": "SECTOR_ADJACENCY",
           "type": "constant",
-          "jsdoc": null,
-          "line": 21
+          "jsdoc": "/**\n* Map defining which sectors share direct warp-gate trade route adjacency links.\n* Used for simulated economic and price diffusion.\n* @type {Record<string, Array<string>>}\n*/",
+          "line": 26
         },
         {
-          "name": "BASE_MARKETS",
-          "type": "constant",
-          "jsdoc": null,
-          "line": 27
+          "name": "getSectorFromPosition",
+          "type": "function",
+          "jsdoc": "/**\n* Utility helper to identify a sector ID from 2D vector coordinate bounds.\n* @param {object} pos Coordinate point containing x and y coordinates.\n* @returns {string} The sector name identifier.\n*/",
+          "line": 40
         }
       ],
       "testFile": "src/engine/GameInstance.test.js",
@@ -502,25 +496,10 @@
         "plan/specs/048_contraband_space_patrol_scans.md",
         "plan/specs/054_faction_conflict_battlegrounds.md",
         "plan/specs/066_utilityai_advisor_spawns_rollout.md",
-        "plan/specs/081_outlaw_black_markets.md"
+        "plan/specs/081_outlaw_black_markets.md",
+        "plan/specs/104_living_codex_hygiene_jsdoc_audit.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "GameInstance",
-          "type": "class",
-          "line": 102
-        },
-        {
-          "name": "SECTOR_ADJACENCY",
-          "type": "constant",
-          "line": 21
-        },
-        {
-          "name": "BASE_MARKETS",
-          "type": "constant",
-          "line": 27
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/engine/GenerativeMissions.js",
@@ -634,6 +613,50 @@
       "testCasesCount": 5,
       "referencingSpecs": [
         "plan/specs/091_game_invariant_verifier.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/engine/LoadoutManager.js",
+      "loc": 323,
+      "classes": [],
+      "exports": [
+        {
+          "name": "OUTFIT_POWER_DRAWS",
+          "type": "constant",
+          "jsdoc": "/**\n* Mapping of ship outfit name strings to their virtual power grid draws in MW.\n* Reactor modules supply virtual grid power represented by negative values.\n* @type {Record<string, number>}\n*/",
+          "line": 11
+        },
+        {
+          "name": "getPresetOutfits",
+          "type": "function",
+          "jsdoc": "/**\n* Extracts standard list of outfits from a preset input (which can be a simple array or preset object).\n* @param {Array|Object} preset\n* @returns {Array<string>}\n*/",
+          "line": 41
+        },
+        {
+          "name": "validatePreset",
+          "type": "function",
+          "jsdoc": "/**\n* Validates slot availability, virtual power capacity, and max mass limits of a preset configuration on a ship.\n* @param {Object} ship\n* @param {Array|Object} preset\n* @param {ReadonlyArray<any>} [catalog=DEFAULT_OUTFITS]\n* @returns {{ allowed: boolean, reason: string }}\n*/",
+          "line": 55
+        },
+        {
+          "name": "calculatePresetCost",
+          "type": "function",
+          "jsdoc": "/**\n* Calculates total purchase and sell adjustments for outfits in a preset.\n* @param {Object} ship\n* @param {Array|Object} preset\n* @param {ReadonlyArray<any>} [catalog=DEFAULT_OUTFITS]\n* @param {string|null} playerId\n* @param {Object|null} factionRegistry\n* @param {string|null} planetFaction\n* @param {string|null} sectorId\n* @returns {{\n*   totalCost: number,\n*   totalRefund: number,\n*   netCreditsChange: number,\n*   toBuy: Array<string>,\n*   toSell: Array<string>\n* }}\n*/",
+          "line": 154
+        },
+        {
+          "name": "canLoadPreset",
+          "type": "function",
+          "jsdoc": "/**\n* High-level check if player can load a preset (checking slot/power/mass safety, stock levels, rank constraints).\n* @param {Object} ship\n* @param {Array|Object} preset\n* @param {Object} planet\n* @param {string|null} playerId\n* @param {Object|null} factionRegistry\n* @param {string|null} sectorId\n* @param {ReadonlyArray<any>} [catalog=DEFAULT_OUTFITS]\n* @returns {{ allowed: boolean, reason: string, details?: Object }}\n*/",
+          "line": 249
+        }
+      ],
+      "testFile": "src/engine/LoadoutManager.test.js",
+      "testCasesCount": 20,
+      "referencingSpecs": [
+        "plan/specs/100_ship_fittings_presets_loadout_manager.md",
+        "plan/specs/104_living_codex_hygiene_jsdoc_audit.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -987,8 +1010,26 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/engine/TerritoryControl.js",
+      "loc": 209,
+      "classes": [
+        {
+          "name": "TerritoryControl",
+          "jsdoc": "/**\n* TerritoryControl.js — pure, deterministic faction territory control and sector influence\n* tracking engine (SPEC-098).\n*\n* It manages influence maps per sector (core, frontier, rim), decays non-controlling\n* factions' influence over time, triggers control shifts when rival influence exceeds\n* the owner by 10 points, and maps the controlling faction to dynamic sector parameters.\n*/",
+          "line": 9
+        }
+      ],
+      "exports": [],
+      "testFile": "src/engine/TerritoryControl.test.js",
+      "testCasesCount": 9,
+      "referencingSpecs": [
+        "plan/specs/098_emergent_faction_territory_control.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
       "path": "src/engine/Trading.js",
-      "loc": 226,
+      "loc": 248,
       "classes": [],
       "exports": [
         {
@@ -1013,19 +1054,19 @@
           "name": "getModifiedUpgradePrice",
           "type": "function",
           "jsdoc": "/**\n* Calculates the standing-adjusted price for hulls and outfits.\n* @param {number} baseCost - Base cost of the hull/outfit.\n* @param {Object|null} registry - FactionRegistry instance.\n* @param {string} playerId - Player ID.\n* @param {string|null} faction - Controlling faction name.\n* @returns {number} The standing-adjusted price.\n*/",
-          "line": 100
+          "line": 117
         },
         {
           "name": "applyHullPurchase",
           "type": "function",
           "jsdoc": "/**\n* Applies a shipyard hull purchase: charges the cost, swaps the hull stats, and\n* resets the cargo hold. No-op (insufficient_credits) if the ship can't afford it.\n* @param {Object} ship - Ship-like (mutated on success).\n* @param {Object} hull - Shipyard entry `{ name, cost, maxShield, maxArmor, cargoCapacity, thrustPower, turnRate }`.\n* @param {number|null} [costOverride] - Optional standing-adjusted cost to charge.\n* @returns {{ok: boolean, reason: string}}\n*/",
-          "line": 127
+          "line": 144
         },
         {
           "name": "findBestTradeRoutes",
           "type": "function",
           "jsdoc": "/**\n* Finds the top 3 most profitable trade routes among a list of planets,\n* factoring in player faction standings price modifiers and transaction taxes.\n* @param {Array<Object>} planets - List of docked planets in the active sector.\n* @param {Object|null} registry - FactionRegistry instance.\n* @param {string} playerId - Player ID.\n* @returns {Array<{commodity: string, origin: string, destination: string, buyPrice: number, sellPrice: number, netProfit: number}>}\n*/",
-          "line": 154
+          "line": 171
         }
       ],
       "testFile": "src/engine/Trading.test.js",
@@ -1037,7 +1078,8 @@
         "plan/specs/067_centralize_commodities_invariants.md",
         "plan/specs/081_outlaw_black_markets.md",
         "plan/specs/082_faction_aware_trade_advisor.md",
-        "plan/specs/087_dynamic_trade_profit_perception.md"
+        "plan/specs/087_dynamic_trade_profit_perception.md",
+        "plan/specs/104_living_codex_hygiene_jsdoc_audit.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -1172,51 +1214,46 @@
     },
     {
       "path": "src/net/BinaryCodec.js",
-      "loc": 254,
+      "loc": 259,
       "classes": [
         {
           "name": "ByteWriter",
           "jsdoc": "/** Growable byte sink with the primitive writers the encoder needs. */",
-          "line": 44
+          "line": 49
         },
         {
           "name": "ByteReader",
           "jsdoc": "/** Cursor over a Uint8Array with bounds-checked readers. */",
-          "line": 81
+          "line": 86
         }
       ],
       "exports": [
         {
           "name": "BINARY_PROTOCOL_VERSION",
           "type": "constant",
-          "jsdoc": null,
-          "line": 25
+          "jsdoc": "/**\n* The current wire protocol version header for binary schema validations.\n* Leads every serialized buffer frame to allow format migrations.\n* @type {number}\n*/",
+          "line": 30
         },
         {
           "name": "encode",
           "type": "function",
           "jsdoc": "/**\n* Encodes a frame object into a compact binary buffer.\n* @param {Object} frame - A JSON-shaped frame (e.g. `{type, seq, entities}`).\n* @returns {Uint8Array}\n*/",
-          "line": 224
+          "line": 229
         },
         {
           "name": "decode",
           "type": "function",
           "jsdoc": "/**\n* Decodes a buffer produced by {@link encode} back into the original frame.\n* @param {Uint8Array} u8\n* @returns {*} The reconstructed frame.\n*/",
-          "line": 240
+          "line": 245
         }
       ],
       "testFile": "src/net/BinaryCodec.test.js",
       "testCasesCount": 17,
       "referencingSpecs": [
-        "plan/specs/015_binary_wire_protocol.md"
+        "plan/specs/015_binary_wire_protocol.md",
+        "plan/specs/104_living_codex_hygiene_jsdoc_audit.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "BINARY_PROTOCOL_VERSION",
-          "type": "constant",
-          "line": 25
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/BroadcastFramer.js",
@@ -1412,60 +1449,51 @@
     },
     {
       "path": "src/net/ProcessReaper.js",
-      "loc": 101,
+      "loc": 107,
       "classes": [],
       "exports": [
         {
           "name": "ProcessReaper",
           "type": "constant",
-          "jsdoc": null,
-          "line": 12
+          "jsdoc": "/**\n* ProcessReaper (spec 092) — pure, modular lifecycle manager to track\n* and aggressively terminate background workers, child processes, and\n* sockets to prevent memory leaks and zombie locks in the AI sandbox.\n* @type {object}\n*/",
+          "line": 18
         }
       ],
       "testFile": "src/net/ProcessReaper.test.js",
       "testCasesCount": 4,
       "referencingSpecs": [
-        "plan/specs/092_zombie_reaper_orphan_cleanup.md"
+        "plan/specs/092_zombie_reaper_orphan_cleanup.md",
+        "plan/specs/104_living_codex_hygiene_jsdoc_audit.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "ProcessReaper",
-          "type": "constant",
-          "line": 12
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/PubSub.js",
-      "loc": 194,
+      "loc": 198,
       "classes": [
         {
           "name": "PubSub",
-          "jsdoc": null,
-          "line": 9
+          "jsdoc": "/**\n* Abstract base class defining the contract for process-agnostic publish-subscribe transports.\n* Supports both local InMemoryPubSub and distributed RedisPubSub implementations.\n*/",
+          "line": 13
         },
         {
           "name": "InMemoryPubSub",
           "jsdoc": "/**\n* Headless, process-local PubSub transport.\n* Used for fast in-process tests and single-process execution.\n*/",
-          "line": 54
+          "line": 58
         },
         {
           "name": "RedisPubSub",
           "jsdoc": "/**\n* Redis-backed PubSub transport.\n* Integrates with standard Redis pub/sub and Redis 7+ sharded pub/sub.\n*/",
-          "line": 106
+          "line": 110
         }
       ],
       "exports": [],
       "testFile": "src/net/PubSub.test.js",
       "testCasesCount": 7,
-      "referencingSpecs": [],
-      "missingJsDocSymbols": [
-        {
-          "name": "PubSub",
-          "type": "class",
-          "line": 9
-        }
-      ]
+      "referencingSpecs": [
+        "plan/specs/104_living_codex_hygiene_jsdoc_audit.md"
+      ],
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/roomRouter.js",
@@ -1506,7 +1534,9 @@
       "testFile": "src/net/roomRouter.test.js",
       "testCasesCount": 25,
       "referencingSpecs": [
-        "plan/specs/019a_scaling_decomposition.md"
+        "plan/specs/019a_scaling_decomposition.md",
+        "plan/specs/019d_sticky_routing_lb.md",
+        "plan/specs/104_living_codex_hygiene_jsdoc_audit.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -1530,70 +1560,93 @@
     },
     {
       "path": "src/net/SchemaCodec.js",
-      "loc": 265,
+      "loc": 277,
       "classes": [
         {
           "name": "ByteWriter",
-          "jsdoc": null,
-          "line": 42
+          "jsdoc": "/**\n* High-performance byte serialization stream supporting varints,\n* zig-zag encoding, and IEEE 754 float64 primitives.\n*/",
+          "line": 50
         },
         {
           "name": "ByteReader",
-          "jsdoc": null,
-          "line": 76
+          "jsdoc": "/**\n* High-performance byte deserialization stream wrapping standard DataView\n* for decoding compressed wire structures safely.\n*/",
+          "line": 88
         }
       ],
       "exports": [
         {
           "name": "SCHEMA_PROTOCOL_VERSION",
           "type": "constant",
-          "jsdoc": null,
-          "line": 24
+          "jsdoc": "/**\n* The wire protocol version header for schema delta state compression.\n* @type {number}\n*/",
+          "line": 28
         },
         {
           "name": "encode",
           "type": "function",
           "jsdoc": "/**\n* Encodes a frame into a compact buffer with a single interned string table for\n* both keys and string values.\n* @param {Object} frame\n* @returns {Uint8Array}\n*/",
-          "line": 234
+          "line": 246
         },
         {
           "name": "decode",
           "type": "function",
           "jsdoc": "/**\n* Decodes a buffer produced by {@link encode}.\n* @param {Uint8Array} u8\n* @returns {*}\n*/",
-          "line": 251
+          "line": 263
         }
       ],
       "testFile": "src/net/SchemaCodec.test.js",
       "testCasesCount": 8,
-      "referencingSpecs": [],
-      "missingJsDocSymbols": [
+      "referencingSpecs": [
+        "plan/specs/104_living_codex_hygiene_jsdoc_audit.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/net/SchemaRegistry.js",
+      "loc": 247,
+      "classes": [],
+      "exports": [
         {
-          "name": "ByteWriter",
-          "type": "class",
-          "line": 42
-        },
-        {
-          "name": "ByteReader",
-          "type": "class",
-          "line": 76
-        },
-        {
-          "name": "SCHEMA_PROTOCOL_VERSION",
+          "name": "COMMODITIES_METADATA",
           "type": "constant",
-          "line": 24
+          "jsdoc": "/**\n* The canonical commodities configuration details.\n* Defines mass, baseValue, illegal status, and category for each commodity.\n* Order of keys matches the historical wire order of commodities.\n* @type {Record<string, { mass: number, baseValue: number, illegal: boolean, category: string }>}\n*/",
+          "line": 14
+        },
+        {
+          "name": "COMMODITIES",
+          "type": "constant",
+          "jsdoc": "/**\n* The canonical, frozen commodity list.\n* @type {ReadonlyArray<string>}\n*/",
+          "line": 63
+        },
+        {
+          "name": "BASE_MARKETS",
+          "type": "constant",
+          "jsdoc": "/**\n* The base market prices for each commodity per planet.\n* Used as a comparison baseline for economic simulation.\n* @type {Record<string, Record<string, number>>}\n*/",
+          "line": 70
+        },
+        {
+          "name": "SCHEMAS",
+          "type": "constant",
+          "jsdoc": "/**\n* WebSocket message/command schemas used for inbound/outbound validation and sanitization.\n* @type {Record<string, Record<string, any>>}\n*/",
+          "line": 149
         }
-      ]
+      ],
+      "testFile": "src/net/SchemaRegistry.test.js",
+      "testCasesCount": 5,
+      "referencingSpecs": [
+        "plan/specs/099_centralized_commodities_schema_registry.md"
+      ],
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/SchemaValidator.js",
-      "loc": 234,
+      "loc": 138,
       "classes": [],
       "exports": [
         {
           "name": "validateMessage",
           "type": "function",
           "jsdoc": "/**\n* Validates and sanitizes a WebSocket input message against its registered schema.\n* Returns { valid: true, sanitized: Object } or { valid: false, error: string }.\n*\n* @param {any} msg\n* @returns {{ valid: boolean, sanitized?: Object, error?: string }}\n*/",
-          "line": 115
+          "line": 19
         }
       ],
       "testFile": "src/net/SchemaValidator.test.js",
@@ -1727,7 +1780,7 @@
     },
     {
       "path": "src/persistence/serializers.js",
-      "loc": 404,
+      "loc": 419,
       "classes": [],
       "exports": [
         {
@@ -1746,19 +1799,19 @@
           "name": "applyGalaxy",
           "type": "function",
           "jsdoc": "/**\n* Restores a galaxy snapshot onto a (compatible) `GameInstance`. Mutates the\n* passed-in instance in place; does not create new planets or rewire engine\n* entities. Planets present in `data` but missing from the instance are\n* silently skipped, so a snapshot taken from an older seed never breaks load.\n*\n* After this call, the round-trip property holds: any field captured by\n* {@link serializeGalaxy} reads back as the same value on the target.\n*\n* @param {Object} gameInstance - Target `GameInstance` to mutate.\n* @param {Object} data - Snapshot from {@link serializeGalaxy}.\n* @returns {void}\n*/",
-          "line": 141
+          "line": 149
         },
         {
           "name": "serializePlayer",
           "type": "function",
           "jsdoc": "/**\n* Captures a JSON-safe snapshot of a player session. Includes everything that\n* has to survive a restart: nickname, credits, cargo, outfits, hull stats,\n* weapon shield-pierce, and the mission manager's active/available/completed\n* state.\n*\n* The input may be either a live server `clientObj` (with `nickname`, `ship`,\n* `missionManager`) or any compatible shape — missing pieces produce a\n* partial snapshot rather than throwing.\n*\n* @param {Object} clientObj - Player session.\n* @returns {Object} Player snapshot.\n*/",
-          "line": 207
+          "line": 222
         },
         {
           "name": "applyPlayer",
           "type": "function",
           "jsdoc": "/**\n* Restores a player snapshot onto a (compatible) live client object. Mutates\n* the target's ship and mission manager in place rather than swapping the\n* references, so engine entities and event listeners continue to function.\n*\n* @param {Object} clientObj - Target player session.\n* @param {Object} data - Snapshot from {@link serializePlayer}.\n* @returns {void}\n*/",
-          "line": 259
+          "line": 274
         }
       ],
       "testFile": "src/persistence/serializers.test.js",
@@ -1813,8 +1866,51 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/server/actionHandlers.js",
+      "loc": 425,
+      "classes": [],
+      "exports": [
+        {
+          "name": "handleTrade",
+          "type": "function",
+          "jsdoc": "/**\n* Handles trade transaction requests (buying/selling commodities) authoritatively.\n* @param {object} clientObj The client object representing the active player connection.\n* @param {object} msg The inbound WebSocket command details.\n* @param {object} room The active server sector instance (room).\n* @returns {void}\n*/",
+          "line": 33
+        },
+        {
+          "name": "handlePortService",
+          "type": "function",
+          "jsdoc": "/**\n* Handles spaceport basic services (hulls repair, hyperdrive refueling).\n* @param {object} clientObj The client object representing the active player connection.\n* @param {object} msg The inbound WebSocket command details.\n* @returns {void}\n*/",
+          "line": 140
+        },
+        {
+          "name": "handleJettison",
+          "type": "function",
+          "jsdoc": "/**\n* Handles jettisoning cargo commodities into active space cargo pods.\n* @param {object} clientObj The client object representing the active player connection.\n* @param {object} msg The inbound WebSocket command details.\n* @param {object} room The active server sector instance (room).\n* @returns {void}\n*/",
+          "line": 185
+        },
+        {
+          "name": "handleWarpJump",
+          "type": "function",
+          "jsdoc": "/**\n* Handles warp gate jump traversals to adjacent sectors.\n* @param {object} clientObj The client object representing the active player connection.\n* @param {object} msg The inbound WebSocket command details.\n* @param {object} room The active server sector instance (room).\n* @returns {void}\n*/",
+          "line": 219
+        },
+        {
+          "name": "handleBoardingAction",
+          "type": "function",
+          "jsdoc": "/**\n* Handles specialized boarding actions (plundering, repairing hulks, module salvage, scuttling, capturing escorts).\n* @param {object} clientObj The client object representing the active player connection.\n* @param {object} msg The inbound WebSocket command details.\n* @param {object} room The active server sector instance (room).\n* @returns {void}\n*/",
+          "line": 301
+        }
+      ],
+      "testFile": "src/server/actionHandlers.test.js",
+      "testCasesCount": 18,
+      "referencingSpecs": [
+        "plan/specs/103_modularize_server_actions.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
       "path": "src/server/galaxyTicker.js",
-      "loc": 368,
+      "loc": 376,
       "classes": [],
       "exports": [
         {
@@ -1952,74 +2048,74 @@
     },
     {
       "path": "src/server/portHandlers.js",
-      "loc": 827,
+      "loc": 794,
       "classes": [],
       "exports": [
         {
           "name": "handleOutfitBuy",
           "type": "function",
           "jsdoc": "/**\n* Handles purchase of an outfit from a planet.\n* @param {Object} clientObj - The socket client connection object.\n* @param {string} outfitName - Name of the outfit to purchase.\n* @param {Object} targetPlanet - The planet entity.\n* @param {Object|null} [room=null] - Dynamic GameInstance room.\n*/",
-          "line": 28
+          "line": 32
         },
         {
           "name": "handleShipBuy",
           "type": "function",
           "jsdoc": "/**\n* Handles purchase of a new ship hull from a shipyard.\n* @param {Object} clientObj - The socket client connection object.\n* @param {string} shipName - Name of the ship hull type.\n* @param {Object} targetPlanet - The planet entity.\n* @param {Object|null} [room=null] - Dynamic GameInstance room.\n*/",
-          "line": 112
+          "line": 116
         },
         {
           "name": "handleMissionAccept",
           "type": "function",
           "jsdoc": "/**\n* Handles accepting a dynamic generative mission.\n* @param {Object} clientObj - The socket client connection object.\n* @param {string} planetName - Governing planet where the mission resides.\n* @param {string} missionId - The unique ID of the mission.\n* @param {Object} targetPlanet - The planet entity.\n* @param {Object} room - The dynamic GameInstance room.\n*/",
-          "line": 168
+          "line": 172
         },
         {
           "name": "handleMissionAbandon",
           "type": "function",
           "jsdoc": "/**\n* Handles abandoning an active mission.\n* @param {Object} clientObj - The socket client connection object.\n* @param {string} missionId - The unique ID of the active mission.\n*/",
-          "line": 219
+          "line": 268
         },
         {
           "name": "handleEscortCommand",
           "type": "function",
           "jsdoc": "/**\n* Handles transmitting tactical orders to player escorts.\n* @param {Object} clientObj - The socket client connection object.\n* @param {Object} msg - The command message payload containing \"command\" and optional \"targetId\".\n* @param {Object} room - Dynamic GameInstance room.\n*/",
-          "line": 242
+          "line": 291
         },
         {
           "name": "handleVoucherRedeem",
           "type": "function",
           "jsdoc": "/**\n* Handles redemption of bounty vouchers.\n* @param {Object} clientObj - Client connection object.\n* @param {Object|null} [room=null] - Dynamic room.\n*/",
-          "line": 273
+          "line": 322
         },
         {
           "name": "handleOutfitSell",
           "type": "function",
           "jsdoc": "/**\n* Handles sale of an equipped outfit back to the planet.\n* @param {Object} clientObj - The socket client connection object.\n* @param {string} outfitName - Name of the outfit to sell.\n* @param {Object} targetPlanet - The planet entity.\n* @param {Object|null} [room=null] - Dynamic GameInstance room.\n*/",
-          "line": 320
+          "line": 369
         },
         {
           "name": "handlePresetSave",
           "type": "function",
-          "jsdoc": "/**\n* Saves current outfitting configuration to a custom preset slot.\n* @param {Object} clientObj - The socket client connection object.\n* @param {number} presetIndex - Index of the preset to save (0, 1, or 2).\n*/",
-          "line": 399
+          "jsdoc": "/**\n* Saves current outfitting configuration to a custom preset slot.\n* @param {Object} clientObj - The socket client connection object.\n* @param {number} presetIndex - Index of the preset to save (0, 1, or 2).\n* @param {string|null} [presetName=null] - Custom name for the preset.\n*/",
+          "line": 454
         },
         {
           "name": "handlePresetLoad",
           "type": "function",
-          "jsdoc": "/**\n* Loads a custom preset configuration, enforcing transactions and slots.\n* @param {Object} clientObj - The socket client connection object.\n* @param {number} presetIndex - Index of the preset to load (0, 1, or 2).\n* @param {Object} targetPlanet - The planet entity player is landed on.\n* @param {Object|null} [room=null] - Dynamic GameInstance room.\n*/",
-          "line": 431
+          "jsdoc": "/**\n* Loads a custom preset configuration, enforcing transactions, slots, power constraints, and stock availability.\n* @param {Object} clientObj - The socket client connection object.\n* @param {number} presetIndex - Index of the preset to load (0, 1, or 2).\n* @param {Object} targetPlanet - The planet entity player is landed on.\n* @param {Object|null} [room=null] - Dynamic GameInstance room.\n*/",
+          "line": 494
         },
         {
           "name": "handleOreRefine",
           "type": "function",
           "jsdoc": "/**\n* Handles refining raw ore into minerals (or machinery) on command.\n* @param {Object} clientObj - The socket client connection object.\n* @param {number} quantity - Quantity of raw 'ore' to refine.\n* @param {string} targetCommodity - Target refined commodity.\n* @param {Object} room - Dynamic GameInstance room.\n*/",
-          "line": 642
+          "line": 609
         },
         {
           "name": "handleDistressBeacon",
           "type": "function",
           "jsdoc": "/**\n* Handles the distress beacon trigger.\n* @param {Object} clientObj - The socket client connection object.\n* @param {Object} room - The Dynamic GameInstance room.\n*/",
-          "line": 707
+          "line": 674
         }
       ],
       "testFile": "src/server/portHandlers.test.js",
@@ -2077,49 +2173,34 @@
     },
     {
       "path": "src/server/SquadManager.js",
-      "loc": 126,
+      "loc": 136,
       "classes": [
         {
           "name": "Squad",
-          "jsdoc": null,
-          "line": 6
+          "jsdoc": "/**\n* Represents a co-op party squad formed by players in the game lobby.\n*/",
+          "line": 9
         },
         {
           "name": "SquadManager",
-          "jsdoc": null,
-          "line": 20
+          "jsdoc": "/**\n* Singleton state manager coordinating all multiplayer co-op party squads.\n*/",
+          "line": 26
         }
       ],
       "exports": [
         {
           "name": "squadManager",
           "type": "constant",
-          "jsdoc": null,
-          "line": 125
+          "jsdoc": "/**\n* Singleton instance of SquadManager coordinating all active player squads.\n* @type {SquadManager}\n*/",
+          "line": 135
         }
       ],
       "testFile": "src/server/SquadManager.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [
-        "plan/specs/059_alliance_fleets.md"
+        "plan/specs/059_alliance_fleets.md",
+        "plan/specs/104_living_codex_hygiene_jsdoc_audit.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "Squad",
-          "type": "class",
-          "line": 6
-        },
-        {
-          "name": "SquadManager",
-          "type": "class",
-          "line": 20
-        },
-        {
-          "name": "squadManager",
-          "type": "constant",
-          "line": 125
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/server/supervisor.js",
@@ -2385,7 +2466,7 @@
       "priority": "Normal",
       "pillar": "None",
       "filesMentioned": [
-        "src/server/router.js"
+        "src/net/roomRouter.js"
       ]
     },
     {
@@ -2570,7 +2651,7 @@
       "priority": "Normal",
       "pillar": "None",
       "filesMentioned": [
-        "src/client/**/*.browser.test.js"
+        "src/client/__tests/CanvasRenderer.browser.test.js"
       ]
     },
     {
@@ -3032,7 +3113,7 @@
       "pillar": "None",
       "filesMentioned": [
         "src/client/Reconciler.js",
-        "src/client/__tests__/Reconciler.test.js"
+        "src/client/__tests/Reconciler.test.js"
       ]
     },
     {
@@ -3159,7 +3240,6 @@
       "pillar": "None",
       "filesMentioned": [
         "src/engine/Trading.js",
-        "src/engine/TradeAdvisor.js",
         "src/client/UIController.js"
       ]
     },
@@ -3328,7 +3408,7 @@
       "path": "plan/specs/098_emergent_faction_territory_control.md",
       "filename": "098_emergent_faction_territory_control.md",
       "title": "SPEC-098 — Faction: Emergent Faction Territory Control & Dynamic Sector Borders",
-      "status": "Todo",
+      "status": "Completed",
       "priority": "High",
       "pillar": "P3 — Faction & Reputation Web / emergence",
       "filesMentioned": [
@@ -3352,7 +3432,7 @@
       "path": "plan/specs/100_ship_fittings_presets_loadout_manager.md",
       "filename": "100_ship_fittings_presets_loadout_manager.md",
       "title": "SPEC-100 — Outfit: Ship Fittings Presets & Loadout Manager",
-      "status": "Todo",
+      "status": "Approved / Completed",
       "priority": "High",
       "pillar": "P6 — Ship Identity & Fleet Command",
       "filesMentioned": [
@@ -3367,7 +3447,7 @@
       "priority": "High",
       "pillar": "P7 — Netcode & Scale / Maintenance / Observability",
       "filesMentioned": [
-        "src/**/*.test.js"
+        "src/engine/LoadoutManager.test.js"
       ]
     },
     {
@@ -3380,151 +3460,45 @@
       "filesMentioned": [
         "src/server/codexDashboard.integration.test.js"
       ]
+    },
+    {
+      "path": "plan/specs/103_modularize_server_actions.md",
+      "filename": "103_modularize_server_actions.md",
+      "title": "SPEC-103 — Modularize WebSocket Action Handlers",
+      "status": "Approved / Completed",
+      "priority": "High",
+      "pillar": "P7 — Netcode & Scale",
+      "filesMentioned": [
+        "src/server.js",
+        "src/server/actionHandlers.js",
+        "src/server/actionHandlers.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/104_living_codex_hygiene_jsdoc_audit.md",
+      "filename": "104_living_codex_hygiene_jsdoc_audit.md",
+      "title": "SPEC-104 — Living Codex Hygiene & JSDoc Audit",
+      "status": "Approved / Todo",
+      "priority": "Medium",
+      "pillar": "P7 — Netcode & Scale",
+      "filesMentioned": [
+        "src/engine/GameInstance.js",
+        "src/engine/LoadoutManager.js",
+        "src/net/BinaryCodec.js",
+        "src/net/ProcessReaper.js",
+        "src/net/PubSub.js",
+        "src/net/SchemaCodec.js",
+        "src/server/SquadManager.js",
+        "src/net/roomRouter.js",
+        "src/client/__tests/CanvasRenderer.browser.test.js",
+        "src/client/__tests/Reconciler.test.js",
+        "src/engine/Trading.js"
+      ]
     }
   ],
   "epistemicDebt": {
     "untestedCoreFiles": [],
-    "missingJsDocs": [
-      {
-        "path": "src/engine/GameInstance.js",
-        "symbols": [
-          {
-            "name": "GameInstance",
-            "type": "class",
-            "line": 102
-          },
-          {
-            "name": "SECTOR_ADJACENCY",
-            "type": "constant",
-            "line": 21
-          },
-          {
-            "name": "BASE_MARKETS",
-            "type": "constant",
-            "line": 27
-          }
-        ]
-      },
-      {
-        "path": "src/net/BinaryCodec.js",
-        "symbols": [
-          {
-            "name": "BINARY_PROTOCOL_VERSION",
-            "type": "constant",
-            "line": 25
-          }
-        ]
-      },
-      {
-        "path": "src/net/ProcessReaper.js",
-        "symbols": [
-          {
-            "name": "ProcessReaper",
-            "type": "constant",
-            "line": 12
-          }
-        ]
-      },
-      {
-        "path": "src/net/PubSub.js",
-        "symbols": [
-          {
-            "name": "PubSub",
-            "type": "class",
-            "line": 9
-          }
-        ]
-      },
-      {
-        "path": "src/net/SchemaCodec.js",
-        "symbols": [
-          {
-            "name": "ByteWriter",
-            "type": "class",
-            "line": 42
-          },
-          {
-            "name": "ByteReader",
-            "type": "class",
-            "line": 76
-          },
-          {
-            "name": "SCHEMA_PROTOCOL_VERSION",
-            "type": "constant",
-            "line": 24
-          }
-        ]
-      },
-      {
-        "path": "src/server/SquadManager.js",
-        "symbols": [
-          {
-            "name": "Squad",
-            "type": "class",
-            "line": 6
-          },
-          {
-            "name": "SquadManager",
-            "type": "class",
-            "line": 20
-          },
-          {
-            "name": "squadManager",
-            "type": "constant",
-            "line": 125
-          }
-        ]
-      }
-    ],
-    "staleSpecReferences": [
-      {
-        "spec": "plan/specs/019d_sticky_routing_lb.md",
-        "brokenFiles": [
-          "src/server/router.js"
-        ]
-      },
-      {
-        "spec": "plan/specs/035_client_visual_browser_layer.md",
-        "brokenFiles": [
-          "src/client/**/*.browser.test.js"
-        ]
-      },
-      {
-        "spec": "plan/specs/071_client_prediction_reconciliation.md",
-        "brokenFiles": [
-          "src/client/__tests__/Reconciler.test.js"
-        ]
-      },
-      {
-        "spec": "plan/specs/082_faction_aware_trade_advisor.md",
-        "brokenFiles": [
-          "src/engine/TradeAdvisor.js"
-        ]
-      },
-      {
-        "spec": "plan/specs/098_emergent_faction_territory_control.md",
-        "brokenFiles": [
-          "src/engine/TerritoryControl.js"
-        ]
-      },
-      {
-        "spec": "plan/specs/099_centralized_commodities_schema_registry.md",
-        "brokenFiles": [
-          "src/net/SchemaRegistry.js"
-        ]
-      },
-      {
-        "spec": "plan/specs/100_ship_fittings_presets_loadout_manager.md",
-        "brokenFiles": [
-          "src/engine/LoadoutManager.js"
-        ]
-      },
-      {
-        "spec": "plan/specs/101_living_codex_semantic_registry.md",
-        "brokenFiles": [
-          "src/**/*.test.js"
-        ]
-      }
-    ]
+    "missingJsDocs": [],
+    "staleSpecReferences": []
   }
 }

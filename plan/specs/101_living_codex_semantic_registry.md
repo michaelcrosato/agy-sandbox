@@ -15,7 +15,7 @@ Under autonomous execution loops, agents need highly accurate, structured archit
 
 - **Codex Generator Script (`scripts/agent/generate-codex.js`):**
   - Implement a pure, robust Node.js script that recursively scans `src/engine/`, `src/physics/`, `src/net/`, `src/persistence/`, and `src/server/` to extract codebase symbols (classes, functions, JSDoc summaries, exports).
-  - Scan `src/**/*.test.js` to map unit/integration test suites to their corresponding implementation files.
+  - Scan test files (e.g. `src/engine/LoadoutManager.test.js`) to map unit/integration test suites to their corresponding implementation files.
   - Scan `plan/specs/*.md` to build an alignment graph (mapping which specs modified which files).
   - Extract and identify **"Epistemic Debt"** (e.g. exported functions lacking JSDoc, files listed in specs that are missing, or modules missing test coverage).
   - Output `/plan/codex.json` (structured machine schema) and `/plan/CODEX.md` (beautiful human-readable ontology).

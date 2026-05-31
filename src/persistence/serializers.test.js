@@ -59,8 +59,16 @@ describe("serializeGalaxy / applyGalaxy", () => {
 
     expect(snap.version).toBe(SNAPSHOT_VERSION);
     expect(snap.planets).toEqual([
-      { name: "Sol", market: { food: 175, electronics: 300 } },
-      { name: "New Polaris", market: { food: 220, electronics: 320 } },
+      {
+        name: "Sol",
+        market: { food: 175, electronics: 300 },
+        faction: "Independents",
+      },
+      {
+        name: "New Polaris",
+        market: { food: 220, electronics: 320 },
+        faction: "Independents",
+      },
     ]);
     expect(snap.activeEconomicEvent.commodity).toBe("food");
     expect(snap.eventDurationTimer).toBe(12);

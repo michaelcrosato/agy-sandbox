@@ -16,7 +16,7 @@ connections. **Impact:** correct routing under multi-process, no cross-worker ch
       agent:check` green.
 
 ## Implementation Approach
-- New `src/server/router.js` (or extend `roomRouter`): `routeConnection` pure helper. The front door
+- Extend `src/net/roomRouter.js`: `routeConnection` pure helper. The front door
   (a thin proxy or the supervisor's accept loop) uses it to hand the socket to the owning worker.
 - Keep it a pure decision + a thin transport; no balancer is bundled (ops-owned).
 

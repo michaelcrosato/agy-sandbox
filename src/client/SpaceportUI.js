@@ -6,6 +6,7 @@ import {
 } from "../engine/PortServices.js";
 import { DEFAULT_OUTFITS } from "../engine/outfitCatalog.js";
 import { getOutfitCategory } from "../engine/Outfitting.js";
+import { BASE_MARKETS } from "../net/SchemaRegistry.js";
 
 /**
  * Manages the interactive glassmorphic spaceport menu, handling trading, ship upgrades, and purchases.
@@ -195,73 +196,8 @@ export class SpaceportUI {
 
     const tbody = table.querySelector("tbody");
 
-    // Client baseline market index for comparison and neon HUD highlights
-    const baseMarkets = {
-      Sol: {
-        food: 100,
-        electronics: 300,
-        minerals: 150,
-        luxuries: 600,
-        contraband: 250,
-        machinery: 100,
-      },
-      "New Polaris": {
-        food: 220,
-        electronics: 320,
-        minerals: 50,
-        luxuries: 650,
-        contraband: 300,
-        machinery: 220,
-      },
-      "Sigma Draconis": {
-        food: 120,
-        electronics: 120,
-        minerals: 250,
-        luxuries: 500,
-        contraband: 200,
-        machinery: 160,
-      },
-      "Kaelis Colony": {
-        food: 40,
-        electronics: 420,
-        minerals: 180,
-        luxuries: 550,
-        contraband: 280,
-        machinery: 190,
-      },
-      "Aurelia Mining Hub": {
-        food: 150,
-        electronics: 290,
-        minerals: 70,
-        luxuries: 580,
-        contraband: 260,
-        machinery: 150,
-      },
-      "Tenebris Prime": {
-        food: 160,
-        electronics: 450,
-        minerals: 200,
-        luxuries: 220,
-        contraband: 400,
-        machinery: 240,
-      },
-      "Valkyrie Depot": {
-        food: 110,
-        electronics: 380,
-        minerals: 190,
-        luxuries: 520,
-        contraband: 220,
-        machinery: 80,
-      },
-      "Rogue's Hollow": {
-        food: 250,
-        electronics: 220,
-        minerals: 160,
-        luxuries: 450,
-        contraband: 60,
-        machinery: 180,
-      },
-    };
+    // Client baseline market index imported from SchemaRegistry
+    const baseMarkets = BASE_MARKETS;
 
     for (const item of commodities) {
       const price = this.planet.market[item];
@@ -782,41 +718,63 @@ export class SpaceportUI {
 
     for (let i = 0; i < 3; i++) {
       const preset = this.player.presets[i];
+      const outfits = Array.isArray(preset)
+        ? preset
+        : preset && preset.outfits
+          ? preset.outfits
+          : [];
+      const presetName =
+        preset && typeof preset === "object" && preset.name
+          ? preset.name
+          : `Preset Slot ${i + 1}`;
+      const summaryText =
+        outfits.length > 0 ? outfits.join(", ") : "Empty Preset Slot";
+
       const div = document.createElement("div");
       div.className = "preset-slot";
-      const summaryText = preset ? preset.join(", ") : "Empty Preset Slot";
+      div.style.marginBottom = "8px";
 
       div.innerHTML = `
-        <div>
-          <div class="preset-name">Preset Slot ${i + 1}</div>
-          <div class="preset-summary" title="${summaryText}">${summaryText}</div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+          <input type="text" class="preset-name-input" placeholder="Preset Name..." value="${presetName}" 
+            style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; color: #fff; padding: 2px 8px; font-size: 11px; width: 120px; font-family: inherit;" />
+          <div class="preset-summary" title="${summaryText}" style="font-size: 9px; color: #64748b; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${summaryText}</div>
         </div>
-        <div class="preset-actions">
+        <div class="preset-actions" style="display: flex; gap: 6px;">
           <button class="preset-btn btn-save" data-idx="${i}">SAVE</button>
-          <button class="preset-btn btn-load" data-idx="${i}" ${preset ? "" : "disabled"}>LOAD</button>
+          <button class="preset-btn btn-load" data-idx="${i}" ${outfits.length > 0 ? "" : "disabled"}>LOAD</button>
         </div>
       `;
 
       div.querySelector(".btn-save").addEventListener("click", () => {
+        const inputName =
+          div.querySelector(".preset-name-input").value.trim() ||
+          `Preset Slot ${i + 1}`;
         if (window.network && window.network.connected) {
-          window.network.requestPresetSave(i);
-          this.player.presets[i] = [...this.player.outfits];
+          window.network.requestPresetSave(i, inputName);
+          this.player.presets[i] = {
+            name: inputName,
+            outfits: [...this.player.outfits],
+          };
           setTimeout(() => this.renderOutfitter(), 150);
         } else {
-          this.player.presets[i] = [...this.player.outfits];
-          this.ui.notify(`Saved Loadout Preset ${i + 1}!`, "success");
+          this.player.presets[i] = {
+            name: inputName,
+            outfits: [...this.player.outfits],
+          };
+          this.ui.notify(`Saved Preset: "${inputName}"!`, "success");
           this.renderOutfitter();
         }
       });
 
-      if (preset) {
+      if (outfits.length > 0) {
         div.querySelector(".btn-load").addEventListener("click", () => {
           if (window.network && window.network.connected) {
             window.network.requestPresetLoad(i);
             setTimeout(() => this.renderOutfitter(), 250);
           } else {
             // Local offline preset load simulation
-            this.player.outfits = [...preset];
+            this.player.outfits = [...outfits];
             this.player.maxShield = 100;
             this.player.thrustPower = 10000;
             this.player.maxSpeed = 300;
@@ -825,7 +783,7 @@ export class SpaceportUI {
             this.player.outfitMass = 0;
             this.player.mass = 2000;
 
-            for (const name of preset) {
+            for (const name of outfits) {
               const outfitConfig = DEFAULT_OUTFITS.find((o) => o.name === name);
               if (outfitConfig) {
                 if (outfitConfig.type === "shield") {
@@ -847,7 +805,7 @@ export class SpaceportUI {
               }
             }
             this.player.shield = this.player.maxShield;
-            this.ui.notify(`Loaded Preset ${i + 1}!`, "success");
+            this.ui.notify(`Loaded Preset "${presetName}"!`, "success");
             this.refreshUI();
             this.renderOutfitter();
           }

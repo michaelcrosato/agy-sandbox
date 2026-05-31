@@ -3,6 +3,9 @@
  * Keeps track of squad memberships, leaders, invitations, and culls empty squads.
  */
 
+/**
+ * Represents a co-op party squad formed by players in the game lobby.
+ */
 export class Squad {
   /**
    * @param {string} id - The unique squad ID.
@@ -17,6 +20,9 @@ export class Squad {
   }
 }
 
+/**
+ * Singleton state manager coordinating all multiplayer co-op party squads.
+ */
 export class SquadManager {
   constructor() {
     /** @type {Map<string, Squad>} */
@@ -122,4 +128,8 @@ export class SquadManager {
   }
 }
 
+/**
+ * Singleton instance of SquadManager coordinating all active player squads.
+ * @type {SquadManager}
+ */
 export const squadManager = new SquadManager();

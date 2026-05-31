@@ -74,19 +74,36 @@ export function factionPrice(
  * @param {string|null} faction - Faction name.
  * @returns {number} The tax rate (0.0, 0.05, or 0.15).
  */
-export function getTransactionTaxRate(registry, playerId, faction) {
+export function getTransactionTaxRate(
+  registry,
+  playerId,
+  faction,
+  sectorId = null,
+) {
+  let baseTax = 0.0;
   if (
-    !registry ||
-    !faction ||
-    faction === "Independents" ||
-    typeof registry.getStanding !== "function"
+    registry &&
+    faction &&
+    faction !== "Independents" &&
+    typeof registry.getStanding === "function"
   ) {
-    return 0.0;
+    const standing = registry.getStanding(playerId, faction);
+    if (standing >= 50)
+      baseTax = 0.0; // Allied/Friendly
+    else if (standing <= -16)
+      baseTax = 0.15; // Hostile
+    else baseTax = 0.05; // Neutral
   }
-  const standing = registry.getStanding(playerId, faction);
-  if (standing >= 50) return 0.0; // Allied/Friendly
-  if (standing <= -16) return 0.15; // Hostile
-  return 0.05; // Neutral
+
+  // Apply dynamic sector surcharge if sectorId and territoryControl exist
+  if (registry && registry.territoryControl && sectorId) {
+    const params = registry.territoryControl.getSectorParameters(sectorId);
+    if (params && typeof params.taxRate === "number") {
+      baseTax += params.taxRate;
+    }
+  }
+
+  return baseTax;
 }
 
 /**
@@ -201,7 +218,12 @@ export function findBestTradeRoutes(planets, registry, playerId) {
         );
 
         // Deduct transaction tax from sale
-        const taxRate = getTransactionTaxRate(registry, playerId, pB.faction);
+        const taxRate = getTransactionTaxRate(
+          registry,
+          playerId,
+          pB.faction,
+          pB.sector,
+        );
         const netSellPrice = Math.max(1, Math.round(sellPrice * (1 - taxRate)));
 
         const netProfit = netSellPrice - buyPrice;

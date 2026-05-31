@@ -1,6 +1,6 @@
 # SPEC-100 — Outfit: Ship Fittings Presets & Loadout Manager
 
-- **Status:** Todo
+- **Status:** Approved / Completed
 - **Wave:** v23 — Phase 2
 - **Priority:** High
 - **Product Pillar:** P6 — Ship Identity & Fleet Command
@@ -28,9 +28,9 @@ Starfall players must purchase, install, and adjust ship outfitting components s
 
 ## Acceptance Criteria
 
-- [ ] `LoadoutManager` successfully saves, loads, validates, and calculates total package costs for outfitting presets.
-- [ ] Outfitting presets reject invalid configurations exceeding power grid or slot limits.
-- [ ] Full Jest coverage validating outfitting calculations, purchase limits, and validation rejections.
+- [x] `LoadoutManager` successfully saves, loads, validates, and calculates total package costs for outfitting presets.
+- [x] Outfitting presets reject invalid configurations exceeding power grid or slot limits.
+- [x] Full Jest coverage validating outfitting calculations, purchase limits, and validation rejections.
 
 ## Verification Commands
 

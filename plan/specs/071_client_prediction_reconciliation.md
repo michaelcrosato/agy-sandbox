@@ -13,7 +13,7 @@ This specification introduces a robust network simulation harness to validate cl
 
 ## Definition of Done (DoD)
 - [ ] Implement a pure deterministic `Reconciler` class or library inside `src/client/Reconciler.js` containing prediction buffers and input-reapplication loops.
-- [ ] Add rigorous unit tests in `src/client/__tests__/Reconciler.test.js` validating that prediction matches server frames exactly, and that input reapplication reconciles position offsets perfectly.
+- [ ] Add rigorous unit tests in `src/client/__tests/Reconciler.test.js` validating that prediction matches server frames exactly, and that input reapplication reconciles position offsets perfectly.
 - [ ] Ensure that existing client network handshakes remain unaffected and fully compatible.
 - [ ] Gate check (`npm run agent:check`) is 100% green.
 

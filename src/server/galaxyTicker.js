@@ -363,5 +363,13 @@ export function runGalaxyHeartbeatInterval(instances) {
         });
       }
     }
+
+    if (room.territoryControl) {
+      room.territoryControl.decayInfluence(15);
+      room.broadcast({
+        type: "territory_sync",
+        sectors: room.territoryControl.sectors,
+      });
+    }
   }
 }

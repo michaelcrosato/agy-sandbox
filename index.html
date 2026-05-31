@@ -123,6 +123,21 @@
         </div>
       </div>
 
+      <!-- Territory Control Panel -->
+      <div id="territory-control-panel" class="hud-panel glass-panel" style="display: none; margin-bottom: 10px;">
+        <div class="hud-bar-label tracker-header-line" style="color: var(--color-cyan); text-shadow: 0 0 6px rgba(0, 242, 254, 0.4); display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid var(--color-border);">
+          <span>SECTOR CONTROL</span>
+          <span id="current-sector-owner" style="font-size: 0.9em; font-weight: bold; color: var(--color-cyan);">FEDERATION</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.8em; margin-bottom: 8px; font-family: var(--font-display); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+          <div>SEC LEVEL: <span id="current-sector-security" style="font-weight: bold;">HIGH</span></div>
+          <div>SURCHARGE: <span id="current-sector-tax" style="font-weight: bold;">12%</span></div>
+        </div>
+        <div id="influence-bars" style="display: flex; flex-direction: column; gap: 6px;">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
       <!-- Trade Route Advisor Panel -->
       <div id="trade-advisor-panel" class="hud-panel glass-panel">
         <div class="hud-bar-label tracker-header-line" style="color: var(--color-gold); text-shadow: 0 0 6px rgba(212, 175, 55, 0.4); display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid var(--color-border);">

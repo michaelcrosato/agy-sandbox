@@ -4,7 +4,7 @@
 This specification introduces a legibly deep helper (P2/P8) to calculate the most profitable trade routes inside the current sector room, factoring in the player's custom faction standing price modifiers and transaction taxes. It surfaces this data directly to the player in a gold-themed HUD overlay panel, allowing them to optimize their space merchant runs.
 
 1. **Trade Route Advisor Calculation Engine:**
-   - In `src/engine/Trading.js` (or a dedicated `src/engine/TradeAdvisor.js`), implement `findBestTradeRoutes(planets, factionRegistry, playerId)`:
+   - In `src/engine/Trading.js`, implement `findBestTradeRoutes(planets, factionRegistry, playerId)`:
      - Cross-compare all planets in the active sector.
      - For every commodity, calculate player's buy price at origin planet (factoring in standings price modifiers).
      - Calculate player's sell price at destination planet (factoring in standings price modifiers and transaction tax deductions).
@@ -17,7 +17,7 @@ This specification introduces a legibly deep helper (P2/P8) to calculate the mos
    - Ensure the UI logic is completely exception-safe if no routes are available.
 
 ## Definition of Done (DoD)
-- [ ] Implement the `findBestTradeRoutes` algorithm in `src/engine/Trading.js` (or `TradeAdvisor.js`).
+- [ ] Implement the `findBestTradeRoutes` algorithm in `src/engine/Trading.js`.
 - [ ] Add `#trade-advisor-panel` DOM structure to `index.html` and style in `index.css`.
 - [ ] Update `src/client/UIController.js` to periodically display the trade advisor recommendations.
 - [ ] Write unit tests verifying that route calculations accurately reflect standings discounts, docking taxes, and correct commodity margins.

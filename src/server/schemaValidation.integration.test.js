@@ -164,4 +164,29 @@ describe("WebSocket Schema Validation Integration Tests (SPEC-089)", () => {
       });
     });
   });
+
+  test("serves centralized commodities and schemas on GET /schema", async () => {
+    const response = await fetch(`http://localhost:${port}/schema`);
+    expect(response.status).toBe(200);
+    const contentType = response.headers.get("content-type");
+    expect(contentType).toContain("application/json");
+
+    const body = await response.json();
+    expect(body.commodities).toBeDefined();
+    expect(body.schemas).toBeDefined();
+
+    // Verify commodity details are exposed
+    expect(body.commodities.food).toBeDefined();
+    expect(body.commodities.food.mass).toBe(1.0);
+    expect(body.commodities.food.baseValue).toBe(100);
+    expect(body.commodities.food.illegal).toBe(false);
+    expect(body.commodities.food.category).toBe("basic");
+
+    expect(body.commodities.contraband).toBeDefined();
+    expect(body.commodities.contraband.illegal).toBe(true);
+
+    // Verify schemas are exposed
+    expect(body.schemas.join).toBeDefined();
+    expect(body.schemas.trade).toBeDefined();
+  });
 });

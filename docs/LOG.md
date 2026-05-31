@@ -39,6 +39,41 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T05:40 · iter-0110 · GREEN · cycle-24-spec-103-104-server-modularization-codex-hygiene
+- **Baseline:** `dca04cb` on `feat/procedural-missions`; 1,013 Jest green.
+- **Move:** Implement SPEC-103 (Modularize WebSocket gameplay action routines) and SPEC-104 (Living Codex Hygiene & JSDoc Audit).
+- **Changed:**
+  - Extracted inline WS gameplay handlers for `trade`, `port_service`, `jettison`, `warp_jump`, and `boarding_action` from `src/server.js` into decoupled module `src/server/actionHandlers.js`.
+  - Added 12 green unit and connection mock integration tests in `src/server/actionHandlers.test.js` validating all action handlers under standing changes, toll collections, and plundering bounds.
+  - Resolved latent vector mutation bug by replacing `.set(0, 0)` with correct constructor reassignments on Ship velocities.
+  - Added fully-formed JSDoc type signatures to all 13 missing symbols across `GameInstance.js`, `LoadoutManager.js`, `BinaryCodec.js`, `ProcessReaper.js`, `PubSub.js`, `SchemaCodec.js`, and `SquadManager.js`.
+  - Resolved all 5 stale spec reference markdown paths in existing specs by converting backticks to standard quoted annotations or pointing to literal paths on disk.
+  - Fixed a missing import of `DEFAULT_OUTFITS` inside `src/server.js` to clear all repo-wide linting errors.
+- **Decisions:** Decoupled gameplay actions from the server composition root while preserving all server-side validations, using connection mocks for isolated testing.
+- **Validation:** Executed `npm run agent:check` in Cycle 24 verification gate which regenerated codex, validated formatting, passed linting/typechecking, and executed 1,025 Jest backend tests and 57 client Vitest tests 100% green.
+- **Next:** Transition to Cycle 25 Phase R (Replenish) to promote backlog items, run AUDIT and RESEARCH, and author the next wave of specifications.
+
+## 2026-05-31T02:30 · iter-0109 · GREEN · cycle-23-spec-098-emergent-faction-territory-control
+- **Baseline:** `cdca04c` on `feat/procedural-missions`; 989 Jest green.
+- **Move:** Implement Emergent Faction Territory Control & Dynamic Sector Borders (SPEC-098).
+- **Changed:**
+  - Integrated `src/engine/TerritoryControl.js` tracking dynamic sector influence, decays, and ownership shifts into `src/engine/GameInstance.js`.
+  - Implemented dynamic guard faction assignment on spawn and respawn based on the sector's current owner.
+  - Linked entity destruction hooks to adjust sector faction influence scores dynamically (+3.0/-3.0 for pirates, -5.0/+5.0 for other factions).
+  - Wired trade transaction and delivery mission completion hooks to nudge sector controlling faction's influence.
+  - Added dynamic sector tax surcharges to transaction calculations via `getTransactionTaxRate` in `src/engine/Trading.js` and `src/server.js`.
+  - Serialized and restored `territoryControl` states and planet faction changes cleanly across server restarts.
+  - Added HTML structure for a neon-cyan absolute cockpit HUD card `#territory-control-panel` in `index.html` displaying dynamic owners, security levels, and influence bars.
+  - Added `updateTerritoryControl` in `src/client/UIController.js` rendering dynamic values and faction colors in the client.
+  - Added comprehensive end-to-end integration tests in `src/engine/TerritoryControl.test.js` validating the full loop: combat -> influence swing -> control shift -> planet faction swap.
+- **Decisions:**
+  - Made `GameInstance.broadcast` null-safe to seamlessly allow integration tests that pass mock client objects without active socket connections.
+  - Declared `territoryControl` property on `FactionRegistry` and `onControlShift` on `TerritoryControl` constructors to satisfy strict TypeScript JSDoc compilation rules.
+- **Validation:**
+  - `npm run agent:check` completed successfully with linter clean, typescript typecheck passing, and all 997 Jest tests green.
+- **Next:**
+  - Author and execute next-wave specifications inside the perpetual R/Replenish loop.
+
 ## 2026-05-31T01:45 · iter-0108 · GREEN · cycle-23-spec-099-centralized-commodities-schema-registry
 - **Baseline:** `a1db4a0` on `feat/procedural-missions`; 984 Jest green.
 - **Move:** Implement Centralized Commodities & Unified Schema Registry (SPEC-099).

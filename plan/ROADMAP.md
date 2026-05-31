@@ -157,7 +157,7 @@ Completed waves (`001–094`) are recorded DONE in `PROGRESS.md`. The advanced l
 
 ## EXECUTION WAVES (v23)
 
-Completed waves (`001–097`) are recorded DONE in `PROGRESS.md`. The emergent gameplay and centralized architecture wave:
+Completed waves (`001–102`) are recorded DONE in `PROGRESS.md`. The emergent gameplay and centralized architecture wave:
 
 ### Phase 0 — Core Architecture Hardening — `101`, `102`, `099`
 - `101` Self-Synchronizing Codebase "Living Codex" & Semantic Registry (scan directories, map classes, methods, JSDoc, tests, and specs into a dynamic machine plan/codex.json and plan/CODEX.md ontology).
@@ -172,19 +172,26 @@ Completed waves (`001–097`) are recorded DONE in `PROGRESS.md`. The emergent g
 
 ---
 
+## EXECUTION WAVES (v24)
+
+Completed waves (`001–100`) are recorded DONE in `PROGRESS.md`. The active modularization and codebase hygiene wave:
+
+### Phase 0 — Core Architecture Hardening — `103`, `104`
+- `103` Modularize WebSocket Action Handlers (extract inline handlers for `trade`, `port_service`, `jettison`, `warp_jump`, and `boarding_action` from `src/server.js` into clean, modular, and fully tested functions in a new `src/server/actionHandlers.js` file, wire them in, and write tests).
+- `104` Living Codex Hygiene & JSDoc Audit (add JSDoc type annotations to the 13 flagged missing symbols across modules and update the 5 stale spec reference markdown links to keep the repo codex ontology perfectly healthy).
+
+---
+
 ## MASTER PRIORITIZATION TABLE (next-cycle work)
 
 Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + Fit.
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 101 | Codebase Living Codex | 0 | 5 | 5 | 5 | 5 | 20 |
-| 102 | Interactive Codex Dashboard | 0 | 5 | 5 | 5 | 5 | 20 |
-| 099 | Centralized Schema Registry | 0 | 5 | 5 | 5 | 5 | 20 |
-| 098 | Emergent Faction Territory | 1 | 5 | 4 | 4 | 5 | 18 |
-| 100 | Ship Fittings Preset Manager | 2 | 4 | 4 | 4 | 5 | 17 |
+| 103 | Modularize WebSocket Handlers | 0 | 5 | 5 | 5 | 5 | 20 |
+| 104 | Living Codex Hygiene & JSDoc | 0 | 4 | 5 | 5 | 5 | 19 |
 
-**Recommended start:** `101` (Σ20 — Codebase Living Codex) immediately, followed by `102` (Σ20 — Interactive Codex Dashboard), then proceed to `099` (Σ20 — Centralized Commodities & Unified Schema Registry), and finally `098` (Σ18) and `100` (Σ17).
+**Recommended start:** `103` (Σ20 — Modularize WebSocket Handlers) immediately, followed by `104` (Σ19 — Living Codex Hygiene & JSDoc).
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

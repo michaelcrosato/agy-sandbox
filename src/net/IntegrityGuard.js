@@ -125,6 +125,45 @@ export const IntegrityGuard = {
           }
         }
       }
+
+      // 2.5. Lock down and seal Node native C++ bindings on process (SPEC-167)
+      if (typeof process !== "undefined") {
+        const blockBinding = (methodName) => {
+          return function () {
+            try {
+              SandboxSecurityRegistry.logViolation(
+                "integrity",
+                "cpp_binding_escape",
+                {
+                  method: methodName,
+                  reason: `Unauthorized attempt to call native C++ binding [process.${methodName}]`,
+                }
+              );
+            } catch {
+              // Fail-safe registry logging bypass
+            }
+            throw new Error(
+              `[SECURITY ACCESS DENIED] Access to native C++ binding [process.${methodName}] is blocked inside the guest sandbox.`
+            );
+          };
+        };
+
+        const originalDefine = originalDefineProperty || Object.defineProperty;
+
+        for (const methodName of ["dlopen", "binding", "_linkedBinding"]) {
+          if (typeof process[methodName] === "function") {
+            try {
+              originalDefine(process, methodName, {
+                value: blockBinding(methodName),
+                writable: false,
+                configurable: false,
+              });
+            } catch (err) {
+              // Ignore or degrade gracefully if we can't lock it
+            }
+          }
+        }
+      }
     }
 
     // 3. Snapshot global scope properties

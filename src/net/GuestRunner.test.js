@@ -691,4 +691,62 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
       }
     }
   });
+
+  test("should lock down process.dlopen and process.binding to prevent C++ native escapes (SPEC-167)", async () => {
+    const tempBindingScript = path.join(__dirname, "temp_guest_binding.js");
+    fs.writeFileSync(
+      tempBindingScript,
+      `try {
+        process.binding("fs");
+        console.log("BINDING_SUCCESS");
+      } catch (err) {
+        console.log("BINDING_BLOCKED: " + err.message);
+      }
+      try {
+        process.dlopen({}, "some-addon.node");
+        console.log("DLOPEN_SUCCESS");
+      } catch (err) {
+        console.log("DLOPEN_BLOCKED: " + err.message);
+      }
+      try {
+        // Assert immutability: trying to override process.binding should fail or be locked
+        Object.defineProperty(process, "binding", { value: () => "evil" });
+        console.log("OVERRIDE_SUCCESS");
+      } catch (err) {
+        console.log("OVERRIDE_FAILED: " + err.message);
+      }`,
+      "utf8"
+    );
+
+    try {
+      const result = await GuestRunner.runScript(tempBindingScript, {
+        timeoutMs: 3000,
+      });
+
+      expect(result.stdout).toContain("BINDING_BLOCKED:");
+      expect(result.stdout).toContain("Access to native C++ binding [process.binding] is blocked");
+      expect(result.stdout).toContain("DLOPEN_BLOCKED:");
+      expect(result.stdout).toContain("Access to native C++ binding [process.dlopen] is blocked");
+      expect(result.stdout).toContain("OVERRIDE_FAILED:");
+
+      // Verify C++ binding escape violations are registered in SandboxSecurityRegistry
+      const auditFile = result.childAuditFile || testAuditFile;
+      expect(fs.existsSync(auditFile)).toBe(true);
+      const content = fs.readFileSync(auditFile, "utf8");
+      const logs = JSON.parse(content);
+      const bindingViolation = logs.find(
+        (v) =>
+          v.category === "integrity" && v.action === "cpp_binding_escape",
+      );
+      expect(bindingViolation).toBeDefined();
+    } finally {
+      try {
+        if (fs.existsSync(tempBindingScript)) {
+          fs.unlinkSync(tempBindingScript);
+        }
+      } catch {
+        // ignore
+      }
+    }
+  });
 });

@@ -39,6 +39,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T02:03 · iter-0026 · GREEN · spec-105-interactive-onboarding-tutorial
+
+- **Baseline:** v25 iteration start; SPEC-106 done, SPEC-105 in-progress (TutorialManager created, needed gate green)
+- **Move:** Ship SPEC-105 Interactive Neon Onboarding Tutorial — validate, fix lint/test failures, and close the spec
+- **Changed:**
+  - Fixed 4 `no-case-declarations` ESLint errors in `TutorialManager.js` by wrapping case blocks 2/3/4 in braces
+  - Removed unused `Vector2D` import from `TutorialManager.js` and unused `SpaceportUI`/`CanvasRenderer` from test
+  - Fixed port collision in `tutorialOnboarding.integration.test.js` (18196 → 18200; conflicted with latencyMonitoring)
+  - **Critical bug fix:** `clientObj.send()` in `server.js` used closure-captured `ws` instead of `this.ws`, silently dropping all direct-send messages (including `init`) on session reconnect; changed to `this.ws`
+  - Rewrote integration test with robust helper, explicit message collection, and proper `join` vs `join_room` flow
+- **Decisions:** The `send()` closure bug was a latent production defect affecting ALL session reconnects; fixed as part of the spec rather than filing separately since the tutorial test directly exercised it
+- **Validation:** `npm run agent:check` → prettier ✅ · eslint ✅ (0 errors) · typecheck ✅ · jest 95 suites / 1,036 tests ✅
+- **Next:** REPLENISH phase — audit for next v26 blueprint specs; focus on remaining P8 game-feel items and residual tech debt
+
 ## 2026-05-31T06:20 · iter-0111 · GREEN · cycle-25-spec-106-sandbox-containment-port-reclaimer
 - **Baseline:** `13dfb19` on `feat/procedural-missions`; 1,025 Jest green.
 - **Move:** Implement SPEC-106 (Sandbox Containment: Strict Process Spawn Sentinel & Self-Healing Port Reclaimer).

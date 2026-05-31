@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T01:22:15.239Z",
+  "generatedAt": "2026-05-31T02:02:52.018Z",
   "stats": {
     "totalSourceFiles": 73,
-    "totalTestFiles": 100,
+    "totalTestFiles": 102,
     "totalSpecFiles": 112,
-    "totalLoc": 17265,
-    "totalTests": 1378,
+    "totalLoc": 17271,
+    "totalTests": 1389,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -1645,7 +1645,7 @@
     },
     {
       "path": "src/net/SchemaRegistry.js",
-      "loc": 247,
+      "loc": 248,
       "classes": [],
       "exports": [
         {
@@ -1823,7 +1823,7 @@
     },
     {
       "path": "src/persistence/serializers.js",
-      "loc": 419,
+      "loc": 424,
       "classes": [],
       "exports": [
         {
@@ -1854,7 +1854,7 @@
           "name": "applyPlayer",
           "type": "function",
           "jsdoc": "/**\n* Restores a player snapshot onto a (compatible) live client object. Mutates\n* the target's ship and mission manager in place rather than swapping the\n* references, so engine entities and event listeners continue to function.\n*\n* @param {Object} clientObj - Target player session.\n* @param {Object} data - Snapshot from {@link serializePlayer}.\n* @returns {void}\n*/",
-          "line": 274
+          "line": 275
         }
       ],
       "testFile": "src/persistence/serializers.test.js",

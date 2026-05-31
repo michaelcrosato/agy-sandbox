@@ -259,6 +259,7 @@ export function serializePlayer(clientObj) {
     presets: Array.isArray(clientObj.presets) ? [...clientObj.presets] : [],
     ship: shipSnapshot,
     missions: missionSnapshot,
+    tutorialCompleted: !!clientObj.tutorialCompleted,
   };
 }
 
@@ -280,6 +281,10 @@ export function applyPlayer(clientObj, data) {
   if (typeof data.id === "string" && data.id) {
     clientObj.id = data.id;
   }
+  if (data.tutorialCompleted !== undefined) {
+    clientObj.tutorialCompleted = !!data.tutorialCompleted;
+  }
+
   if (Array.isArray(data.presets)) {
     clientObj.presets = [...data.presets];
   } else {

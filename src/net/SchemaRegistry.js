@@ -243,4 +243,5 @@ export const SCHEMAS = Object.freeze({
   },
   distress_beacon: {},
   ping: {},
+  tutorial_complete: {},
 });

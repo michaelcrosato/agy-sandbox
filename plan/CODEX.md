@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T01:22:15.239Z` · Baseline: `17,265 LOC` across `73 source files`
+> Generated: `2026-05-31T02:02:52.018Z` · Baseline: `17,271 LOC` across `73 source files`
 
 ---
 
@@ -9,10 +9,10 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `17,265 LOC` | 🟢 Healthy |
+| **Total Code Volume** | `17,271 LOC` | 🟢 Healthy |
 | **Source Modules** | `73 files` | 🟢 Structured |
-| **Test Suites** | `100 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1378 cases` | 🟢 Deterministic |
+| **Test Suites** | `102 test files` | 🟢 Integrated |
+| **Total Test Cases** | `1389 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `112 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `0 files` | 🟢 100% Covered |
 
@@ -92,7 +92,7 @@
 | [roomRouter.js](file:///C:/dev/agy-sandbox/src/net/roomRouter.js) | 304 | `class RoomRegistry`, `function hashString`, `function assignShard`, `function routeConnection`, `function planDrain` | [roomRouter.test.js](file:///C:/dev/agy-sandbox/src/net/roomRouter.test.js) | [`019a_scaling_decomposition`](file:///C:/dev/agy-sandbox/plan/specs/019a_scaling_decomposition.md)<br>[`019d_sticky_routing_lb`](file:///C:/dev/agy-sandbox/plan/specs/019d_sticky_routing_lb.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
 | [SandboxTelemetry.js](file:///C:/dev/agy-sandbox/src/net/SandboxTelemetry.js) | 171 | `class SandboxTelemetry` | [SandboxTelemetry.test.js](file:///C:/dev/agy-sandbox/src/net/SandboxTelemetry.test.js) | [`094_observability_sandbox_telemetry`](file:///C:/dev/agy-sandbox/plan/specs/094_observability_sandbox_telemetry.md) |
 | [SchemaCodec.js](file:///C:/dev/agy-sandbox/src/net/SchemaCodec.js) | 277 | `class ByteWriter`, `class ByteReader`, `constant SCHEMA_PROTOCOL_VERSION`, `function encode`, `function decode` | [SchemaCodec.test.js](file:///C:/dev/agy-sandbox/src/net/SchemaCodec.test.js) | [`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
-| [SchemaRegistry.js](file:///C:/dev/agy-sandbox/src/net/SchemaRegistry.js) | 247 | `constant COMMODITIES_METADATA`, `constant COMMODITIES`, `constant BASE_MARKETS`, `constant SCHEMAS` | [SchemaRegistry.test.js](file:///C:/dev/agy-sandbox/src/net/SchemaRegistry.test.js) | [`099_centralized_commodities_schema_registry`](file:///C:/dev/agy-sandbox/plan/specs/099_centralized_commodities_schema_registry.md) |
+| [SchemaRegistry.js](file:///C:/dev/agy-sandbox/src/net/SchemaRegistry.js) | 248 | `constant COMMODITIES_METADATA`, `constant COMMODITIES`, `constant BASE_MARKETS`, `constant SCHEMAS` | [SchemaRegistry.test.js](file:///C:/dev/agy-sandbox/src/net/SchemaRegistry.test.js) | [`099_centralized_commodities_schema_registry`](file:///C:/dev/agy-sandbox/plan/specs/099_centralized_commodities_schema_registry.md) |
 | [SchemaValidator.js](file:///C:/dev/agy-sandbox/src/net/SchemaValidator.js) | 138 | `function validateMessage` | [SchemaValidator.test.js](file:///C:/dev/agy-sandbox/src/net/SchemaValidator.test.js) | [`089_zero_trust_websocket_validation`](file:///C:/dev/agy-sandbox/plan/specs/089_zero_trust_websocket_validation.md)<br>[`099_centralized_commodities_schema_registry`](file:///C:/dev/agy-sandbox/plan/specs/099_centralized_commodities_schema_registry.md) |
 | [StateCodec.js](file:///C:/dev/agy-sandbox/src/net/StateCodec.js) | 207 | `function encodeSnapshot`, `function diff`, `function applyDelta` | [StateCodec.test.js](file:///C:/dev/agy-sandbox/src/net/StateCodec.test.js) | _None_ |
 | [statsPayload.js](file:///C:/dev/agy-sandbox/src/net/statsPayload.js) | 70 | `function buildStatsPayload` | [statsPayload.test.js](file:///C:/dev/agy-sandbox/src/net/statsPayload.test.js) | _None_ |
@@ -105,7 +105,7 @@
 | [GalacticChronicle.js](file:///C:/dev/agy-sandbox/src/persistence/GalacticChronicle.js) | 118 | `class GalacticChronicle` | [GalacticChronicle.test.js](file:///C:/dev/agy-sandbox/src/persistence/GalacticChronicle.test.js) | [`096_galactic_chronicle_observability`](file:///C:/dev/agy-sandbox/plan/specs/096_galactic_chronicle_observability.md) |
 | [PersistenceManager.js](file:///C:/dev/agy-sandbox/src/persistence/PersistenceManager.js) | 217 | `class PersistenceManager` | [PersistenceManager.test.js](file:///C:/dev/agy-sandbox/src/persistence/PersistenceManager.test.js) | _None_ |
 | [RedisStore.js](file:///C:/dev/agy-sandbox/src/persistence/RedisStore.js) | 74 | `class RedisStore` | [RedisStore.test.js](file:///C:/dev/agy-sandbox/src/persistence/RedisStore.test.js) | [`019b_redis_store`](file:///C:/dev/agy-sandbox/plan/specs/019b_redis_store.md) |
-| [serializers.js](file:///C:/dev/agy-sandbox/src/persistence/serializers.js) | 419 | `constant SNAPSHOT_VERSION`, `function serializeGalaxy`, `function applyGalaxy`, `function serializePlayer`, `function applyPlayer` | [serializers.test.js](file:///C:/dev/agy-sandbox/src/persistence/serializers.test.js) | _None_ |
+| [serializers.js](file:///C:/dev/agy-sandbox/src/persistence/serializers.js) | 424 | `constant SNAPSHOT_VERSION`, `function serializeGalaxy`, `function applyGalaxy`, `function serializePlayer`, `function applyPlayer` | [serializers.test.js](file:///C:/dev/agy-sandbox/src/persistence/serializers.test.js) | _None_ |
 | [ShardedStore.js](file:///C:/dev/agy-sandbox/src/persistence/ShardedStore.js) | 96 | `class ShardedStore` | [ShardedStore.test.js](file:///C:/dev/agy-sandbox/src/persistence/ShardedStore.test.js) | [`070_sharded_database_backend`](file:///C:/dev/agy-sandbox/plan/specs/070_sharded_database_backend.md) |
 | [Store.js](file:///C:/dev/agy-sandbox/src/persistence/Store.js) | 172 | `class Store`, `class InMemoryStore`, `class JsonFileStore` | [Store.test.js](file:///C:/dev/agy-sandbox/src/persistence/Store.test.js) | [`070_sharded_database_backend`](file:///C:/dev/agy-sandbox/plan/specs/070_sharded_database_backend.md) |
 

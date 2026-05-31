@@ -20,6 +20,8 @@
   --color-green-glow: rgba(0, 255, 136, 0.4);
   --color-gold: #ffb300;
   --color-gold-glow: rgba(255, 179, 0, 0.4);
+  --color-cyan: #00f2fe;
+  --color-cyan-glow: rgba(0, 242, 254, 0.4);
   
   --color-text-primary: #f0f2fa;
   --color-text-secondary: #8a90a6;
@@ -1915,5 +1917,29 @@ h1, h2, h3, h4 {
   transition: width 0.3s;
 }
 
+/* ==========================================================================
+   INTERACTIVE ONBOARDING HUD HIGHLIGHT GLOWS (SPEC-105)
+   ========================================================================== */
+.hud-highlight-glow {
+  position: relative !important;
+  outline: 2px solid var(--color-cyan) !important;
+  box-shadow: 0 0 20px var(--color-cyan-glow), var(--shadow-premium) !important;
+  animation: hudHighlightPulse 1.5s infinite ease-in-out !important;
+  z-index: 999 !important;
+  transition: all 0.3s ease-in-out;
+}
 
-
+@keyframes hudHighlightPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(0, 242, 254, 0.3), var(--shadow-premium);
+    outline-color: rgba(0, 242, 254, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(0, 242, 254, 0.95), var(--shadow-premium);
+    outline-color: rgba(0, 242, 254, 1);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(0, 242, 254, 0.3), var(--shadow-premium);
+    outline-color: rgba(0, 242, 254, 0.3);
+  }
+}

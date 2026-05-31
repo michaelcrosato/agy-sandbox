@@ -12,6 +12,7 @@ import { MissionManager } from "./engine/MissionManager.js";
 import { NetworkHandler } from "./client/NetworkHandler.js";
 import { NEBULAE } from "./engine/Nebulae.js";
 import { EntityInterpolator } from "./client/Interpolator.js";
+import { TutorialManager } from "./client/TutorialManager.js";
 
 // Global game variables
 let isLanded = false;
@@ -1089,6 +1090,16 @@ function triggerRandomSpaceEvent() {
 const network = new NetworkHandler();
 window.network = network;
 
+const tutorialManager = new TutorialManager({
+  player,
+  uiController,
+  inputHandler,
+  spaceportUI,
+  renderer,
+  network,
+});
+window.tutorialManager = tutorialManager;
+
 // Keep client physics entities completely in sync with authoritative server coordinates
 function syncEntitiesFromServer(serverEntities) {
   const localId = (network && network.playerId) || "player";
@@ -1274,6 +1285,7 @@ function syncEntitiesFromServer(serverEntities) {
 network.onInit = (msg) => {
   player.id = msg.playerId;
   player.name = msg.nickname;
+  network.tutorialCompleted = !!msg.tutorialCompleted;
   interpolator.clear();
 
   if (msg.roomId) {
@@ -1282,6 +1294,10 @@ network.onInit = (msg) => {
     setTimeout(() => {
       welcomeScreen.classList.remove("visible");
       welcomeScreen.classList.remove("fade-out");
+
+      if (window.tutorialManager) {
+        window.tutorialManager.checkOnboarding();
+      }
     }, 500);
 
     uiController.notify(
@@ -1865,6 +1881,10 @@ function gameLoop(time) {
 
   // Cap delta time to prevent massive position skipping on browser tab sleeps
   if (dt > 0.1) dt = 0.1;
+
+  if (window.tutorialManager) {
+    window.tutorialManager.update(dt);
+  }
 
   if (activeGalaxyEvent) {
     activeGalaxyEvent.duration -= dt;

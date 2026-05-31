@@ -1048,6 +1048,7 @@ async function joinRoom(clientObj, roomId, nickname) {
     sessionToken: sessionToken,
     roomId: room.id,
     roomName: room.name,
+    tutorialCompleted: !!clientObj.tutorialCompleted,
   });
 
   clientObj.send({
@@ -1156,7 +1157,7 @@ wss.on("connection", (ws) => {
     fleetName: null,
     roomId: null,
     send(data) {
-      if (ws.readyState === ws.OPEN) {
+      if (this.ws && this.ws.readyState === this.ws.OPEN) {
         // Dynamic Load-Shedding (SPEC-090):
         if (data) {
           if (data.type === "chat" && latencyMonitor.shouldShed("chat")) {
@@ -1169,7 +1170,7 @@ wss.on("connection", (ws) => {
             return; // Drop verbose system notifications
           }
         }
-        ws.send(JSON.stringify(data));
+        this.ws.send(JSON.stringify(data));
       }
     },
     sendStats() {
@@ -1462,6 +1463,7 @@ wss.on("connection", (ws) => {
           sessionToken: token,
           roomId: currentRoom.id,
           roomName: currentRoom.name,
+          tutorialCompleted: !!sessionClient.tutorialCompleted,
         });
 
         sessionClient.send({
@@ -2149,6 +2151,27 @@ wss.on("connection", (ws) => {
       });
     } else if (msg.type === "distress_beacon") {
       handleDistressBeacon(clientObj, room);
+    } else if (msg.type === "tutorial_complete") {
+      if (!clientObj.tutorialCompleted) {
+        clientObj.tutorialCompleted = true;
+        if (clientObj.ship) {
+          clientObj.ship.credits = (clientObj.ship.credits || 0) + 500;
+        }
+        clientObj.send({
+          type: "notification",
+          message: "ONBOARDING COMPLETE: +500 CR awarded!",
+          style: "success",
+        });
+        clientObj.sendStats();
+
+        // Immediately persist the completion state to disk
+        const activeRoom = clientObj.roomId
+          ? instances.get(clientObj.roomId)
+          : null;
+        if (activeRoom) {
+          persistenceManager.savePlayer(clientObj.id, clientObj, activeRoom.id);
+        }
+      }
     } else if (msg.type === "ping") {
       clientObj.send({
         type: "pong",

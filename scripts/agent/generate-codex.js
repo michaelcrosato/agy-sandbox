@@ -19,14 +19,23 @@ const SOURCE_DIRS = [
 // Helper to recursively walk a directory and collect file paths
 function walkDirectory(dir, filter = () => true) {
   let results = [];
-  const list = fs.readdirSync(dir);
+  let list;
+  try {
+    list = fs.readdirSync(dir);
+  } catch {
+    return results;
+  }
   for (const file of list) {
     const filePath = path.join(dir, file);
-    const stat = fs.statSync(filePath);
-    if (stat && stat.isDirectory()) {
-      results = results.concat(walkDirectory(filePath, filter));
-    } else if (filter(file, filePath)) {
-      results.push(filePath);
+    try {
+      const stat = fs.statSync(filePath);
+      if (stat && stat.isDirectory()) {
+        results = results.concat(walkDirectory(filePath, filter));
+      } else if (filter(file, filePath)) {
+        results.push(filePath);
+      }
+    } catch {
+      // Ignore files deleted or locked concurrently during test runs
     }
   }
   return results;

@@ -6,7 +6,11 @@
 import fs from "fs";
 import path from "path";
 
-const auditFilePath = path.resolve("plan/security_audit.json");
+function getAuditFilePath() {
+  return path.resolve(
+    process.env.SECURITY_AUDIT_FILE || "plan/security_audit.json",
+  );
+}
 const maxLogsInMemory = 100;
 const memoryLogs = [];
 
@@ -16,11 +20,14 @@ const violationCounters = {
   firewall: 0,
   rate_limit: 0,
   process: 0,
+  cpu: 0,
+  integrity: 0,
 };
 
 // Safe asynchronous non-blocking file writer
 function persistLog(event) {
   try {
+    const auditFilePath = getAuditFilePath();
     let existingLogs = [];
     if (fs.existsSync(auditFilePath)) {
       try {
@@ -113,8 +120,11 @@ export const SandboxSecurityRegistry = {
     violationCounters.firewall = 0;
     violationCounters.rate_limit = 0;
     violationCounters.process = 0;
+    violationCounters.cpu = 0;
+    violationCounters.integrity = 0;
 
     try {
+      const auditFilePath = getAuditFilePath();
       if (fs.existsSync(auditFilePath)) {
         fs.unlinkSync(auditFilePath);
       }

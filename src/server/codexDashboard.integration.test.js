@@ -114,6 +114,13 @@ describe("Living Codex & Dashboard HTTP Integration Tests (SPEC-102)", () => {
           expect(body).toContain('id="breach-active-indicator"');
           expect(body).toContain('id="breach-log-list"');
 
+          // SPEC-135 CPU Watchdog & Tamper Sentry Gauge Card elements validation
+          expect(body).toContain('id="cpu-tamper-panel"');
+          expect(body).toContain('id="cpu-latency-value"');
+          expect(body).toContain('id="cpu-latency-meter"');
+          expect(body).toContain('id="prototype-sentry-status"');
+          expect(body).toContain('id="global-pollution-status"');
+
           resolve();
         });
 

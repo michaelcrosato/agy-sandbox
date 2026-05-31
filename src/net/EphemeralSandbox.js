@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import childProcess from "child_process";
 import { ProcessSentinel } from "./ProcessSentinel.js";
+import { IntegrityGuard } from "./IntegrityGuard.js";
 
 /**
  * EphemeralSandbox (spec 115) — copy-on-write virtual workspace sandboxing cloner.
@@ -75,6 +76,7 @@ export class EphemeralSandbox {
     // Set ProcessSentinel boundaries
     ProcessSentinel.activate();
     ProcessSentinel.setSandboxDirectory(this.sandboxDir);
+    IntegrityGuard.start();
     this.isActive = true;
     console.log(
       `🔒 EphemeralSandbox [${this.runId}]: Active with absolute file system containment!`,
@@ -88,6 +90,7 @@ export class EphemeralSandbox {
     if (!this.isActive) return;
     ProcessSentinel.clearSandboxDirectory();
     ProcessSentinel.deactivate();
+    IntegrityGuard.stop();
     this.isActive = false;
     console.log(
       `🔓 EphemeralSandbox [${this.runId}]: Deactivated boundary containment.`,

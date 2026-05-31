@@ -1608,6 +1608,145 @@
               >
             </div>
           </div>
+
+          <!-- SPEC-135: CPU Watchdog & Tamper Alert Sentry Gold-Glassmorphic Panel -->
+          <div
+            id="cpu-tamper-panel"
+            style="
+              background: rgba(251, 191, 36, 0.02);
+              border: 1px solid rgba(251, 191, 36, 0.15);
+              border-radius: 8px;
+              padding: 1.25rem;
+              box-shadow: 0 0 15px rgba(251, 191, 36, 0.05);
+              margin-top: 1rem;
+            "
+          >
+            <div
+              style="
+                font-family: &quot;Space Grotesk&quot;, sans-serif;
+                font-size: 0.85rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #fbbf24;
+                margin-bottom: 0.75rem;
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+              "
+            >
+              ⚡ CPU Watchdog & Tamper Sentry
+            </div>
+
+            <!-- SVG Event Loop Latency Radial/Linear Gauge -->
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 0.5rem;
+              "
+            >
+              <div style="font-size: 0.75rem; color: var(--color-text-muted)">
+                Event Loop Latency:
+              </div>
+              <div
+                id="cpu-latency-value"
+                style="
+                  font-family: monospace;
+                  font-size: 0.85rem;
+                  font-weight: 700;
+                  color: #10b981;
+                "
+              >
+                0.0 ms
+              </div>
+            </div>
+            <!-- Latency Meter Bar -->
+            <div
+              style="
+                width: 100%;
+                height: 6px;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 3px;
+                overflow: hidden;
+                margin-bottom: 1rem;
+              "
+            >
+              <div
+                id="cpu-latency-meter"
+                style="
+                  width: 0%;
+                  height: 100%;
+                  background: #10b981;
+                  box-shadow: 0 0 8px #10b981;
+                  transition:
+                    width 0.3s ease,
+                    background-color 0.3s ease,
+                    box-shadow 0.3s ease;
+                "
+              ></div>
+            </div>
+
+            <!-- Prototype Tamper Alert indicator -->
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                font-size: 0.75rem;
+                margin-bottom: 0.5rem;
+                padding: 0.4rem;
+                border-radius: 4px;
+                background: rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.02);
+              "
+            >
+              <span style="color: var(--color-text-muted)">Prototype Sentry:</span>
+              <span
+                id="prototype-sentry-status"
+                style="
+                  font-weight: 700;
+                  color: #10b981;
+                  text-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
+                  transition:
+                    color 0.3s ease,
+                    text-shadow 0.3s ease;
+                "
+              >
+                SECURED
+              </span>
+            </div>
+
+            <!-- Global Scope Pollution indicator -->
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                font-size: 0.75rem;
+                padding: 0.4rem;
+                border-radius: 4px;
+                background: rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.02);
+              "
+            >
+              <span style="color: var(--color-text-muted)">Global Scope Pollution:</span>
+              <span
+                id="global-pollution-status"
+                style="
+                  font-weight: 700;
+                  color: #10b981;
+                  text-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
+                  transition:
+                    color 0.3s ease,
+                    text-shadow 0.3s ease;
+                "
+              >
+                CLEAN
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2546,6 +2685,69 @@
               }
             }
 
+            // SPEC-135: CPU Watchdog & Tamper Sentry Gauge Card Update
+            const latencyValueEl = document.getElementById("cpu-latency-value");
+            if (latencyValueEl) {
+              latencyValueEl.innerText = `${latency.toFixed(1)} ms`;
+              if (latency > 50) {
+                latencyValueEl.style.color = "#ef4444";
+              } else if (latency > 15) {
+                latencyValueEl.style.color = "#f59e0b";
+              } else {
+                latencyValueEl.style.color = "#10b981";
+              }
+            }
+
+            const latencyMeterEl = document.getElementById("cpu-latency-meter");
+            if (latencyMeterEl) {
+              const pct = Math.min(100, (latency / 100) * 100);
+              latencyMeterEl.style.width = `${pct}%`;
+              if (latency > 50) {
+                latencyMeterEl.style.background = "#ef4444";
+                latencyMeterEl.style.boxShadow = "0 0 8px #ef4444";
+              } else if (latency > 15) {
+                latencyMeterEl.style.background = "#f59e0b";
+                latencyMeterEl.style.boxShadow = "0 0 8px #f59e0b";
+              } else {
+                latencyMeterEl.style.background = "#10b981";
+                latencyMeterEl.style.boxShadow = "0 0 8px #10b981";
+              }
+            }
+
+            const protoStatusEl = document.getElementById("prototype-sentry-status");
+            if (protoStatusEl) {
+              const hasRecentTamper = security.recent_violations?.some(
+                (v) => v.category === "integrity" && v.action === "prototype_tamper",
+              );
+              if (hasRecentTamper) {
+                protoStatusEl.innerText = "VIOLATION DETECTED";
+                protoStatusEl.style.color = "#ef4444";
+                protoStatusEl.style.textShadow = "0 0 8px rgba(239, 68, 68, 0.6)";
+              } else {
+                protoStatusEl.innerText = "SECURED";
+                protoStatusEl.style.color = "#10b981";
+                protoStatusEl.style.textShadow = "0 0 4px rgba(16, 185, 129, 0.4)";
+              }
+            }
+
+            const pollutionStatusEl = document.getElementById(
+              "global-pollution-status",
+            );
+            if (pollutionStatusEl) {
+              const hasRecentPollution = security.recent_violations?.some(
+                (v) => v.category === "integrity" && v.action === "global_pollution",
+              );
+              if (hasRecentPollution) {
+                pollutionStatusEl.innerText = "TAMPER ATTEMPT";
+                pollutionStatusEl.style.color = "#ef4444";
+                pollutionStatusEl.style.textShadow = "0 0 8px rgba(239, 68, 68, 0.6)";
+              } else {
+                pollutionStatusEl.innerText = "CLEAN";
+                pollutionStatusEl.style.color = "#10b981";
+                pollutionStatusEl.style.textShadow = "0 0 4px rgba(16, 185, 129, 0.4)";
+              }
+            }
+
             // SPEC-132: Render Containment Breaches Logs in Sentry Console
             const security = data.sandbox_security || {
               security_violations_total: 0,
@@ -2705,6 +2907,65 @@
           if (leakAlertsEl) {
             leakAlertsEl.innerText = "CLEAN";
             leakAlertsEl.style.color = "#10b981";
+          }
+
+          // SPEC-135: Simulated CPU Watchdog & Tamper Sentry updates
+          const latencyValueEl = document.getElementById("cpu-latency-value");
+          if (latencyValueEl) {
+            latencyValueEl.innerText = `${latency.toFixed(1)} ms`;
+            if (latency > 50) {
+              latencyValueEl.style.color = "#ef4444";
+            } else if (latency > 15) {
+              latencyValueEl.style.color = "#f59e0b";
+            } else {
+              latencyValueEl.style.color = "#10b981";
+            }
+          }
+
+          const latencyMeterEl = document.getElementById("cpu-latency-meter");
+          if (latencyMeterEl) {
+            const pct = Math.min(100, (latency / 100) * 100);
+            latencyMeterEl.style.width = `${pct}%`;
+            if (latency > 50) {
+              latencyMeterEl.style.background = "#ef4444";
+              latencyMeterEl.style.boxShadow = "0 0 8px #ef4444";
+            } else if (latency > 15) {
+              latencyMeterEl.style.background = "#f59e0b";
+              latencyMeterEl.style.boxShadow = "0 0 8px #f59e0b";
+            } else {
+              latencyMeterEl.style.background = "#10b981";
+              latencyMeterEl.style.boxShadow = "0 0 8px #10b981";
+            }
+          }
+
+          const protoStatusEl = document.getElementById("prototype-sentry-status");
+          if (protoStatusEl) {
+            const showSimulatedViolation = Math.random() > 0.95;
+            if (showSimulatedViolation) {
+              protoStatusEl.innerText = "VIOLATION DETECTED";
+              protoStatusEl.style.color = "#ef4444";
+              protoStatusEl.style.textShadow = "0 0 8px rgba(239, 68, 68, 0.6)";
+            } else {
+              protoStatusEl.innerText = "SECURED";
+              protoStatusEl.style.color = "#10b981";
+              protoStatusEl.style.textShadow = "0 0 4px rgba(16, 185, 129, 0.4)";
+            }
+          }
+
+          const pollutionStatusEl = document.getElementById(
+            "global-pollution-status",
+          );
+          if (pollutionStatusEl) {
+            const showSimulatedPollution = Math.random() > 0.95;
+            if (showSimulatedPollution) {
+              pollutionStatusEl.innerText = "TAMPER ATTEMPT";
+              pollutionStatusEl.style.color = "#ef4444";
+              pollutionStatusEl.style.textShadow = "0 0 8px rgba(239, 68, 68, 0.6)";
+            } else {
+              pollutionStatusEl.innerText = "CLEAN";
+              pollutionStatusEl.style.color = "#10b981";
+              pollutionStatusEl.style.textShadow = "0 0 4px rgba(16, 185, 129, 0.4)";
+            }
           }
 
           // SPEC-132: Render offline simulated Containment Breaches Logs in Sentry Console

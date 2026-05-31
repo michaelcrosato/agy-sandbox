@@ -48,7 +48,7 @@ export const MainThreadWatchdog = {
       }
     });
 
-    worker.on("exit", (code) => {
+    worker.on("exit", (_code) => {
       if (activeWorker === worker) {
         activeWorker = null;
       }

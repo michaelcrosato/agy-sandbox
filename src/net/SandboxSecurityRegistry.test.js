@@ -2,6 +2,9 @@ import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
 import fs from "fs";
 import path from "path";
 
+const testAuditFile = "plan/security_audit_registry_test.json";
+process.env.SECURITY_AUDIT_FILE = testAuditFile;
+
 describe("SandboxSecurityRegistry (SPEC-131)", () => {
   beforeEach(() => {
     SandboxSecurityRegistry.clearRegistry();
@@ -9,6 +12,13 @@ describe("SandboxSecurityRegistry (SPEC-131)", () => {
 
   afterEach(() => {
     SandboxSecurityRegistry.clearRegistry();
+    try {
+      if (fs.existsSync(testAuditFile)) {
+        fs.unlinkSync(testAuditFile);
+      }
+    } catch {
+      // ignore
+    }
   });
 
   test("correctly registers security violations into in-memory storage", () => {
@@ -30,7 +40,7 @@ describe("SandboxSecurityRegistry (SPEC-131)", () => {
   });
 
   test("persists violation logs correctly into plan/security_audit.json", () => {
-    const auditFilePath = path.resolve("plan/security_audit.json");
+    const auditFilePath = path.resolve(process.env.SECURITY_AUDIT_FILE);
     expect(fs.existsSync(auditFilePath)).toBe(false);
 
     SandboxSecurityRegistry.logViolation("firewall", "connect", {
@@ -49,7 +59,7 @@ describe("SandboxSecurityRegistry (SPEC-131)", () => {
   });
 
   test("gracefully handles corrupt json file or filesystem errors during persistence", () => {
-    const auditFilePath = path.resolve("plan/security_audit.json");
+    const auditFilePath = path.resolve(process.env.SECURITY_AUDIT_FILE);
 
     // Write corrupt JSON
     fs.writeFileSync(auditFilePath, "not-a-valid-json", "utf8");
@@ -69,7 +79,7 @@ describe("SandboxSecurityRegistry (SPEC-131)", () => {
   });
 
   test("bounds the persistent file log count to maximum 500 entries", () => {
-    const auditFilePath = path.resolve("plan/security_audit.json");
+    const auditFilePath = path.resolve(process.env.SECURITY_AUDIT_FILE);
 
     // Pre-populate the audit file with 499 mock entries to avoid Windows lock contention
     const mockEntries = [];

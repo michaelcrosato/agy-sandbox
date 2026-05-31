@@ -14,6 +14,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const mockScriptPath = path.join(__dirname, "mockFreezeScript.js");
 
+const testAuditFile = "plan/security_audit_watchdog_test.json";
+process.env.SECURITY_AUDIT_FILE = testAuditFile;
+
 describe("MainThreadWatchdog", () => {
   beforeEach(() => {
     SandboxSecurityRegistry.clearRegistry();
@@ -22,6 +25,13 @@ describe("MainThreadWatchdog", () => {
   afterEach(() => {
     MainThreadWatchdog.stop();
     SandboxSecurityRegistry.clearRegistry();
+    try {
+      if (fs.existsSync(testAuditFile)) {
+        fs.unlinkSync(testAuditFile);
+      }
+    } catch {
+      // ignore
+    }
   });
 
   test("should start, stop, and report active status correctly", () => {
@@ -67,7 +77,7 @@ describe("MainThreadWatchdog", () => {
     expect(exitedIncorrectly).toBe(true);
 
     // Verify that the freeze violation was recorded to the security registry
-    const auditFile = path.resolve("plan/security_audit.json");
+    const auditFile = path.resolve(process.env.SECURITY_AUDIT_FILE);
     expect(fs.existsSync(auditFile)).toBe(true);
     const logs = JSON.parse(fs.readFileSync(auditFile, "utf8"));
 

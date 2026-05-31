@@ -11,7 +11,7 @@ const pingIntervalMs = workerData?.pingIntervalMs || 200;
 
 let pingCounter = 0;
 let currentTimeout = null;
-let nextPingTimeout = null;
+let _nextPingTimeout = null;
 let isStopped = false;
 
 /**
@@ -57,7 +57,7 @@ parentPort.on("message", (msg) => {
     }
 
     // Schedule the next ping
-    nextPingTimeout = setTimeout(sendPing, pingIntervalMs);
+    _nextPingTimeout = setTimeout(sendPing, pingIntervalMs);
   }
 });
 

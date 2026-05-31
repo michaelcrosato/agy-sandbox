@@ -332,6 +332,9 @@ The sandbox exhaustion prevention and object integrity wave:
 ### Phase 1 — Prototype Sentry — `134`
 - `134` Global Prototype Tamper-Proofing & Object Integrity Guard (freeze core JavaScript prototypes and monitor global variables at startup to prevent privilege escalation or sandbox escapes).
 
+### Phase 2 — CPU/Tamper Sentry HUD — `135`
+- `135` Golden-Glassmorphic CPU Watchdog & Tamper Cockpit Gauge (enhance dashboard-codex.html with visual sentry cockpit card showing Event Loop latency gauges and prototype/scope tamper alarms).
+
 ---
 
 ## MASTER PRIORITIZATION TABLE (next-cycle work)
@@ -342,6 +345,7 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
 | 133 | CPU Watchdog | 0 | 5 | 5 | 5 | 5 | 20 |
 | 134 | Prototype Sentry | 1 | 5 | 5 | 5 | 5 | 20 |
+| 135 | CPU/Tamper HUD | 2 | 5 | 5 | 5 | 5 | 20 |
 
 **Recommended start:** `133` (Σ20 — CPU Watchdog) immediately.
 

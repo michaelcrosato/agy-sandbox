@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T05:22:37.143Z",
+  "generatedAt": "2026-05-31T05:29:55.277Z",
   "stats": {
-    "totalSourceFiles": 92,
-    "totalTestFiles": 121,
-    "totalSpecFiles": 140,
-    "totalLoc": 20161,
-    "totalTests": 1592,
+    "totalSourceFiles": 93,
+    "totalTestFiles": 122,
+    "totalSpecFiles": 141,
+    "totalLoc": 20376,
+    "totalTests": 1597,
     "untestedCoreFilesCount": 2
   },
   "files": [
@@ -1371,12 +1371,12 @@
     },
     {
       "path": "src/net/EphemeralSandbox.js",
-      "loc": 110,
+      "loc": 113,
       "classes": [
         {
           "name": "EphemeralSandbox",
           "jsdoc": "/**\n* EphemeralSandbox (spec 115) — copy-on-write virtual workspace sandboxing cloner.\n* Provisions strictly-contained transient workspaces and restricts file mutations.\n*/",
-          "line": 10
+          "line": 11
         }
       ],
       "exports": [],
@@ -1411,6 +1411,31 @@
         "plan/specs/003_ws_connection_heartbeat.md"
       ],
       "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/net/IntegrityGuard.js",
+      "loc": 202,
+      "classes": [],
+      "exports": [
+        {
+          "name": "IntegrityGuard",
+          "type": "constant",
+          "jsdoc": null,
+          "line": 51
+        }
+      ],
+      "testFile": "src/net/IntegrityGuard.test.js",
+      "testCasesCount": 5,
+      "referencingSpecs": [
+        "plan/specs/134_global_prototype_freeze_sentry.md"
+      ],
+      "missingJsDocSymbols": [
+        {
+          "name": "IntegrityGuard",
+          "type": "constant",
+          "line": 51
+        }
+      ]
     },
     {
       "path": "src/net/interest.js",
@@ -1802,14 +1827,14 @@
     },
     {
       "path": "src/net/SandboxSecurityRegistry.js",
-      "loc": 126,
+      "loc": 136,
       "classes": [],
       "exports": [
         {
           "name": "SandboxSecurityRegistry",
           "type": "constant",
           "jsdoc": null,
-          "line": 55
+          "line": 62
         }
       ],
       "testFile": "src/net/SandboxSecurityRegistry.test.js",
@@ -1821,7 +1846,7 @@
         {
           "name": "SandboxSecurityRegistry",
           "type": "constant",
-          "line": 55
+          "line": 62
         }
       ]
     },
@@ -4277,6 +4302,15 @@
       "filesMentioned": [
         "src/net/IntegrityGuard.js"
       ]
+    },
+    {
+      "path": "plan/specs/135_cpu_tamper_visual_gauge.md",
+      "filename": "135_cpu_tamper_visual_gauge.md",
+      "title": "SPEC-135: Golden-Glassmorphic CPU Watchdog & Tamper Cockpit Gauge",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": []
     }
   ],
   "epistemicDebt": {
@@ -4285,6 +4319,16 @@
       "src/net/mockFreezeScript.js"
     ],
     "missingJsDocs": [
+      {
+        "path": "src/net/IntegrityGuard.js",
+        "symbols": [
+          {
+            "name": "IntegrityGuard",
+            "type": "constant",
+            "line": 51
+          }
+        ]
+      },
       {
         "path": "src/net/MainThreadWatchdog.js",
         "symbols": [
@@ -4321,18 +4365,11 @@
           {
             "name": "SandboxSecurityRegistry",
             "type": "constant",
-            "line": 55
+            "line": 62
           }
         ]
       }
     ],
-    "staleSpecReferences": [
-      {
-        "spec": "plan/specs/134_global_prototype_freeze_sentry.md",
-        "brokenFiles": [
-          "src/net/IntegrityGuard.js"
-        ]
-      }
-    ]
+    "staleSpecReferences": []
   }
 }

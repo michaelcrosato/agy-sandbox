@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-05-31T05:33:45.348Z",
+  "generatedAt": "2026-05-31T05:38:14.754Z",
   "stats": {
-    "totalSourceFiles": 93,
-    "totalTestFiles": 122,
+    "totalSourceFiles": 95,
+    "totalTestFiles": 123,
     "totalSpecFiles": 144,
-    "totalLoc": 20376,
-    "totalTests": 1597,
-    "untestedCoreFilesCount": 2
+    "totalLoc": 20574,
+    "totalTests": 1602,
+    "untestedCoreFilesCount": 3
   },
   "files": [
     {
@@ -1385,6 +1385,41 @@
       "referencingSpecs": [
         "plan/specs/115_ephemeral_workspace_sandbox.md"
       ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/net/GuestRunner.js",
+      "loc": 148,
+      "classes": [],
+      "exports": [
+        {
+          "name": "GuestRunner",
+          "type": "constant",
+          "jsdoc": null,
+          "line": 16
+        }
+      ],
+      "testFile": "src/net/GuestRunner.test.js",
+      "testCasesCount": 5,
+      "referencingSpecs": [
+        "plan/specs/136_isolated_guest_runner.md"
+      ],
+      "missingJsDocSymbols": [
+        {
+          "name": "GuestRunner",
+          "type": "constant",
+          "line": 16
+        }
+      ]
+    },
+    {
+      "path": "src/net/GuestRunnerWorker.js",
+      "loc": 50,
+      "classes": [],
+      "exports": [],
+      "testFile": null,
+      "testCasesCount": 0,
+      "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
     {
@@ -4350,10 +4385,21 @@
   ],
   "epistemicDebt": {
     "untestedCoreFiles": [
+      "src/net/GuestRunnerWorker.js",
       "src/net/MainThreadWatchdogWorker.js",
       "src/net/mockFreezeScript.js"
     ],
     "missingJsDocs": [
+      {
+        "path": "src/net/GuestRunner.js",
+        "symbols": [
+          {
+            "name": "GuestRunner",
+            "type": "constant",
+            "line": 16
+          }
+        ]
+      },
       {
         "path": "src/net/IntegrityGuard.js",
         "symbols": [
@@ -4405,13 +4451,6 @@
         ]
       }
     ],
-    "staleSpecReferences": [
-      {
-        "spec": "plan/specs/136_isolated_guest_runner.md",
-        "brokenFiles": [
-          "src/net/GuestRunner.js"
-        ]
-      }
-    ]
+    "staleSpecReferences": []
   }
 }

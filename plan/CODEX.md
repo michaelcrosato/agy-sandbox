@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T05:33:45.348Z` · Baseline: `20,376 LOC` across `93 source files`
+> Generated: `2026-05-31T05:38:14.754Z` · Baseline: `20,574 LOC` across `95 source files`
 
 ---
 
@@ -9,12 +9,12 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `20,376 LOC` | 🟢 Healthy |
-| **Source Modules** | `93 files` | 🟢 Structured |
-| **Test Suites** | `122 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1597 cases` | 🟢 Deterministic |
+| **Total Code Volume** | `20,574 LOC` | 🟢 Healthy |
+| **Source Modules** | `95 files` | 🟢 Structured |
+| **Test Suites** | `123 test files` | 🟢 Integrated |
+| **Total Test Cases** | `1602 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `144 specifications` | 🟢 Traceable |
-| **Untested Core Modules** | `2 files` | ⚠️ Debt Pending |
+| **Untested Core Modules** | `3 files` | ⚠️ Debt Pending |
 
 ---
 
@@ -83,6 +83,8 @@
 | [ConnectionFloodSentry.js](file:///C:/dev/agy-sandbox/src/net/ConnectionFloodSentry.js) | 81 | `class ConnectionFloodSentry` | [ConnectionFloodSentry.test.js](file:///C:/dev/agy-sandbox/src/net/ConnectionFloodSentry.test.js) | [`127_connection_flood_protection`](file:///C:/dev/agy-sandbox/plan/specs/127_connection_flood_protection.md) |
 | [DeltaStateCodec.js](file:///C:/dev/agy-sandbox/src/net/DeltaStateCodec.js) | 120 | `class DeltaStateCodec` | [DeltaStateCodec.test.js](file:///C:/dev/agy-sandbox/src/net/DeltaStateCodec.test.js) | [`072_snapshot_delta_compression`](file:///C:/dev/agy-sandbox/plan/specs/072_snapshot_delta_compression.md) |
 | [EphemeralSandbox.js](file:///C:/dev/agy-sandbox/src/net/EphemeralSandbox.js) | 113 | `class EphemeralSandbox` | [EphemeralSandbox.test.js](file:///C:/dev/agy-sandbox/src/net/EphemeralSandbox.test.js) | [`115_ephemeral_workspace_sandbox`](file:///C:/dev/agy-sandbox/plan/specs/115_ephemeral_workspace_sandbox.md) |
+| [GuestRunner.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.js) | 148 | `constant GuestRunner` | [GuestRunner.test.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.test.js) | [`136_isolated_guest_runner`](file:///C:/dev/agy-sandbox/plan/specs/136_isolated_guest_runner.md) |
+| [GuestRunnerWorker.js](file:///C:/dev/agy-sandbox/src/net/GuestRunnerWorker.js) | 50 | _None_ | ❌ _Untested_ | _None_ |
 | [heartbeat.js](file:///C:/dev/agy-sandbox/src/net/heartbeat.js) | 30 | `constant DEFAULT_HEARTBEAT_MS`, `function selectDeadSockets` | [heartbeat.test.js](file:///C:/dev/agy-sandbox/src/net/heartbeat.test.js) | [`003_ws_connection_heartbeat`](file:///C:/dev/agy-sandbox/plan/specs/003_ws_connection_heartbeat.md) |
 | [IntegrityGuard.js](file:///C:/dev/agy-sandbox/src/net/IntegrityGuard.js) | 202 | `constant IntegrityGuard` | [IntegrityGuard.test.js](file:///C:/dev/agy-sandbox/src/net/IntegrityGuard.test.js) | [`134_global_prototype_freeze_sentry`](file:///C:/dev/agy-sandbox/plan/specs/134_global_prototype_freeze_sentry.md) |
 | [interest.js](file:///C:/dev/agy-sandbox/src/net/interest.js) | 170 | `constant DEFAULT_INTEREST_RADIUS`, `function interestFilter`, `function buildSpatialGrid` | [interest.test.js](file:///C:/dev/agy-sandbox/src/net/interest.test.js) | [`014_interest_management`](file:///C:/dev/agy-sandbox/plan/specs/014_interest_management.md)<br>[`049_interest_management_grid_optimization`](file:///C:/dev/agy-sandbox/plan/specs/049_interest_management_grid_optimization.md)<br>[`059_alliance_fleets`](file:///C:/dev/agy-sandbox/plan/specs/059_alliance_fleets.md) |
@@ -147,14 +149,17 @@
 
 ## ⚡ EPISTEMIC DEBT & STALE LOGIC REPORT
 
-### ⚠️ Untested Core Modules (2)
+### ⚠️ Untested Core Modules (3)
+- [ ] `src/net/GuestRunnerWorker.js` is missing a unit test suite.
 - [ ] `src/net/MainThreadWatchdogWorker.js` is missing a unit test suite.
 - [ ] `src/net/mockFreezeScript.js` is missing a unit test suite.
 
-### ⚠️ Stale Specification File References (1)
-- [ ] Spec [`136_isolated_guest_runner.md`](file:///C:/dev/agy-sandbox/plan/specs/136_isolated_guest_runner.md) references missing files: `src/net/GuestRunner.js`
+### ⚠️ Stale Specification File References (0)
+_None! All specification file references correspond to real paths._
 
-### ⚠️ Missing JSDoc Type Signatures (5 symbols)
+### ⚠️ Missing JSDoc Type Signatures (6 symbols)
+- `src/net/GuestRunner.js`:
+  - Line 16: Missing JSDoc for `constant GuestRunner`
 - `src/net/IntegrityGuard.js`:
   - Line 51: Missing JSDoc for `constant IntegrityGuard`
 - `src/net/MainThreadWatchdog.js`:

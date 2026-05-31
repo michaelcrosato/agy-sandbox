@@ -31,7 +31,7 @@ _**v35 re-audit baseline (2026-05-31, ENTIRE v35 blueprint shipped): 1,198 Jest 
 
 ## v36 — Autonomous Process Isolation & Path Jailing Hardening Wave (TO DO) — see [`ROADMAP.md`](ROADMAP.md)
 
-- [ ] `136` Host-Isolated Process Guest Runner & Workspace Self-Healer (spawn untrusted guest scripts in a dedicated low-privilege child process with environment and timeout controls, pre-activating process and prototype locks before code runs)
+- [x] `136` Host-Isolated Process Guest Runner & Workspace Self-Healer (spawn untrusted guest scripts in a dedicated low-privilege child process with environment and timeout controls, pre-activating process and prototype locks before code runs) — **done** (developed GuestRunner.js and GuestRunnerWorker.js spawning untrusted guest scripts in a dedicated low-privilege child process with execution time limits, pre-activating ProcessSentinel and IntegrityGuard inside the child context before code execution, logging timeouts to SandboxSecurityRegistry, performing complete SIGKILL process-tree reaping using ProcessReaper, fixing all TypeScript type-checking errors, and authoring rigorous Jest unit and integration tests)
 - [ ] `137` Dynamic Egress Firewall Admin & Visual Whitelisting Control (enhance dashboard-codex.html with visual whitelisting options dynamically editing plan/config.json via zero-downtime hot-reload endpoints)
 - [ ] `138` Strict Path Jailing & Sandboxed Input File Boundary Guard (enhance ProcessSentinel to securely resolve and strictly constrain guest file access within active sandbox directories, whitelisting reads on dependency node_modules)
 

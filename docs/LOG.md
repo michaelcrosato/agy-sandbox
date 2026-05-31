@@ -39,6 +39,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T23:45 · iter-0127 · GREEN · spec-136-host-isolated-process-guest-runner
+- **Baseline:** `b7cd8b0` on `feat/procedural-missions`; 1,198 Jest green.
+- **Move:** Implement SPEC-136 to securely execute untrusted guest scripts in a dedicated low-privilege child process with environment controls, pre-activating ProcessSentinel/IntegrityGuard boundaries, and enforcing hard SIGKILL watchdog budgets.
+- **Changed:**
+  - Created `src/net/GuestRunner.js` spawning guest script execution workers using `childProcess.fork` with hard-coded timeout controls and automatic environment injectors.
+  - Created `src/net/GuestRunnerWorker.js` child process bootstrap runner which activates ProcessSentinel filesystem containment and IntegrityGuard global prototype freezer constraints prior to dynamically loading the guest script.
+  - Resolved dynamic audit ledger routing so that child-process sandboxes auto-write to a nested file (`security_audit_child.json`) within their active `sandboxDir` without violating outer traversal checks.
+  - Resolved transient directory walking race conditions inside `scripts/agent/generate-codex.js` by wrapping walks in try-catch blocks to tolerate concurrent test file deletions.
+  - Addressed 6 TS compiler errors inside `src/net/GuestRunner.js` using specific JSDoc signature expansions, `msg` payload casting inside IPC listen channels, and `child.killed` indicator mutations via `any` casting.
+  - Created robust, deterministic unit and integration tests inside `src/net/GuestRunner.test.js` validating secure execution, prototype freeze interception, filesystem isolation, and timeout watchdog SIGKILL tree-reaping containment.
+- **Decisions:** Running guest code in the main thread presents direct escape or mutation vulnerabilities. Dedicated processes enforce complete V8 instance and heap isolation. Direct child process properties like `killed` are cast to `any` since they are declared read-only by native Node.js TS signatures.
+- **Validation:** Executed `npm run agent:check` yielding a 100% green gate across 1,202 Jest tests, ESLint formatting, and strict `tsc --noEmit` TypeScript type-checking.
+- **Next:** Transition to SPEC-137 implementation for Dynamic Egress Firewall Admin visual whitelisting card & server control API.
+
 ## 2026-05-31T23:30 · iter-0126 · GREEN · cycle-36-replenish-spec-136-137-138
 - **Baseline:** `4f17452` on `feat/procedural-missions`; 1,198 Jest green.
 - **Move:** Perform Cycle 36 Phase R (Replenish) to promote backlogs, conduct sandbox boundary audits, and formulate the new Wave v36 specifications.

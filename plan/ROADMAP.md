@@ -207,16 +207,28 @@ Completed waves (`001–109`) are recorded DONE in `PROGRESS.md`. The core harde
 
 ---
 
-## EXECUTION WAVES (v27)
+## EXECUTION WAVES (v27) — Completed (DONE)
 
-Completed waves (`001–109`) are recorded DONE in `PROGRESS.md`. The active modularization and workspace cockpit wave:
+Completed waves (`001–112`) are recorded DONE in `PROGRESS.md`. The active modularization and workspace cockpit wave:
 
 ### Phase 0 — Server Monolith Decomposition — `110`, `111`
-- `110` Server.js Handler Extraction Round 5 — Squad, Escort & Tutorial Handlers (extract inline handlers for squad messaging, wingman/escort commands, and tutorial completion from `src/server.js` into tested modules under `src/server/`).
-- `111` Lobby & Matchmaking Connection Decomposition (extract complex room joining, custom room creation, and matchmaking connection state logic from `src/server.js` into modular connections handler `src/server/connectionHandlers.js`).
+- `110` Server.js Handler Extraction Round 5 — Squad, Escort & Tutorial Handlers (extract inline handlers for squad messaging, wingman/escort commands, and tutorial completion from `src/server.js` into tested modules under `src/server/`) — **done**.
+- `111` Lobby & Matchmaking Connection Decomposition (extract complex room joining, custom room creation, and matchmaking connection state logic from `src/server.js` into modular connections handler `src/server/connectionHandlers.js`) — **done**.
 
 ### Phase 1 — Developer Tooling — `112`
-- `112` Visual Codex Ontology Enhancements & Automated Schema Generator (enhance the neon-cyan Living Codex Dashboard with an interactive command builder that dynamically loads `plan/codex.json` to generate client JS/JSON WebSocket payloads).
+- `112` Visual Codex Ontology Enhancements & Automated Schema Generator (enhance the neon-cyan Living Codex Dashboard with an interactive command builder that dynamically loads `plan/codex.json` to generate client JS/JSON WebSocket payloads) — **done**.
+
+---
+
+## EXECUTION WAVES (v28)
+
+Completed waves (`001–112`) are recorded DONE in `PROGRESS.md`. The active cluster orchestration and faction chronicle integration wave:
+
+### Phase 0 — Scaling & Integration — `113`
+- `113` Programmatic Multi-Process Cluster Test Harness & Orchestration Smoke (develop programmatic spawner `scripts/agent/cluster-smoke.js` running multiple workers, routing mock clients via sticky LB presence keys, testing cross-shard matchmaking, and sweeping connections cleanly without process leakage).
+
+### Phase 1 — Emergent Gameplay & Narrative — `114`
+- `114` Faction Standing Decays & Real-Time Galactic Chronicles Integration (wire theslow faction standings reputation decay ticks inside `galaxyTicker.js` to trigger dynamic chronicle news updates visible on the dashboard UI timeline).
 
 ---
 
@@ -226,11 +238,10 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 110 | Server Decomp Round 5 | 0 | 5 | 5 | 5 | 5 | 20 |
-| 111 | Connection Decomposition | 0 | 5 | 5 | 5 | 5 | 20 |
-| 112 | Visual Codex Generator | 1 | 4 | 5 | 5 | 5 | 19 |
+| 113 | Cluster Orchestration Smoke | 0 | 5 | 4 | 4 | 5 | 18 |
+| 114 | Standing Decay Chronicle | 1 | 4 | 5 | 5 | 5 | 19 |
 
-**Recommended start:** `110` (Σ20 — Server Decomp Round 5) immediately.
+**Recommended start:** `114` (Σ19 — Standing Decay Chronicle) immediately.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

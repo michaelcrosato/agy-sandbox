@@ -38,6 +38,13 @@ _**v44 re-audit baseline (2026-05-31, ENTIRE v43 blueprint shipped): 1,270 Jest 
 _**v45 re-audit baseline (2026-05-31, ENTIRE v45 blueprint shipped): 1,292 Jest tests / 126 suites + 63 client tests green; modular REST API handlers, sharded Redis Pub/Sub, and Playwright visual automation E2E regression guard all 100% DONE.**_
 _**v47 re-audit baseline (2026-05-31, ENTIRE Cycle 46 sandbox baseline audit completed): 1,294 Jest tests / 126 suites + 63 client tests green; PortReclaimer and ConfigWatcher teardowns fully stabilized and verified.**_
 _**v48 re-audit baseline (2026-05-31, Specs 164 and 165 shipped): 1,309 Jest tests / 128 suites green; Faction War Campaign Strategy Engine and Clustered Sync both 100% DONE.**_
+_**v49 re-audit baseline (2026-05-31, Spec 166, 167, 168, 169, 170 all shipped): 1,309 Jest tests / 128 suites + 63 client tests green; Interactive Faction HUD map card and sandbox teardown hardening 100% DONE. Cycle 50 started.**_
+
+## v49 — Static Analysis AST Security Sentry & OS Resource Sentry (IN PROGRESS) — see [`ROADMAP.md`](ROADMAP.md)
+
+- [x] `171` Static Analysis AST Security Sentry (design and build an AST or token lexical analysis pre-scan engine blocking prototype pollution, constructors, and eval escapes) — **done** (designed and implemented pure JS high-performance token lexical analyzer StaticSecuritySentry.js that pre-scans all untrusted guest scripts before execution to block eval, Function, globalThis/global/window variables, and prototype/constructor pollution attempts; integrated checks directly inside GuestRunner.runScript() to immediately fail scripts statically before process spawns, logging violations directly to SandboxSecurityRegistry under the new static_analysis category; verified under a 23-test suite in StaticSecuritySentry.test.js and 1,332 green Jest tests)
+- [ ] `172` Dynamic Memory & CPU Priority Scheduler Sentry (monitor host system limits to dynamically queue and OS down-prioritize near-budget guest processes)
+- [ ] `173` DNS Egress Firewall & Tunneling Sentry (intercept guest DNS resolutions to block tunneling data exfiltration and enforce zero-trust domain lookups)
 
 ## v47 — Hyper-Secure Agent Sandbox and Teardown Hardening (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

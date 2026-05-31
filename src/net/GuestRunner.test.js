@@ -258,6 +258,7 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
     const result = await GuestRunner.runScript(tempEvilScript, {
       sandboxDir: sandboxDir,
       timeoutMs: 3000,
+      bypassStaticCheck: true,
     });
 
     // The guest script must catch the DENIED error inside the sandbox process
@@ -282,6 +283,7 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
     const result = await GuestRunner.runScript(tempTamperScript, {
       sandboxDir: sandboxDir,
       timeoutMs: 3000,
+      bypassStaticCheck: true,
     });
 
     expect(result.status).toBe("success");
@@ -390,6 +392,7 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
     const result = await GuestRunner.runScript(tempNetworkScript, {
       sandboxDir,
       timeoutMs: 3000,
+      bypassStaticCheck: true,
     });
 
     expect(result.status).toBe("success");
@@ -431,6 +434,7 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
   test("should support permitted allowlisted guest RPC queries (SPEC-145)", async () => {
     const result = await GuestRunner.runScript(tempRpcOkScript, {
       timeoutMs: 3000,
+      bypassStaticCheck: true,
     });
 
     expect(result.status).toBe("success");
@@ -441,6 +445,7 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
   test("should reject non-allowlisted actions or prototype-polluting guest RPC queries (SPEC-145)", async () => {
     const result = await GuestRunner.runScript(tempRpcEvilScript, {
       timeoutMs: 3000,
+      bypassStaticCheck: true,
     });
 
     expect(result.status).toBe("success");
@@ -639,6 +644,7 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
     try {
       const result = await GuestRunner.runScript(tempEvilImportScript, {
         timeoutMs: 3000,
+        bypassStaticCheck: true,
       });
 
       expect(result.stdout).toContain("NATIVE_IMPORT_BLOCKED:");

@@ -13,6 +13,7 @@ import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
 import { GuestRpcSentry } from "./GuestRpcSentry.js";
 import { WorkspaceDriftSentry } from "./WorkspaceDriftSentry.js";
 import { SecureModuleRegistry } from "./SecureModuleRegistry.js";
+import { StaticSecuritySentry } from "./StaticSecuritySentry.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,6 +32,7 @@ export const GuestRunner = {
    * @param {number} [options.maxMemoryMb=128] - Hard V8 old generation heap memory cap.
    * @param {number} [options.cpuTimeBudgetMs=2000] - Cumulative CPU execution time budget.
    * @param {Object} [options.rpcHandlers] - Custom RPC query handlers.
+   * @param {boolean} [options.bypassStaticCheck=false] - Skip static analysis pre-scans (useful for runtime exception testing).
    * @returns {Promise<{ status: string, exitCode: number | null, signal: string | null, error?: string, stack?: string, stdout: string, stderr: string, childAuditFile?: string }>}
    */
   runScript(scriptPath, options = {}) {
@@ -67,6 +69,25 @@ export const GuestRunner = {
       const maxMemoryMb = options.maxMemoryMb ?? 128;
       const cpuTimeBudgetMs = options.cpuTimeBudgetMs ?? 2000;
       const resolvedScriptPath = path.resolve(scriptPath);
+
+      // Invoke static security pre-scan AST analysis (SPEC-171)
+      if (!options.bypassStaticCheck) {
+        try {
+          if (fs.existsSync(resolvedScriptPath)) {
+            const scriptContent = fs.readFileSync(resolvedScriptPath, "utf8");
+            StaticSecuritySentry.checkScript(scriptContent);
+          }
+        } catch (err) {
+          return resolve({
+            status: "crashed",
+            exitCode: null,
+            signal: null,
+            error: err.message,
+            stdout: "",
+            stderr: `[SECURITY ACCESS DENIED] Static analysis failed: ${err.message}`,
+          });
+        }
+      }
 
       const childAuditFile = sandboxDir
         ? path.join(sandboxDir, "security_audit_child.json")

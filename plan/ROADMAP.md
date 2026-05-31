@@ -568,34 +568,59 @@ The Faction War Campaign, Interactive Stellar HUD, and Real-Time Strategic Maps 
 
 ---
 
+## EXECUTION WAVES (v47) — Completed (DONE)
+
+The hyper-secure agent sandbox and teardown hardening wave:
+
+### Phase 0 — C++ Native Binding Lockdown — `167`
+- `167` Lock Down Node Native C++ Bindings (process.dlopen, process.binding, process._linkedBinding) (block untrusted scripts from escaping V8 contexts inside child processes; verify via tests) — **done**.
+
+### Phase 1 — Dynamic/Static Core Imports Restriction — `168`
+- `168` Restrict Dynamic/Static Imports of Dangerous Core Native Libraries in GuestLoader (prevent loading dangerous core modules like node:child_process and node:vm in guest processes) — **done**.
+
+### Phase 2 — Sibling Directory Path Jailing — `169`
+- `169` Prevent Sandbox Directory Traversal Escapes via Sibling Directory Boundary Separation (enforce path separators in startsWith checks inside ProcessSentinel to block sibling directory traversal escapes) — **done**.
+
+### Phase 3 — Process Tree Teardown Signal Handling — `170`
+- `170` Autonomic Process Tree Teardown Registry in ProcessReaper on Host Signal Interceptions (implement automated process exit and signal listeners cleanly terminating all child process trees) — **done**.
+
+---
+
+## EXECUTION WAVES (v49) — In Progress
+
+The frontier-grade static analysis, dynamic scheduling priority, and DNS resolution egress sentry wave:
+
+### Phase 0 — Static AST Sentry — `171`
+- `171` Static Analysis AST Security Sentry (design and build an AST or token lexical analysis pre-scan engine blocking prototype pollution, constructors, and eval escapes) — **in progress**.
+
+### Phase 1 — Dynamic Scheduler — `172`
+- `172` Dynamic Memory & CPU Priority Scheduler Sentry (monitor host system limits to dynamically queue and OS down-prioritize near-budget guest processes).
+
+### Phase 2 — DNS Egress Sentry — `173`
+- `173` DNS Egress Firewall & Tunneling Sentry (intercept guest DNS resolutions to block tunneling data exfiltration and enforce zero-trust domain lookups).
+
+---
+
 ## MASTER PRIORITIZATION TABLE (next-cycle work)
 
 Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + Fit.
 
-| Spec | Title                            | Phase | Impact | Feasibility | Risk(5=safe) | Fit |  Σ  |  Status  |
-| ---- | -------------------------------- | :---: | :----: | :---------: | :----------: | :-: | :-: | :------: |
-| 164  | Faction War Strategy Engine      |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
-| 165  | Clustered Campaign PubSub Sync    |   1   |   5    |      4      |      5       |  5  | 19  | **DONE** |
-| 166  | Glassmorphic Stellar Map HUD     |   2   |   5    |      4      |      5       |  5  | 19  | **DONE** |
-| 161  | Modular REST Handlers            |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
-| 162  | Cross-Process Squad Pub/Sub Sync |   1   |   5    |      4      |      5       |  5  | 19  | **DONE** |
-| 163  | Golden Visual Playwright E2E     |   2   |   4    |      4      |      5       |  5  | 17  | **DONE** |
-| 160  | Secure Sandbox Teardown          |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
-| 157  | Outfitting Presets Modular       |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
-| 158  | Guided Onboarding Tutorial       |   1   |   5    |      4      |      5       |  5  | 19  | **DONE** |
-| 159  | Economy Invariant Sentry         |   2   |   5    |      5      |      5       |  5  | 20  | **DONE** |
-| 154  | World-Derived Missions           |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
-| 155  | Mass-Agility Dynamics HUD        |   1   |   4    |      5      |      5       |  5  | 19  | **DONE** |
-| 156  | Dynamic Faction Hunters          |   2   |   5    |      4      |      5       |  5  | 19  | **DONE** |
-| 151  | Kernel Resource Isolation        |   0   |   5    |      4      |      5       |  5  | 19  | **DONE** |
-| 152  | Secure Module Verification       |   1   |   5    |      5      |      5       |  5  | 20  | **DONE** |
-| 153  | Interactive Codex CLI HUD        |   2   |   4    |      5      |      5       |  5  | 19  | **DONE** |
-| 148  | Authenticated HMAC Guest RPC Key |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
-| 149  | OS CPU Priority Scheduler        |   1   |   5    |      5      |      5       |  5  | 20  | **DONE** |
-| 150  | Virtual COW Filesystem Overlay   |   2   |   5    |      4      |      5       |  5  | 19  | **DONE** |
+| Spec | Title                            | Phase | Impact | Feasibility | Risk(5=safe) | Fit |  Σ  |   Status    |
+| ---- | -------------------------------- | :---: | :----: | :---------: | :----------: | :-: | :-: | :---------: |
+| 171  | Static AST Security Sentry       |   0   |   5    |      5      |      5       |  5  | 20  | **IN PROG** |
+| 172  | Dynamic OS Priority Scheduler    |   1   |   5    |      5      |      5       |  5  | 20  | **PLANNED** |
+| 173  | DNS Egress Tunneling Sentry      |   2   |   5    |      5      |      5       |  5  | 20  | **PLANNED** |
+| 167  | Lock Node Native C++ Bindings    |   0   |   5    |      5      |      5       |  5  | 20  |  **DONE**   |
+| 168  | Restrict Dangerous Imports       |   1   |   5    |      5      |      5       |  5  | 20  |  **DONE**   |
+| 169  | Prevent Traversal sibling Escapes|   2   |   5    |      5      |      5       |  5  | 20  |  **DONE**   |
+| 170  | Process Tree Teardown Signals    |   3   |   5    |      5      |      5       |  5  | 20  |  **DONE**   |
+| 164  | Faction War Strategy Engine      |   0   |   5    |      5      |      5       |  5  | 20  |  **DONE**   |
+| 165  | Clustered Campaign PubSub Sync    |   1   |   5    |      4      |      5       |  5  | 19  |  **DONE**   |
+| 166  | Glassmorphic Stellar Map HUD     |   2   |   5    |      4      |      5       |  5  | 19  |  **DONE**   |
 
 ## Risks & guardrails
 
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.
 - Client **canvas/visual** is verified using Vitest Browser Mode; keep screenshot tolerances high enough to avoid font/environment flakiness.
 - Every spec lands behind a green `npm run agent:check` (+ `npm run test:client` and `npm run test:client:browser`); nothing committed without validation.
+

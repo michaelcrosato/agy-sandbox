@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T17:22:07.096Z",
+  "generatedAt": "2026-05-31T17:25:25.383Z",
   "stats": {
-    "totalSourceFiles": 103,
-    "totalTestFiles": 135,
-    "totalSpecFiles": 178,
-    "totalLoc": 24552,
-    "totalTests": 1734,
+    "totalSourceFiles": 104,
+    "totalTestFiles": 136,
+    "totalSpecFiles": 180,
+    "totalLoc": 24885,
+    "totalTests": 1742,
     "untestedCoreFilesCount": 6
   },
   "files": [
@@ -1493,14 +1493,14 @@
     },
     {
       "path": "src/net/GuestRunner.js",
-      "loc": 484,
+      "loc": 504,
       "classes": [],
       "exports": [
         {
           "name": "GuestRunner",
           "type": "constant",
           "jsdoc": null,
-          "line": 21
+          "line": 22
         }
       ],
       "testFile": "src/net/GuestRunner.test.js",
@@ -1512,7 +1512,7 @@
         {
           "name": "GuestRunner",
           "type": "constant",
-          "line": 21
+          "line": 22
         }
       ]
     },
@@ -2013,14 +2013,14 @@
     },
     {
       "path": "src/net/SandboxSecurityRegistry.js",
-      "loc": 138,
+      "loc": 140,
       "classes": [],
       "exports": [
         {
           "name": "SandboxSecurityRegistry",
           "type": "constant",
           "jsdoc": null,
-          "line": 63
+          "line": 64
         }
       ],
       "testFile": "src/net/SandboxSecurityRegistry.test.js",
@@ -2032,7 +2032,7 @@
         {
           "name": "SandboxSecurityRegistry",
           "type": "constant",
-          "line": 63
+          "line": 64
         }
       ]
     },
@@ -2211,6 +2211,31 @@
       "testCasesCount": 27,
       "referencingSpecs": [],
       "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/net/StaticSecuritySentry.js",
+      "loc": 311,
+      "classes": [],
+      "exports": [
+        {
+          "name": "StaticSecuritySentry",
+          "type": "constant",
+          "jsdoc": null,
+          "line": 35
+        }
+      ],
+      "testFile": "src/net/StaticSecuritySentry.test.js",
+      "testCasesCount": 8,
+      "referencingSpecs": [
+        "plan/specs/171_ast_static_security_sentry.md"
+      ],
+      "missingJsDocSymbols": [
+        {
+          "name": "StaticSecuritySentry",
+          "type": "constant",
+          "line": 35
+        }
+      ]
     },
     {
       "path": "src/net/statsPayload.js",
@@ -5022,6 +5047,30 @@
         "src/net/StaticSecuritySentry.js",
         "src/net/StaticSecuritySentry.test.js"
       ]
+    },
+    {
+      "path": "plan/specs/172_dynamic_memory_priority_scheduler.md",
+      "filename": "172_dynamic_memory_priority_scheduler.md",
+      "title": "SPEC-172: Dynamic Memory & CPU Priority Scheduler Sentry",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/DynamicResourceGovernor.js",
+        "src/net/DynamicResourceGovernor.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/173_dns_resolution_egress_sentry.md",
+      "filename": "173_dns_resolution_egress_sentry.md",
+      "title": "SPEC-173: DNS Egress Firewall & Tunneling Sentry",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/DnsEgressSentry.js",
+        "src/net/DnsEgressSentry.test.js"
+      ]
     }
   ],
   "epistemicDebt": {
@@ -5055,7 +5104,7 @@
           {
             "name": "GuestRunner",
             "type": "constant",
-            "line": 21
+            "line": 22
           }
         ]
       },
@@ -5130,7 +5179,7 @@
           {
             "name": "SandboxSecurityRegistry",
             "type": "constant",
-            "line": 63
+            "line": 64
           }
         ]
       },
@@ -5141,6 +5190,16 @@
             "name": "SecureModuleRegistry",
             "type": "constant",
             "line": 30
+          }
+        ]
+      },
+      {
+        "path": "src/net/StaticSecuritySentry.js",
+        "symbols": [
+          {
+            "name": "StaticSecuritySentry",
+            "type": "constant",
+            "line": 35
           }
         ]
       },
@@ -5176,10 +5235,17 @@
         ]
       },
       {
-        "spec": "plan/specs/171_ast_static_security_sentry.md",
+        "spec": "plan/specs/172_dynamic_memory_priority_scheduler.md",
         "brokenFiles": [
-          "src/net/StaticSecuritySentry.js",
-          "src/net/StaticSecuritySentry.test.js"
+          "src/net/DynamicResourceGovernor.js",
+          "src/net/DynamicResourceGovernor.test.js"
+        ]
+      },
+      {
+        "spec": "plan/specs/173_dns_resolution_egress_sentry.md",
+        "brokenFiles": [
+          "src/net/DnsEgressSentry.js",
+          "src/net/DnsEgressSentry.test.js"
         ]
       }
     ]

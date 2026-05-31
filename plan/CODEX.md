@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T17:22:07.096Z` · Baseline: `24,552 LOC` across `103 source files`
+> Generated: `2026-05-31T17:25:25.383Z` · Baseline: `24,885 LOC` across `104 source files`
 
 ---
 
@@ -9,11 +9,11 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `24,552 LOC` | 🟢 Healthy |
-| **Source Modules** | `103 files` | 🟢 Structured |
-| **Test Suites** | `135 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1734 cases` | 🟢 Deterministic |
-| **Active/Archived Specs** | `178 specifications` | 🟢 Traceable |
+| **Total Code Volume** | `24,885 LOC` | 🟢 Healthy |
+| **Source Modules** | `104 files` | 🟢 Structured |
+| **Test Suites** | `136 test files` | 🟢 Integrated |
+| **Total Test Cases** | `1742 cases` | 🟢 Deterministic |
+| **Active/Archived Specs** | `180 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `6 files` | ⚠️ Debt Pending |
 
 ---
@@ -86,7 +86,7 @@
 | [EphemeralSandbox.js](file:///C:/dev/agy-sandbox/src/net/EphemeralSandbox.js) | 115 | `class EphemeralSandbox` | [EphemeralSandbox.test.js](file:///C:/dev/agy-sandbox/src/net/EphemeralSandbox.test.js) | [`115_ephemeral_workspace_sandbox`](file:///C:/dev/agy-sandbox/plan/specs/115_ephemeral_workspace_sandbox.md) |
 | [GuestLoader.js](file:///C:/dev/agy-sandbox/src/net/GuestLoader.js) | 117 | _None_ | ❌ _Untested_ | [`168_loader_native_modules_restriction`](file:///C:/dev/agy-sandbox/plan/specs/168_loader_native_modules_restriction.md) |
 | [GuestRpcSentry.js](file:///C:/dev/agy-sandbox/src/net/GuestRpcSentry.js) | 188 | `constant ALLOWED_RPC_ACTIONS`, `function validateRpcRequest`, `constant GuestRpcSentry` | ❌ _Untested_ | [`145_secure_guest_rpc_sentry`](file:///C:/dev/agy-sandbox/plan/specs/145_secure_guest_rpc_sentry.md) |
-| [GuestRunner.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.js) | 484 | `constant GuestRunner` | [GuestRunner.test.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.test.js) | [`136_isolated_guest_runner`](file:///C:/dev/agy-sandbox/plan/specs/136_isolated_guest_runner.md) |
+| [GuestRunner.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.js) | 504 | `constant GuestRunner` | [GuestRunner.test.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.test.js) | [`136_isolated_guest_runner`](file:///C:/dev/agy-sandbox/plan/specs/136_isolated_guest_runner.md) |
 | [GuestRunnerWorker.js](file:///C:/dev/agy-sandbox/src/net/GuestRunnerWorker.js) | 113 | _None_ | ❌ _Untested_ | _None_ |
 | [heartbeat.js](file:///C:/dev/agy-sandbox/src/net/heartbeat.js) | 30 | `constant DEFAULT_HEARTBEAT_MS`, `function selectDeadSockets` | [heartbeat.test.js](file:///C:/dev/agy-sandbox/src/net/heartbeat.test.js) | [`003_ws_connection_heartbeat`](file:///C:/dev/agy-sandbox/plan/specs/003_ws_connection_heartbeat.md) |
 | [IntegrityGuard.js](file:///C:/dev/agy-sandbox/src/net/IntegrityGuard.js) | 244 | `constant IntegrityGuard` | [IntegrityGuard.test.js](file:///C:/dev/agy-sandbox/src/net/IntegrityGuard.test.js) | [`134_global_prototype_freeze_sentry`](file:///C:/dev/agy-sandbox/plan/specs/134_global_prototype_freeze_sentry.md)<br>[`167_process_binding_dlopen_lockdown`](file:///C:/dev/agy-sandbox/plan/specs/167_process_binding_dlopen_lockdown.md) |
@@ -107,13 +107,14 @@
 | [ResourceLimiter.js](file:///C:/dev/agy-sandbox/src/net/ResourceLimiter.js) | 157 | `class ResourceLimiter` | [ResourceLimiter.test.js](file:///C:/dev/agy-sandbox/src/net/ResourceLimiter.test.js) | [`116_resource_backpressure_limiter`](file:///C:/dev/agy-sandbox/plan/specs/116_resource_backpressure_limiter.md)<br>[`128_adaptive_backpressure`](file:///C:/dev/agy-sandbox/plan/specs/128_adaptive_backpressure.md) |
 | [roomRouter.js](file:///C:/dev/agy-sandbox/src/net/roomRouter.js) | 304 | `class RoomRegistry`, `function hashString`, `function assignShard`, `function routeConnection`, `function planDrain` | [roomRouter.test.js](file:///C:/dev/agy-sandbox/src/net/roomRouter.test.js) | [`019a_scaling_decomposition`](file:///C:/dev/agy-sandbox/plan/specs/019a_scaling_decomposition.md)<br>[`019d_sticky_routing_lb`](file:///C:/dev/agy-sandbox/plan/specs/019d_sticky_routing_lb.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
 | [SandboxFirewall.js](file:///C:/dev/agy-sandbox/src/net/SandboxFirewall.js) | 278 | `class SandboxFirewall`, `function activateFirewall`, `function deactivateFirewall` | [SandboxFirewall.test.js](file:///C:/dev/agy-sandbox/src/net/SandboxFirewall.test.js) | [`120_sandbox_egress_firewall`](file:///C:/dev/agy-sandbox/plan/specs/120_sandbox_egress_firewall.md) |
-| [SandboxSecurityRegistry.js](file:///C:/dev/agy-sandbox/src/net/SandboxSecurityRegistry.js) | 138 | `constant SandboxSecurityRegistry` | [SandboxSecurityRegistry.test.js](file:///C:/dev/agy-sandbox/src/net/SandboxSecurityRegistry.test.js) | [`131_centralized_security_audit_ledger`](file:///C:/dev/agy-sandbox/plan/specs/131_centralized_security_audit_ledger.md) |
+| [SandboxSecurityRegistry.js](file:///C:/dev/agy-sandbox/src/net/SandboxSecurityRegistry.js) | 140 | `constant SandboxSecurityRegistry` | [SandboxSecurityRegistry.test.js](file:///C:/dev/agy-sandbox/src/net/SandboxSecurityRegistry.test.js) | [`131_centralized_security_audit_ledger`](file:///C:/dev/agy-sandbox/plan/specs/131_centralized_security_audit_ledger.md) |
 | [SandboxTelemetry.js](file:///C:/dev/agy-sandbox/src/net/SandboxTelemetry.js) | 171 | `class SandboxTelemetry` | [SandboxTelemetry.test.js](file:///C:/dev/agy-sandbox/src/net/SandboxTelemetry.test.js) | [`094_observability_sandbox_telemetry`](file:///C:/dev/agy-sandbox/plan/specs/094_observability_sandbox_telemetry.md) |
 | [SchemaCodec.js](file:///C:/dev/agy-sandbox/src/net/SchemaCodec.js) | 277 | `class ByteWriter`, `class ByteReader`, `constant SCHEMA_PROTOCOL_VERSION`, `function encode`, `function decode` | [SchemaCodec.test.js](file:///C:/dev/agy-sandbox/src/net/SchemaCodec.test.js) | [`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
 | [SchemaRegistry.js](file:///C:/dev/agy-sandbox/src/net/SchemaRegistry.js) | 278 | `constant COMMODITIES_METADATA`, `constant COMMODITIES`, `constant BASE_MARKETS`, `constant SCHEMAS` | [SchemaRegistry.test.js](file:///C:/dev/agy-sandbox/src/net/SchemaRegistry.test.js) | [`099_centralized_commodities_schema_registry`](file:///C:/dev/agy-sandbox/plan/specs/099_centralized_commodities_schema_registry.md) |
 | [SchemaValidator.js](file:///C:/dev/agy-sandbox/src/net/SchemaValidator.js) | 157 | `function validateMessage` | [SchemaValidator.test.js](file:///C:/dev/agy-sandbox/src/net/SchemaValidator.test.js) | [`089_zero_trust_websocket_validation`](file:///C:/dev/agy-sandbox/plan/specs/089_zero_trust_websocket_validation.md)<br>[`099_centralized_commodities_schema_registry`](file:///C:/dev/agy-sandbox/plan/specs/099_centralized_commodities_schema_registry.md)<br>[`118_websocket_injection_sentinel`](file:///C:/dev/agy-sandbox/plan/specs/118_websocket_injection_sentinel.md) |
 | [SecureModuleRegistry.js](file:///C:/dev/agy-sandbox/src/net/SecureModuleRegistry.js) | 72 | `function computeFileHash`, `constant SecureModuleRegistry` | ❌ _Untested_ | _None_ |
 | [StateCodec.js](file:///C:/dev/agy-sandbox/src/net/StateCodec.js) | 207 | `function encodeSnapshot`, `function diff`, `function applyDelta` | [StateCodec.test.js](file:///C:/dev/agy-sandbox/src/net/StateCodec.test.js) | _None_ |
+| [StaticSecuritySentry.js](file:///C:/dev/agy-sandbox/src/net/StaticSecuritySentry.js) | 311 | `constant StaticSecuritySentry` | [StaticSecuritySentry.test.js](file:///C:/dev/agy-sandbox/src/net/StaticSecuritySentry.test.js) | [`171_ast_static_security_sentry`](file:///C:/dev/agy-sandbox/plan/specs/171_ast_static_security_sentry.md) |
 | [statsPayload.js](file:///C:/dev/agy-sandbox/src/net/statsPayload.js) | 90 | `function buildStatsPayload` | [statsPayload.test.js](file:///C:/dev/agy-sandbox/src/net/statsPayload.test.js) | _None_ |
 | [WorkspaceDriftSentry.js](file:///C:/dev/agy-sandbox/src/net/WorkspaceDriftSentry.js) | 203 | `constant WorkspaceDriftSentry` | [WorkspaceDriftSentry.test.js](file:///C:/dev/agy-sandbox/src/net/WorkspaceDriftSentry.test.js) | [`146_workspace_drift_self_healer`](file:///C:/dev/agy-sandbox/plan/specs/146_workspace_drift_self_healer.md) |
 | [wsCompression.js](file:///C:/dev/agy-sandbox/src/net/wsCompression.js) | 42 | `constant DEFAULT_DEFLATE_OPTIONS`, `function perMessageDeflateOption` | [wsCompression.test.js](file:///C:/dev/agy-sandbox/src/net/wsCompression.test.js) | _None_ |
@@ -165,18 +166,19 @@
 - [ ] `src/net/mockFreezeScript.js` is missing a unit test suite.
 - [ ] `src/net/SecureModuleRegistry.js` is missing a unit test suite.
 
-### ⚠️ Stale Specification File References (4)
+### ⚠️ Stale Specification File References (5)
 - [ ] Spec [`145_secure_guest_rpc_sentry.md`](file:///C:/dev/agy-sandbox/plan/specs/145_secure_guest_rpc_sentry.md) references missing files: `src/net/GuestRpcSentry.test.js`
 - [ ] Spec [`158_guided_onboarding_tutorial_mission.md`](file:///C:/dev/agy-sandbox/plan/specs/158_guided_onboarding_tutorial_mission.md) references missing files: `src/client/tutorialUI.test.js`
 - [ ] Spec [`163_playwright_e2e_regression_guard.md`](file:///C:/dev/agy-sandbox/plan/specs/163_playwright_e2e_regression_guard.md) references missing files: `src/client/__tests__/CanvasRenderer.browser.test.js`, `src/client/__tests__/PlaywrightVisual.test.js`
-- [ ] Spec [`171_ast_static_security_sentry.md`](file:///C:/dev/agy-sandbox/plan/specs/171_ast_static_security_sentry.md) references missing files: `src/net/StaticSecuritySentry.js`, `src/net/StaticSecuritySentry.test.js`
+- [ ] Spec [`172_dynamic_memory_priority_scheduler.md`](file:///C:/dev/agy-sandbox/plan/specs/172_dynamic_memory_priority_scheduler.md) references missing files: `src/net/DynamicResourceGovernor.js`, `src/net/DynamicResourceGovernor.test.js`
+- [ ] Spec [`173_dns_resolution_egress_sentry.md`](file:///C:/dev/agy-sandbox/plan/specs/173_dns_resolution_egress_sentry.md) references missing files: `src/net/DnsEgressSentry.js`, `src/net/DnsEgressSentry.test.js`
 
-### ⚠️ Missing JSDoc Type Signatures (14 symbols)
+### ⚠️ Missing JSDoc Type Signatures (15 symbols)
 - `src/net/GuestRpcSentry.js`:
   - Line 9: Missing JSDoc for `constant ALLOWED_RPC_ACTIONS`
   - Line 111: Missing JSDoc for `constant GuestRpcSentry`
 - `src/net/GuestRunner.js`:
-  - Line 21: Missing JSDoc for `constant GuestRunner`
+  - Line 22: Missing JSDoc for `constant GuestRunner`
 - `src/net/IntegrityGuard.js`:
   - Line 51: Missing JSDoc for `constant IntegrityGuard`
 - `src/net/MainThreadWatchdog.js`:
@@ -191,8 +193,10 @@
 - `src/net/SandboxFirewall.js`:
   - Line 14: Missing JSDoc for `class SandboxFirewall`
 - `src/net/SandboxSecurityRegistry.js`:
-  - Line 63: Missing JSDoc for `constant SandboxSecurityRegistry`
+  - Line 64: Missing JSDoc for `constant SandboxSecurityRegistry`
 - `src/net/SecureModuleRegistry.js`:
   - Line 30: Missing JSDoc for `constant SecureModuleRegistry`
+- `src/net/StaticSecuritySentry.js`:
+  - Line 35: Missing JSDoc for `constant StaticSecuritySentry`
 - `src/net/WorkspaceDriftSentry.js`:
   - Line 49: Missing JSDoc for `constant WorkspaceDriftSentry`

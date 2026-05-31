@@ -222,4 +222,40 @@ describe("ConfigWatcher", () => {
       done();
     }, 300);
   });
+
+  test("safely ignores fs.watch events and clears timers after stop() is invoked to prevent async leaks (SPEC-125)", (done) => {
+    const config1 = {
+      wsRateLimit: {
+        maxPerSecond: 80,
+      },
+    };
+
+    writeTestConfig(config1);
+
+    const wsConfig = { maxPerSecond: 80 };
+    const watcher = new ConfigWatcher(testConfigPath, {
+      wsRateLimitConfig: wsConfig,
+    });
+
+    watcher.start();
+    expect(watcher.reloadCount).toBe(1);
+
+    // Call stop() immediately to simulate teardown
+    watcher.stop();
+
+    // Trigger a file change
+    const config2 = {
+      wsRateLimit: {
+        maxPerSecond: 120,
+      },
+    };
+    writeTestConfig(config2);
+
+    // Wait and assert that reloadCount did NOT increment, and wsConfig limits were NOT updated
+    setTimeout(() => {
+      expect(watcher.reloadCount).toBe(1);
+      expect(wsConfig.maxPerSecond).toBe(80);
+      done();
+    }, 250);
+  });
 });

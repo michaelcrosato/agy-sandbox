@@ -41,11 +41,13 @@ export class ConfigWatcher {
 
     try {
       this.watcher = fs.watch(this.filePath, (eventType) => {
+        if (!this.watcher) return;
         if (eventType === "change" || eventType === "rename") {
           if (this.debounceTimeout) {
             clearTimeout(this.debounceTimeout);
           }
           this.debounceTimeout = setTimeout(() => {
+            if (!this.watcher) return;
             this.loadAndApply();
           }, 100);
         }

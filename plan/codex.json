@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T04:58:15.459Z",
+  "generatedAt": "2026-05-31T05:01:20.899Z",
   "stats": {
-    "totalSourceFiles": 86,
-    "totalTestFiles": 116,
+    "totalSourceFiles": 87,
+    "totalTestFiles": 117,
     "totalSpecFiles": 132,
-    "totalLoc": 19350,
-    "totalTests": 1564,
+    "totalLoc": 19601,
+    "totalTests": 1569,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -1316,6 +1316,24 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/net/ConfigWatcher.js",
+      "loc": 230,
+      "classes": [
+        {
+          "name": "ConfigWatcher",
+          "jsdoc": "/**\n* Monitors and hot-reloads configurations from a target file (defaults to `plan/config.json`).\n* Features a zero-downtime secure design that validates properties through the SchemaValidator\n* before applying updates to active registry, firewall, and rate limiter instances,\n* safely swallowing any syntax errors.\n*/",
+          "line": 11
+        }
+      ],
+      "exports": [],
+      "testFile": "src/net/ConfigWatcher.test.js",
+      "testCasesCount": 5,
+      "referencingSpecs": [
+        "plan/specs/125_hot_config_reload.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
       "path": "src/net/DeltaStateCodec.js",
       "loc": 120,
       "classes": [
@@ -1780,7 +1798,7 @@
     },
     {
       "path": "src/net/SchemaRegistry.js",
-      "loc": 248,
+      "loc": 269,
       "classes": [],
       "exports": [
         {
@@ -4107,14 +4125,6 @@
         ]
       }
     ],
-    "staleSpecReferences": [
-      {
-        "spec": "plan/specs/125_hot_config_reload.md",
-        "brokenFiles": [
-          "src/net/ConfigWatcher.js",
-          "src/net/ConfigWatcher.test.js"
-        ]
-      }
-    ]
+    "staleSpecReferences": []
   }
 }

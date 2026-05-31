@@ -244,4 +244,25 @@ export const SCHEMAS = Object.freeze({
   distress_beacon: {},
   ping: {},
   tutorial_complete: {},
+  apiRateLimitConfig: {
+    maxPerMinute: { type: "integer", required: true, min: 1 },
+    maxPerHour: { type: "integer", required: true, min: 1 },
+    allowlistDomains: { type: "array", required: true, itemType: "string" },
+  },
+  sandboxFirewallConfig: {
+    allowlistDomains: { type: "array", required: true, itemType: "string" },
+  },
+  wsRateLimitConfig: {
+    maxPerSecond: { type: "integer", required: true, min: 1 },
+  },
+  standingsConfig: {
+    hostileThreshold: { type: "number", required: true, min: -100, max: 100 },
+    friendlyThreshold: { type: "number", required: true, min: -100, max: 100 },
+    minStanding: { type: "number", required: true, min: -1000, max: 1000 },
+    maxStanding: { type: "number", required: true, min: -1000, max: 1000 },
+    allyPropagation: { type: "number", required: true, min: 0, max: 1 },
+    enemyPropagation: { type: "number", required: true, min: 0, max: 1 },
+    decayRate: { type: "number", required: true, min: 0, max: 1 },
+    maxPriceSwing: { type: "number", required: true, min: 0, max: 1 },
+  },
 });

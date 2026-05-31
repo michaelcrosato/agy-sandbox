@@ -91,6 +91,14 @@ describe("Living Codex & Dashboard HTTP Integration Tests (SPEC-102)", () => {
           expect(body).toContain('id="code-preview"');
           // SPEC-122 Cluster telemetry memory card validation
           expect(body).toContain('id="chart-val-memory"');
+          // SPEC-126 Egress firewall cockpit dashboard card elements validation
+          expect(body).toContain('id="firewall-rules-panel"');
+          expect(body).toContain('id="firewall-domains-list"');
+          expect(body).toContain('id="firewall-block-count"');
+          expect(body).toContain('id="firewall-block-meter"');
+          expect(body).toContain('id="api-rate-display"');
+          expect(body).toContain('id="api-rate-meter"');
+          expect(body).toContain('id="memory-leak-alerts-display"');
           resolve();
         });
 

@@ -1105,6 +1105,83 @@
               0 MB
             </div>
           </div>
+
+          <!-- SPEC-126: Sandbox Egress & Defense Sentry Gold-Glassmorphic Panel -->
+          <div
+            id="firewall-rules-panel"
+            style="
+              background: rgba(251, 191, 36, 0.02);
+              border: 1px solid rgba(251, 191, 36, 0.15);
+              border-radius: 8px;
+              padding: 1.25rem;
+              box-shadow: 0 0 15px rgba(251, 191, 36, 0.05);
+            "
+          >
+            <div
+              style="
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 0.85rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #fbbf24;
+                margin-bottom: 0.75rem;
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+              "
+            >
+              🛡️ Sandbox Egress & Defense Sentry
+            </div>
+            
+            <!-- Allowlisted Egress Domains -->
+            <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 0.5rem;">
+              Allowlisted Domains:
+            </div>
+            <div
+              id="firewall-domains-list"
+              style="
+                font-family: monospace;
+                font-size: 0.75rem;
+                color: var(--color-text);
+                background: rgba(0, 0, 0, 0.2);
+                padding: 0.5rem;
+                border-radius: 4px;
+                margin-bottom: 0.75rem;
+                max-height: 80px;
+                overflow-y: auto;
+                border: 1px solid rgba(255, 255, 255, 0.02);
+              "
+            >
+              Loading...
+            </div>
+
+            <!-- Egress Firewall Blocks -->
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.25rem;">
+              <span style="color: var(--color-text-muted)">Firewall Blocks:</span>
+              <span id="firewall-block-count" style="font-weight: 700; color: #ef4444">0</span>
+            </div>
+            <!-- Block Meter (Neon Red) -->
+            <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-bottom: 0.75rem;">
+              <div id="firewall-block-meter" style="width: 0%; height: 100%; background: #ef4444; box-shadow: 0 0 8px #ef4444; transition: width 0.3s ease;"></div>
+            </div>
+
+            <!-- API Rate Limit Slider / Metrics -->
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.25rem;">
+              <span style="color: var(--color-text-muted)">API Outbound Rate:</span>
+              <span id="api-rate-display" style="font-weight: 700; color: #fbbf24">0/min</span>
+            </div>
+            <!-- Outbound Rate Meter (Neon Gold/Amber) -->
+            <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-bottom: 0.75rem;">
+              <div id="api-rate-meter" style="width: 0%; height: 100%; background: #f59e0b; box-shadow: 0 0 8px #f59e0b; transition: width 0.3s ease;"></div>
+            </div>
+
+            <!-- Memory Leak Sentry Alert Status -->
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+              <span style="color: var(--color-text-muted)">Memory Leak Alerts:</span>
+              <span id="memory-leak-alerts-display" style="font-weight: 700; color: #10b981">CLEAN</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1862,6 +1939,53 @@
             if (memoryEl) {
               memoryEl.innerText = `${memoryUsed.toFixed(1)} MB`;
             }
+
+            // SPEC-126 Egress status card updates
+            const firewall = data.sandbox_firewall || { block_count: 0, blocked_events: [], allowlist_domains: [] };
+            const apiLimiter = data.api_limiter || { block_count: 0, expended_tokens: 0, max_per_minute: 10, max_per_hour: 200, allowlist_domains: [] };
+            const memoryLeak = data.memory_leak_alerts || { leakDetectionsTotal: 0, diagnostics: { lastLeakRate: 0 } };
+
+            // 1. Domains list
+            const firewallDomains = firewall.allowlist_domains || ["google.com", "openai.com", "localhost"];
+            const domainsListEl = document.getElementById("firewall-domains-list");
+            if (domainsListEl) {
+              domainsListEl.innerText = firewallDomains.join("\n");
+            }
+
+            // 2. Firewall blocks count and meter
+            const blockCountEl = document.getElementById("firewall-block-count");
+            if (blockCountEl) {
+              blockCountEl.innerText = firewall.block_count;
+            }
+            const blockMeterEl = document.getElementById("firewall-block-meter");
+            if (blockMeterEl) {
+              const pct = Math.min(100, (firewall.block_count / 20) * 100);
+              blockMeterEl.style.width = `${pct}%`;
+            }
+
+            // 3. API Outbound Rate display and meter
+            const apiRateDisplayEl = document.getElementById("api-rate-display");
+            if (apiRateDisplayEl) {
+              apiRateDisplayEl.innerText = `${apiLimiter.block_count} blocked / ${apiLimiter.max_per_minute}/min`;
+            }
+            const apiRateMeterEl = document.getElementById("api-rate-meter");
+            if (apiRateMeterEl) {
+              const pct = Math.min(100, (apiLimiter.block_count / apiLimiter.max_per_minute) * 100);
+              apiRateMeterEl.style.width = `${pct}%`;
+            }
+
+            // 4. Memory Leak Alerts Status
+            const leakAlertsEl = document.getElementById("memory-leak-alerts-display");
+            if (leakAlertsEl) {
+              const count = memoryLeak.leakDetectionsTotal || 0;
+              if (count > 0) {
+                leakAlertsEl.innerText = `${count} ALERTS`;
+                leakAlertsEl.style.color = "#ef4444";
+              } else {
+                leakAlertsEl.innerText = "CLEAN";
+                leakAlertsEl.style.color = "#10b981";
+              }
+            }
           }
         } catch (err) {
           // Fallback simulation when offline
@@ -1885,6 +2009,37 @@
           const memoryEl = document.getElementById("chart-val-memory");
           if (memoryEl) {
             memoryEl.innerText = `${memoryUsed.toFixed(1)} MB`;
+          }
+
+          // SPEC-126 Egress status card offline simulation fallback
+          const firewallDomains = ["google.com", "openai.com", "localhost"];
+          const domainsListEl = document.getElementById("firewall-domains-list");
+          if (domainsListEl) {
+            domainsListEl.innerText = firewallDomains.join("\n");
+          }
+
+          const blockCountEl = document.getElementById("firewall-block-count");
+          if (blockCountEl) {
+            blockCountEl.innerText = "0";
+          }
+          const blockMeterEl = document.getElementById("firewall-block-meter");
+          if (blockMeterEl) {
+            blockMeterEl.style.width = "0%";
+          }
+
+          const apiRateDisplayEl = document.getElementById("api-rate-display");
+          if (apiRateDisplayEl) {
+            apiRateDisplayEl.innerText = "0 blocked / 10/min";
+          }
+          const apiRateMeterEl = document.getElementById("api-rate-meter");
+          if (apiRateMeterEl) {
+            apiRateMeterEl.style.width = "0%";
+          }
+
+          const leakAlertsEl = document.getElementById("memory-leak-alerts-display");
+          if (leakAlertsEl) {
+            leakAlertsEl.innerText = "CLEAN";
+            leakAlertsEl.style.color = "#10b981";
           }
         }
 

@@ -39,6 +39,22 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T22:15 · iter-0120 · GREEN · cycle-32-spec-125-126-hot-config-reload-egress-dashboard
+- **Baseline:** `7f5116b` on `feat/procedural-missions`; 1,171 Jest green.
+- **Move:** Implement SPEC-125 (Zero-Downtime Hot Config Reloading Engine) and SPEC-126 (Egress Firewall Rules Cockpit Dashboard Card) to complete Wave v32.
+- **Changed:**
+  - Designed modular `src/net/ConfigWatcher.js` watching `plan/config.json` via non-blocking asynchronous fs polling.
+  - Registered dynamic configuration schemas in `src/net/SchemaRegistry.js` for API rate limits, firewall, WebSocket rate thresholds, and FactionRegistry standing options.
+  - Programmed ConfigWatcher to gracefully bypass parsing or type errors, safeguarding active server contexts from OOM or process crashes.
+  - Wired reloader in `src/server.js` and hooked it into the graceful shutdown process.
+  - Made WebSocket message rate limit dynamic, adjusting connection throttling dynamically on live reloads.
+  - Extended dashboard `dashboard-codex.html` with an gorgeous gold-glassmorphic status panel showcasing allowlisted domains, firewall blocks progress meters, outbound API rate graphs, and memory leak warnings.
+  - Authored dynamic updates and offline fallback simulations in dashboard scripts.
+  - Created exhaustive unit test suite `src/net/ConfigWatcher.test.js` and extended integration assertions in `codexDashboard.integration.test.js`.
+- **Decisions:** Registered config subsections as separate type schemas in the central SchemaRegistry to seamlessly reuse the zero-trust validator engine without writing redundant nesting rules.
+- **Validation:** Executed full repository quality gate (`npm run agent:check`) confirming all Prettier formatting, ESLint rules, TypeScript compilation, and 1,175 Jest test suites are 100% green.
+- **Next:** Transition to perpetual Replenish phase [R] to promote backlogs and generate Wave v33 blueprints.
+
 ## 2026-05-31T22:00 · iter-0119 · GREEN · cycle-32-spec-124-telemetry-anomaly-detector
 - **Baseline:** `cb59136` on `feat/procedural-missions`; 1,162 Jest green.
 - **Move:** Implement SPEC-124 (Automated Telemetry Anomaly Detector & Z-Score Sentry) to detect latency, memory allocation, and connection spikes.

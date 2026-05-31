@@ -37,6 +37,7 @@ import { SandboxTelemetry } from "./net/SandboxTelemetry.js";
 import { ResourceLimiter } from "./net/ResourceLimiter.js";
 import { MemoryLeakSentry } from "./net/MemoryLeakSentry.js";
 import { AnomalyDetector } from "./net/AnomalyDetector.js";
+import { ConfigWatcher } from "./net/ConfigWatcher.js";
 import {
   handleOutfitBuy,
   handleShipBuy,
@@ -239,10 +240,14 @@ const server = http.createServer((req, res) => {
       api_limiter: {
         block_count: apiRateLimiter.blockCount,
         expended_tokens: apiRateLimiter.expendedTokens,
+        max_per_minute: apiRateLimiter.maxPerMinute,
+        max_per_hour: apiRateLimiter.maxPerHour,
+        allowlist_domains: apiRateLimiter.allowlistDomains,
       },
       sandbox_firewall: {
         block_count: sandboxFirewall.blockCount,
         blocked_events: sandboxFirewall.blockedEvents,
+        allowlist_domains: sandboxFirewall.allowlistDomains,
       },
       memory_leak_alerts: memoryLeakSentry.getDiagnostics(),
       anomaly_triggers_total: anomalyDetector.anomalyTriggersTotal,
@@ -454,6 +459,19 @@ const sandboxFirewall = new SandboxFirewall({
   ],
 });
 activateFirewall(sandboxFirewall);
+
+export const wsRateLimitConfig = {
+  maxPerSecond: 100,
+};
+
+let configWatcher = null;
+configWatcher = new ConfigWatcher("plan/config.json", {
+  apiRateLimiter,
+  sandboxFirewall,
+  wsRateLimitConfig,
+  instances,
+});
+configWatcher.start();
 
 // Setup multi-room ticker loops
 const TICK_RATE = 30;
@@ -1442,13 +1460,14 @@ wss.on("connection", (ws) => {
   clients.set(ws, clientObj);
 
   ws.on("message", async (msgStr) => {
-    // SPEC-117: Zero-Trust WebSocket connection rate limiter (cap 100 messages/sec)
+    // SPEC-117: Zero-Trust WebSocket connection rate limiter (cap dynamic messages/sec)
     const now = Date.now();
     const elapsed = (now - clientObj.rateLimitLastRefill) / 1000;
     clientObj.rateLimitLastRefill = now;
+    const maxRate = wsRateLimitConfig.maxPerSecond;
     clientObj.rateLimitTokens = Math.min(
-      100,
-      clientObj.rateLimitTokens + elapsed * 100,
+      maxRate,
+      clientObj.rateLimitTokens + elapsed * maxRate,
     );
 
     if (clientObj.rateLimitTokens < 1) {
@@ -1456,8 +1475,7 @@ wss.on("connection", (ws) => {
       try {
         clientObj.send({
           type: "rate_limit_exceeded",
-          message:
-            "Too many requests. WebSocket message rate limit exceeded (Max 100/sec).",
+          message: `Too many requests. WebSocket message rate limit exceeded (Max ${maxRate}/sec).`,
         });
       } catch (err) {
         // ignore send errors
@@ -1697,6 +1715,14 @@ const shutdown = async () => {
   sandboxTelemetry.stop();
   memoryLeakSentry.stop();
   resourceLimiter.stop();
+  if (configWatcher) {
+    try {
+      configWatcher.stop();
+      console.log("🛑 Configuration watcher closed.");
+    } catch (e) {
+      console.error("Error stopping config watcher:", e.message);
+    }
+  }
 
   // Clear all heartbeat and simulation intervals immediately to prevent race conditions during teardown (spec 019f)
   clearInterval(physicsInterval);

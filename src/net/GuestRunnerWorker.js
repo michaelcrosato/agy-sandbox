@@ -61,6 +61,7 @@ async function bootstrap() {
     cpuTimer.unref();
 
     // 2.5 Expose secure promise-based guest RPC query method (SPEC-145)
+    const runToken = process.env.GUEST_RUN_TOKEN;
     globalThis.guestRpcQuery = function (action, params) {
       return new Promise((resolve, reject) => {
         const requestId = Math.random().toString(36).substring(2, 9);
@@ -89,6 +90,7 @@ async function bootstrap() {
             requestId,
             action,
             params,
+            token: runToken,
           });
         } else {
           reject(new Error("IPC channel not established"));

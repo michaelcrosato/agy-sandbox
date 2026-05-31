@@ -27,6 +27,7 @@ describe("GuestRunner", () => {
   const tempImportScript = path.join(__dirname, "temp_guest_import.js");
   const tempRpcOkScript = path.join(__dirname, "temp_guest_rpc_ok.js");
   const tempRpcEvilScript = path.join(__dirname, "temp_guest_rpc_evil.js");
+  const tempRpcUnauthScript = path.join(__dirname, "temp_guest_rpc_unauth.js");
   const sandboxDir = path.resolve("./.sandbox-runner-test-dir");
 
   beforeAll(() => {
@@ -57,6 +58,23 @@ try {
 }`,
       "utf8",
     );
+    fs.writeFileSync(
+      tempRpcUnauthScript,
+      `try {
+  process.send({
+    type: "guest_rpc",
+    requestId: "spoof-id",
+    action: "GET_SECTOR_STATE",
+    params: { sectorId: "sol" },
+    token: "malicious-fake-token"
+  });
+  console.log("UNAUTH_RPC_SENT");
+} catch (err) {
+  console.log("UNAUTH_RPC_ERROR:" + err.message);
+}`,
+      "utf8",
+    );
+
     // Write out mock guest scripts dynamically
     fs.writeFileSync(
       tempNetworkScript,
@@ -167,6 +185,7 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
       tempImportScript,
       tempRpcOkScript,
       tempRpcEvilScript,
+      tempRpcUnauthScript,
     ];
     for (const f of files) {
       try {
@@ -402,5 +421,78 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
       (v) => v.category === "rate_limit" && v.action === "guest_rpc_block",
     );
     expect(rpcViolations.length).toBe(2);
+  });
+
+  test("should SIGKILL guest process and log violation if dynamic HMAC run token is spoofed or missing (SPEC-148)", async () => {
+    const result = await GuestRunner.runScript(tempRpcUnauthScript, {
+      timeoutMs: 3000,
+    });
+
+    expect(result.status).toBe("error");
+    expect(result.signal).toBe("SIGKILL");
+    expect(result.error).toContain("Guest RPC channel authentication failure");
+
+    // Intrusive violation must be persistently registered in child's security audit disk ledger
+    const auditFile = result.childAuditFile || testAuditFile;
+    expect(fs.existsSync(auditFile)).toBe(true);
+    const content = fs.readFileSync(auditFile, "utf8");
+    const logs = JSON.parse(content);
+    const authViolations = logs.filter(
+      (v) =>
+        v.category === "rate_limit" && v.action === "guest_rpc_auth_failure",
+    );
+    expect(authViolations.length).toBe(1);
+    expect(authViolations[0].details.reason).toContain("AUTH_FAILURE");
+  });
+
+  test("should attempt to throttle the process priority of the guest child process upon spawn (SPEC-149)", async () => {
+    const originalSetPriority = process.setPriority;
+    let callCount = 0;
+    let lastArgs = null;
+    process.setPriority = function (pid, priority) {
+      callCount++;
+      lastArgs = [pid, priority];
+    };
+
+    try {
+      await GuestRunner.runScript(tempImportScript, {
+        timeoutMs: 3000,
+      });
+      expect(callCount).toBeGreaterThan(0);
+      expect(lastArgs[1]).toBe(19);
+    } finally {
+      process.setPriority = originalSetPriority;
+    }
+  });
+
+  test("should gracefully degrade and log warning if process priority throttling fails (SPEC-149)", async () => {
+    const originalSetPriority = process.setPriority;
+    let callCount = 0;
+    process.setPriority = function (pid, priority) {
+      callCount++;
+      throw new Error("Access denied (mock)");
+    };
+
+    const originalWarn = console.warn;
+    let warnCalled = false;
+    let warnMsg = "";
+    console.warn = function (msg) {
+      warnCalled = true;
+      warnMsg = msg;
+    };
+
+    try {
+      await GuestRunner.runScript(tempImportScript, {
+        timeoutMs: 3000,
+      });
+      expect(callCount).toBeGreaterThan(0);
+      expect(warnCalled).toBe(true);
+      expect(warnMsg).toContain(
+        "Failed to set low CPU scheduling priority for guest PID",
+      );
+    } finally {
+      process.setPriority = originalSetPriority;
+      console.warn = originalWarn;
+    }
   });
 });

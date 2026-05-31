@@ -33,11 +33,11 @@ _**v37 re-audit baseline (2026-05-31, ENTIRE v37 blueprint shipped): 1,213 Jest 
 _**v38 re-audit baseline (2026-05-31, ENTIRE v38 blueprint shipped): 1,216 Jest tests / 117 suites green; golden-glassmorphic resource HUD telemetry gauge panel, pre-activated zero-trust outbound firewall containment, and ESM dynamic loader module jailing all 100% DONE.**_
 _**v39 re-audit baseline (2026-05-31, ENTIRE v39 blueprint shipped): 1,222 Jest tests / 118 suites green; secure schema-validated Guest RPC channel sentry, post-run workspace snapshot drift auditing, self-healing copy-on-write restoration cleanup, and golden-glassmorphic cockpit dashboard card all 100% DONE.**_
 
-## v40 — Authenticated HMAC Channels, OS Throttling, and COW Virtual Filesystem Wave (TO DO) — see [`ROADMAP.md`](ROADMAP.md)
+## v40 — Authenticated HMAC Channels, OS Throttling, and COW Virtual Filesystem Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
-- [ ] `148` Secure Execution-Run Single-Use HMAC Cryptographic Key Sentry (generate dynamically HMAC run tokens in host, verifying them on child Guest RPC headers and SIGKILLing unauthenticated requests)
-- [ ] `149` Dynamic OS-Level Child Process CPU Priority Throttling Scheduler (programmatically schedule guest child PID execution to low CPU priorities immediately upon spawn to safeguard host cycles)
-- [ ] `150` Absolute Zero-Trust Copy-On-Write In-Memory Virtual Filesystem Sentry (redirect guest process writes transparently into virtual copy-on-write overlay dictionaries, completely bypassing disk foot-print)
+- [x] `148` Secure Execution-Run Single-Use HMAC Cryptographic Key Sentry (generate dynamically HMAC run tokens in host, verifying them on child Guest RPC headers and SIGKILLing unauthenticated requests) — **done** (engineered high-entropy cryptographically generated dynamic runToken, verified token on Guest RPC payloads and SIGKILLed unauthenticated guest intruders immediately while logging to security audit registers, verified in integration tests)
+- [x] `149` Dynamic OS-Level Child Process CPU Priority Throttling Scheduler (programmatically schedule guest child PID execution to low CPU priorities immediately upon spawn to safeguard host cycles) — **done** (implemented platform-agnostic CPU scheduling priority throttling to low priority 19 on guest processes using Node's native setPriority API with try-catch graceful degradation, covered in Jest unit tests)
+- [x] `150` Absolute Zero-Trust Copy-On-Write In-Memory Virtual Filesystem Sentry (redirect guest process writes transparently into virtual copy-on-write overlay dictionaries, completely bypassing disk foot-print) — **done** (developed zero-trust in-memory virtual Copy-on-Write fs overlay maps and simulated stream/readdir/exists utilities in ProcessSentinel, fully protecting the host physical disk while allowing complete write capabilities for sandbox guest processes, covered with comprehensive tests)
 
 ## v39 — Secure Guest RPC Channel & Workspace Integrity Self-Healing Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T06:12:26.870Z",
+  "generatedAt": "2026-05-31T06:19:40.651Z",
   "stats": {
     "totalSourceFiles": 98,
     "totalTestFiles": 125,
     "totalSpecFiles": 156,
-    "totalLoc": 21380,
-    "totalTests": 1624,
+    "totalLoc": 21919,
+    "totalTests": 1628,
     "untestedCoreFilesCount": 5
   },
   "files": [
@@ -1399,7 +1399,7 @@
     },
     {
       "path": "src/net/GuestRpcSentry.js",
-      "loc": 169,
+      "loc": 188,
       "classes": [],
       "exports": [
         {
@@ -1441,18 +1441,18 @@
     },
     {
       "path": "src/net/GuestRunner.js",
-      "loc": 344,
+      "loc": 412,
       "classes": [],
       "exports": [
         {
           "name": "GuestRunner",
           "type": "constant",
           "jsdoc": null,
-          "line": 19
+          "line": 20
         }
       ],
       "testFile": "src/net/GuestRunner.test.js",
-      "testCasesCount": 13,
+      "testCasesCount": 16,
       "referencingSpecs": [
         "plan/specs/136_isolated_guest_runner.md"
       ],
@@ -1460,13 +1460,13 @@
         {
           "name": "GuestRunner",
           "type": "constant",
-          "line": 19
+          "line": 20
         }
       ]
     },
     {
       "path": "src/net/GuestRunnerWorker.js",
-      "loc": 111,
+      "loc": 113,
       "classes": [],
       "exports": [],
       "testFile": null,
@@ -1754,35 +1754,77 @@
     },
     {
       "path": "src/net/ProcessSentinel.js",
-      "loc": 762,
-      "classes": [],
+      "loc": 1212,
+      "classes": [
+        {
+          "name": "for",
+          "jsdoc": null,
+          "line": 61
+        },
+        {
+          "name": "VirtualWriteStream",
+          "jsdoc": null,
+          "line": 62
+        },
+        {
+          "name": "for",
+          "jsdoc": null,
+          "line": 96
+        },
+        {
+          "name": "VirtualReadStream",
+          "jsdoc": null,
+          "line": 97
+        }
+      ],
       "exports": [
         {
           "name": "parseCommandString",
           "type": "function",
           "jsdoc": "/**\n* Parses a full command string into a binary name and an array of arguments,\n* respecting basic quotes.\n* @param {string} cmdStr - Full shell command string.\n* @returns {ParsedCommand}\n*/",
-          "line": 190
+          "line": 325
         },
         {
           "name": "validateCommand",
           "type": "function",
           "jsdoc": "/**\n* Validates whether a command and its arguments are permitted under the strict security whitelist.\n* @param {string} command - The command or binary path under evaluation.\n* @param {string[]} [args=[]] - Optional array of arguments passed to the command.\n* @returns {{ allowed: boolean, reason?: string }}\n*/",
-          "line": 234
+          "line": 369
         },
         {
           "name": "ProcessSentinel",
           "type": "constant",
           "jsdoc": "/**\n* ProcessSentinel (spec 106) — child process security sentinel whitelister.\n* @type {object}\n*/",
-          "line": 346
+          "line": 481
         }
       ],
       "testFile": "src/net/ProcessSentinel.test.js",
-      "testCasesCount": 13,
+      "testCasesCount": 14,
       "referencingSpecs": [
         "plan/specs/106_sandbox_containment_sentinel.md",
         "plan/specs/138_strict_path_jailing.md"
       ],
-      "missingJsDocSymbols": []
+      "missingJsDocSymbols": [
+        {
+          "name": "for",
+          "type": "class",
+          "line": 61
+        },
+        {
+          "name": "VirtualWriteStream",
+          "type": "class",
+          "line": 62
+        },
+        {
+          "name": "for",
+          "type": "class",
+          "line": 96
+        },
+        {
+          "name": "VirtualReadStream",
+          "type": "class",
+          "line": 97
+        }
+      ]
     },
     {
       "path": "src/net/PubSub.js",
@@ -4624,7 +4666,7 @@
           {
             "name": "GuestRunner",
             "type": "constant",
-            "line": 19
+            "line": 20
           }
         ]
       },
@@ -4655,6 +4697,31 @@
             "name": "MemoryLeakSentry",
             "type": "class",
             "line": 10
+          }
+        ]
+      },
+      {
+        "path": "src/net/ProcessSentinel.js",
+        "symbols": [
+          {
+            "name": "for",
+            "type": "class",
+            "line": 61
+          },
+          {
+            "name": "VirtualWriteStream",
+            "type": "class",
+            "line": 62
+          },
+          {
+            "name": "for",
+            "type": "class",
+            "line": 96
+          },
+          {
+            "name": "VirtualReadStream",
+            "type": "class",
+            "line": 97
           }
         ]
       },

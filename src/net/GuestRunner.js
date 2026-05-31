@@ -6,6 +6,7 @@
 import fs from "fs";
 import childProcess from "child_process";
 import path from "path";
+import crypto from "crypto";
 import { fileURLToPath } from "url";
 import { ProcessReaper } from "./ProcessReaper.js";
 import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
@@ -79,6 +80,9 @@ export const GuestRunner = {
         `--max-old-space-size=${maxMemoryMb}`,
       ];
 
+      // Generate a high-entropy single-use run token for Guest RPC auth verification (SPEC-148)
+      const runToken = crypto.randomBytes(32).toString("hex");
+
       // Configure secure env mask to prevent sensitive host info leakage (SPEC-141)
       const allowedKeys = [
         "NODE_ENV",
@@ -87,6 +91,7 @@ export const GuestRunner = {
         "GUEST_SCRIPT_PATH",
         "GUEST_SANDBOX_DIR",
         "SECURITY_AUDIT_FILE",
+        "GUEST_RUN_TOKEN",
       ];
       const childEnv = {};
       for (const key of allowedKeys) {
@@ -100,6 +105,7 @@ export const GuestRunner = {
       childEnv.GUEST_SCRIPT_PATH = resolvedScriptPath;
       childEnv.GUEST_SANDBOX_DIR = sandboxDir || "";
       childEnv.SECURITY_AUDIT_FILE = childAuditFile;
+      childEnv.GUEST_RUN_TOKEN = runToken;
 
       // Spawn the bootstrap worker via fork to establish IPC channel
       const child = childProcess.fork(workerPath, [], {
@@ -107,6 +113,19 @@ export const GuestRunner = {
         execArgv,
         stdio: "pipe",
       });
+
+      // Configure low OS scheduling priority to safeguard host resources (SPEC-149)
+      const procAny = /** @type {any} */ (process);
+      if (child.pid && typeof procAny.setPriority === "function") {
+        try {
+          procAny.setPriority(child.pid, 19); // 19 is the lowest scheduling priority (lowest nice value)
+        } catch (err) {
+          // Gracefully degrade if system restrictions or permissions prevent priority tuning
+          console.warn(
+            `[WARNING] Failed to set low CPU scheduling priority for guest PID ${child.pid}: ${err.message}`,
+          );
+        }
+      }
 
       const startTime = Date.now();
       const runInfo = {
@@ -219,6 +238,45 @@ export const GuestRunner = {
         });
       }
 
+      function killIntruder(reason) {
+        if (isSettled) return;
+        isSettled = true;
+        clearInterval(checkInterval);
+        clearTimeout(timeoutTimer);
+
+        const errMsg = `[SECURITY ACCESS DENIED] Guest RPC channel authentication failure: ${reason}`;
+
+        recordCompletion(child.pid, "killed_auth", errMsg);
+
+        try {
+          if (child.pid) {
+            if (process.platform === "win32") {
+              childProcess.execSync(`taskkill /F /T /PID ${child.pid}`, {
+                stdio: "ignore",
+              });
+            } else {
+              child.kill("SIGKILL");
+            }
+            /** @type {any} */ (child).killed = true;
+          }
+          if (!child.killed && typeof child.kill === "function") {
+            child.kill("SIGKILL");
+          }
+        } catch {
+          // ignore
+        }
+
+        resolve({
+          status: "error",
+          exitCode: null,
+          signal: "SIGKILL",
+          error: errMsg,
+          stdout: stdoutData,
+          stderr: stderrData,
+          childAuditFile,
+        });
+      }
+
       // Listen for IPC messages from the bootstrap worker
       child.on("message", async (msg) => {
         const m = /** @type {any} */ (msg);
@@ -238,9 +296,19 @@ export const GuestRunner = {
           const response = await GuestRpcSentry.handleMessage(
             m,
             options.rpcHandlers,
+            runToken,
           );
-          if (response && child.send) {
-            child.send(response);
+          if (response) {
+            if (
+              response.status === "error" &&
+              response.error === "AUTH_FAILURE"
+            ) {
+              killIntruder(response.error);
+              return;
+            }
+            if (child.send) {
+              child.send(response);
+            }
           }
         } else if (m && (m.status === "success" || m.status === "error")) {
           IPCData = m;

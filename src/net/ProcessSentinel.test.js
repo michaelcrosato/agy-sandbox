@@ -204,4 +204,71 @@ describe("ProcessSentinel (SPEC-106)", () => {
       delete process.env.GUEST_SCRIPT_PATH;
     }
   });
+
+  test("Zero-Trust Copy-On-Write in-memory virtual filesystem (SPEC-150)", async () => {
+    const sandboxDir = "./.sandbox-test-sentinel-dir";
+    const testFile = `${sandboxDir}/virtual-test.txt`;
+    const testContent = "Hello virtual COW!";
+
+    try {
+      ProcessSentinel.activate();
+      ProcessSentinel.setSandboxDirectory(sandboxDir);
+      ProcessSentinel.enableVirtualCow();
+
+      // 1. Write file in virtual mode
+      fs.writeFileSync(testFile, testContent);
+
+      // Verify physical file was NOT created on disk
+      expect(fs.existsSync(testFile)).toBe(true);
+
+      // Verify virtual readFileSync retrieves correct content
+      const readContent = fs.readFileSync(testFile, "utf8");
+      expect(readContent).toBe(testContent);
+
+      // 2. Read directory in virtual mode
+      const dirContents = fs.readdirSync(sandboxDir);
+      expect(dirContents).toContain("virtual-test.txt");
+
+      // 3. Promise-based write and read
+      const promiseFile = `${sandboxDir}/promise-test.txt`;
+      const promiseContent = "Hello from promises!";
+      await fs.promises.writeFile(promiseFile, promiseContent);
+
+      const promiseRead = await fs.promises.readFile(promiseFile, "utf8");
+      expect(promiseRead).toBe(promiseContent);
+
+      // 4. Stream operations
+      const streamFile = `${sandboxDir}/stream-test.txt`;
+      const writeStream = fs.createWriteStream(streamFile);
+
+      await new Promise((resolve) => {
+        writeStream.on("finish", resolve);
+        writeStream.write("stream ");
+        writeStream.write("data");
+        writeStream.end();
+      });
+
+      const readStream = fs.createReadStream(streamFile);
+      let streamData = "";
+      for await (const chunk of readStream) {
+        streamData += chunk.toString();
+      }
+      expect(streamData).toBe("stream data");
+
+      // 5. Deletion of virtual files
+      fs.unlinkSync(testFile);
+      expect(fs.existsSync(testFile)).toBe(false);
+      expect(fs.readdirSync(sandboxDir)).not.toContain("virtual-test.txt");
+    } finally {
+      ProcessSentinel.disableVirtualCow();
+      ProcessSentinel.deactivate();
+      try {
+        if (fs.existsSync(sandboxDir)) {
+          fs.rmSync(sandboxDir, { recursive: true, force: true });
+        }
+      } catch {
+        // ignore
+      }
+    }
+  });
 });

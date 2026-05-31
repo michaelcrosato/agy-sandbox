@@ -119,13 +119,32 @@ export const GuestRpcSentry = {
    * @param {Object} [handlers] - RPC action handlers.
    * @returns {Promise<{ type: string, requestId: string, status: string, data?: any, error?: string } | null>}
    */
-  async handleMessage(msg, handlers = {}) {
+  async handleMessage(msg, handlers = {}, expectedToken = null) {
     if (!msg || msg.type !== "guest_rpc") {
       return null;
     }
 
     this.totalRequests++;
-    const { action, params, requestId } = msg;
+    const { action, params, requestId, token } = msg;
+
+    // Validate dynamic cryptographic run token (SPEC-148)
+    if (expectedToken && token !== expectedToken) {
+      this.blockedRequests++;
+      SandboxSecurityRegistry.logViolation(
+        "rate_limit",
+        "guest_rpc_auth_failure",
+        {
+          action,
+          reason: "AUTH_FAILURE: Cryptographic run token mismatch or missing.",
+        },
+      );
+      return {
+        type: "guest_rpc_response",
+        requestId,
+        status: "error",
+        error: "AUTH_FAILURE",
+      };
+    }
 
     const validation = validateRpcRequest(action, params);
     if (!validation.allowed) {

@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T00:44:05.954Z",
+  "generatedAt": "2026-05-31T01:22:15.239Z",
   "stats": {
-    "totalSourceFiles": 71,
-    "totalTestFiles": 98,
-    "totalSpecFiles": 111,
-    "totalLoc": 16791,
-    "totalTests": 1366,
+    "totalSourceFiles": 73,
+    "totalTestFiles": 100,
+    "totalSpecFiles": 112,
+    "totalLoc": 17265,
+    "totalTests": 1378,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -1448,6 +1448,18 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/net/PortReclaimer.js",
+      "loc": 105,
+      "classes": [],
+      "exports": [],
+      "testFile": "src/net/PortReclaimer.test.js",
+      "testCasesCount": 3,
+      "referencingSpecs": [
+        "plan/specs/106_sandbox_containment_sentinel.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
       "path": "src/net/ProcessReaper.js",
       "loc": 107,
       "classes": [],
@@ -1464,6 +1476,37 @@
       "referencingSpecs": [
         "plan/specs/092_zombie_reaper_orphan_cleanup.md",
         "plan/specs/104_living_codex_hygiene_jsdoc_audit.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/net/ProcessSentinel.js",
+      "loc": 369,
+      "classes": [],
+      "exports": [
+        {
+          "name": "parseCommandString",
+          "type": "function",
+          "jsdoc": "/**\n* Parses a full command string into a binary name and an array of arguments,\n* respecting basic quotes.\n* @param {string} cmdStr - Full shell command string.\n* @returns {ParsedCommand}\n*/",
+          "line": 37
+        },
+        {
+          "name": "validateCommand",
+          "type": "function",
+          "jsdoc": "/**\n* Validates whether a command and its arguments are permitted under the strict security whitelist.\n* @param {string} command - The command or binary path under evaluation.\n* @param {string[]} [args=[]] - Optional array of arguments passed to the command.\n* @returns {{ allowed: boolean, reason?: string }}\n*/",
+          "line": 81
+        },
+        {
+          "name": "ProcessSentinel",
+          "type": "constant",
+          "jsdoc": "/**\n* ProcessSentinel (spec 106) — child process security sentinel whitelister.\n* @type {object}\n*/",
+          "line": 193
+        }
+      ],
+      "testFile": "src/net/ProcessSentinel.test.js",
+      "testCasesCount": 9,
+      "referencingSpecs": [
+        "plan/specs/106_sandbox_containment_sentinel.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -3503,25 +3546,30 @@
       "priority": "High",
       "pillar": "P8 — Presentation & Game Feel",
       "filesMentioned": [
-        "src/client/TutorialManager.js",
         "src/client/CanvasRenderer.js",
         "src/client/UIController.js",
-        "src/server.js",
-        "src/client/__tests/TutorialManager.test.js"
+        "src/server.js"
+      ]
+    },
+    {
+      "path": "plan/specs/106_sandbox_containment_sentinel.md",
+      "filename": "106_sandbox_containment_sentinel.md",
+      "title": "SPEC-106 — Sandbox Containment: Strict Process Spawn Sentinel & Self-Healing Port Reclaimer",
+      "status": "Completed",
+      "priority": "High",
+      "pillar": "P0 — Security & Teardown Lifecycle (Sandbox Infrastructure)",
+      "filesMentioned": [
+        "src/net/ProcessSentinel.js",
+        "src/net/PortReclaimer.js",
+        "src/net/ProcessSentinel.test.js",
+        "src/net/PortReclaimer.test.js",
+        "src/server.js"
       ]
     }
   ],
   "epistemicDebt": {
     "untestedCoreFiles": [],
     "missingJsDocs": [],
-    "staleSpecReferences": [
-      {
-        "spec": "plan/specs/105_neon_onboarding_tutorial_hud.md",
-        "brokenFiles": [
-          "src/client/TutorialManager.js",
-          "src/client/__tests/TutorialManager.test.js"
-        ]
-      }
-    ]
+    "staleSpecReferences": []
   }
 }

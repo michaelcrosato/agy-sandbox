@@ -28,9 +28,8 @@ _**v22 re-audit baseline (2026-05-31, ENTIRE v22 sandbox blueprint shipped): 979
 _**v23 re-audit baseline (2026-05-31, ENTIRE v23 blueprint shipped): 1,013 Jest tests / 91 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; Living Codex + Interactive Ontological Tree + Centralized Commodities Schema Registry + Emergent Faction Territory Control + Fittings Presets all DONE.**_
 _**v24 re-audit baseline (2026-05-31, ENTIRE v24 blueprint shipped): 1,025 Jest tests / 92 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; decoupled WebSocket action handlers + 100% clean codex hygiene JSDoc/links done.**_
 
-## v25 — Active (TODO) — see [`ROADMAP.md`](ROADMAP.md)
-
 - [ ] `105` Interactive Neon Onboarding Tutorial & Cockpit HUD Guide (build interactive step-by-step Cockpit tutorial with glowing overlays and dynamic bracket highlights, persist completion state on server, and issue a 500 CR starter economy reward; verify via unit & client tests)
+- [x] `106` Sandbox Containment: Strict Process Spawn Sentinel & Self-Healing Port Reclaimer (monkey-patch Node's child_process module with strict command whitelisting to block process-level escape vectors, and implement an automatic port-conflict resolver that reclaims EADDRINUSE ports on boot; verify via unit & integration tests) — **done** (files: `src/net/ProcessSentinel.js`, `src/net/ProcessSentinel.test.js`, `src/net/PortReclaimer.js`, `src/net/PortReclaimer.test.js`, `src/net/temp_port_worker.js`, `src/server.js`; globally monkey-patched all child process execution methods with whitelisting and metacharacter blocks to completely seal sandboxed host escapes, and implemented programmatic port conflict self-healers checking and terminating zombie port holders during server listen routines, fully verified via 10 new high-fidelity Jest tests; 1,035 Jest tests green)
 
 ## v24 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

@@ -186,7 +186,10 @@ Completed waves (`001–104`) are recorded DONE in `PROGRESS.md`. The active mod
 
 Completed waves (`001–104`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
 
-### Phase 0 — Presentation & Game Feel — `105`
+### Phase 0 — Sandbox Security & Teardown — `106`
+- `106` Sandbox Containment: Strict Process Spawn Sentinel & Self-Healing Port Reclaimer (monkey-patch Node's child_process module with strict command whitelisting to block process-level escape vectors, and implement an automatic port-conflict resolver that reclaims EADDRINUSE ports on boot; verify via unit & integration tests) — **done**.
+
+### Phase 1 — Presentation & Game Feel — `105`
 - `105` Interactive Neon Onboarding Tutorial & Cockpit HUD Guide (build interactive step-by-step Cockpit tutorial with glowing overlays and dynamic bracket highlights, persist completion state on server, and issue a 500 CR starter economy reward; verify via unit & client tests).
 
 ---
@@ -197,7 +200,7 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 105 | Neon Onboarding Tutorial | 0 | 5 | 5 | 5 | 5 | 20 |
+| 105 | Neon Onboarding Tutorial | 1 | 5 | 5 | 5 | 5 | 20 |
 
 **Recommended start:** `105` (Σ20 — Neon Onboarding Tutorial) immediately.
 

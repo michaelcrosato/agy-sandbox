@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T00:44:05.954Z` · Baseline: `16,791 LOC` across `71 source files`
+> Generated: `2026-05-31T01:22:15.239Z` · Baseline: `17,265 LOC` across `73 source files`
 
 ---
 
@@ -9,11 +9,11 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `16,791 LOC` | 🟢 Healthy |
-| **Source Modules** | `71 files` | 🟢 Structured |
-| **Test Suites** | `98 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1366 cases` | 🟢 Deterministic |
-| **Active/Archived Specs** | `111 specifications` | 🟢 Traceable |
+| **Total Code Volume** | `17,265 LOC` | 🟢 Healthy |
+| **Source Modules** | `73 files` | 🟢 Structured |
+| **Test Suites** | `100 test files` | 🟢 Integrated |
+| **Total Test Cases** | `1378 cases` | 🟢 Deterministic |
+| **Active/Archived Specs** | `112 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `0 files` | 🟢 100% Covered |
 
 ---
@@ -85,7 +85,9 @@
 | [metrics.js](file:///C:/dev/agy-sandbox/src/net/metrics.js) | 65 | `function createRegistry` | [metrics.test.js](file:///C:/dev/agy-sandbox/src/net/metrics.test.js) | [`010_observability_metrics`](file:///C:/dev/agy-sandbox/plan/specs/010_observability_metrics.md) |
 | [NetworkLatencyInjector.js](file:///C:/dev/agy-sandbox/src/net/NetworkLatencyInjector.js) | 105 | `class NetworkLatencyInjector` | [NetworkLatencyInjector.test.js](file:///C:/dev/agy-sandbox/src/net/NetworkLatencyInjector.test.js) | [`095_concurrency_stress_latency_injector`](file:///C:/dev/agy-sandbox/plan/specs/095_concurrency_stress_latency_injector.md) |
 | [originPolicy.js](file:///C:/dev/agy-sandbox/src/net/originPolicy.js) | 60 | `function isAllowedOrigin` | [originPolicy.test.js](file:///C:/dev/agy-sandbox/src/net/originPolicy.test.js) | [`002_ws_inbound_hardening`](file:///C:/dev/agy-sandbox/plan/specs/002_ws_inbound_hardening.md) |
+| [PortReclaimer.js](file:///C:/dev/agy-sandbox/src/net/PortReclaimer.js) | 105 | _None_ | [PortReclaimer.test.js](file:///C:/dev/agy-sandbox/src/net/PortReclaimer.test.js) | [`106_sandbox_containment_sentinel`](file:///C:/dev/agy-sandbox/plan/specs/106_sandbox_containment_sentinel.md) |
 | [ProcessReaper.js](file:///C:/dev/agy-sandbox/src/net/ProcessReaper.js) | 107 | `constant ProcessReaper` | [ProcessReaper.test.js](file:///C:/dev/agy-sandbox/src/net/ProcessReaper.test.js) | [`092_zombie_reaper_orphan_cleanup`](file:///C:/dev/agy-sandbox/plan/specs/092_zombie_reaper_orphan_cleanup.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
+| [ProcessSentinel.js](file:///C:/dev/agy-sandbox/src/net/ProcessSentinel.js) | 369 | `function parseCommandString`, `function validateCommand`, `constant ProcessSentinel` | [ProcessSentinel.test.js](file:///C:/dev/agy-sandbox/src/net/ProcessSentinel.test.js) | [`106_sandbox_containment_sentinel`](file:///C:/dev/agy-sandbox/plan/specs/106_sandbox_containment_sentinel.md) |
 | [PubSub.js](file:///C:/dev/agy-sandbox/src/net/PubSub.js) | 198 | `class PubSub`, `class InMemoryPubSub`, `class RedisPubSub` | [PubSub.test.js](file:///C:/dev/agy-sandbox/src/net/PubSub.test.js) | [`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
 | [roomRouter.js](file:///C:/dev/agy-sandbox/src/net/roomRouter.js) | 304 | `class RoomRegistry`, `function hashString`, `function assignShard`, `function routeConnection`, `function planDrain` | [roomRouter.test.js](file:///C:/dev/agy-sandbox/src/net/roomRouter.test.js) | [`019a_scaling_decomposition`](file:///C:/dev/agy-sandbox/plan/specs/019a_scaling_decomposition.md)<br>[`019d_sticky_routing_lb`](file:///C:/dev/agy-sandbox/plan/specs/019d_sticky_routing_lb.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
 | [SandboxTelemetry.js](file:///C:/dev/agy-sandbox/src/net/SandboxTelemetry.js) | 171 | `class SandboxTelemetry` | [SandboxTelemetry.test.js](file:///C:/dev/agy-sandbox/src/net/SandboxTelemetry.test.js) | [`094_observability_sandbox_telemetry`](file:///C:/dev/agy-sandbox/plan/specs/094_observability_sandbox_telemetry.md) |
@@ -128,8 +130,8 @@
 ### ⚠️ Untested Core Modules (0)
 _None! All core modules have associated test suites._
 
-### ⚠️ Stale Specification File References (1)
-- [ ] Spec [`105_neon_onboarding_tutorial_hud.md`](file:///C:/dev/agy-sandbox/plan/specs/105_neon_onboarding_tutorial_hud.md) references missing files: `src/client/TutorialManager.js`, `src/client/__tests/TutorialManager.test.js`
+### ⚠️ Stale Specification File References (0)
+_None! All specification file references correspond to real paths._
 
 ### ⚠️ Missing JSDoc Type Signatures (0 symbols)
 _None! All exported classes and functions have JSDoc type signatures._

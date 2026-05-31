@@ -39,6 +39,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T06:20 · iter-0111 · GREEN · cycle-25-spec-106-sandbox-containment-port-reclaimer
+- **Baseline:** `13dfb19` on `feat/procedural-missions`; 1,025 Jest green.
+- **Move:** Implement SPEC-106 (Sandbox Containment: Strict Process Spawn Sentinel & Self-Healing Port Reclaimer).
+- **Changed:**
+  - Coded `src/net/ProcessSentinel.js` globally monkey-patching all child process spawn methods (`spawn`, `fork`, `exec`, etc.) to enforce a strict whitelist and metacharacter blocks, preventing process-level host escapes.
+  - Whitelisted local checks (`node` scripts, `git`, `npm` audits, `eslint`, `prettier`, `tsc`) and added strict option guardrails.
+  - Whitelisted `netstat` and `lsof` strictly for local active port checks.
+  - Coded `src/net/PortReclaimer.js` resolving port locks (`EADDRINUSE`) by checking and terminating occupying process IDs via native commands.
+  - Wired `reclaimPort` inside `src/server.js` startup to self-heal EADDRINUSE conflicts before retrying listen.
+  - Created 10 new high-fidelity unit and integration tests inside `src/net/ProcessSentinel.test.js` and `src/net/PortReclaimer.test.js` proving Whitelists, metacharacter rejections, and process-level port reclamation lifecycle.
+  - Created temporary Whitelisted helper worker script `src/net/temp_port_worker.js` to simulate port bindings.
+- **Decisions:** Enforced process whitelisting inside the Node guest sandboxing layer as an in-process security boundary, avoiding heavy VM resets while keeping standard scripts permitted.
+- **Validation:** Executed `npm run agent:check` confirming all 1,035 tests, format checks, linting, and typechecks pass 100% green.
+- **Next:** Transition to Cycle 25 Iteration 2 to implement SPEC-105 (Interactive Onboarding Tutorial & Cockpit HUD Guide).
+
 ## 2026-05-31T05:40 · iter-0110 · GREEN · cycle-24-spec-103-104-server-modularization-codex-hygiene
 - **Baseline:** `dca04cb` on `feat/procedural-missions`; 1,013 Jest green.
 - **Move:** Implement SPEC-103 (Modularize WebSocket gameplay action routines) and SPEC-104 (Living Codex Hygiene & JSDoc Audit).

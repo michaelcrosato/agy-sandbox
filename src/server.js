@@ -2463,7 +2463,40 @@ export async function startServer({
   );
 
   // 4. Start HTTP/WS listening
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    server.on("error", async (err) => {
+      if (err.code === "EADDRINUSE") {
+        console.warn(
+          `[SERVER BOOT] Port [${port}] is occupied. Initiating Port Conflict Self-Healer...`,
+        );
+        try {
+          const { reclaimPort } = await import("./net/PortReclaimer.js");
+          const reclaimed = await reclaimPort(port);
+          if (reclaimed) {
+            console.log(
+              `[SERVER BOOT] Port [${port}] successfully reclaimed! Retrying listen...`,
+            );
+            server.listen(port);
+          } else {
+            console.error(
+              `[SERVER BOOT] Port reclamation failed for port [${port}]. Exiting.`,
+            );
+            reject(err);
+          }
+        } catch (reclaimErr) {
+          console.error(
+            `[SERVER BOOT] Port reclaimer encountered error: ${reclaimErr.message}`,
+          );
+          reject(err);
+        }
+      } else {
+        console.error(
+          `[SERVER BOOT] HTTP server encountered an error: ${err.message}`,
+        );
+        reject(err);
+      }
+    });
+
     server.listen(port, async () => {
       console.log(
         `================================================================`,

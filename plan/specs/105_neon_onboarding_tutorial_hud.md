@@ -13,7 +13,7 @@ A major product frontier is **P8 — Presentation & Game Feel**. Currently, ther
 
 ### In
 
-- **Interactive Tutorial FSM (`src/client/TutorialManager.js`):**
+- **Interactive Tutorial FSM ("src/client/TutorialManager.js"):**
   - Implement a client-side state machine managing a 5-step tutorial sequence:
     - **Step 1: Thrusters & Agility:** Rotate and accelerate using keys to prove movement mastery.
     - **Step 2: Stargate Target Lock:** Target the nearest stargate in the sector to engage the HUD's purple holographic brackets.
@@ -27,7 +27,7 @@ A major product frontier is **P8 — Presentation & Game Feel**. Currently, ther
   - Expose a minimal client-triggered server message `tutorial_complete` that persists the completed state on the player profile.
   - Award the player **500 CR** upon completion, issuing a success notification, updating standings influence nudge, and saving to disk.
 - **Verification & Testing:**
-  - Build `src/client/__tests/TutorialManager.test.js` under Vitest client tests to verify the complete step transition logic and key-press tracking.
+  - Build "src/client/__tests/TutorialManager.test.js" under Vitest client tests to verify the complete step transition logic and key-press tracking.
   - Build mock socket integration testing for the server-side reward flow.
 
 ### Out
@@ -36,7 +36,7 @@ A major product frontier is **P8 — Presentation & Game Feel**. Currently, ther
 
 ## Acceptance Criteria
 
-- [ ] `src/client/TutorialManager.js` is implemented and exports a clean FSM tracking movement, targeting, warp, docking, and trade steps.
+- [ ] "src/client/TutorialManager.js" is implemented and exports a clean FSM tracking movement, targeting, warp, docking, and trade steps.
 - [ ] Visual HUD highlight brackets are drawn dynamically during the tutorial around the active panel focus.
 - [ ] Server successfully handles `tutorial_complete` messages, validates single-reward bounds, persists the completion, and awards 500 CR.
 - [ ] Unit tests for `TutorialManager.js` are fully written and pass.

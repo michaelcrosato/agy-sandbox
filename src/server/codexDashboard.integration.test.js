@@ -84,6 +84,11 @@ describe("Living Codex & Dashboard HTTP Integration Tests (SPEC-102)", () => {
           expect(body).toContain("<title>📖 Starfall Living Codex");
           expect(body).toContain('id="metric-loc"');
           expect(body).toContain('id="tree-container"');
+          // SPEC-112 Interactive WS generator validation
+          expect(body).toContain('id="tab-generator"');
+          expect(body).toContain('id="action-select"');
+          expect(body).toContain('id="schema-fields-container"');
+          expect(body).toContain('id="code-preview"');
           resolve();
         });
 

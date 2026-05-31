@@ -434,6 +434,228 @@
       gap: 0.25rem;
       font-weight: 700;
     }
+
+    /* Tabs & WS Generator Styles */
+    .tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--color-text-muted);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.5rem 0.75rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    .tab-btn:hover {
+      color: var(--color-primary);
+      text-shadow: 0 0 8px var(--color-primary-glow);
+    }
+
+    .tab-btn.active {
+      color: var(--color-primary);
+      border-bottom-color: var(--color-primary);
+      text-shadow: 0 0 10px var(--color-primary-glow);
+    }
+
+    .tab-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: calc(100% - 40px); /* account for header */
+      overflow: hidden;
+    }
+
+    .generator-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      height: 100%;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-text-muted);
+      font-weight: 600;
+    }
+
+    .custom-select {
+      background: #0d1127;
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      color: #fff;
+      padding: 0.6rem 1rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .custom-select:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+    }
+
+    .schema-field-card {
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .schema-field-card:hover {
+      border-color: var(--color-border-hover);
+      background: rgba(0, 240, 255, 0.01);
+    }
+
+    .schema-field-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.25rem;
+    }
+
+    .schema-field-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .schema-field-meta {
+      display: flex;
+      gap: 0.35rem;
+    }
+
+    .schema-badge {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+    }
+
+    .badge-req {
+      background: rgba(255, 0, 85, 0.15);
+      color: var(--color-danger);
+      border: 1px solid rgba(255, 0, 85, 0.3);
+    }
+
+    .badge-opt {
+      background: rgba(100, 116, 139, 0.15);
+      color: var(--color-text-muted);
+      border: 1px solid rgba(100, 116, 139, 0.3);
+    }
+
+    .badge-type {
+      background: rgba(189, 0, 255, 0.15);
+      color: #df80ff;
+      border: 1px solid rgba(189, 0, 255, 0.3);
+    }
+
+    .schema-field-constraints {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .code-preview-box {
+      position: relative;
+      background: #04060f;
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 0.5rem;
+      overflow: hidden;
+    }
+
+    .code-preview-text {
+      font-family: 'Space Grotesk', monospace;
+      font-size: 0.85rem;
+      color: #39ff14;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .copy-btn-group {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .action-btn {
+      flex: 1;
+      background: rgba(0, 240, 255, 0.05);
+      border: 1px solid var(--color-primary);
+      color: var(--color-primary);
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      padding: 0.6rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .action-btn:hover {
+      background: var(--color-primary);
+      color: #070913;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+    }
+
+    .action-btn:active {
+      transform: scale(0.98);
+    }
+
+    .toast-notif {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(13, 17, 39, 0.9);
+      border: 1px solid var(--color-primary);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      z-index: 9999;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .toast-notif.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -485,16 +707,59 @@
       </div>
     </div>
 
-    <div class="pane">
-      <div class="pane-header">
-        <div class="pane-title">🔍 Semantic Inspector</div>
+    <div class="pane" style="display: flex; flex-direction: column;">
+      <div class="pane-header" style="justify-content: flex-start; gap: 0.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+        <button id="tab-inspector" class="tab-btn active">🔍 Inspector</button>
+        <button id="tab-generator" class="tab-btn">⚡ WS Payload Builder</button>
       </div>
-      <div id="details-container" class="details-panel">
-        <div class="details-title">Select a File</div>
-        <p>Click on any file in the topology map to inspect its classes, exported signatures, and specification links.</p>
+      
+      <!-- Tab 1: Inspector -->
+      <div id="inspector-tab" class="tab-content">
+        <div id="details-container" class="details-panel">
+          <div class="details-title">Select a File</div>
+          <p>Click on any file in the topology map to inspect its classes, exported signatures, and specification links.</p>
+        </div>
+      </div>
+
+      <!-- Tab 2: WS Generator -->
+      <div id="generator-tab" class="tab-content" style="display: none;">
+        <div class="generator-layout">
+          <div class="form-group">
+            <label class="form-label" for="action-select">Select Message Action (msg.type)</label>
+            <select id="action-select" class="custom-select">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Schema Properties & Types</label>
+            <div id="schema-fields-container" style="max-height: 200px; overflow-y: auto; padding-right: 0.25rem;">
+              <!-- Dynamic fields list -->
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Live Generated Payload</label>
+            <div class="code-preview-box">
+              <div id="code-preview" class="code-preview-text"></div>
+            </div>
+            <div class="copy-btn-group">
+              <button id="btn-copy-json" class="action-btn">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                Copy JSON
+              </button>
+              <button id="btn-copy-code" class="action-btn">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                Copy JS Code
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
+
+  <div id="toast" class="toast-notif">Copied to Clipboard!</div>
 
   <!-- Epistemic Debt Section -->
   <div class="debt-pane">
@@ -515,6 +780,7 @@
 
   <script>
     let codexData = null;
+    let schemaData = null;
 
     // Connect to server or load simulated mock fallback if offline
     async function init() {
@@ -525,10 +791,22 @@
         const res = await fetch("/codex");
         if (!res.ok) throw new Error("Server metrics not ready");
         codexData = await res.json();
+
+        try {
+          const resSchema = await fetch("/schema");
+          if (resSchema.ok) {
+            schemaData = await resSchema.json();
+          } else {
+            schemaData = { schemas: FALLBACK_SCHEMAS };
+          }
+        } catch (e) {
+          schemaData = { schemas: FALLBACK_SCHEMAS };
+        }
         
         elStatusDot.classList.add("online");
         elStatusText.innerText = "Online";
         renderDashboard(codexData);
+        initGenerator();
       } catch (err) {
         console.warn("⚠️ Local telemetry endpoint offline. Activating dynamic simulation baseline.");
         elStatusDot.classList.remove("online");
@@ -536,7 +814,9 @@
         
         // Dynamic offline mock sandbox compilation matching real agy-sandbox scope
         codexData = generateMockCodex();
+        schemaData = { schemas: FALLBACK_SCHEMAS };
         renderDashboard(codexData);
+        initGenerator();
       }
     }
 
@@ -812,6 +1092,257 @@
           staleSpecReferences: []
         }
       };
+    }
+
+    const FALLBACK_SCHEMAS = {
+      join: {
+        sessionToken: { type: "string", optional: true },
+        nickname: { type: "string", optional: true, maxLength: 20 }
+      },
+      quick_join: {
+        mode: { type: "string", optional: true },
+        tags: { type: "array", optional: true, itemType: "string" }
+      },
+      create_room: {
+        roomName: { type: "string", required: true, maxLength: 50 },
+        mode: { type: "string", optional: true },
+        tags: { type: "array", optional: true, itemType: "string" }
+      },
+      join_room: {
+        roomId: { type: "string", required: true },
+        nickname: { type: "string", optional: true, maxLength: 20 }
+      },
+      controls: {
+        keys: { type: "object", optional: true },
+        heading: { type: "number", optional: true, finite: true },
+        warp: { type: "boolean", optional: true }
+      },
+      land: {
+        planetName: { type: "string", required: true }
+      },
+      launch: {},
+      trade: {
+        planetName: { type: "string", required: true },
+        commodity: { type: "string", required: true },
+        amount: { type: "integer", required: true, min: 0 },
+        buy: { type: "boolean", required: true }
+      },
+      port_service: {
+        service: { type: "string", required: true }
+      },
+      port_refine: {},
+      ore_refine: {},
+      jettison: {
+        commodity: { type: "string", required: true },
+        amount: { type: "integer", required: true, min: 1 }
+      },
+      outfit_buy: {
+        outfitKey: { type: "string", required: true }
+      },
+      outfit_sell: {
+        outfitKey: { type: "string", required: true }
+      },
+      preset_save: {
+        presetIndex: { type: "integer", optional: true, min: 0 },
+        presetName: { type: "string", optional: true, maxLength: 30 }
+      },
+      preset_load: {
+        presetIndex: { type: "integer", optional: true, min: 0 }
+      },
+      ship_buy: {
+        hullKey: { type: "string", required: true }
+      },
+      squad_invite: {
+        targetPlayerId: { type: "string", required: true }
+      },
+      squad_join: {
+        squadId: { type: "string", required: true }
+      },
+      squad_leave: {},
+      port_redeem_vouchers: {},
+      mission_accept: {
+        missionId: { type: "string", required: true }
+      },
+      mission_abandon: {
+        missionId: { type: "string", required: true }
+      },
+      fleet_create: {
+        fleetName: { type: "string", required: true, maxLength: 30 }
+      },
+      fleet_join: {
+        fleetName: { type: "string", required: true, maxLength: 30 }
+      },
+      fleet_leave: {},
+      chat: {
+        text: { type: "string", required: true, maxLength: 100 },
+        channel: { type: "string", optional: true }
+      },
+      warp_jump: {
+        stargateId: { type: "string", required: true }
+      },
+      boarding_action: {
+        targetId: { type: "string", required: true }
+      },
+      escort_command: {
+        command: { type: "string", required: true }
+      },
+      escort_formation: {
+        formation: { type: "string", required: true }
+      },
+      distress_beacon: {},
+      ping: {},
+      tutorial_complete: {}
+    };
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.innerText = message;
+      toast.classList.add("show");
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2500);
+    }
+
+    function generateDefaultValueForField(fieldName, fieldDef) {
+      if (fieldName === "planetName") return "Sol";
+      if (fieldName === "commodity") return "electronics";
+      if (fieldName === "stargateId") return "sg-sol-polaris";
+      if (fieldName === "roomId") return "room-public";
+      if (fieldName === "squadId") return "squad-alpha";
+      if (fieldName === "fleetName") return "Vanguard Fleet";
+      if (fieldName === "targetPlayerId" || fieldName === "targetId") return "pilot-123";
+      if (fieldName === "missionId") return "mission-abc";
+      if (fieldName === "outfitKey") return "laser_1";
+      if (fieldName === "hullKey") return "scout";
+      if (fieldName === "command") return "intercept";
+      if (fieldName === "formation") return "delta";
+      if (fieldName === "text") return "Hello Starfall Commanders!";
+      if (fieldName === "sessionToken") return "token-xyz-789";
+      if (fieldName === "nickname") return "CommanderValerie";
+      if (fieldName === "channel") return "global";
+      if (fieldName === "service") return "repair";
+
+      if (fieldDef.type === "string") return "value";
+      if (fieldDef.type === "integer" || fieldDef.type === "number") return fieldDef.min !== undefined ? fieldDef.min : 5;
+      if (fieldDef.type === "boolean") return true;
+      if (fieldDef.type === "array") return ["val1", "val2"];
+      if (fieldDef.type === "object") return { active: true };
+      return null;
+    }
+
+    function renderSchemaFields(action, schema) {
+      const container = document.getElementById("schema-fields-container");
+      container.innerHTML = "";
+
+      const fields = Object.entries(schema);
+      if (fields.length === 0) {
+        container.innerHTML = `<div style="font-size:0.85rem;color:var(--color-text-muted);padding:0.5rem 0;">No parameters required for this message type.</div>`;
+        return;
+      }
+
+      for (const [name, def] of fields) {
+        const isReq = def.required === true;
+        const card = document.createElement("div");
+        card.className = "schema-field-card";
+
+        let constraintsHtml = [];
+        if (def.maxLength !== undefined) constraintsHtml.push(`max-length: ${def.maxLength}`);
+        if (def.min !== undefined) constraintsHtml.push(`min: ${def.min}`);
+        if (def.max !== undefined) constraintsHtml.push(`max: ${def.max}`);
+        if (def.itemType !== undefined) constraintsHtml.push(`items: ${def.itemType}`);
+
+        const constraintsText = constraintsHtml.length > 0 ? `(${constraintsHtml.join(", ")})` : "";
+
+        card.innerHTML = `
+          <div class="schema-field-header">
+            <span class="schema-field-name">${name}</span>
+            <div class="schema-field-meta">
+              <span class="schema-badge ${isReq ? 'badge-req' : 'badge-opt'}">${isReq ? 'required' : 'optional'}</span>
+              <span class="schema-badge badge-type">${def.type}</span>
+            </div>
+          </div>
+          <div class="schema-field-constraints">${constraintsText}</div>
+        `;
+        container.appendChild(card);
+      }
+    }
+
+    function updateCodePreview(action, schema) {
+      const previewEl = document.getElementById("code-preview");
+      
+      const payload = { type: action };
+      for (const [name, def] of Object.entries(schema)) {
+        payload[name] = generateDefaultValueForField(name, def);
+      }
+
+      const jsonStr = JSON.stringify(payload, null, 2);
+      previewEl.innerText = jsonStr;
+    }
+
+    function initGenerator() {
+      const select = document.getElementById("action-select");
+      select.innerHTML = "";
+
+      const schemas = schemaData && schemaData.schemas ? schemaData.schemas : FALLBACK_SCHEMAS;
+      
+      for (const actionName of Object.keys(schemas)) {
+        const opt = document.createElement("option");
+        opt.value = actionName;
+        opt.innerText = actionName;
+        select.appendChild(opt);
+      }
+
+      // Initial render
+      if (select.value) {
+        renderSchemaFields(select.value, schemas[select.value]);
+        updateCodePreview(select.value, schemas[select.value]);
+      }
+
+      select.addEventListener("change", (e) => {
+        const action = e.target.value;
+        renderSchemaFields(action, schemas[action]);
+        updateCodePreview(action, schemas[action]);
+      });
+
+      // Tab switching wire-up
+      const tabInspector = document.getElementById("tab-inspector");
+      const tabGenerator = document.getElementById("tab-generator");
+      const inspectorTab = document.getElementById("inspector-tab");
+      const generatorTab = document.getElementById("generator-tab");
+
+      tabInspector.addEventListener("click", () => {
+        tabInspector.classList.add("active");
+        tabGenerator.classList.remove("active");
+        inspectorTab.style.display = "block";
+        generatorTab.style.display = "none";
+      });
+
+      tabGenerator.addEventListener("click", () => {
+        tabGenerator.classList.add("active");
+        tabInspector.classList.remove("active");
+        inspectorTab.style.display = "none";
+        generatorTab.style.display = "block";
+      });
+
+      // Clipboard wire-up
+      document.getElementById("btn-copy-json").addEventListener("click", () => {
+        const text = document.getElementById("code-preview").innerText;
+        navigator.clipboard.writeText(text).then(() => {
+          showToast("⚡ JSON Payload copied to clipboard!");
+        }).catch(err => {
+          console.error("Clipboard copy failed", err);
+        });
+      });
+
+      document.getElementById("btn-copy-code").addEventListener("click", () => {
+        const jsonText = document.getElementById("code-preview").innerText;
+        const jsCode = `ws.send(JSON.stringify(${jsonText}));`;
+        navigator.clipboard.writeText(jsCode).then(() => {
+          showToast("💻 JavaScript Code snippet copied!");
+        }).catch(err => {
+          console.error("Clipboard copy failed", err);
+        });
+      });
     }
 
     // Start

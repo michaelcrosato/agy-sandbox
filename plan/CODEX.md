@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T04:05:25.858Z` · Baseline: `18,125 LOC` across `80 source files`
+> Generated: `2026-05-31T04:07:38.271Z` · Baseline: `18,125 LOC` across `80 source files`
 
 ---
 

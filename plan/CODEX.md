@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T04:55:56.369Z` · Baseline: `19,188 LOC` across `85 source files`
+> Generated: `2026-05-31T04:58:15.459Z` · Baseline: `19,350 LOC` across `86 source files`
 
 ---
 
@@ -9,11 +9,11 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `19,188 LOC` | 🟢 Healthy |
-| **Source Modules** | `85 files` | 🟢 Structured |
-| **Test Suites** | `115 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1554 cases` | 🟢 Deterministic |
-| **Active/Archived Specs** | `129 specifications` | 🟢 Traceable |
+| **Total Code Volume** | `19,350 LOC` | 🟢 Healthy |
+| **Source Modules** | `86 files` | 🟢 Structured |
+| **Test Suites** | `116 test files` | 🟢 Integrated |
+| **Total Test Cases** | `1564 cases` | 🟢 Deterministic |
+| **Active/Archived Specs** | `132 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `0 files` | 🟢 100% Covered |
 
 ---
@@ -74,6 +74,7 @@
 
 | File | LOC | Classes / Exports | Unit Test File | Referencing Specs |
 | --- | --- | --- | --- | --- |
+| [AnomalyDetector.js](file:///C:/dev/agy-sandbox/src/net/AnomalyDetector.js) | 162 | `class AnomalyDetector` | [AnomalyDetector.test.js](file:///C:/dev/agy-sandbox/src/net/AnomalyDetector.test.js) | [`124_telemetry_anomaly_detector`](file:///C:/dev/agy-sandbox/plan/specs/124_telemetry_anomaly_detector.md) |
 | [ApiRateLimiter.js](file:///C:/dev/agy-sandbox/src/net/ApiRateLimiter.js) | 312 | `class ApiRateLimiter`, `class extends`, `class extends`, `function activateOutboundSentinel`, `function deactivateOutboundSentinel` | [ApiRateLimiter.test.js](file:///C:/dev/agy-sandbox/src/net/ApiRateLimiter.test.js) | [`097_guest_isolation_api_rate_limiter`](file:///C:/dev/agy-sandbox/plan/specs/097_guest_isolation_api_rate_limiter.md) |
 | [backpressure.js](file:///C:/dev/agy-sandbox/src/net/backpressure.js) | 36 | `constant DEFAULT_BACKPRESSURE_OPTIONS`, `function sendDecision` | [backpressure.test.js](file:///C:/dev/agy-sandbox/src/net/backpressure.test.js) | [`004_ws_outbound_backpressure`](file:///C:/dev/agy-sandbox/plan/specs/004_ws_outbound_backpressure.md) |
 | [BinaryCodec.js](file:///C:/dev/agy-sandbox/src/net/BinaryCodec.js) | 259 | `class ByteWriter`, `class ByteReader`, `constant BINARY_PROTOCOL_VERSION`, `function encode`, `function decode` | [BinaryCodec.test.js](file:///C:/dev/agy-sandbox/src/net/BinaryCodec.test.js) | [`015_binary_wire_protocol`](file:///C:/dev/agy-sandbox/plan/specs/015_binary_wire_protocol.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
@@ -142,8 +143,8 @@
 ### ⚠️ Untested Core Modules (0)
 _None! All core modules have associated test suites._
 
-### ⚠️ Stale Specification File References (0)
-_None! All specification file references correspond to real paths._
+### ⚠️ Stale Specification File References (1)
+- [ ] Spec [`125_hot_config_reload.md`](file:///C:/dev/agy-sandbox/plan/specs/125_hot_config_reload.md) references missing files: `src/net/ConfigWatcher.js`, `src/net/ConfigWatcher.test.js`
 
 ### ⚠️ Missing JSDoc Type Signatures (2 symbols)
 - `src/net/MemoryLeakSentry.js`:

@@ -30,7 +30,7 @@ _**v28 re-audit baseline (2026-05-31): 1,129 Jest tests / 102 suites + 57 client
 
 ## v32 — Sandbox Security & Self-Healing Telemetry Wave (TO DO) — see [`ROADMAP.md`](ROADMAP.md)
 
-- [ ] `124` Automated Telemetry Anomaly Detector & Z-Score Sentry (build statistical rolling-window z-score anomalies monitor tracking active connections and latency metrics, logging warnings on deviations)
+- [x] `124` Automated Telemetry Anomaly Detector & Z-Score Sentry (build statistical rolling-window z-score anomalies monitor tracking active connections and latency metrics, logging warnings on deviations) — **done** (designed pure, modular `src/net/AnomalyDetector.js` polling connections, event-loop latency, and memory allocation rate spikes using Z-scores with rolling window limits, integrating it into the core metrics server flow, exposing metrics via `anomaly_triggers_total` and `anomaly_detector` on `/metrics`, and authoring high-fidelity ESM unit and integration tests in `AnomalyDetector.test.js` and `sandboxTelemetry.integration.test.js`)
 - [ ] `125` Zero-Downtime Hot Config Reloading Engine (implement secure disk watcher polling plan/config.json, dynamically parsing and propagating safe rate limit parameters across workers)
 - [ ] `126` Egress Firewall Rules Cockpit Dashboard Card (draw elegant glassmorphic defense dashboard panel displaying allowlisted domains and neon-red block meters on the Codex HUD)
 

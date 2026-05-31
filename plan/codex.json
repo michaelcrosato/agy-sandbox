@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T04:55:56.369Z",
+  "generatedAt": "2026-05-31T04:58:15.459Z",
   "stats": {
-    "totalSourceFiles": 85,
-    "totalTestFiles": 115,
-    "totalSpecFiles": 129,
-    "totalLoc": 19188,
-    "totalTests": 1554,
+    "totalSourceFiles": 86,
+    "totalTestFiles": 116,
+    "totalSpecFiles": 132,
+    "totalLoc": 19350,
+    "totalTests": 1564,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -1163,6 +1163,24 @@
       "testFile": "src/physics/Vector2D.test.js",
       "testCasesCount": 10,
       "referencingSpecs": [],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/net/AnomalyDetector.js",
+      "loc": 162,
+      "classes": [
+        {
+          "name": "AnomalyDetector",
+          "jsdoc": "/**\n* Low-overhead rolling window statistical anomaly detection sentry.\n* Tracks active connections, event-loop latency, and memory utilization variations\n* using Z-score statistics (standard deviations from the rolling mean) to detect anomalies.\n*/",
+          "line": 6
+        }
+      ],
+      "exports": [],
+      "testFile": "src/net/AnomalyDetector.test.js",
+      "testCasesCount": 10,
+      "referencingSpecs": [
+        "plan/specs/124_telemetry_anomaly_detector.md"
+      ],
       "missingJsDocSymbols": []
     },
     {
@@ -4030,6 +4048,39 @@
         "src/engine/DeterminismSentry.js",
         "src/engine/DeterminismSentry.test.js"
       ]
+    },
+    {
+      "path": "plan/specs/124_telemetry_anomaly_detector.md",
+      "filename": "124_telemetry_anomaly_detector.md",
+      "title": "SPEC-124: Automated Telemetry Anomaly Detector & Sentry",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/AnomalyDetector.js",
+        "src/net/AnomalyDetector.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/125_hot_config_reload.md",
+      "filename": "125_hot_config_reload.md",
+      "title": "SPEC-125: Zero-Downtime Hot Config Reloading Engine",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/ConfigWatcher.js",
+        "src/net/ConfigWatcher.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/126_firewall_rules_panel.md",
+      "filename": "126_firewall_rules_panel.md",
+      "title": "SPEC-126: Egress Firewall Rules Cockpit Dashboard Card",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": []
     }
   ],
   "epistemicDebt": {
@@ -4056,6 +4107,14 @@
         ]
       }
     ],
-    "staleSpecReferences": []
+    "staleSpecReferences": [
+      {
+        "spec": "plan/specs/125_hot_config_reload.md",
+        "brokenFiles": [
+          "src/net/ConfigWatcher.js",
+          "src/net/ConfigWatcher.test.js"
+        ]
+      }
+    ]
   }
 }

@@ -39,6 +39,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T22:00 · iter-0119 · GREEN · cycle-32-spec-124-telemetry-anomaly-detector
+- **Baseline:** `cb59136` on `feat/procedural-missions`; 1,162 Jest green.
+- **Move:** Implement SPEC-124 (Automated Telemetry Anomaly Detector & Z-Score Sentry) to detect latency, memory allocation, and connection spikes.
+- **Changed:**
+  - Designed a high-performance modular statistical sentry `src/net/AnomalyDetector.js` tracking rolling window (60 intervals) metrics.
+  - Implemented rolling mean, standard deviation, and Z-score calculations for active connections, event loop delay, and heap memory rate spikes (deltas).
+  - Integrated `AnomalyDetector` into the core HTTP and metrics lifecycle inside `src/server.js` with a 1-second interval update.
+  - Exposed monotonic counter `anomaly_triggers_total` and rolling diagnostic z-scores under GET `/metrics`.
+  - Authored a comprehensive unit suite `src/net/AnomalyDetector.test.js` validating thresholds, minimum observations, connection spikes, and memory deltas.
+  - Extended integration checks in `src/server/sandboxTelemetry.integration.test.js` to assert anomaly outputs.
+- **Decisions:** Enforced a minimum training boundary of 10 observations to suppress false positives on startup before standard deviation calculations stabilizes, and stored incremental heap velocity diffs instead of raw memory totals.
+- **Validation:** Running `npm run agent:check` in the background succeeded, passing all 109 suites (1171 unit & integration tests) cleanly under 8s.
+- **Next:** Claim and execute SPEC-125 (Zero-Downtime Hot Config Reloading Engine).
+
 ## 2026-05-31T21:58 · iter-0118 · GREEN · cycle-31-spec-121-122-123-memory-leak-cluster-determinism
 - **Baseline:** `4ffe339` on `feat/procedural-missions`; 1,140 Jest green.
 - **Move:** Implement SPEC-121 (Memory Leak Sentry), SPEC-122 (Cluster Dashboard Stream), and SPEC-123 (Physics Determinism Audit Sentry) to complete Wave v31.

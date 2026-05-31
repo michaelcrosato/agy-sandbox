@@ -36,6 +36,7 @@ import { LatencyMonitor } from "./net/LatencyMonitor.js";
 import { SandboxTelemetry } from "./net/SandboxTelemetry.js";
 import { ResourceLimiter } from "./net/ResourceLimiter.js";
 import { MemoryLeakSentry } from "./net/MemoryLeakSentry.js";
+import { AnomalyDetector } from "./net/AnomalyDetector.js";
 import {
   handleOutfitBuy,
   handleShipBuy,
@@ -124,6 +125,19 @@ const memoryLeakSentry = new MemoryLeakSentry({
   },
 });
 memoryLeakSentry.start();
+
+const anomalyDetector = new AnomalyDetector(60, 3.0);
+const anomalyInterval = setInterval(() => {
+  try {
+    const clients =
+      typeof wss !== "undefined" && wss && wss.clients ? wss.clients.size : 0;
+    const latency = latencyMonitor.getLatency();
+    const heapUsed = process.memoryUsage().heapUsed;
+    anomalyDetector.observe(clients, latency, heapUsed);
+  } catch (_e) {
+    // safe catch-all
+  }
+}, 1000);
 const resourceLimiter = new ResourceLimiter({
   onHardLimit: () => {
     if (process.env.NODE_ENV === "test") {
@@ -231,6 +245,8 @@ const server = http.createServer((req, res) => {
         blocked_events: sandboxFirewall.blockedEvents,
       },
       memory_leak_alerts: memoryLeakSentry.getDiagnostics(),
+      anomaly_triggers_total: anomalyDetector.anomalyTriggersTotal,
+      anomaly_detector: anomalyDetector.getDiagnostics(),
       rooms: buildLobbyRoomsList(instances).map((r) => ({
         ...r,
         players: r.playersCount,
@@ -1694,6 +1710,7 @@ const shutdown = async () => {
     clearInterval(registryHeartbeatInterval);
   }
   clearInterval(heartbeatInterval);
+  clearInterval(anomalyInterval);
 
   // Graceful Drain (spec 019f)
   if (WORKERS > 1) {

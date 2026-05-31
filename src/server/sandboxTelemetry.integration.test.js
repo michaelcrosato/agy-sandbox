@@ -124,6 +124,13 @@ describe("Sandbox Telemetry Observability Integration Tests (SPEC-094)", () => {
             expect(metrics).toHaveProperty("determinism_drift_alerts_total");
             expect(metrics.determinism_drift_alerts_total).toBe(0);
 
+            // Anomaly Detector checks (SPEC-124)
+            expect(metrics).toHaveProperty("anomaly_triggers_total");
+            expect(metrics.anomaly_triggers_total).toBe(0);
+            expect(metrics).toHaveProperty("anomaly_detector");
+            expect(metrics.anomaly_detector.anomalyTriggersTotal).toBe(0);
+            expect(metrics.anomaly_detector).toHaveProperty("diagnostics");
+
             resolve();
           });
         })

@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-31T05:01:20.899Z",
+  "generatedAt": "2026-05-31T05:02:30.708Z",
   "stats": {
     "totalSourceFiles": 87,
     "totalTestFiles": 117,
-    "totalSpecFiles": 132,
+    "totalSpecFiles": 135,
     "totalLoc": 19601,
     "totalTests": 1569,
     "untestedCoreFilesCount": 0
@@ -1650,7 +1650,8 @@
       "testFile": "src/net/ResourceLimiter.test.js",
       "testCasesCount": 6,
       "referencingSpecs": [
-        "plan/specs/116_resource_backpressure_limiter.md"
+        "plan/specs/116_resource_backpressure_limiter.md",
+        "plan/specs/128_adaptive_backpressure.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -4099,6 +4100,42 @@
       "priority": "Normal",
       "pillar": "None",
       "filesMentioned": []
+    },
+    {
+      "path": "plan/specs/127_connection_flood_protection.md",
+      "filename": "127_connection_flood_protection.md",
+      "title": "SPEC-127: Inbound Connection Flood Protection & Active IP Sentry",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/ConnectionFloodSentry.js",
+        "src/server.js",
+        "src/net/ConnectionFloodSentry.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/128_adaptive_backpressure.md",
+      "filename": "128_adaptive_backpressure.md",
+      "title": "SPEC-128: Configurable Event-Loop Adaptive Backpressure Sentinel",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/ResourceLimiter.js",
+        "src/server.js",
+        "src/net/ResourceLimiter.test.js",
+        "src/net/ConfigWatcher.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/129_epistemic_debt_dashboard_meter.md",
+      "filename": "129_epistemic_debt_dashboard_meter.md",
+      "title": "SPEC-129: Living Codex Epistemic Debt Cockpit Telemetry Meter",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": []
     }
   ],
   "epistemicDebt": {
@@ -4125,6 +4162,14 @@
         ]
       }
     ],
-    "staleSpecReferences": []
+    "staleSpecReferences": [
+      {
+        "spec": "plan/specs/127_connection_flood_protection.md",
+        "brokenFiles": [
+          "src/net/ConnectionFloodSentry.js",
+          "src/net/ConnectionFloodSentry.test.js"
+        ]
+      }
+    ]
   }
 }

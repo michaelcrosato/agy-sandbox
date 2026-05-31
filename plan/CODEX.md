@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T04:41:27.072Z` · Baseline: `18,647 LOC` across `82 source files`
+> Generated: `2026-05-31T04:43:21.950Z` · Baseline: `18,647 LOC` across `82 source files`
 
 ---
 
@@ -11,8 +11,8 @@
 | --- | --- | --- |
 | **Total Code Volume** | `18,647 LOC` | 🟢 Healthy |
 | **Source Modules** | `82 files` | 🟢 Structured |
-| **Test Suites** | `111 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1527 cases` | 🟢 Deterministic |
+| **Test Suites** | `112 test files` | 🟢 Integrated |
+| **Total Test Cases** | `1529 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `123 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `0 files` | 🟢 100% Covered |
 
@@ -139,8 +139,8 @@
 ### ⚠️ Untested Core Modules (0)
 _None! All core modules have associated test suites._
 
-### ⚠️ Stale Specification File References (1)
-- [ ] Spec [`117_websocket_rate_limiter_telemetry.md`](file:///C:/dev/agy-sandbox/plan/specs/117_websocket_rate_limiter_telemetry.md) references missing files: `src/server/wsRateLimiter.integration.test.js`
+### ⚠️ Stale Specification File References (0)
+_None! All specification file references correspond to real paths._
 
 ### ⚠️ Missing JSDoc Type Signatures (0 symbols)
 _None! All exported classes and functions have JSDoc type signatures._

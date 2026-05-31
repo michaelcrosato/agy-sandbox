@@ -39,6 +39,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T21:44 · iter-0117 · GREEN · cycle-28-spec-117-websocket-rate-limiter-telemetry
+- **Baseline:** `b01a583` on `feat/procedural-missions`; 1,139 Jest green.
+- **Move:** Implement SPEC-117 (Zero-Trust WebSocket Rate Limiter & Observability Telemetry).
+- **Changed:**
+  - Integrated connection-focused token-bucket rate limiter in WebSocket server layer capping incoming frames at 100/sec per connection.
+  - Drops rate-limited frames prior to parsing to avoid unnecessary CPU load, and responds with a `"rate_limit_exceeded"` payload.
+  - Dynamically registers and increments a monotonic `rate_limits_triggered` counter in the `metrics` registry.
+  - Enhanced Living Codex Dashboard (`dashboard-codex.html`) with a beautiful, zero-dependency, real-time SVG line chart mapping connections and rate limits over a 60s rolling window.
+  - Wrote a new integration test suite `src/server/wsRateLimiter.integration.test.js` validating limit triggers and telemetry reporting.
+- **Decisions:** Positioned rate-limiter check before JSON parsing inside `ws.on("message")` for optimal performance under adversarial bursts, minimizing CPU allocation waste.
+- **Validation:** Executed `npm run agent:check` confirming that Prettier, ESLint, TypeScript checkJs, and all 1140 Jest tests pass 100% green.
+- **Next:** Replenish the next engineering wave of specifications (Phase R).
+
 ## 2026-05-31T21:42 · iter-0116 · GREEN · cycle-28-spec-116-resource-backpressure-limiter
 - **Baseline:** `ef63b34` on `feat/procedural-missions`; 1,134 Jest green.
 - **Move:** Implement SPEC-116 (Resource Allocation Limits & Memory/CPU Backpressure Sentinels).

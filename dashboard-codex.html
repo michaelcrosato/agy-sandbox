@@ -1,903 +1,1249 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📖 Starfall Living Codex Telemetry Panel</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --color-bg: #070913;
-      --color-card-bg: rgba(13, 17, 39, 0.45);
-      --color-border: rgba(0, 240, 255, 0.08);
-      --color-border-hover: rgba(0, 240, 255, 0.25);
-      --color-primary: #00f0ff;
-      --color-primary-glow: rgba(0, 240, 255, 0.4);
-      --color-secondary: #bd00ff;
-      --color-success: #39ff14;
-      --color-warning: #ffb700;
-      --color-danger: #ff0055;
-      --color-text: #e2e8f0;
-      --color-text-muted: #64748b;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background-color: var(--color-bg);
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(189, 0, 255, 0.05) 0px, transparent 50%),
-        radial-gradient(at 100% 0%, rgba(0, 240, 255, 0.05) 0px, transparent 50%);
-      color: var(--color-text);
-      font-family: 'Outfit', sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-      padding: 2rem;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      border-bottom: 1px solid var(--color-border);
-      padding-bottom: 1.5rem;
-    }
-
-    .title-group h1 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 2.2rem;
-      font-weight: 700;
-      letter-spacing: -0.05em;
-      text-transform: uppercase;
-      background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 40px rgba(0, 240, 255, 0.1);
-    }
-
-    .title-group p {
-      font-size: 0.95rem;
-      color: var(--color-text-muted);
-      margin-top: 0.25rem;
-    }
-
-    .server-status {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--color-border);
-      padding: 0.5rem 1rem;
-      border-radius: 9999px;
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--color-danger);
-      box-shadow: 0 0 10px var(--color-danger);
-      transition: all 0.3s ease;
-    }
-
-    .status-dot.online {
-      background: var(--color-success);
-      box-shadow: 0 0 10px var(--color-success);
-    }
-
-    /* Grid layout */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .card {
-      background: var(--color-card-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--color-border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .card:hover {
-      transform: translateY(-2px);
-      border-color: var(--color-border-hover);
-      box-shadow: 0 10px 30px rgba(0, 240, 255, 0.03);
-    }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
-      transform: translateX(-100%);
-      transition: transform 0.5s ease;
-    }
-
-    .card:hover::before {
-      transform: translateX(100%);
-    }
-
-    .card-label {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--color-text-muted);
-      margin-bottom: 0.5rem;
-    }
-
-    .card-value {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 2.2rem;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .card-footer-text {
-      font-size: 0.8rem;
-      color: var(--color-text-muted);
-      margin-top: 0.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-
-    /* Big double-column cards */
-    .dashboard-layout {
-      display: grid;
-      grid-template-columns: 2.5fr 1.5fr;
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .pane {
-      background: var(--color-card-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--color-border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      height: 600px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .pane-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-      padding-bottom: 1rem;
-    }
-
-    .pane-title {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.25rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .search-bar {
-      background: rgba(255, 255, 255, 0.01);
-      border: 1px solid var(--color-border);
-      border-radius: 6px;
-      color: #fff;
-      padding: 0.5rem 1rem;
-      font-family: inherit;
-      font-size: 0.9rem;
-      width: 250px;
-      outline: none;
-      transition: all 0.3s ease;
-    }
-
-    .search-bar:focus {
-      border-color: var(--color-primary);
-      box-shadow: 0 0 10px rgba(0, 240, 255, 0.15);
-    }
-
-    /* Interactive Tree UI */
-    .tree-container {
-      flex: 1;
-      overflow-y: auto;
-      padding-right: 0.5rem;
-    }
-
-    /* Custom scrollbars */
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.01);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: var(--color-border-hover);
-      border-radius: 3px;
-    }
-
-    .tree-folder {
-      margin-bottom: 0.75rem;
-    }
-
-    .folder-header {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      cursor: pointer;
-      padding: 0.4rem 0.6rem;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.02);
-      transition: all 0.2s ease;
-      font-weight: 600;
-      font-size: 0.95rem;
-    }
-
-    .folder-header:hover {
-      background: rgba(0, 240, 255, 0.03);
-      border-color: rgba(0, 240, 255, 0.1);
-    }
-
-    .folder-icon {
-      color: var(--color-primary);
-      width: 16px;
-      height: 16px;
-      fill: currentColor;
-    }
-
-    .folder-content {
-      margin-left: 1.5rem;
-      border-left: 1px dashed rgba(255, 255, 255, 0.05);
-      padding-left: 0.75rem;
-      margin-top: 0.25rem;
-    }
-
-    .file-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.35rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      transition: all 0.2s ease;
-    }
-
-    .file-item:hover {
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    .file-info {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .file-name {
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 500;
-      color: var(--color-text);
-      text-decoration: none;
-      cursor: pointer;
-    }
-
-    .file-name:hover {
-      color: var(--color-primary);
-      text-shadow: 0 0 10px var(--color-primary-glow);
-    }
-
-    .file-loc {
-      color: var(--color-text-muted);
-      font-size: 0.75rem;
-    }
-
-    .badge {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      font-weight: 700;
-      padding: 0.15rem 0.4rem;
-      border-radius: 4px;
-      letter-spacing: 0.05em;
-    }
-
-    .badge-covered {
-      background: rgba(57, 255, 20, 0.1);
-      color: var(--color-success);
-      border: 1px solid rgba(57, 255, 20, 0.2);
-    }
-
-    .badge-missing-jsdoc {
-      background: rgba(255, 183, 0, 0.1);
-      color: var(--color-warning);
-      border: 1px solid rgba(255, 183, 0, 0.2);
-    }
-
-    .badge-untested {
-      background: rgba(255, 0, 85, 0.1);
-      color: var(--color-danger);
-      border: 1px solid rgba(255, 0, 85, 0.2);
-    }
-
-    /* Details Panel */
-    .details-panel {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      color: var(--color-text-muted);
-      border: 1px dashed rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-      padding: 1.5rem;
-    }
-
-    .details-title {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 0.5rem;
-    }
-
-    .details-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      width: 100%;
-      margin-top: 1rem;
-      text-align: left;
-    }
-
-    .details-item {
-      background: rgba(255, 255, 255, 0.01);
-      border: 1px solid var(--color-border);
-      border-radius: 6px;
-      padding: 0.75rem;
-    }
-
-    .details-item-label {
-      font-size: 0.75rem;
-      color: var(--color-text-muted);
-      text-transform: uppercase;
-    }
-
-    .details-item-value {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #fff;
-      margin-top: 0.25rem;
-      word-break: break-all;
-    }
-
-    /* Epistemic Debt Table UI */
-    .debt-pane {
-      background: var(--color-card-bg);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--color-border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .debt-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-      text-align: left;
-    }
-
-    .debt-table th {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--color-text-muted);
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .debt-table td {
-      font-size: 0.85rem;
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-    }
-
-    .debt-table tr:hover td {
-      background: rgba(255, 255, 255, 0.01);
-    }
-
-    .debt-status {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-      font-weight: 700;
-    }
-
-    /* Tabs & WS Generator Styles */
-    .tab-btn {
-      background: transparent;
-      border: none;
-      border-bottom: 2px solid transparent;
-      color: var(--color-text-muted);
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 0.5rem 0.75rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      outline: none;
-    }
-
-    .tab-btn:hover {
-      color: var(--color-primary);
-      text-shadow: 0 0 8px var(--color-primary-glow);
-    }
-
-    .tab-btn.active {
-      color: var(--color-primary);
-      border-bottom-color: var(--color-primary);
-      text-shadow: 0 0 10px var(--color-primary-glow);
-    }
-
-    .tab-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      height: calc(100% - 40px); /* account for header */
-      overflow: hidden;
-    }
-
-    .generator-layout {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      height: 100%;
-      overflow-y: auto;
-      padding-right: 0.25rem;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .form-label {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--color-text-muted);
-      font-weight: 600;
-    }
-
-    .custom-select {
-      background: #0d1127;
-      border: 1px solid var(--color-border);
-      border-radius: 6px;
-      color: #fff;
-      padding: 0.6rem 1rem;
-      font-family: inherit;
-      font-size: 0.95rem;
-      outline: none;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
-    }
-
-    .custom-select:focus {
-      border-color: var(--color-primary);
-      box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
-    }
-
-    .schema-field-card {
-      background: rgba(255, 255, 255, 0.01);
-      border: 1px solid var(--color-border);
-      border-radius: 6px;
-      padding: 0.75rem;
-      margin-bottom: 0.5rem;
-      transition: all 0.2s ease;
-    }
-
-    .schema-field-card:hover {
-      border-color: var(--color-border-hover);
-      background: rgba(0, 240, 255, 0.01);
-    }
-
-    .schema-field-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.25rem;
-    }
-
-    .schema-field-name {
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .schema-field-meta {
-      display: flex;
-      gap: 0.35rem;
-    }
-
-    .schema-badge {
-      font-size: 0.65rem;
-      text-transform: uppercase;
-      font-weight: 800;
-      padding: 0.1rem 0.3rem;
-      border-radius: 3px;
-    }
-
-    .badge-req {
-      background: rgba(255, 0, 85, 0.15);
-      color: var(--color-danger);
-      border: 1px solid rgba(255, 0, 85, 0.3);
-    }
-
-    .badge-opt {
-      background: rgba(100, 116, 139, 0.15);
-      color: var(--color-text-muted);
-      border: 1px solid rgba(100, 116, 139, 0.3);
-    }
-
-    .badge-type {
-      background: rgba(189, 0, 255, 0.15);
-      color: #df80ff;
-      border: 1px solid rgba(189, 0, 255, 0.3);
-    }
-
-    .schema-field-constraints {
-      font-size: 0.75rem;
-      color: var(--color-text-muted);
-      margin-top: 0.25rem;
-    }
-
-    .code-preview-box {
-      position: relative;
-      background: #04060f;
-      border: 1px solid var(--color-border);
-      border-radius: 8px;
-      padding: 1rem;
-      margin-top: 0.5rem;
-      overflow: hidden;
-    }
-
-    .code-preview-text {
-      font-family: 'Space Grotesk', monospace;
-      font-size: 0.85rem;
-      color: #39ff14;
-      white-space: pre-wrap;
-      word-break: break-all;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-
-    .copy-btn-group {
-      display: flex;
-      gap: 0.75rem;
-      margin-top: 0.5rem;
-    }
-
-    .action-btn {
-      flex: 1;
-      background: rgba(0, 240, 255, 0.05);
-      border: 1px solid var(--color-primary);
-      color: var(--color-primary);
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 700;
-      text-transform: uppercase;
-      font-size: 0.85rem;
-      letter-spacing: 0.05em;
-      padding: 0.6rem;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .action-btn:hover {
-      background: var(--color-primary);
-      color: #070913;
-      box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
-    }
-
-    .action-btn:active {
-      transform: scale(0.98);
-    }
-
-    .toast-notif {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: rgba(13, 17, 39, 0.9);
-      border: 1px solid var(--color-primary);
-      box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      color: #fff;
-      font-family: inherit;
-      font-size: 0.9rem;
-      font-weight: 600;
-      z-index: 9999;
-      transform: translateY(100px);
-      opacity: 0;
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    .toast-notif.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  </style>
-</head>
-<body>
-
-  <header>
-    <div class="title-group">
-      <h1>📖 Starfall Living Codex</h1>
-      <p>Self-Synchronizing Ontological Codebase Telemetry & Knowledge Graph Dashboard</p>
-    </div>
-    <div class="server-status">
-      <div id="status-dot" class="status-dot"></div>
-      <span id="status-text">Connecting</span>
-    </div>
-  </header>
-
-  <!-- High-level stats grid -->
-  <div class="grid">
-    <div class="card">
-      <div class="card-label">Total Code Volume</div>
-      <div id="metric-loc" class="card-value">-</div>
-      <div class="card-footer-text">Lines of Javascript</div>
-    </div>
-    <div class="card">
-      <div class="card-label">Source Modules</div>
-      <div id="metric-files" class="card-value">-</div>
-      <div class="card-footer-text">Analyzed Components</div>
-    </div>
-    <div class="card">
-      <div class="card-label">Total Test Cases</div>
-      <div id="metric-tests" class="card-value">-</div>
-      <div class="card-footer-text">Headless assertions</div>
-    </div>
-    <div class="card">
-      <div class="card-label">JSDoc Completeness</div>
-      <div id="metric-jsdoc" class="card-value">-</div>
-      <div class="card-footer-text">Type signature coverage</div>
-    </div>
-  </div>
-
-  <!-- Interactive Ontological Visualizer -->
-  <div class="dashboard-layout">
-    <div class="pane">
-      <div class="pane-header">
-        <div class="pane-title">🗺️ Repository Topology Map</div>
-        <input type="text" id="search-input" class="search-bar" placeholder="Search by name, spec, or symbol...">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>📖 Starfall Living Codex Telemetry Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --color-bg: #070913;
+        --color-card-bg: rgba(13, 17, 39, 0.45);
+        --color-border: rgba(0, 240, 255, 0.08);
+        --color-border-hover: rgba(0, 240, 255, 0.25);
+        --color-primary: #00f0ff;
+        --color-primary-glow: rgba(0, 240, 255, 0.4);
+        --color-secondary: #bd00ff;
+        --color-success: #39ff14;
+        --color-warning: #ffb700;
+        --color-danger: #ff0055;
+        --color-text: #e2e8f0;
+        --color-text-muted: #64748b;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background-color: var(--color-bg);
+        background-image:
+          radial-gradient(
+            at 0% 0%,
+            rgba(189, 0, 255, 0.05) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 0%,
+            rgba(0, 240, 255, 0.05) 0px,
+            transparent 50%
+          );
+        color: var(--color-text);
+        font-family: "Outfit", sans-serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+        padding: 2rem;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--color-border);
+        padding-bottom: 1.5rem;
+      }
+
+      .title-group h1 {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        letter-spacing: -0.05em;
+        text-transform: uppercase;
+        background: linear-gradient(
+          90deg,
+          var(--color-primary),
+          var(--color-secondary)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 40px rgba(0, 240, 255, 0.1);
+      }
+
+      .title-group p {
+        font-size: 0.95rem;
+        color: var(--color-text-muted);
+        margin-top: 0.25rem;
+      }
+
+      .server-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--color-border);
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--color-danger);
+        box-shadow: 0 0 10px var(--color-danger);
+        transition: all 0.3s ease;
+      }
+
+      .status-dot.online {
+        background: var(--color-success);
+        box-shadow: 0 0 10px var(--color-success);
+      }
+
+      /* Grid layout */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .card {
+        background: var(--color-card-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--color-border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        border-color: var(--color-border-hover);
+        box-shadow: 0 10px 30px rgba(0, 240, 255, 0.03);
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--color-primary),
+          transparent
+        );
+        transform: translateX(-100%);
+        transition: transform 0.5s ease;
+      }
+
+      .card:hover::before {
+        transform: translateX(100%);
+      }
+
+      .card-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--color-text-muted);
+        margin-bottom: 0.5rem;
+      }
+
+      .card-value {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .card-footer-text {
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+
+      /* Big double-column cards */
+      .dashboard-layout {
+        display: grid;
+        grid-template-columns: 2.5fr 1.5fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .pane {
+        background: var(--color-card-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--color-border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .pane-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        padding-bottom: 1rem;
+      }
+
+      .pane-title {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .search-bar {
+        background: rgba(255, 255, 255, 0.01);
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        color: #fff;
+        padding: 0.5rem 1rem;
+        font-family: inherit;
+        font-size: 0.9rem;
+        width: 250px;
+        outline: none;
+        transition: all 0.3s ease;
+      }
+
+      .search-bar:focus {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 10px rgba(0, 240, 255, 0.15);
+      }
+
+      /* Interactive Tree UI */
+      .tree-container {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+      }
+
+      /* Custom scrollbars */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.01);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--color-border-hover);
+        border-radius: 3px;
+      }
+
+      .tree-folder {
+        margin-bottom: 0.75rem;
+      }
+
+      .folder-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        padding: 0.4rem 0.6rem;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.02);
+        transition: all 0.2s ease;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      .folder-header:hover {
+        background: rgba(0, 240, 255, 0.03);
+        border-color: rgba(0, 240, 255, 0.1);
+      }
+
+      .folder-icon {
+        color: var(--color-primary);
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+      }
+
+      .folder-content {
+        margin-left: 1.5rem;
+        border-left: 1px dashed rgba(255, 255, 255, 0.05);
+        padding-left: 0.75rem;
+        margin-top: 0.25rem;
+      }
+
+      .file-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.35rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+      }
+
+      .file-item:hover {
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .file-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .file-name {
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 500;
+        color: var(--color-text);
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .file-name:hover {
+        color: var(--color-primary);
+        text-shadow: 0 0 10px var(--color-primary-glow);
+      }
+
+      .file-loc {
+        color: var(--color-text-muted);
+        font-size: 0.75rem;
+      }
+
+      .badge {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+        letter-spacing: 0.05em;
+      }
+
+      .badge-covered {
+        background: rgba(57, 255, 20, 0.1);
+        color: var(--color-success);
+        border: 1px solid rgba(57, 255, 20, 0.2);
+      }
+
+      .badge-missing-jsdoc {
+        background: rgba(255, 183, 0, 0.1);
+        color: var(--color-warning);
+        border: 1px solid rgba(255, 183, 0, 0.2);
+      }
+
+      .badge-untested {
+        background: rgba(255, 0, 85, 0.1);
+        color: var(--color-danger);
+        border: 1px solid rgba(255, 0, 85, 0.2);
+      }
+
+      /* Details Panel */
+      .details-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        color: var(--color-text-muted);
+        border: 1px dashed rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 1.5rem;
+      }
+
+      .details-title {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 0.5rem;
+      }
+
+      .details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        width: 100%;
+        margin-top: 1rem;
+        text-align: left;
+      }
+
+      .details-item {
+        background: rgba(255, 255, 255, 0.01);
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        padding: 0.75rem;
+      }
+
+      .details-item-label {
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+      }
+
+      .details-item-value {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #fff;
+        margin-top: 0.25rem;
+        word-break: break-all;
+      }
+
+      /* Epistemic Debt Table UI */
+      .debt-pane {
+        background: var(--color-card-bg);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--color-border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .debt-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+        text-align: left;
+      }
+
+      .debt-table th {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--color-text-muted);
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .debt-table td {
+        font-size: 0.85rem;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+      }
+
+      .debt-table tr:hover td {
+        background: rgba(255, 255, 255, 0.01);
+      }
+
+      .debt-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-weight: 700;
+      }
+
+      /* Tabs & WS Generator Styles */
+      .tab-btn {
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: var(--color-text-muted);
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        outline: none;
+      }
+
+      .tab-btn:hover {
+        color: var(--color-primary);
+        text-shadow: 0 0 8px var(--color-primary-glow);
+      }
+
+      .tab-btn.active {
+        color: var(--color-primary);
+        border-bottom-color: var(--color-primary);
+        text-shadow: 0 0 10px var(--color-primary-glow);
+      }
+
+      .tab-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: calc(100% - 40px); /* account for header */
+        overflow: hidden;
+      }
+
+      .generator-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        height: 100%;
+        overflow-y: auto;
+        padding-right: 0.25rem;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .form-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--color-text-muted);
+        font-weight: 600;
+      }
+
+      .custom-select {
+        background: #0d1127;
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        color: #fff;
+        padding: 0.6rem 1rem;
+        font-family: inherit;
+        font-size: 0.95rem;
+        outline: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .custom-select:focus {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+      }
+
+      .schema-field-card {
+        background: rgba(255, 255, 255, 0.01);
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        transition: all 0.2s ease;
+      }
+
+      .schema-field-card:hover {
+        border-color: var(--color-border-hover);
+        background: rgba(0, 240, 255, 0.01);
+      }
+
+      .schema-field-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.25rem;
+      }
+
+      .schema-field-name {
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .schema-field-meta {
+        display: flex;
+        gap: 0.35rem;
+      }
+
+      .schema-badge {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        font-weight: 800;
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+      }
+
+      .badge-req {
+        background: rgba(255, 0, 85, 0.15);
+        color: var(--color-danger);
+        border: 1px solid rgba(255, 0, 85, 0.3);
+      }
+
+      .badge-opt {
+        background: rgba(100, 116, 139, 0.15);
+        color: var(--color-text-muted);
+        border: 1px solid rgba(100, 116, 139, 0.3);
+      }
+
+      .badge-type {
+        background: rgba(189, 0, 255, 0.15);
+        color: #df80ff;
+        border: 1px solid rgba(189, 0, 255, 0.3);
+      }
+
+      .schema-field-constraints {
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+        margin-top: 0.25rem;
+      }
+
+      .code-preview-box {
+        position: relative;
+        background: #04060f;
+        border: 1px solid var(--color-border);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 0.5rem;
+        overflow: hidden;
+      }
+
+      .code-preview-text {
+        font-family: "Space Grotesk", monospace;
+        font-size: 0.85rem;
+        color: #39ff14;
+        white-space: pre-wrap;
+        word-break: break-all;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+
+      .copy-btn-group {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+      }
+
+      .action-btn {
+        flex: 1;
+        background: rgba(0, 240, 255, 0.05);
+        border: 1px solid var(--color-primary);
+        color: var(--color-primary);
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+        padding: 0.6rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .action-btn:hover {
+        background: var(--color-primary);
+        color: #070913;
+        box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+      }
+
+      .action-btn:active {
+        transform: scale(0.98);
+      }
+
+      .toast-notif {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(13, 17, 39, 0.9);
+        border: 1px solid var(--color-primary);
+        box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        color: #fff;
+        font-family: inherit;
+        font-size: 0.9rem;
+        font-weight: 600;
+        z-index: 9999;
+        transform: translateY(100px);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      .toast-notif.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="title-group">
+        <h1>📖 Starfall Living Codex</h1>
+        <p>
+          Self-Synchronizing Ontological Codebase Telemetry & Knowledge Graph
+          Dashboard
+        </p>
       </div>
-      <div id="tree-container" class="tree-container">
-        <!-- Dynamic folders and files -->
+      <div class="server-status">
+        <div id="status-dot" class="status-dot"></div>
+        <span id="status-text">Connecting</span>
+      </div>
+    </header>
+
+    <!-- High-level stats grid -->
+    <div class="grid">
+      <div class="card">
+        <div class="card-label">Total Code Volume</div>
+        <div id="metric-loc" class="card-value">-</div>
+        <div class="card-footer-text">Lines of Javascript</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Source Modules</div>
+        <div id="metric-files" class="card-value">-</div>
+        <div class="card-footer-text">Analyzed Components</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Total Test Cases</div>
+        <div id="metric-tests" class="card-value">-</div>
+        <div class="card-footer-text">Headless assertions</div>
+      </div>
+      <div class="card">
+        <div class="card-label">JSDoc Completeness</div>
+        <div id="metric-jsdoc" class="card-value">-</div>
+        <div class="card-footer-text">Type signature coverage</div>
       </div>
     </div>
 
-    <div class="pane" style="display: flex; flex-direction: column;">
-      <div class="pane-header" style="justify-content: flex-start; gap: 0.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 0.5rem; margin-bottom: 1rem;">
-        <button id="tab-inspector" class="tab-btn active">🔍 Inspector</button>
-        <button id="tab-generator" class="tab-btn">⚡ WS Payload Builder</button>
-      </div>
-      
-      <!-- Tab 1: Inspector -->
-      <div id="inspector-tab" class="tab-content">
-        <div id="details-container" class="details-panel">
-          <div class="details-title">Select a File</div>
-          <p>Click on any file in the topology map to inspect its classes, exported signatures, and specification links.</p>
+    <!-- Interactive Ontological Visualizer -->
+    <div class="dashboard-layout">
+      <div class="pane">
+        <div class="pane-header">
+          <div class="pane-title">🗺️ Repository Topology Map</div>
+          <input
+            type="text"
+            id="search-input"
+            class="search-bar"
+            placeholder="Search by name, spec, or symbol..."
+          />
+        </div>
+        <div id="tree-container" class="tree-container">
+          <!-- Dynamic folders and files -->
         </div>
       </div>
 
-      <!-- Tab 2: WS Generator -->
-      <div id="generator-tab" class="tab-content" style="display: none;">
-        <div class="generator-layout">
-          <div class="form-group">
-            <label class="form-label" for="action-select">Select Message Action (msg.type)</label>
-            <select id="action-select" class="custom-select">
-              <!-- Dynamically populated -->
-            </select>
-          </div>
+      <div class="pane" style="display: flex; flex-direction: column">
+        <div
+          class="pane-header"
+          style="
+            justify-content: flex-start;
+            gap: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+          "
+        >
+          <button id="tab-inspector" class="tab-btn active">
+            🔍 Inspector
+          </button>
+          <button id="tab-generator" class="tab-btn">
+            ⚡ WS Payload Builder
+          </button>
+        </div>
 
-          <div class="form-group">
-            <label class="form-label">Schema Properties & Types</label>
-            <div id="schema-fields-container" style="max-height: 200px; overflow-y: auto; padding-right: 0.25rem;">
-              <!-- Dynamic fields list -->
-            </div>
+        <!-- Tab 1: Inspector -->
+        <div id="inspector-tab" class="tab-content">
+          <div id="details-container" class="details-panel">
+            <div class="details-title">Select a File</div>
+            <p>
+              Click on any file in the topology map to inspect its classes,
+              exported signatures, and specification links.
+            </p>
           </div>
+        </div>
 
-          <div class="form-group">
-            <label class="form-label">Live Generated Payload</label>
-            <div class="code-preview-box">
-              <div id="code-preview" class="code-preview-text"></div>
+        <!-- Tab 2: WS Generator -->
+        <div id="generator-tab" class="tab-content" style="display: none">
+          <div class="generator-layout">
+            <div class="form-group">
+              <label class="form-label" for="action-select"
+                >Select Message Action (msg.type)</label
+              >
+              <select id="action-select" class="custom-select">
+                <!-- Dynamically populated -->
+              </select>
             </div>
-            <div class="copy-btn-group">
-              <button id="btn-copy-json" class="action-btn">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                Copy JSON
-              </button>
-              <button id="btn-copy-code" class="action-btn">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-                Copy JS Code
-              </button>
+
+            <div class="form-group">
+              <label class="form-label">Schema Properties & Types</label>
+              <div
+                id="schema-fields-container"
+                style="
+                  max-height: 200px;
+                  overflow-y: auto;
+                  padding-right: 0.25rem;
+                "
+              >
+                <!-- Dynamic fields list -->
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Live Generated Payload</label>
+              <div class="code-preview-box">
+                <div id="code-preview" class="code-preview-text"></div>
+              </div>
+              <div class="copy-btn-group">
+                <button id="btn-copy-json" class="action-btn">
+                  <svg
+                    width="14"
+                    height="14"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <rect
+                      x="9"
+                      y="9"
+                      width="13"
+                      height="13"
+                      rx="2"
+                      ry="2"
+                    ></rect>
+                    <path
+                      d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                    ></path>
+                  </svg>
+                  Copy JSON
+                </button>
+                <button id="btn-copy-code" class="action-btn">
+                  <svg
+                    width="14"
+                    height="14"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <polyline points="16 18 22 12 16 6"></polyline>
+                    <polyline points="8 6 2 12 8 18"></polyline>
+                  </svg>
+                  Copy JS Code
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div id="toast" class="toast-notif">Copied to Clipboard!</div>
+    <!-- Real-Time Metrics & Security Telemetry (SPEC-117) -->
+    <div
+      class="card"
+      style="
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      "
+    >
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          padding-bottom: 0.75rem;
+        "
+      >
+        <h3
+          style="
+            font-family: &quot;Space Grotesk&quot;, sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--color-primary);
+          "
+        >
+          📊 Real-Time Sandbox Telemetry & Egress Security
+        </h3>
+        <div style="font-size: 0.8rem; color: var(--color-text-muted)">
+          Refreshes automatically every second
+        </div>
+      </div>
 
-  <!-- Epistemic Debt Section -->
-  <div class="debt-pane">
-    <div class="pane-title">⚠️ Codebase Epistemic Debt & Static Gaps</div>
-    <table class="debt-table">
-      <thead>
-        <tr>
-          <th>Module Path</th>
-          <th>Static Gaps / Stale Logic Detected</th>
-          <th>Severity</th>
-        </tr>
-      </thead>
-      <tbody id="debt-table-body">
-        <!-- Dynamic items -->
-      </tbody>
-    </table>
-  </div>
+      <div style="display: grid; grid-template-columns: 2.5fr 1.5fr; gap: 2rem">
+        <!-- Left: SVG Line Chart -->
+        <div
+          style="
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            padding: 1rem;
+            position: relative;
+          "
+        >
+          <div
+            style="
+              font-size: 0.85rem;
+              font-weight: 600;
+              margin-bottom: 0.75rem;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              color: var(--color-text-muted);
+            "
+          >
+            Active Connections & Rate-Limiting Triggers (60s window)
+          </div>
+          <svg
+            id="telemetry-chart"
+            width="100%"
+            height="220"
+            style="overflow: visible"
+          >
+            <!-- Grid lines -->
+            <g stroke="rgba(255,255,255,0.03)" stroke-width="1">
+              <line x1="50" y1="20" x2="100%" y2="20"></line>
+              <line x1="50" y1="70" x2="100%" y2="70"></line>
+              <line x1="50" y1="120" x2="100%" y2="120"></line>
+              <line x1="50" y1="170" x2="100%" y2="170"></line>
+            </g>
+            <!-- Y-axis labels -->
+            <text x="15" y="24" fill="var(--color-text-muted)" font-size="10">
+              100
+            </text>
+            <text x="15" y="74" fill="var(--color-text-muted)" font-size="10">
+              50
+            </text>
+            <text x="15" y="124" fill="var(--color-text-muted)" font-size="10">
+              10
+            </text>
+            <text x="15" y="174" fill="var(--color-text-muted)" font-size="10">
+              0
+            </text>
 
-  <script>
-    let codexData = null;
-    let schemaData = null;
+            <!-- Connection Line Path (Neon Cyan) -->
+            <path
+              id="path-connections"
+              fill="none"
+              stroke="var(--color-primary)"
+              stroke-width="2"
+              filter="drop-shadow(0px 0px 4px rgba(0,240,255,0.3))"
+            ></path>
 
-    // Connect to server or load simulated mock fallback if offline
-    async function init() {
-      const elStatusDot = document.getElementById("status-dot");
-      const elStatusText = document.getElementById("status-text");
+            <!-- Rate Limit Line Path (Neon Pink/Red) -->
+            <path
+              id="path-ratelimits"
+              fill="none"
+              stroke="var(--color-danger)"
+              stroke-width="2"
+              filter="drop-shadow(0px 0px 4px rgba(255,0,85,0.3))"
+            ></path>
+          </svg>
+          <!-- Legend -->
+          <div
+            style="
+              display: flex;
+              gap: 1.5rem;
+              justify-content: flex-end;
+              margin-top: 0.5rem;
+              font-size: 0.8rem;
+            "
+          >
+            <div style="display: flex; align-items: center; gap: 0.4rem">
+              <div
+                style="
+                  width: 12px;
+                  height: 3px;
+                  background: var(--color-primary);
+                  border-radius: 99px;
+                "
+              ></div>
+              <span style="color: var(--color-text)">Active Connections</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.4rem">
+              <div
+                style="
+                  width: 12px;
+                  height: 3px;
+                  background: var(--color-danger);
+                  border-radius: 99px;
+                "
+              ></div>
+              <span style="color: var(--color-text)">Rate Limits Blocked</span>
+            </div>
+          </div>
+        </div>
 
-      try {
-        const res = await fetch("/codex");
-        if (!res.ok) throw new Error("Server metrics not ready");
-        codexData = await res.json();
+        <!-- Right: Real-time Telemetry Stats Panel -->
+        <div style="display: flex; flex-direction: column; gap: 1rem">
+          <div
+            style="
+              background: rgba(255, 255, 255, 0.01);
+              border: 1px solid rgba(255, 255, 255, 0.02);
+              border-radius: 8px;
+              padding: 1rem;
+            "
+          >
+            <div
+              style="
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                color: var(--color-text-muted);
+                margin-bottom: 0.25rem;
+              "
+            >
+              Active Connections
+            </div>
+            <div
+              id="chart-val-connections"
+              style="
+                font-family: &quot;Space Grotesk&quot;, sans-serif;
+                font-size: 1.8rem;
+                font-weight: 700;
+                color: var(--color-primary);
+              "
+            >
+              0
+            </div>
+          </div>
+          <div
+            style="
+              background: rgba(255, 255, 255, 0.01);
+              border: 1px solid rgba(255, 255, 255, 0.02);
+              border-radius: 8px;
+              padding: 1rem;
+            "
+          >
+            <div
+              style="
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                color: var(--color-text-muted);
+                margin-bottom: 0.25rem;
+              "
+            >
+              Total Rate Limits Triggered
+            </div>
+            <div
+              id="chart-val-ratelimits"
+              style="
+                font-family: &quot;Space Grotesk&quot;, sans-serif;
+                font-size: 1.8rem;
+                font-weight: 700;
+                color: var(--color-danger);
+              "
+            >
+              0
+            </div>
+          </div>
+          <div
+            style="
+              background: rgba(255, 255, 255, 0.01);
+              border: 1px solid rgba(255, 255, 255, 0.02);
+              border-radius: 8px;
+              padding: 1rem;
+            "
+          >
+            <div
+              style="
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                color: var(--color-text-muted);
+                margin-bottom: 0.25rem;
+              "
+            >
+              Event Loop Delay
+            </div>
+            <div
+              id="chart-val-latency"
+              style="
+                font-family: &quot;Space Grotesk&quot;, sans-serif;
+                font-size: 1.8rem;
+                font-weight: 700;
+                color: var(--color-success);
+              "
+            >
+              0 ms
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast-notif">Copied to Clipboard!</div>
+
+    <!-- Epistemic Debt Section -->
+    <div class="debt-pane">
+      <div class="pane-title">⚠️ Codebase Epistemic Debt & Static Gaps</div>
+      <table class="debt-table">
+        <thead>
+          <tr>
+            <th>Module Path</th>
+            <th>Static Gaps / Stale Logic Detected</th>
+            <th>Severity</th>
+          </tr>
+        </thead>
+        <tbody id="debt-table-body">
+          <!-- Dynamic items -->
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      let codexData = null;
+      let schemaData = null;
+
+      // Connect to server or load simulated mock fallback if offline
+      async function init() {
+        const elStatusDot = document.getElementById("status-dot");
+        const elStatusText = document.getElementById("status-text");
 
         try {
-          const resSchema = await fetch("/schema");
-          if (resSchema.ok) {
-            schemaData = await resSchema.json();
-          } else {
+          const res = await fetch("/codex");
+          if (!res.ok) throw new Error("Server metrics not ready");
+          codexData = await res.json();
+
+          try {
+            const resSchema = await fetch("/schema");
+            if (resSchema.ok) {
+              schemaData = await resSchema.json();
+            } else {
+              schemaData = { schemas: FALLBACK_SCHEMAS };
+            }
+          } catch (e) {
             schemaData = { schemas: FALLBACK_SCHEMAS };
           }
-        } catch (e) {
+
+          elStatusDot.classList.add("online");
+          elStatusText.innerText = "Online";
+          renderDashboard(codexData);
+          initGenerator();
+        } catch (err) {
+          console.warn(
+            "⚠️ Local telemetry endpoint offline. Activating dynamic simulation baseline.",
+          );
+          elStatusDot.classList.remove("online");
+          elStatusText.innerText = "Offline (Simulation)";
+
+          // Dynamic offline mock sandbox compilation matching real agy-sandbox scope
+          codexData = generateMockCodex();
           schemaData = { schemas: FALLBACK_SCHEMAS };
+          renderDashboard(codexData);
+          initGenerator();
         }
-        
-        elStatusDot.classList.add("online");
-        elStatusText.innerText = "Online";
-        renderDashboard(codexData);
-        initGenerator();
-      } catch (err) {
-        console.warn("⚠️ Local telemetry endpoint offline. Activating dynamic simulation baseline.");
-        elStatusDot.classList.remove("online");
-        elStatusText.innerText = "Offline (Simulation)";
-        
-        // Dynamic offline mock sandbox compilation matching real agy-sandbox scope
-        codexData = generateMockCodex();
-        schemaData = { schemas: FALLBACK_SCHEMAS };
-        renderDashboard(codexData);
-        initGenerator();
-      }
-    }
-
-    function renderDashboard(data) {
-      // 1. Populate Metrics
-      document.getElementById("metric-loc").innerText = data.stats.totalLoc.toLocaleString();
-      document.getElementById("metric-files").innerText = `${data.stats.totalSourceFiles} Files`;
-      document.getElementById("metric-tests").innerText = `${data.stats.totalTests} Tests`;
-      
-      const totalJsDocItems = data.files.reduce((sum, f) => sum + f.classes.length + f.exports.length, 0);
-      const missingJsDocsCount = data.epistemicDebt.missingJsDocs.reduce((sum, f) => sum + f.symbols.length, 0);
-      const jsDocPercent = totalJsDocItems > 0 ? ((totalJsDocItems - missingJsDocsCount) / totalJsDocItems * 100).toFixed(0) : "100";
-      document.getElementById("metric-jsdoc").innerText = `${jsDocPercent}%`;
-
-      // 2. Render Folder Tree Map
-      renderTreeMap(data.files, "");
-
-      // 3. Render Epistemic Debt Table
-      renderDebtTable(data);
-
-      // 4. Wire Search/Filter Input
-      const searchInput = document.getElementById("search-input");
-      searchInput.addEventListener("input", (e) => {
-        const query = e.target.value.toLowerCase().trim();
-        if (query === "") {
-          renderTreeMap(data.files, "");
-        } else {
-          const filtered = data.files.filter(f => {
-            const hasClass = f.classes.some(c => c.name.toLowerCase().includes(query));
-            const hasExport = f.exports.some(ex => ex.name.toLowerCase().includes(query));
-            const matchesPath = f.path.toLowerCase().includes(query);
-            const matchesSpec = f.referencingSpecs.some(spec => spec.toLowerCase().includes(query));
-            return hasClass || hasExport || matchesPath || matchesSpec;
-          });
-          renderTreeMap(filtered, query);
-        }
-      });
-    }
-
-    function renderTreeMap(files, highlightQuery) {
-      const container = document.getElementById("tree-container");
-      container.innerHTML = "";
-
-      // Group files by directory
-      const directories = {};
-      for (const f of files) {
-        const dir = f.path.split("/").slice(0, -1).join("/") || "root";
-        if (!directories[dir]) directories[dir] = [];
-        directories[dir].push(f);
       }
 
-      for (const [dir, dirFiles] of Object.entries(directories)) {
-        const elFolder = document.createElement("div");
-        elFolder.className = "tree-folder";
+      function renderDashboard(data) {
+        // 1. Populate Metrics
+        document.getElementById("metric-loc").innerText =
+          data.stats.totalLoc.toLocaleString();
+        document.getElementById("metric-files").innerText =
+          `${data.stats.totalSourceFiles} Files`;
+        document.getElementById("metric-tests").innerText =
+          `${data.stats.totalTests} Tests`;
 
-        const elHeader = document.createElement("div");
-        elHeader.className = "folder-header";
-        elHeader.innerHTML = `
+        const totalJsDocItems = data.files.reduce(
+          (sum, f) => sum + f.classes.length + f.exports.length,
+          0,
+        );
+        const missingJsDocsCount = data.epistemicDebt.missingJsDocs.reduce(
+          (sum, f) => sum + f.symbols.length,
+          0,
+        );
+        const jsDocPercent =
+          totalJsDocItems > 0
+            ? (
+                ((totalJsDocItems - missingJsDocsCount) / totalJsDocItems) *
+                100
+              ).toFixed(0)
+            : "100";
+        document.getElementById("metric-jsdoc").innerText = `${jsDocPercent}%`;
+
+        // 2. Render Folder Tree Map
+        renderTreeMap(data.files, "");
+
+        // 3. Render Epistemic Debt Table
+        renderDebtTable(data);
+
+        // 4. Wire Search/Filter Input
+        const searchInput = document.getElementById("search-input");
+        searchInput.addEventListener("input", (e) => {
+          const query = e.target.value.toLowerCase().trim();
+          if (query === "") {
+            renderTreeMap(data.files, "");
+          } else {
+            const filtered = data.files.filter((f) => {
+              const hasClass = f.classes.some((c) =>
+                c.name.toLowerCase().includes(query),
+              );
+              const hasExport = f.exports.some((ex) =>
+                ex.name.toLowerCase().includes(query),
+              );
+              const matchesPath = f.path.toLowerCase().includes(query);
+              const matchesSpec = f.referencingSpecs.some((spec) =>
+                spec.toLowerCase().includes(query),
+              );
+              return hasClass || hasExport || matchesPath || matchesSpec;
+            });
+            renderTreeMap(filtered, query);
+          }
+        });
+      }
+
+      function renderTreeMap(files, highlightQuery) {
+        const container = document.getElementById("tree-container");
+        container.innerHTML = "";
+
+        // Group files by directory
+        const directories = {};
+        for (const f of files) {
+          const dir = f.path.split("/").slice(0, -1).join("/") || "root";
+          if (!directories[dir]) directories[dir] = [];
+          directories[dir].push(f);
+        }
+
+        for (const [dir, dirFiles] of Object.entries(directories)) {
+          const elFolder = document.createElement("div");
+          elFolder.className = "tree-folder";
+
+          const elHeader = document.createElement("div");
+          elHeader.className = "folder-header";
+          elHeader.innerHTML = `
           <svg class="folder-icon" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/></svg>
           <span>${dir}/</span>
         `;
 
-        const elContent = document.createElement("div");
-        elContent.className = "folder-content";
+          const elContent = document.createElement("div");
+          elContent.className = "folder-content";
 
-        for (const f of dirFiles) {
-          const elFile = document.createElement("div");
-          elFile.className = "file-item";
+          for (const f of dirFiles) {
+            const elFile = document.createElement("div");
+            elFile.className = "file-item";
 
-          let badgeClass = "badge-covered";
-          let badgeLabel = "Green";
+            let badgeClass = "badge-covered";
+            let badgeLabel = "Green";
 
-          if (!f.testFile) {
-            badgeClass = "badge-untested";
-            badgeLabel = "Untested";
-          } else if (f.missingJsDocSymbols && f.missingJsDocSymbols.length > 0) {
-            badgeClass = "badge-missing-jsdoc";
-            badgeLabel = "JSDoc Gaps";
-          }
+            if (!f.testFile) {
+              badgeClass = "badge-untested";
+              badgeLabel = "Untested";
+            } else if (
+              f.missingJsDocSymbols &&
+              f.missingJsDocSymbols.length > 0
+            ) {
+              badgeClass = "badge-missing-jsdoc";
+              badgeLabel = "JSDoc Gaps";
+            }
 
-          elFile.innerHTML = `
+            elFile.innerHTML = `
             <div class="file-info">
               <span class="file-name" data-path="${f.path}">${f.path.split("/").pop()}</span>
               <span class="file-loc">${f.loc} LOC</span>
@@ -905,56 +1251,75 @@
             <span class="badge ${badgeClass}">${badgeLabel}</span>
           `;
 
-          // Wire file click inspector
-          elFile.querySelector(".file-name").addEventListener("click", () => {
-            inspectFile(f);
+            // Wire file click inspector
+            elFile.querySelector(".file-name").addEventListener("click", () => {
+              inspectFile(f);
+            });
+
+            elContent.appendChild(elFile);
+          }
+
+          // Collapse/Expand toggle
+          elHeader.addEventListener("click", () => {
+            elContent.style.display =
+              elContent.style.display === "none" ? "block" : "none";
           });
 
-          elContent.appendChild(elFile);
+          elFolder.appendChild(elHeader);
+          elFolder.appendChild(elContent);
+          container.appendChild(elFolder);
         }
-
-        // Collapse/Expand toggle
-        elHeader.addEventListener("click", () => {
-          elContent.style.display = elContent.style.display === "none" ? "block" : "none";
-        });
-
-        elFolder.appendChild(elHeader);
-        elFolder.appendChild(elContent);
-        container.appendChild(elFolder);
       }
-    }
 
-    function inspectFile(file) {
-      const container = document.getElementById("details-container");
-      container.className = "pane-header"; // resets layout
-      container.style.border = "none";
-      container.style.textAlign = "left";
-      container.style.display = "block";
-      container.style.height = "100%";
-      container.style.overflowY = "auto";
+      function inspectFile(file) {
+        const container = document.getElementById("details-container");
+        container.className = "pane-header"; // resets layout
+        container.style.border = "none";
+        container.style.textAlign = "left";
+        container.style.display = "block";
+        container.style.height = "100%";
+        container.style.overflowY = "auto";
 
-      const classesHtml = file.classes.map(c => `
+        const classesHtml =
+          file.classes
+            .map(
+              (c) => `
         <div class="details-item">
           <div class="details-item-label">Class</div>
           <div class="details-item-value">${c.name}</div>
         </div>
-      `).join("") || `<div style="font-size:0.85rem;color:var(--color-text-muted)">None</div>`;
+      `,
+            )
+            .join("") ||
+          `<div style="font-size:0.85rem;color:var(--color-text-muted)">None</div>`;
 
-      const exportsHtml = file.exports.map(ex => `
+        const exportsHtml =
+          file.exports
+            .map(
+              (ex) => `
         <div class="details-item">
           <div class="details-item-label">Export (${ex.type})</div>
           <div class="details-item-value">${ex.name}</div>
         </div>
-      `).join("") || `<div style="font-size:0.85rem;color:var(--color-text-muted)">None</div>`;
+      `,
+            )
+            .join("") ||
+          `<div style="font-size:0.85rem;color:var(--color-text-muted)">None</div>`;
 
-      const specsHtml = file.referencingSpecs.map(s => `
+        const specsHtml =
+          file.referencingSpecs
+            .map(
+              (s) => `
         <div class="details-item" style="border-color: var(--color-primary-glow);">
           <div class="details-item-label">Spec alignment</div>
           <div class="details-item-value">${s.split("/").pop()}</div>
         </div>
-      `).join("") || `<div style="font-size:0.85rem;color:var(--color-text-muted)">None</div>`;
+      `,
+            )
+            .join("") ||
+          `<div style="font-size:0.85rem;color:var(--color-text-muted)">None</div>`;
 
-      container.innerHTML = `
+        container.innerHTML = `
         <div class="details-title" style="font-size:1.4rem;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:0.5rem;margin-bottom:1rem;">
           📄 ${file.path.split("/").pop()}
         </div>
@@ -975,378 +1340,506 @@
           <div class="details-item-value">${file.testFile ? file.testFile.split("/").pop() : "❌ Untested"}</div>
         </div>
       `;
-    }
-
-    function renderDebtTable(data) {
-      const tbody = document.getElementById("debt-table-body");
-      tbody.innerHTML = "";
-
-      let debtItems = [];
-
-      // 1. Untested Core Files
-      for (const f of data.epistemicDebt.untestedCoreFiles) {
-        debtItems.push({
-          path: f,
-          issue: "Module is completely missing an associated unit test suite.",
-          severity: "Crimson (High)",
-          style: "color:var(--color-danger);"
-        });
       }
 
-      // 2. Broken Spec references
-      for (const s of data.epistemicDebt.staleSpecReferences) {
-        debtItems.push({
-          path: s.spec,
-          issue: `Spec references missing files: ${s.brokenFiles.join(", ")}`,
-          severity: "Crimson (High)",
-          style: "color:var(--color-danger);"
-        });
-      }
+      function renderDebtTable(data) {
+        const tbody = document.getElementById("debt-table-body");
+        tbody.innerHTML = "";
 
-      // 3. Missing JSDocs
-      for (const m of data.epistemicDebt.missingJsDocs) {
-        for (const sym of m.symbols) {
+        let debtItems = [];
+
+        // 1. Untested Core Files
+        for (const f of data.epistemicDebt.untestedCoreFiles) {
           debtItems.push({
-            path: m.path,
-            issue: `Line ${sym.line}: Missing JSDoc type signature for ${sym.type} '${sym.name}'.`,
-            severity: "Amber (Low)",
-            style: "color:var(--color-warning);"
+            path: f,
+            issue:
+              "Module is completely missing an associated unit test suite.",
+            severity: "Crimson (High)",
+            style: "color:var(--color-danger);",
           });
         }
-      }
 
-      if (debtItems.length === 0) {
-        tbody.innerHTML = `
+        // 2. Broken Spec references
+        for (const s of data.epistemicDebt.staleSpecReferences) {
+          debtItems.push({
+            path: s.spec,
+            issue: `Spec references missing files: ${s.brokenFiles.join(", ")}`,
+            severity: "Crimson (High)",
+            style: "color:var(--color-danger);",
+          });
+        }
+
+        // 3. Missing JSDocs
+        for (const m of data.epistemicDebt.missingJsDocs) {
+          for (const sym of m.symbols) {
+            debtItems.push({
+              path: m.path,
+              issue: `Line ${sym.line}: Missing JSDoc type signature for ${sym.type} '${sym.name}'.`,
+              severity: "Amber (Low)",
+              style: "color:var(--color-warning);",
+            });
+          }
+        }
+
+        if (debtItems.length === 0) {
+          tbody.innerHTML = `
           <tr>
             <td colspan="3" style="text-align:center;color:var(--color-text-muted);">
               🎉 Clean slate! Zero epistemic debt or static gaps detected in active sandbox.
             </td>
           </tr>
         `;
-        return;
-      }
+          return;
+        }
 
-      for (const d of debtItems) {
-        const row = document.createElement("tr");
-        row.innerHTML = `
+        for (const d of debtItems) {
+          const row = document.createElement("tr");
+          row.innerHTML = `
           <td><strong>${d.path}</strong></td>
           <td>${d.issue}</td>
           <td><span class="debt-status" style="${d.style}">${d.severity}</span></td>
         `;
-        tbody.appendChild(row);
+          tbody.appendChild(row);
+        }
       }
-    }
 
-    // Dynamic offline mock fallback compilation matching real agy-sandbox scope
-    function generateMockCodex() {
-      return {
-        generatedAt: new Date().toISOString(),
-        stats: {
-          totalSourceFiles: 67,
-          totalTestFiles: 93,
-          totalSpecFiles: 107,
-          totalLoc: 15601,
-          totalTests: 1309,
-          untestedCoreFilesCount: 0
-        },
-        files: [
-          {
-            path: "src/net/ApiRateLimiter.js",
-            loc: 312,
-            classes: [{ name: "ApiRateLimiter", line: 11 }],
-            exports: [{ name: "activateOutboundSentinel", type: "function", line: 122 }],
-            testFile: "src/net/ApiRateLimiter.test.js",
-            testCasesCount: 11,
-            referencingSpecs: ["plan/specs/097_guest_isolation_api_rate_limiter.md"],
-            missingJsDocSymbols: []
+      // Dynamic offline mock fallback compilation matching real agy-sandbox scope
+      function generateMockCodex() {
+        return {
+          generatedAt: new Date().toISOString(),
+          stats: {
+            totalSourceFiles: 67,
+            totalTestFiles: 93,
+            totalSpecFiles: 107,
+            totalLoc: 15601,
+            totalTests: 1309,
+            untestedCoreFilesCount: 0,
           },
-          {
-            path: "src/persistence/GalacticChronicle.js",
-            loc: 118,
-            classes: [{ name: "GalacticChronicle", line: 15 }],
-            exports: [],
-            testFile: "src/persistence/GalacticChronicle.test.js",
-            testCasesCount: 7,
-            referencingSpecs: ["plan/specs/096_galactic_chronicle_observability.md"],
-            missingJsDocSymbols: []
-          },
-          {
-            path: "src/engine/ai/UtilityAI.js",
-            loc: 398,
-            classes: [],
-            exports: [{ name: "evaluateGoals", type: "function", line: 15 }],
-            testFile: "src/engine/ai/UtilityAI.test.js",
-            testCasesCount: 16,
-            referencingSpecs: [],
-            missingJsDocSymbols: []
-          }
-        ],
-        epistemicDebt: {
-          untestedCoreFiles: [],
-          missingJsDocs: [
+          files: [
+            {
+              path: "src/net/ApiRateLimiter.js",
+              loc: 312,
+              classes: [{ name: "ApiRateLimiter", line: 11 }],
+              exports: [
+                {
+                  name: "activateOutboundSentinel",
+                  type: "function",
+                  line: 122,
+                },
+              ],
+              testFile: "src/net/ApiRateLimiter.test.js",
+              testCasesCount: 11,
+              referencingSpecs: [
+                "plan/specs/097_guest_isolation_api_rate_limiter.md",
+              ],
+              missingJsDocSymbols: [],
+            },
+            {
+              path: "src/persistence/GalacticChronicle.js",
+              loc: 118,
+              classes: [{ name: "GalacticChronicle", line: 15 }],
+              exports: [],
+              testFile: "src/persistence/GalacticChronicle.test.js",
+              testCasesCount: 7,
+              referencingSpecs: [
+                "plan/specs/096_galactic_chronicle_observability.md",
+              ],
+              missingJsDocSymbols: [],
+            },
             {
               path: "src/engine/ai/UtilityAI.js",
-              symbols: [{ name: "scoreTrade", type: "function", line: 89 }]
-            }
+              loc: 398,
+              classes: [],
+              exports: [{ name: "evaluateGoals", type: "function", line: 15 }],
+              testFile: "src/engine/ai/UtilityAI.test.js",
+              testCasesCount: 16,
+              referencingSpecs: [],
+              missingJsDocSymbols: [],
+            },
           ],
-          staleSpecReferences: []
-        }
-      };
-    }
-
-    const FALLBACK_SCHEMAS = {
-      join: {
-        sessionToken: { type: "string", optional: true },
-        nickname: { type: "string", optional: true, maxLength: 20 }
-      },
-      quick_join: {
-        mode: { type: "string", optional: true },
-        tags: { type: "array", optional: true, itemType: "string" }
-      },
-      create_room: {
-        roomName: { type: "string", required: true, maxLength: 50 },
-        mode: { type: "string", optional: true },
-        tags: { type: "array", optional: true, itemType: "string" }
-      },
-      join_room: {
-        roomId: { type: "string", required: true },
-        nickname: { type: "string", optional: true, maxLength: 20 }
-      },
-      controls: {
-        keys: { type: "object", optional: true },
-        heading: { type: "number", optional: true, finite: true },
-        warp: { type: "boolean", optional: true }
-      },
-      land: {
-        planetName: { type: "string", required: true }
-      },
-      launch: {},
-      trade: {
-        planetName: { type: "string", required: true },
-        commodity: { type: "string", required: true },
-        amount: { type: "integer", required: true, min: 0 },
-        buy: { type: "boolean", required: true }
-      },
-      port_service: {
-        service: { type: "string", required: true }
-      },
-      port_refine: {},
-      ore_refine: {},
-      jettison: {
-        commodity: { type: "string", required: true },
-        amount: { type: "integer", required: true, min: 1 }
-      },
-      outfit_buy: {
-        outfitKey: { type: "string", required: true }
-      },
-      outfit_sell: {
-        outfitKey: { type: "string", required: true }
-      },
-      preset_save: {
-        presetIndex: { type: "integer", optional: true, min: 0 },
-        presetName: { type: "string", optional: true, maxLength: 30 }
-      },
-      preset_load: {
-        presetIndex: { type: "integer", optional: true, min: 0 }
-      },
-      ship_buy: {
-        hullKey: { type: "string", required: true }
-      },
-      squad_invite: {
-        targetPlayerId: { type: "string", required: true }
-      },
-      squad_join: {
-        squadId: { type: "string", required: true }
-      },
-      squad_leave: {},
-      port_redeem_vouchers: {},
-      mission_accept: {
-        missionId: { type: "string", required: true }
-      },
-      mission_abandon: {
-        missionId: { type: "string", required: true }
-      },
-      fleet_create: {
-        fleetName: { type: "string", required: true, maxLength: 30 }
-      },
-      fleet_join: {
-        fleetName: { type: "string", required: true, maxLength: 30 }
-      },
-      fleet_leave: {},
-      chat: {
-        text: { type: "string", required: true, maxLength: 100 },
-        channel: { type: "string", optional: true }
-      },
-      warp_jump: {
-        stargateId: { type: "string", required: true }
-      },
-      boarding_action: {
-        targetId: { type: "string", required: true }
-      },
-      escort_command: {
-        command: { type: "string", required: true }
-      },
-      escort_formation: {
-        formation: { type: "string", required: true }
-      },
-      distress_beacon: {},
-      ping: {},
-      tutorial_complete: {}
-    };
-
-    function showToast(message) {
-      const toast = document.getElementById("toast");
-      toast.innerText = message;
-      toast.classList.add("show");
-      setTimeout(() => {
-        toast.classList.remove("show");
-      }, 2500);
-    }
-
-    function generateDefaultValueForField(fieldName, fieldDef) {
-      if (fieldName === "planetName") return "Sol";
-      if (fieldName === "commodity") return "electronics";
-      if (fieldName === "stargateId") return "sg-sol-polaris";
-      if (fieldName === "roomId") return "room-public";
-      if (fieldName === "squadId") return "squad-alpha";
-      if (fieldName === "fleetName") return "Vanguard Fleet";
-      if (fieldName === "targetPlayerId" || fieldName === "targetId") return "pilot-123";
-      if (fieldName === "missionId") return "mission-abc";
-      if (fieldName === "outfitKey") return "laser_1";
-      if (fieldName === "hullKey") return "scout";
-      if (fieldName === "command") return "intercept";
-      if (fieldName === "formation") return "delta";
-      if (fieldName === "text") return "Hello Starfall Commanders!";
-      if (fieldName === "sessionToken") return "token-xyz-789";
-      if (fieldName === "nickname") return "CommanderValerie";
-      if (fieldName === "channel") return "global";
-      if (fieldName === "service") return "repair";
-
-      if (fieldDef.type === "string") return "value";
-      if (fieldDef.type === "integer" || fieldDef.type === "number") return fieldDef.min !== undefined ? fieldDef.min : 5;
-      if (fieldDef.type === "boolean") return true;
-      if (fieldDef.type === "array") return ["val1", "val2"];
-      if (fieldDef.type === "object") return { active: true };
-      return null;
-    }
-
-    function renderSchemaFields(action, schema) {
-      const container = document.getElementById("schema-fields-container");
-      container.innerHTML = "";
-
-      const fields = Object.entries(schema);
-      if (fields.length === 0) {
-        container.innerHTML = `<div style="font-size:0.85rem;color:var(--color-text-muted);padding:0.5rem 0;">No parameters required for this message type.</div>`;
-        return;
+          epistemicDebt: {
+            untestedCoreFiles: [],
+            missingJsDocs: [
+              {
+                path: "src/engine/ai/UtilityAI.js",
+                symbols: [{ name: "scoreTrade", type: "function", line: 89 }],
+              },
+            ],
+            staleSpecReferences: [],
+          },
+        };
       }
 
-      for (const [name, def] of fields) {
-        const isReq = def.required === true;
-        const card = document.createElement("div");
-        card.className = "schema-field-card";
+      const FALLBACK_SCHEMAS = {
+        join: {
+          sessionToken: { type: "string", optional: true },
+          nickname: { type: "string", optional: true, maxLength: 20 },
+        },
+        quick_join: {
+          mode: { type: "string", optional: true },
+          tags: { type: "array", optional: true, itemType: "string" },
+        },
+        create_room: {
+          roomName: { type: "string", required: true, maxLength: 50 },
+          mode: { type: "string", optional: true },
+          tags: { type: "array", optional: true, itemType: "string" },
+        },
+        join_room: {
+          roomId: { type: "string", required: true },
+          nickname: { type: "string", optional: true, maxLength: 20 },
+        },
+        controls: {
+          keys: { type: "object", optional: true },
+          heading: { type: "number", optional: true, finite: true },
+          warp: { type: "boolean", optional: true },
+        },
+        land: {
+          planetName: { type: "string", required: true },
+        },
+        launch: {},
+        trade: {
+          planetName: { type: "string", required: true },
+          commodity: { type: "string", required: true },
+          amount: { type: "integer", required: true, min: 0 },
+          buy: { type: "boolean", required: true },
+        },
+        port_service: {
+          service: { type: "string", required: true },
+        },
+        port_refine: {},
+        ore_refine: {},
+        jettison: {
+          commodity: { type: "string", required: true },
+          amount: { type: "integer", required: true, min: 1 },
+        },
+        outfit_buy: {
+          outfitKey: { type: "string", required: true },
+        },
+        outfit_sell: {
+          outfitKey: { type: "string", required: true },
+        },
+        preset_save: {
+          presetIndex: { type: "integer", optional: true, min: 0 },
+          presetName: { type: "string", optional: true, maxLength: 30 },
+        },
+        preset_load: {
+          presetIndex: { type: "integer", optional: true, min: 0 },
+        },
+        ship_buy: {
+          hullKey: { type: "string", required: true },
+        },
+        squad_invite: {
+          targetPlayerId: { type: "string", required: true },
+        },
+        squad_join: {
+          squadId: { type: "string", required: true },
+        },
+        squad_leave: {},
+        port_redeem_vouchers: {},
+        mission_accept: {
+          missionId: { type: "string", required: true },
+        },
+        mission_abandon: {
+          missionId: { type: "string", required: true },
+        },
+        fleet_create: {
+          fleetName: { type: "string", required: true, maxLength: 30 },
+        },
+        fleet_join: {
+          fleetName: { type: "string", required: true, maxLength: 30 },
+        },
+        fleet_leave: {},
+        chat: {
+          text: { type: "string", required: true, maxLength: 100 },
+          channel: { type: "string", optional: true },
+        },
+        warp_jump: {
+          stargateId: { type: "string", required: true },
+        },
+        boarding_action: {
+          targetId: { type: "string", required: true },
+        },
+        escort_command: {
+          command: { type: "string", required: true },
+        },
+        escort_formation: {
+          formation: { type: "string", required: true },
+        },
+        distress_beacon: {},
+        ping: {},
+        tutorial_complete: {},
+      };
 
-        let constraintsHtml = [];
-        if (def.maxLength !== undefined) constraintsHtml.push(`max-length: ${def.maxLength}`);
-        if (def.min !== undefined) constraintsHtml.push(`min: ${def.min}`);
-        if (def.max !== undefined) constraintsHtml.push(`max: ${def.max}`);
-        if (def.itemType !== undefined) constraintsHtml.push(`items: ${def.itemType}`);
+      function showToast(message) {
+        const toast = document.getElementById("toast");
+        toast.innerText = message;
+        toast.classList.add("show");
+        setTimeout(() => {
+          toast.classList.remove("show");
+        }, 2500);
+      }
 
-        const constraintsText = constraintsHtml.length > 0 ? `(${constraintsHtml.join(", ")})` : "";
+      function generateDefaultValueForField(fieldName, fieldDef) {
+        if (fieldName === "planetName") return "Sol";
+        if (fieldName === "commodity") return "electronics";
+        if (fieldName === "stargateId") return "sg-sol-polaris";
+        if (fieldName === "roomId") return "room-public";
+        if (fieldName === "squadId") return "squad-alpha";
+        if (fieldName === "fleetName") return "Vanguard Fleet";
+        if (fieldName === "targetPlayerId" || fieldName === "targetId")
+          return "pilot-123";
+        if (fieldName === "missionId") return "mission-abc";
+        if (fieldName === "outfitKey") return "laser_1";
+        if (fieldName === "hullKey") return "scout";
+        if (fieldName === "command") return "intercept";
+        if (fieldName === "formation") return "delta";
+        if (fieldName === "text") return "Hello Starfall Commanders!";
+        if (fieldName === "sessionToken") return "token-xyz-789";
+        if (fieldName === "nickname") return "CommanderValerie";
+        if (fieldName === "channel") return "global";
+        if (fieldName === "service") return "repair";
 
-        card.innerHTML = `
+        if (fieldDef.type === "string") return "value";
+        if (fieldDef.type === "integer" || fieldDef.type === "number")
+          return fieldDef.min !== undefined ? fieldDef.min : 5;
+        if (fieldDef.type === "boolean") return true;
+        if (fieldDef.type === "array") return ["val1", "val2"];
+        if (fieldDef.type === "object") return { active: true };
+        return null;
+      }
+
+      function renderSchemaFields(action, schema) {
+        const container = document.getElementById("schema-fields-container");
+        container.innerHTML = "";
+
+        const fields = Object.entries(schema);
+        if (fields.length === 0) {
+          container.innerHTML = `<div style="font-size:0.85rem;color:var(--color-text-muted);padding:0.5rem 0;">No parameters required for this message type.</div>`;
+          return;
+        }
+
+        for (const [name, def] of fields) {
+          const isReq = def.required === true;
+          const card = document.createElement("div");
+          card.className = "schema-field-card";
+
+          let constraintsHtml = [];
+          if (def.maxLength !== undefined)
+            constraintsHtml.push(`max-length: ${def.maxLength}`);
+          if (def.min !== undefined) constraintsHtml.push(`min: ${def.min}`);
+          if (def.max !== undefined) constraintsHtml.push(`max: ${def.max}`);
+          if (def.itemType !== undefined)
+            constraintsHtml.push(`items: ${def.itemType}`);
+
+          const constraintsText =
+            constraintsHtml.length > 0 ? `(${constraintsHtml.join(", ")})` : "";
+
+          card.innerHTML = `
           <div class="schema-field-header">
             <span class="schema-field-name">${name}</span>
             <div class="schema-field-meta">
-              <span class="schema-badge ${isReq ? 'badge-req' : 'badge-opt'}">${isReq ? 'required' : 'optional'}</span>
+              <span class="schema-badge ${isReq ? "badge-req" : "badge-opt"}">${isReq ? "required" : "optional"}</span>
               <span class="schema-badge badge-type">${def.type}</span>
             </div>
           </div>
           <div class="schema-field-constraints">${constraintsText}</div>
         `;
-        container.appendChild(card);
-      }
-    }
-
-    function updateCodePreview(action, schema) {
-      const previewEl = document.getElementById("code-preview");
-      
-      const payload = { type: action };
-      for (const [name, def] of Object.entries(schema)) {
-        payload[name] = generateDefaultValueForField(name, def);
+          container.appendChild(card);
+        }
       }
 
-      const jsonStr = JSON.stringify(payload, null, 2);
-      previewEl.innerText = jsonStr;
-    }
+      function updateCodePreview(action, schema) {
+        const previewEl = document.getElementById("code-preview");
 
-    function initGenerator() {
-      const select = document.getElementById("action-select");
-      select.innerHTML = "";
+        const payload = { type: action };
+        for (const [name, def] of Object.entries(schema)) {
+          payload[name] = generateDefaultValueForField(name, def);
+        }
 
-      const schemas = schemaData && schemaData.schemas ? schemaData.schemas : FALLBACK_SCHEMAS;
-      
-      for (const actionName of Object.keys(schemas)) {
-        const opt = document.createElement("option");
-        opt.value = actionName;
-        opt.innerText = actionName;
-        select.appendChild(opt);
+        const jsonStr = JSON.stringify(payload, null, 2);
+        previewEl.innerText = jsonStr;
       }
 
-      // Initial render
-      if (select.value) {
-        renderSchemaFields(select.value, schemas[select.value]);
-        updateCodePreview(select.value, schemas[select.value]);
-      }
+      function initGenerator() {
+        const select = document.getElementById("action-select");
+        select.innerHTML = "";
 
-      select.addEventListener("change", (e) => {
-        const action = e.target.value;
-        renderSchemaFields(action, schemas[action]);
-        updateCodePreview(action, schemas[action]);
-      });
+        const schemas =
+          schemaData && schemaData.schemas
+            ? schemaData.schemas
+            : FALLBACK_SCHEMAS;
 
-      // Tab switching wire-up
-      const tabInspector = document.getElementById("tab-inspector");
-      const tabGenerator = document.getElementById("tab-generator");
-      const inspectorTab = document.getElementById("inspector-tab");
-      const generatorTab = document.getElementById("generator-tab");
+        for (const actionName of Object.keys(schemas)) {
+          const opt = document.createElement("option");
+          opt.value = actionName;
+          opt.innerText = actionName;
+          select.appendChild(opt);
+        }
 
-      tabInspector.addEventListener("click", () => {
-        tabInspector.classList.add("active");
-        tabGenerator.classList.remove("active");
-        inspectorTab.style.display = "block";
-        generatorTab.style.display = "none";
-      });
+        // Initial render
+        if (select.value) {
+          renderSchemaFields(select.value, schemas[select.value]);
+          updateCodePreview(select.value, schemas[select.value]);
+        }
 
-      tabGenerator.addEventListener("click", () => {
-        tabGenerator.classList.add("active");
-        tabInspector.classList.remove("active");
-        inspectorTab.style.display = "none";
-        generatorTab.style.display = "block";
-      });
-
-      // Clipboard wire-up
-      document.getElementById("btn-copy-json").addEventListener("click", () => {
-        const text = document.getElementById("code-preview").innerText;
-        navigator.clipboard.writeText(text).then(() => {
-          showToast("⚡ JSON Payload copied to clipboard!");
-        }).catch(err => {
-          console.error("Clipboard copy failed", err);
+        select.addEventListener("change", (e) => {
+          const action = e.target.value;
+          renderSchemaFields(action, schemas[action]);
+          updateCodePreview(action, schemas[action]);
         });
-      });
 
-      document.getElementById("btn-copy-code").addEventListener("click", () => {
-        const jsonText = document.getElementById("code-preview").innerText;
-        const jsCode = `ws.send(JSON.stringify(${jsonText}));`;
-        navigator.clipboard.writeText(jsCode).then(() => {
-          showToast("💻 JavaScript Code snippet copied!");
-        }).catch(err => {
-          console.error("Clipboard copy failed", err);
+        // Tab switching wire-up
+        const tabInspector = document.getElementById("tab-inspector");
+        const tabGenerator = document.getElementById("tab-generator");
+        const inspectorTab = document.getElementById("inspector-tab");
+        const generatorTab = document.getElementById("generator-tab");
+
+        tabInspector.addEventListener("click", () => {
+          tabInspector.classList.add("active");
+          tabGenerator.classList.remove("active");
+          inspectorTab.style.display = "block";
+          generatorTab.style.display = "none";
         });
-      });
-    }
 
-    // Start
-    init();
-  </script>
-</body>
+        tabGenerator.addEventListener("click", () => {
+          tabGenerator.classList.add("active");
+          tabInspector.classList.remove("active");
+          inspectorTab.style.display = "none";
+          generatorTab.style.display = "block";
+        });
+
+        // Clipboard wire-up
+        document
+          .getElementById("btn-copy-json")
+          .addEventListener("click", () => {
+            const text = document.getElementById("code-preview").innerText;
+            navigator.clipboard
+              .writeText(text)
+              .then(() => {
+                showToast("⚡ JSON Payload copied to clipboard!");
+              })
+              .catch((err) => {
+                console.error("Clipboard copy failed", err);
+              });
+          });
+
+        document
+          .getElementById("btn-copy-code")
+          .addEventListener("click", () => {
+            const jsonText = document.getElementById("code-preview").innerText;
+            const jsCode = `ws.send(JSON.stringify(${jsonText}));`;
+            navigator.clipboard
+              .writeText(jsCode)
+              .then(() => {
+                showToast("💻 JavaScript Code snippet copied!");
+              })
+              .catch((err) => {
+                console.error("Clipboard copy failed", err);
+              });
+          });
+      }
+
+      // Telemetry Real-Time SVG charting (SPEC-117)
+      let historyConnections = Array(60).fill(0);
+      let historyRateLimits = Array(60).fill(0);
+      let lastCumulativeRateLimits = null;
+
+      async function updateTelemetry() {
+        let connections = 0;
+        let rateLimits = 0;
+        let latency = 0;
+
+        try {
+          const res = await fetch("/metrics");
+          if (res.ok) {
+            const data = await res.json();
+            connections = data.clients_active ?? 0;
+            latency = data.event_loop_latency_ms ?? 0;
+
+            const cumulativeLimits = data.counters?.rate_limits_triggered ?? 0;
+            if (lastCumulativeRateLimits !== null) {
+              rateLimits = Math.max(
+                0,
+                cumulativeLimits - lastCumulativeRateLimits,
+              );
+            }
+            lastCumulativeRateLimits = cumulativeLimits;
+
+            document.getElementById("chart-val-connections").innerText =
+              connections;
+            document.getElementById("chart-val-ratelimits").innerText =
+              cumulativeLimits;
+            document.getElementById("chart-val-latency").innerText =
+              `${latency.toFixed(1)} ms`;
+          }
+        } catch (err) {
+          // Fallback simulation when offline
+          connections = Math.floor(Math.random() * 5) + 2;
+          rateLimits =
+            Math.random() > 0.85 ? Math.floor(Math.random() * 8) + 1 : 0;
+          latency = Math.random() * 4 + 1;
+
+          const cumulativeSpan = document.getElementById(
+            "chart-val-ratelimits",
+          );
+          const prevCumulative = parseInt(cumulativeSpan.innerText) || 0;
+
+          document.getElementById("chart-val-connections").innerText =
+            connections;
+          cumulativeSpan.innerText = prevCumulative + rateLimits;
+          document.getElementById("chart-val-latency").innerText =
+            `${latency.toFixed(1)} ms`;
+        }
+
+        historyConnections.push(connections);
+        historyConnections.shift();
+        historyRateLimits.push(rateLimits);
+        historyRateLimits.shift();
+
+        renderSvgChart();
+      }
+
+      function renderSvgChart() {
+        const svg = document.getElementById("telemetry-chart");
+        if (!svg) return;
+        const width = svg.clientWidth || 600;
+
+        const maxVal = Math.max(
+          10,
+          ...historyConnections,
+          ...historyRateLimits,
+        );
+
+        const label100 = svg.querySelector("text[y='24']");
+        const label50 = svg.querySelector("text[y='74']");
+        const label10 = svg.querySelector("text[y='124']");
+        if (label100) label100.textContent = Math.round(maxVal);
+        if (label50) label50.textContent = Math.round(maxVal / 2);
+        if (label10) label10.textContent = Math.round(maxVal / 10);
+
+        const buildPath = (history) => {
+          let pathPoints = [];
+          for (let i = 0; i < history.length; i++) {
+            const x = 50 + (i * (width - 60)) / 59;
+            const y = 170 - (history[i] / maxVal) * 150;
+            pathPoints.push(`${x},${y}`);
+          }
+          return "M " + pathPoints.join(" L ");
+        };
+
+        const pathConnections = document.getElementById("path-connections");
+        const pathRateLimits = document.getElementById("path-ratelimits");
+
+        if (pathConnections)
+          pathConnections.setAttribute("d", buildPath(historyConnections));
+        if (pathRateLimits)
+          pathRateLimits.setAttribute("d", buildPath(historyRateLimits));
+      }
+
+      // Start
+      init();
+      updateTelemetry();
+      setInterval(updateTelemetry, 1000);
+    </script>
+  </body>
 </html>

@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T04:41:27.072Z",
+  "generatedAt": "2026-05-31T04:43:21.950Z",
   "stats": {
     "totalSourceFiles": 82,
-    "totalTestFiles": 111,
+    "totalTestFiles": 112,
     "totalSpecFiles": 123,
     "totalLoc": 18647,
-    "totalTests": 1527,
+    "totalTests": 1529,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -3889,13 +3889,6 @@
   "epistemicDebt": {
     "untestedCoreFiles": [],
     "missingJsDocs": [],
-    "staleSpecReferences": [
-      {
-        "spec": "plan/specs/117_websocket_rate_limiter_telemetry.md",
-        "brokenFiles": [
-          "src/server/wsRateLimiter.integration.test.js"
-        ]
-      }
-    ]
+    "staleSpecReferences": []
   }
 }

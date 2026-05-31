@@ -1172,6 +1172,8 @@ wss.on("connection", (ws) => {
     planetLandedOn: null,
     fleetName: null,
     roomId: null,
+    rateLimitTokens: 100,
+    rateLimitLastRefill: Date.now(),
     send(data) {
       if (this.ws && this.ws.readyState === this.ws.OPEN) {
         // Dynamic Load-Shedding (SPEC-090):
@@ -1370,6 +1372,30 @@ wss.on("connection", (ws) => {
   clients.set(ws, clientObj);
 
   ws.on("message", async (msgStr) => {
+    // SPEC-117: Zero-Trust WebSocket connection rate limiter (cap 100 messages/sec)
+    const now = Date.now();
+    const elapsed = (now - clientObj.rateLimitLastRefill) / 1000;
+    clientObj.rateLimitLastRefill = now;
+    clientObj.rateLimitTokens = Math.min(
+      100,
+      clientObj.rateLimitTokens + elapsed * 100,
+    );
+
+    if (clientObj.rateLimitTokens < 1) {
+      metrics.inc("rate_limits_triggered");
+      try {
+        clientObj.send({
+          type: "rate_limit_exceeded",
+          message:
+            "Too many requests. WebSocket message rate limit exceeded (Max 100/sec).",
+        });
+      } catch (err) {
+        // ignore send errors
+      }
+      return;
+    }
+    clientObj.rateLimitTokens -= 1;
+
     if (
       resourceLimiter.isBackpressureActive &&
       process.env.NODE_ENV !== "test"

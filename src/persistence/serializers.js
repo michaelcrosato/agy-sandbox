@@ -121,6 +121,12 @@ export function serializeGalaxy(gameInstance) {
       ? gameInstance.territoryControl.save()
       : null;
 
+  const factionWarCampaign =
+    gameInstance.factionWarCampaign &&
+    typeof gameInstance.factionWarCampaign.save === "function"
+      ? gameInstance.factionWarCampaign.save()
+      : null;
+
   return {
     version: SNAPSHOT_VERSION,
     planets,
@@ -130,6 +136,7 @@ export function serializeGalaxy(gameInstance) {
     heartbeatPulses,
     factionRegistry,
     territoryControl,
+    factionWarCampaign,
   };
 }
 
@@ -203,6 +210,10 @@ export function applyGalaxy(gameInstance, data) {
 
   if (data.territoryControl && gameInstance.territoryControl) {
     gameInstance.territoryControl.load(data.territoryControl);
+  }
+
+  if (data.factionWarCampaign && gameInstance.factionWarCampaign) {
+    gameInstance.factionWarCampaign.load(data.factionWarCampaign);
   }
 }
 

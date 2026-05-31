@@ -398,6 +398,58 @@ export function handleRestRequest(req, res, options) {
     return;
   }
 
+  // SPEC-164: Faction War Campaign REST Endpoint
+  if (req.method === "GET" && safeUrl === "/api/faction/campaign") {
+    // 1. Get query param for room (optional)
+    const urlParts = req.url.split("?");
+    let roomName = null;
+    if (urlParts[1]) {
+      const qParams = new URLSearchParams(urlParts[1]);
+      roomName = qParams.get("room");
+    }
+
+    // 2. Fetch the corresponding game instance
+    let gameInstance = null;
+    if (roomName && options.instances) {
+      gameInstance = options.instances.get(roomName);
+    }
+    if (!gameInstance && options.instances && options.instances.size > 0) {
+      // Fallback to the first active instance
+      gameInstance = options.instances.values().next().value;
+    }
+
+    // 3. Serialize and return campaign state
+    if (gameInstance && gameInstance.factionWarCampaign) {
+      res.writeHead(200, {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      });
+      res.end(
+        JSON.stringify({
+          ok: true,
+          ticks: gameInstance.factionWarCampaign.ticks,
+          militaryPower: gameInstance.factionWarCampaign.militaryPower,
+          activeSieges: gameInstance.factionWarCampaign.activeSieges,
+          blockades: gameInstance.factionWarCampaign.blockades,
+          battleHistory: gameInstance.factionWarCampaign.battleHistory,
+        }),
+      );
+    } else {
+      res.writeHead(404, {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      });
+      res.end(
+        JSON.stringify({
+          ok: false,
+          error:
+            "Faction war campaign data not found or no active galaxy instance running.",
+        }),
+      );
+    }
+    return;
+  }
+
   // SPEC-153: Secure Interactive Codex CLI sandbox command dispatcher
   if (req.method === "POST" && safeUrl === "/api/sandbox/execute") {
     let body = "";

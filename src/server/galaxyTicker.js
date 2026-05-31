@@ -398,6 +398,13 @@ export function runGalaxyHeartbeatInterval(instances) {
         sectors: room.territoryControl.sectors,
       });
     }
+
+    if (
+      room.factionWarCampaign &&
+      typeof room.factionWarCampaign.tick === "function"
+    ) {
+      room.factionWarCampaign.tick(room);
+    }
   }
 }
 

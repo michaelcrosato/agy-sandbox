@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T16:43:53.525Z",
+  "generatedAt": "2026-05-31T17:22:07.096Z",
   "stats": {
-    "totalSourceFiles": 102,
-    "totalTestFiles": 133,
-    "totalSpecFiles": 177,
-    "totalLoc": 23965,
-    "totalTests": 1722,
+    "totalSourceFiles": 103,
+    "totalTestFiles": 135,
+    "totalSpecFiles": 178,
+    "totalLoc": 24552,
+    "totalTests": 1734,
     "untestedCoreFilesCount": 6
   },
   "files": [
@@ -454,6 +454,37 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/engine/FactionWarCampaign.js",
+      "loc": 483,
+      "classes": [
+        {
+          "name": "FactionWarCampaign",
+          "jsdoc": "/**\n* Strategic headless engine managing galactic conflicts tick-by-tick.\n*/",
+          "line": 39
+        }
+      ],
+      "exports": [
+        {
+          "name": "createSeededRng",
+          "type": "function",
+          "jsdoc": "/**\n* Builds a mulberry32 PRNG closed over a single 32-bit seed.\n* Yields a number in [0, 1) — drop-in for Math.random but deterministic.\n*\n* @param {number} [seed=1] - Integer seed.\n* @returns {() => number} Seeded RNG function.\n*/",
+          "line": 15
+        },
+        {
+          "name": "SECTOR_NAMES",
+          "type": "constant",
+          "jsdoc": "/**\n* Human-readable display mapping for logical sector identifiers.\n* @type {Record<string, string>}\n*/",
+          "line": 30
+        }
+      ],
+      "testFile": "src/engine/FactionWarCampaign.test.js",
+      "testCasesCount": 6,
+      "referencingSpecs": [
+        "plan/specs/164_faction_war_campaign_engine.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
       "path": "src/engine/GalaxyEventsManager.js",
       "loc": 141,
       "classes": [
@@ -491,12 +522,12 @@
     },
     {
       "path": "src/engine/GameInstance.js",
-      "loc": 1927,
+      "loc": 1931,
       "classes": [
         {
           "name": "GameInstance",
           "jsdoc": "/**\n* Authoritative sandbox game instance simulator managing sectors, entities,\n* economies, and dynamic galactic factions.\n*/",
-          "line": 53
+          "line": 54
         }
       ],
       "exports": [
@@ -504,13 +535,13 @@
           "name": "SECTOR_ADJACENCY",
           "type": "constant",
           "jsdoc": "/**\n* Map defining which sectors share direct warp-gate trade route adjacency links.\n* Used for simulated economic and price diffusion.\n* @type {Record<string, Array<string>>}\n*/",
-          "line": 28
+          "line": 29
         },
         {
           "name": "getSectorFromPosition",
           "type": "function",
           "jsdoc": "/**\n* Utility helper to identify a sector ID from 2D vector coordinate bounds.\n* @param {object} pos Coordinate point containing x and y coordinates.\n* @returns {string} The sector name identifier.\n*/",
-          "line": 42
+          "line": 43
         }
       ],
       "testFile": "src/engine/GameInstance.test.js",
@@ -2267,7 +2298,7 @@
     },
     {
       "path": "src/persistence/PersistenceManager.js",
-      "loc": 217,
+      "loc": 247,
       "classes": [
         {
           "name": "PersistenceManager",
@@ -2301,7 +2332,7 @@
     },
     {
       "path": "src/persistence/serializers.js",
-      "loc": 424,
+      "loc": 435,
       "classes": [],
       "exports": [
         {
@@ -2320,19 +2351,19 @@
           "name": "applyGalaxy",
           "type": "function",
           "jsdoc": "/**\n* Restores a galaxy snapshot onto a (compatible) `GameInstance`. Mutates the\n* passed-in instance in place; does not create new planets or rewire engine\n* entities. Planets present in `data` but missing from the instance are\n* silently skipped, so a snapshot taken from an older seed never breaks load.\n*\n* After this call, the round-trip property holds: any field captured by\n* {@link serializeGalaxy} reads back as the same value on the target.\n*\n* @param {Object} gameInstance - Target `GameInstance` to mutate.\n* @param {Object} data - Snapshot from {@link serializeGalaxy}.\n* @returns {void}\n*/",
-          "line": 149
+          "line": 156
         },
         {
           "name": "serializePlayer",
           "type": "function",
           "jsdoc": "/**\n* Captures a JSON-safe snapshot of a player session. Includes everything that\n* has to survive a restart: nickname, credits, cargo, outfits, hull stats,\n* weapon shield-pierce, and the mission manager's active/available/completed\n* state.\n*\n* The input may be either a live server `clientObj` (with `nickname`, `ship`,\n* `missionManager`) or any compatible shape — missing pieces produce a\n* partial snapshot rather than throwing.\n*\n* @param {Object} clientObj - Player session.\n* @returns {Object} Player snapshot.\n*/",
-          "line": 222
+          "line": 233
         },
         {
           "name": "applyPlayer",
           "type": "function",
           "jsdoc": "/**\n* Restores a player snapshot onto a (compatible) live client object. Mutates\n* the target's ship and mission manager in place rather than swapping the\n* references, so engine entities and event listeners continue to function.\n*\n* @param {Object} clientObj - Target player session.\n* @param {Object} data - Snapshot from {@link serializePlayer}.\n* @returns {void}\n*/",
-          "line": 275
+          "line": 286
         }
       ],
       "testFile": "src/persistence/serializers.test.js",
@@ -2503,7 +2534,7 @@
     },
     {
       "path": "src/server/galaxyTicker.js",
-      "loc": 427,
+      "loc": 434,
       "classes": [],
       "exports": [
         {
@@ -2765,7 +2796,7 @@
     },
     {
       "path": "src/server/restHandlers.js",
-      "loc": 582,
+      "loc": 634,
       "classes": [],
       "exports": [
         {
@@ -2776,7 +2807,7 @@
         }
       ],
       "testFile": "src/server/restHandlers.test.js",
-      "testCasesCount": 22,
+      "testCasesCount": 25,
       "referencingSpecs": [
         "plan/specs/161_decompose_http_rest_endpoints.md",
         "plan/specs/164_faction_war_campaign_engine.md"
@@ -4979,6 +5010,18 @@
       "filesMentioned": [
         "src/net/ProcessReaper.js"
       ]
+    },
+    {
+      "path": "plan/specs/171_ast_static_security_sentry.md",
+      "filename": "171_ast_static_security_sentry.md",
+      "title": "SPEC-171: Static Analysis AST Security Sentry",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/StaticSecuritySentry.js",
+        "src/net/StaticSecuritySentry.test.js"
+      ]
     }
   ],
   "epistemicDebt": {
@@ -5133,10 +5176,10 @@
         ]
       },
       {
-        "spec": "plan/specs/164_faction_war_campaign_engine.md",
+        "spec": "plan/specs/171_ast_static_security_sentry.md",
         "brokenFiles": [
-          "src/engine/FactionWarCampaign.js",
-          "src/engine/FactionWarCampaign.test.js"
+          "src/net/StaticSecuritySentry.js",
+          "src/net/StaticSecuritySentry.test.js"
         ]
       }
     ]

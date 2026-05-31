@@ -364,4 +364,71 @@ describe("REST API Modular Handlers Unit & Integration Tests (SPEC-161)", () => 
       handleRestRequest(req, res, mockOptions);
     });
   });
+
+  test("GET /api/faction/campaign returns 200 and faction war campaign metrics", () => {
+    const mockCampaign = {
+      ticks: 10,
+      militaryPower: { core: { Federation: 90 } },
+      activeSieges: { core: null },
+      blockades: { core: null },
+      battleHistory: [{ id: "battle-1", title: "Battle" }],
+    };
+
+    mockOptions.instances.set("public-room", {
+      factionWarCampaign: mockCampaign,
+    });
+
+    const req = new MockReq("GET", "/api/faction/campaign?room=public-room");
+    const res = createMockRes();
+
+    handleRestRequest(req, res, mockOptions);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.headers["Content-Type"]).toBe("application/json");
+
+    const payload = JSON.parse(res.body);
+    expect(payload.ok).toBe(true);
+    expect(payload.ticks).toBe(10);
+    expect(payload.militaryPower.core.Federation).toBe(90);
+    expect(payload.battleHistory).toEqual([
+      { id: "battle-1", title: "Battle" },
+    ]);
+  });
+
+  test("GET /api/faction/campaign falls back to first active instance if no room specified", () => {
+    const mockCampaign = {
+      ticks: 15,
+      militaryPower: { frontier: { "Frontier League": 95 } },
+      activeSieges: { frontier: null },
+      blockades: { frontier: null },
+      battleHistory: [],
+    };
+
+    mockOptions.instances.set("default-room", {
+      factionWarCampaign: mockCampaign,
+    });
+
+    const req = new MockReq("GET", "/api/faction/campaign");
+    const res = createMockRes();
+
+    handleRestRequest(req, res, mockOptions);
+
+    expect(res.statusCode).toBe(200);
+    const payload = JSON.parse(res.body);
+    expect(payload.ok).toBe(true);
+    expect(payload.ticks).toBe(15);
+    expect(payload.militaryPower.frontier["Frontier League"]).toBe(95);
+  });
+
+  test("GET /api/faction/campaign returns 404 if no campaign state is available", () => {
+    const req = new MockReq("GET", "/api/faction/campaign");
+    const res = createMockRes();
+
+    handleRestRequest(req, res, mockOptions);
+
+    expect(res.statusCode).toBe(404);
+    const payload = JSON.parse(res.body);
+    expect(payload.ok).toBe(false);
+    expect(payload.error).toContain("not found");
+  });
 });

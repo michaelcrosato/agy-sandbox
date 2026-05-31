@@ -65,6 +65,15 @@ export class PersistenceManager {
   }
 
   /**
+   * Disk key for the faction war campaign state snapshot.
+   * @param {string} roomId
+   * @returns {string}
+   */
+  campaignKey(roomId) {
+    return `faction:campaign:state:${roomId}`;
+  }
+
+  /**
    * Persists the live galaxy for `roomId`. Errors are logged and swallowed —
    * a transient I/O failure must never crash the live game.
    * @param {string} roomId
@@ -76,6 +85,18 @@ export class PersistenceManager {
     try {
       const snapshot = serializeGalaxy(gameInstance);
       await this.store.save(this.galaxyKey(roomId), snapshot);
+
+      // SPEC-165: Persist faction campaign state under its own central key
+      if (
+        gameInstance.factionWarCampaign &&
+        typeof gameInstance.factionWarCampaign.save === "function"
+      ) {
+        await this.store.save(
+          this.campaignKey(roomId),
+          gameInstance.factionWarCampaign.save(),
+        );
+      }
+
       return true;
     } catch (err) {
       this.logger(`saveGalaxy(${roomId}) failed`, err);
@@ -95,6 +116,15 @@ export class PersistenceManager {
     try {
       const raw = await this.store.load(this.galaxyKey(roomId));
       if (!raw || typeof raw !== "object") return null;
+
+      // SPEC-165: Recover campaign state from central store key on cache misses
+      if (!raw.factionWarCampaign) {
+        const campaignData = await this.store.load(this.campaignKey(roomId));
+        if (campaignData) {
+          raw.factionWarCampaign = campaignData;
+        }
+      }
+
       return raw;
     } catch (err) {
       this.logger(`loadGalaxy(${roomId}) failed; ignoring save`, err);

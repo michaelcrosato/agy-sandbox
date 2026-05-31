@@ -676,6 +676,65 @@
         transform: translateY(0);
         opacity: 1;
       }
+
+      /* Faction War Strategic Map HUD Card Styling */
+      @keyframes flow {
+        to {
+          stroke-dashoffset: -40;
+        }
+      }
+      .supply-lane-animated {
+        animation: flow 4s linear infinite;
+      }
+      @keyframes pulse-crimson {
+        0% {
+          r: 18;
+          opacity: 0.8;
+          stroke-width: 1.5;
+        }
+        50% {
+          r: 32;
+          opacity: 0.5;
+          stroke-width: 2.5;
+        }
+        100% {
+          r: 45;
+          opacity: 0;
+          stroke-width: 0.5;
+        }
+      }
+      .siege-pulse {
+        transform-origin: center;
+        animation: pulse-crimson 2.5s infinite cubic-bezier(0.25, 1, 0.5, 1);
+      }
+      .map-tooltip {
+        position: absolute;
+        background: rgba(10, 11, 16, 0.95);
+        border: 1px solid rgba(255, 183, 0, 0.4);
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-size: 0.8rem;
+        color: #e2e8f0;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        z-index: 100;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        min-width: 180px;
+      }
+      .map-tooltip h4 {
+        color: var(--color-warning);
+        margin-bottom: 0.25rem;
+        font-weight: 700;
+        font-size: 0.85rem;
+      }
+      .map-tooltip-row {
+        display: flex;
+        justify-content: space-between;
+        margin: 0.2rem 0;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+      }
     </style>
   </head>
   <body>
@@ -1181,6 +1240,161 @@
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Faction War & Strategic Map HUD Card (SPEC-166) -->
+    <div
+      class="card"
+      id="faction-war-map"
+      style="
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        border: 1px solid rgba(255, 183, 0, 0.25);
+        background: rgba(15, 12, 5, 0.45);
+        box-shadow: 0 8px 32px 0 rgba(255, 183, 0, 0.05);
+      "
+    >
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          padding-bottom: 0.75rem;
+        "
+      >
+        <h3
+          style="
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--color-warning);
+          "
+        >
+          🌌 Strategic Faction Conflict Map
+        </h3>
+        <div style="font-size: 0.8rem; color: var(--color-text-muted); font-family: 'JetBrains Mono', monospace; text-transform: uppercase;">
+          Heartbeat: <span id="campaign-ticks" style="color: var(--color-warning); font-weight: bold;">0</span> ticks
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 2.5fr 1.5fr; gap: 2rem">
+        <!-- Left: SVG Star Map -->
+        <div
+          class="star-map-container"
+          style="
+            position: relative;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+          "
+        >
+          <svg viewBox="0 0 500 250" width="100%" height="250px">
+            <defs>
+              <radialGradient id="glow-sol" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.15" />
+                <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0" />
+              </radialGradient>
+              <radialGradient id="glow-vega" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="var(--color-secondary)" stop-opacity="0.15" />
+                <stop offset="100%" stop-color="var(--color-secondary)" stop-opacity="0" />
+              </radialGradient>
+              <radialGradient id="glow-nebula" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="var(--color-danger)" stop-opacity="0.15" />
+                <stop offset="100%" stop-color="var(--color-danger)" stop-opacity="0" />
+              </radialGradient>
+            </defs>
+
+            <!-- Connections / Supply Lanes -->
+            <path id="lane-sol-vega" d="M 100 120 L 250 80" fill="none" stroke="rgba(255, 183, 0, 0.12)" stroke-width="3" />
+            <path d="M 100 120 L 250 80" fill="none" stroke="var(--color-warning)" stroke-width="1.5" stroke-dasharray="4 8" class="supply-lane-animated" />
+
+            <path id="lane-vega-nebula" d="M 250 80 L 400 140" fill="none" stroke="rgba(255, 183, 0, 0.12)" stroke-width="3" />
+            <path d="M 250 80 L 400 140" fill="none" stroke="var(--color-warning)" stroke-width="1.5" stroke-dasharray="4 8" class="supply-lane-animated" />
+
+            <path id="lane-sol-nebula" d="M 100 120 L 400 140" fill="none" stroke="rgba(255, 183, 0, 0.12)" stroke-width="3" />
+            <path d="M 100 120 L 400 140" fill="none" stroke="var(--color-warning)" stroke-width="1.5" stroke-dasharray="4 8" class="supply-lane-animated" />
+
+            <!-- Siege Pulse Indicators -->
+            <circle cx="100" cy="120" r="18" fill="none" stroke="var(--color-danger)" stroke-width="2" stroke-dasharray="3 3" class="siege-pulse" style="display: none;" id="pulse-sol" />
+            <circle cx="250" cy="80" r="18" fill="none" stroke="var(--color-danger)" stroke-width="2" stroke-dasharray="3 3" class="siege-pulse" style="display: none;" id="pulse-vega" />
+            <circle cx="400" cy="140" r="18" fill="none" stroke="var(--color-danger)" stroke-width="2" stroke-dasharray="3 3" class="siege-pulse" style="display: none;" id="pulse-nebula" />
+
+            <!-- Sector Node: Sol -->
+            <g id="node-sol" style="cursor: pointer;" onmouseover="showSectorTooltip(event, 'core')" onmousemove="moveSectorTooltip(event)" onmouseout="hideSectorTooltip()">
+              <circle cx="100" cy="120" r="32" fill="url(#glow-sol)" />
+              <circle cx="100" cy="120" r="18" fill="rgba(13, 17, 39, 0.6)" stroke="var(--color-primary)" stroke-width="1.5" />
+              <circle cx="100" cy="120" r="6" fill="var(--color-primary)" />
+              <text x="100" y="165" text-anchor="middle" fill="#cbd5e1" font-size="11" font-weight="600" style="font-family: 'Space Grotesk', sans-serif;">Sol Sector</text>
+              <text x="100" y="177" text-anchor="middle" fill="var(--color-text-muted)" font-size="9" font-weight="400" style="font-family: 'Space Grotesk', sans-serif;">Core Worlds</text>
+            </g>
+
+            <!-- Sector Node: Vega -->
+            <g id="node-vega" style="cursor: pointer;" onmouseover="showSectorTooltip(event, 'frontier')" onmousemove="moveSectorTooltip(event)" onmouseout="hideSectorTooltip()">
+              <circle cx="250" cy="80" r="32" fill="url(#glow-vega)" />
+              <circle cx="250" cy="80" r="18" fill="rgba(13, 17, 39, 0.6)" stroke="var(--color-secondary)" stroke-width="1.5" />
+              <circle cx="250" cy="80" r="6" fill="var(--color-secondary)" />
+              <text x="250" y="125" text-anchor="middle" fill="#cbd5e1" font-size="11" font-weight="600" style="font-family: 'Space Grotesk', sans-serif;">Vega Sector</text>
+              <text x="250" y="137" text-anchor="middle" fill="var(--color-text-muted)" font-size="9" font-weight="400" style="font-family: 'Space Grotesk', sans-serif;">Frontier Zone</text>
+            </g>
+
+            <!-- Sector Node: Nebula -->
+            <g id="node-nebula" style="cursor: pointer;" onmouseover="showSectorTooltip(event, 'rim')" onmousemove="moveSectorTooltip(event)" onmouseout="hideSectorTooltip()">
+              <circle cx="400" cy="140" r="32" fill="url(#glow-nebula)" />
+              <circle cx="400" cy="140" r="18" fill="rgba(13, 17, 39, 0.6)" stroke="var(--color-danger)" stroke-width="1.5" />
+              <circle cx="400" cy="140" r="6" fill="var(--color-danger)" />
+              <text x="400" y="185" text-anchor="middle" fill="#cbd5e1" font-size="11" font-weight="600" style="font-family: 'Space Grotesk', sans-serif;">Nebula Sector</text>
+              <text x="400" y="197" text-anchor="middle" fill="var(--color-text-muted)" font-size="9" font-weight="400" style="font-family: 'Space Grotesk', sans-serif;">The Rim</text>
+            </g>
+          </svg>
+          <div id="map-tooltip" class="map-tooltip"></div>
+        </div>
+
+        <!-- Right: Telemetry & Influence Ratios -->
+        <div
+          class="faction-telemetry-container"
+          style="
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            padding: 1rem;
+          "
+        >
+          <h4
+            style="
+              font-family: 'Space Grotesk', sans-serif;
+              font-size: 0.95rem;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              color: var(--color-warning);
+              border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+              padding-bottom: 0.5rem;
+              margin-bottom: 0.25rem;
+            "
+          >
+            Sector Dominance
+          </h4>
+          <div id="sector-stats-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <!-- Dynamically populated stats -->
           </div>
         </div>
       </div>
@@ -3123,6 +3337,9 @@
               memoryEl.innerText = `${memoryUsed.toFixed(1)} MB`;
             }
 
+            // Load Campaign Data (SPEC-166)
+            fetchCampaignData();
+
             // SPEC-126 Egress status card updates
             const firewall = data.sandbox_firewall || {
               block_count: 0,
@@ -3607,6 +3824,9 @@
           if (memoryEl) {
             memoryEl.innerText = `${memoryUsed.toFixed(1)} MB`;
           }
+
+          // Render simulated mock campaign map data
+          renderFallbackCampaignData();
 
           // SPEC-126 Egress status card offline simulation fallback
           const firewallDomains = ["google.com", "openai.com", "localhost"];
@@ -4276,6 +4496,200 @@
           });
         }
       }
+
+      // Faction War Strategic Map routines (SPEC-166)
+      let currentCampaignData = null;
+
+      async function fetchCampaignData() {
+        try {
+          const response = await fetch('/api/faction/campaign');
+          if (!response.ok) throw new Error("HTTP error " + response.status);
+          const data = await response.json();
+          renderCampaignData(data);
+        } catch (err) {
+          console.warn("Could not load campaign data, using fallback.", err.message);
+          renderFallbackCampaignData();
+        }
+      }
+
+      function renderCampaignData(data) {
+        currentCampaignData = data;
+        const elTicks = document.getElementById("campaign-ticks");
+        if (elTicks) elTicks.innerText = data.ticks ?? 0;
+
+        // Pulse controls
+        const pulseSol = document.getElementById("pulse-sol");
+        const pulseVega = document.getElementById("pulse-vega");
+        const pulseNebula = document.getElementById("pulse-nebula");
+
+        if (pulseSol) {
+          const isThreat = !!(data.activeSieges?.core || data.blockades?.core);
+          pulseSol.style.display = isThreat ? "inline" : "none";
+        }
+        if (pulseVega) {
+          const isThreat = !!(data.activeSieges?.frontier || data.blockades?.frontier);
+          pulseVega.style.display = isThreat ? "inline" : "none";
+        }
+        if (pulseNebula) {
+          const isThreat = !!(data.activeSieges?.rim || data.blockades?.rim);
+          pulseNebula.style.display = isThreat ? "inline" : "none";
+        }
+
+        // Update sidebar list: sector-stats-list
+        const elStatsList = document.getElementById("sector-stats-list");
+        if (elStatsList) {
+          const sectors = [
+            { key: "core", name: "Sol Sector" },
+            { key: "frontier", name: "Vega Sector" },
+            { key: "rim", name: "Nebula Sector" }
+          ];
+
+          elStatsList.innerHTML = sectors.map(s => {
+            const power = data.militaryPower?.[s.key] || {};
+            const total = Object.values(power).reduce((a, b) => a + b, 0) || 1;
+            
+            // Find dominant faction
+            let domFaction = "None";
+            let domVal = 0;
+            Object.entries(power).forEach(([fac, val]) => {
+              if (val > domVal) {
+                domVal = val;
+                domFaction = fac;
+              }
+            });
+
+            // Stacked bar html
+            let stackedBar = "";
+            Object.entries(power).forEach(([fac, val]) => {
+              if (val > 0) {
+                const pct = (val / total) * 100;
+                const col = fac === "Federation" ? "var(--color-primary)" :
+                            fac === "Frontier League" ? "var(--color-secondary)" :
+                            fac === "Pirates" ? "var(--color-danger)" : "var(--color-success)";
+                stackedBar += `<div style="width: ${pct}%; height: 100%; background: ${col};" title="${fac}: ${val.toFixed(0)}%"></div>`;
+              }
+            });
+
+            // Status badge
+            let statusText = "Stable";
+            let statusColor = "var(--color-success)";
+            if (data.activeSieges?.[s.key]) {
+              statusText = `Siege: ${data.activeSieges[s.key].faction}`;
+              statusColor = "var(--color-danger)";
+            } else if (data.blockades?.[s.key]) {
+              statusText = `Blockade: ${data.blockades[s.key].faction}`;
+              statusColor = "var(--color-warning)";
+            }
+
+            return `
+              <div style="font-size: 0.8rem; border-bottom: 1px solid rgba(255, 255, 255, 0.03); padding-bottom: 0.4rem; margin-bottom: 0.2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                  <span style="font-weight: 600; color: #cbd5e1;">${s.name}</span>
+                  <span style="font-size: 0.7rem; padding: 1px 4px; border-radius: 4px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); color: ${statusColor};">${statusText}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--color-text-muted); margin-bottom: 2px;">
+                  <span>Dominant: <strong style="color: #cbd5e1;">${domFaction}</strong></span>
+                  <span>Power: <strong>${domVal.toFixed(0)}%</strong></span>
+                </div>
+                <div style="width: 100%; height: 4px; background: rgba(255, 255, 255, 0.05); border-radius: 2px; overflow: hidden; display: flex;">
+                  ${stackedBar}
+                </div>
+              </div>
+            `;
+          }).join("");
+        }
+      }
+
+      function renderFallbackCampaignData() {
+        const mockCampaign = {
+          ticks: typeof fallbackCounter !== "undefined" ? fallbackCounter : 0,
+          militaryPower: {
+            core: { Federation: 75, "Frontier League": 12, Pirates: 5, Independents: 8 },
+            frontier: { Federation: 15, "Frontier League": 72, Pirates: 6, Independents: 7 },
+            rim: { Federation: 8, "Frontier League": 6, Pirates: 42, Independents: 44 }
+          },
+          activeSieges: {
+            core: null,
+            frontier: null,
+            rim: null
+          },
+          blockades: {
+            core: null,
+            frontier: null,
+            rim: null
+          },
+          battleHistory: [
+            { title: "Skirmish resolved at Sol Sector", defenderWins: true, powerShift: 2 },
+            { title: "Blockade resolved at Nebula Sector", defenderWins: false, powerShift: 4 }
+          ]
+        };
+        renderCampaignData(mockCampaign);
+      }
+
+      window.showSectorTooltip = function(e, sectorKey) {
+        if (!currentCampaignData) return;
+        const power = currentCampaignData.militaryPower?.[sectorKey] || {};
+        const siege = currentCampaignData.activeSieges?.[sectorKey];
+        const blockade = currentCampaignData.blockades?.[sectorKey];
+        const sectorName = sectorKey === "core" ? "Sol Sector" : sectorKey === "frontier" ? "Vega Sector" : "Nebula Sector";
+        
+        let html = `<h4>${sectorName}</h4>`;
+        Object.entries(power).forEach(([fac, val]) => {
+          const col = fac === "Federation" ? "var(--color-primary)" :
+                      fac === "Frontier League" ? "var(--color-secondary)" :
+                      fac === "Pirates" ? "var(--color-danger)" : "var(--color-success)";
+          html += `
+            <div class="map-tooltip-row">
+              <span style="color: ${col};">${fac}:</span>
+              <strong>${val.toFixed(0)}%</strong>
+            </div>
+          `;
+        });
+        
+        if (siege) {
+          html += `
+            <div style="border-top: 1px solid rgba(255, 77, 77, 0.3); margin-top: 0.4rem; padding-top: 0.2rem; color: var(--color-danger); font-size: 0.7rem; font-weight: bold;">
+              ⚠️ SIEGE BY ${siege.faction.toUpperCase()} (${siege.duration} ticks left)
+            </div>
+          `;
+        } else if (blockade) {
+          html += `
+            <div style="border-top: 1px solid rgba(255, 159, 26, 0.3); margin-top: 0.4rem; padding-top: 0.2rem; color: var(--color-warning); font-size: 0.7rem; font-weight: bold;">
+              🚧 BLOCKADE BY ${blockade.faction.toUpperCase()} (${blockade.duration} ticks left)
+            </div>
+          `;
+        } else {
+          html += `
+            <div style="border-top: 1px solid rgba(5, 196, 107, 0.3); margin-top: 0.4rem; padding-top: 0.2rem; color: var(--color-success); font-size: 0.7rem; font-weight: bold;">
+              🟢 SECTOR SECURE
+            </div>
+          `;
+        }
+        
+        const tooltip = document.getElementById("map-tooltip");
+        if (tooltip) {
+          tooltip.innerHTML = html;
+          tooltip.style.opacity = "1";
+        }
+      };
+
+      window.moveSectorTooltip = function(e) {
+        const tooltip = document.getElementById("map-tooltip");
+        if (!tooltip) return;
+        const container = document.querySelector(".star-map-container");
+        if (!container) return;
+        const rect = container.getBoundingClientRect();
+        const x = e.clientX - rect.left + 15;
+        const y = e.clientY - rect.top + 15;
+        tooltip.style.left = `${x}px`;
+        tooltip.style.top = `${y}px`;
+      };
+
+      window.window = window;
+      window.hideSectorTooltip = function() {
+        const tooltip = document.getElementById("map-tooltip");
+        if (tooltip) tooltip.style.opacity = "0";
+      };
 
       // Start
       initFirewallAdmin();

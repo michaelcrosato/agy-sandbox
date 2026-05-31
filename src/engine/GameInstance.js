@@ -19,6 +19,7 @@ import { mineYield } from "./Mining.js";
 import { shipName, createSeededRng } from "./NameGenerator.js";
 import { squadManager } from "../server/SquadManager.js";
 import { SandboxSecurityRegistry } from "../net/SandboxSecurityRegistry.js";
+import { FactionWarCampaign } from "./FactionWarCampaign.js";
 
 /**
  * Map defining which sectors share direct warp-gate trade route adjacency links.
@@ -113,6 +114,9 @@ export class GameInstance {
 
     // Initialize the dynamic economy manager
     this.economyManager = new EconomyManager(this.planets);
+
+    // Initialize Faction War Campaign engine
+    this.factionWarCampaign = new FactionWarCampaign();
 
     // The galaxy heartbeat ages the economy even with no players connected:
     // first applying each planet's producer/consumer profile (surplus pushes

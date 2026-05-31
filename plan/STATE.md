@@ -2,10 +2,10 @@
 
 `plan/PROGRESS.md` is the canonical live queue. This file is only a compact pointer for loop launchers and must not contradict `PROGRESS.md`.
 
-- **CYCLE:** Cycle 45
+- **CYCLE:** Cycle 46
 - **CURRENT_TASK:** REPLENISH
-- **SPEC_FILE:** plan/specs/160_sandbox_containment_teardown.md
-- **STATUS:** Completed SPEC-160 in Wave v44.
+- **SPEC_FILE:** plan/specs/166_glassmorphic_stellar_map_hud.md
+- **STATUS:** Completed SPEC-166 in Wave v46.
 - **VERIFY_COMMAND:** npm run agent:check
-- **LAST_VERIFIED:** 1,270 Jest tests green, linter 0 errors, Prettier verified.
-- **IMMEDIATE_OBJECTIVE:** Replenish the backlog, execute codebase audits, formulate new specifications for Wave v45 under Cycle 45.
+- **LAST_VERIFIED:** 1,309 Jest tests green, linter 0 errors, Prettier verified.
+- **IMMEDIATE_OBJECTIVE:** Run perpetual REPLENISH cycle to audit codebase, research next waves, and generate specifications.

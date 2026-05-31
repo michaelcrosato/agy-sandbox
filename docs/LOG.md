@@ -44,6 +44,36 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-05-31T17:21 · iter-0146 · GREEN · faction-war-strategic-map-hud-shipped
+
+- **Baseline:** `feat/v46-faction-war-campaign`; 1,309 Jest green, 63 client green.
+- **Move:** Build the interactive, responsive golden-glassmorphic Faction War Strategic Map HUD card inside developer dashboards to render real-time SVG star maps and conflict states under Playwright regression tests.
+- **Changed:**
+  - Designed and integrated `#faction-war-map` cockpit HUD card with animated supply lanes, dynamic siege/blockade threat pulse indicators, and interactive sector dominance ratios inside `dashboard.html` and `dashboard-codex.html`.
+  - Implemented interactive cursor tooltips showing real-time military power balances, active siege clocks, and sector safety status.
+  - Coded dynamic telemetry routines polling `/api/faction/campaign` REST data and updating SVG layers/progress bars natively on heartbeat intervals.
+  - Engineered realistic mock simulated fallbacks in both client dashboards to guarantee 100% deterministic layout renderings when offline.
+  - Verified visual integrity headlessly using Playwright visual-regression automated checks across Mobile, Tablet, and Desktop responsive viewports.
+- **Decisions:** Utilizing native responsive inline SVGs with pure CSS-driven flowing keyframe animations provides zero-asset overhead rendering. Freezing clocks and CSS transitions in page layout mocks before capturing snapshots guarantees 100% stable, deterministic visual regression matching under Playwright E2E runners.
+- **Validation:** Successfully executed `npm run agent:check` passing all 1,309 backend Jest assertions, 63 client Vitest tests, ESLint, and Prettier checks with 0 errors.
+- **Next:** Initiate cycle REPLENISH phase to re-audit sandbox, research leading frameworks, promote backlog items, and author the next waves.
+
+## 2026-05-31T17:00 · iter-0145 · GREEN · faction-war-campaign-engine-and-pubsub-sync
+
+- **Baseline:** `5efa242` on `main`; 1,294 Jest green, 63 client green.
+- **Move:** Implement the pure, headless FactionWarCampaign engine simulating multi-sector conflicts deterministically and synchronize it globally over Redis Pub/Sub sharded channels.
+- **Changed:**
+  - Created `src/engine/FactionWarCampaign.js` managing sector military power, blockades, sieges, and battle logs using a deterministic seeded PRNG.
+  - Authored a comprehensive unit test suite in `src/engine/FactionWarCampaign.test.js` validating state ticks, determinism, and TerritoryControl adjustments.
+  - Integrated `FactionWarCampaign` instantiation inside `src/engine/GameInstance.js` and wired campaign ticks to the periodic galaxy heartbeat.
+  - Hardened `serializers.js` and `PersistenceManager.js` to serialize campaign state and handle cache-miss restorations cleanly.
+  - Subscribed to the `faction:campaign` pub/sub channel in `server.js` and published state snapshots to sync all worker shards on heartbeat pulses.
+  - Authored modular REST handler inside `src/server/restHandlers.js` for GET `/api/faction/campaign` with robust CORS preflights and MockReq tests.
+  - Developed `src/server/factionCampaignPubSub.integration.test.js` verifying clustered synchronization and failover.
+- **Decisions:** Designing a pure, headless FactionWarCampaign with a self-contained seeded mulberry32 PRNG guarantees absolute determinism in unit/integration tests without leaking unseeded Math.random. Publishing state updates directly from the server composition root after heartbeats maintains architectural purity of the underlying engines.
+- **Validation:** Executed `npm test` successfully passing all 1,309 Jest tests and 128 suites green.
+- **Next:** Build out the interactive, golden-glassmorphic cockpit HUD map card under Spec 166.
+
 ## 2026-05-31T09:27 · iter-0144 · GREEN · repo-stabilization-and-optimization
 
 - **Baseline:** `5efa242` on `main`; 1,292 Jest green, 63 client green.

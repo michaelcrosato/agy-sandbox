@@ -3,6 +3,18 @@
 This is the machine-readable execution ledger for the autonomous-engineering loop in `agy-sandbox`.
 It records cycle transitions, key milestones, and precise next steps.
 
+## Cycle 49 — 2026-05-31
+
+- **Status:** GREEN
+- **Summary:** Successfully implemented and verified SPEC-166 (Golden-Glassmorphic Interactive Faction War & Strategic Map HUD Card) under the role of Autonomous Principal AI/Infrastructure Engineer & Sandbox Architect. Designed and integrated `#faction-war-map` cockpit HUD card with CSS keyframe-animated supply lanes, dynamic siege/blockade threat pulse indicators, and interactive sector dominance ratios inside both `dashboard.html` and `dashboard-codex.html`. Implemented interactive cursor hover tooltips displaying real-time military power balances, active siege clocks, and sector safety status. Wired dynamic telemetry routines polling `/api/faction/campaign` REST data and updating SVG layers/progress bars natively on heartbeat intervals. Built realistic fallback mock campaign data in both client dashboards to guarantee 100% stable visual regression matches in headless environments, and successfully verified visual integrity under Playwright visual-regression automated E2E tests across Mobile, Tablet, and Desktop responsive viewports.
+- **Next Action:** Transition to Phase R (Replenish) to perform next-frontier sandbox audits, promote new backlogs, and formulate next specification waves.
+
+## Cycle 48 — 2026-05-31
+
+- **Status:** GREEN
+- **Summary:** Successfully designed, implemented, and verified SPEC-164 (Faction War Strategy Engine & Real-Time Conflict Zone Map REST API) and SPEC-165 (Clustered Sync for Galactic Military Fleets over Redis Pub/Sub) under the role of Autonomous Principal AI/Infrastructure Engineer & Sandbox Architect. Shipped a pure, headless `FactionWarCampaign.js` engine managing sector military power, blockades, sieges, and battle logs using a deterministic seeded PRNG. Integrated campaign ticks into the periodic galaxy heartbeat. Hardened `serializers.js` and `PersistenceManager.js` to serialize campaign state and handle cache-miss restorations cleanly. Subscribed to the `faction:campaign` pub/sub channel in `server.js` and published state snapshots to sync all worker shards on heartbeat pulses. Exposed dynamic campaign metrics via GET `/api/faction/campaign` modular REST endpoint with MockReq integration tests, and validated distributed sync with `factionCampaignPubSub.integration.test.js`.
+- **Next Action:** Claim and implement SPEC-166 (Golden-Glassmorphic Interactive Faction War & Strategic Map HUD Card) under a dedicated feature branch.
+
 ## Cycle 47 — 2026-05-31
 
 - **Status:** GREEN

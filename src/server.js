@@ -844,6 +844,16 @@ const galaxyHeartbeatInterval = setInterval(() => {
     return; // Pause cosmetic/non-essential heartbeat updates when loop is degraded/critical
   }
   runGalaxyHeartbeatInterval(instances);
+
+  // SPEC-165: Synchronize campaign state across all worker processes on heartbeat pulses
+  for (const [roomId, room] of instances.entries()) {
+    if (room.factionWarCampaign) {
+      pubsub.publish("faction:campaign", {
+        roomId,
+        campaignState: room.factionWarCampaign.save(),
+      });
+    }
+  }
 }, 8000);
 
 // Shared presence/registry keys & helpers (spec 019e)
@@ -2054,6 +2064,18 @@ async function setupPubSubSubscriptions() {
           }
         }
       }
+    }
+  });
+
+  await pubsub.subscribe("faction:campaign", (payload) => {
+    const { roomId, campaignState } = payload;
+    const room = instances.get(roomId);
+    if (room && room.factionWarCampaign) {
+      room.factionWarCampaign.load(campaignState);
+      room.broadcast({
+        type: "faction_campaign_sync",
+        campaign: campaignState,
+      });
     }
   });
 }

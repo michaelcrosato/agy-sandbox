@@ -550,21 +550,21 @@ The modular REST API, sharded Pub/Sub co-op, and visual automation E2E guard wav
 
 ---
 
-## EXECUTION WAVES (v46) — Open (In Progress)
+## EXECUTION WAVES (v46) — Completed (DONE)
 
 The Faction War Campaign, Interactive Stellar HUD, and Real-Time Strategic Maps wave:
 
 ### Phase 0 — Faction War Strategy Engine — `164`
 
-- `164` Faction War Strategy Engine & Real-Time Conflict Zone Map REST API (design a pure headless `FactionWarCampaign.js` strategy engine simulating dynamic sector military conflicts and exposing REST endpoint `GET /api/faction/campaign`) — **pending**.
+- `164` Faction War Strategy Engine & Real-Time Conflict Zone Map REST API (design a pure headless `FactionWarCampaign.js` strategy engine simulating dynamic sector military conflicts and exposing REST endpoint `GET /api/faction/campaign`) — **done**.
 
 ### Phase 1 — Clustered Campaign Pub/Sub Sync — `165`
 
-- `165` Clustered Sync for Galactic Military Fleets over Redis Pub/Sub (extend the sharded worker subscriber model to synchronize military actions, sector conquests, and campaign alerts globally) — **pending**.
+- `165` Clustered Sync for Galactic Military Fleets over Redis Pub/Sub (extend the sharded worker subscriber model to synchronize military actions, sector conquests, and campaign alerts globally) — **done**.
 
 ### Phase 2 — Golden-Glassmorphic Stellar Map HUD — `166`
 
-- `166` Golden-Glassmorphic Interactive Faction War & Strategic Map HUD Card (build an exquisite golden-glassmorphic responsive star map HUD card rendering borders, active conflicts, and tooltip overrides under Playwright E2E visual checks) — **pending**.
+- `166` Golden-Glassmorphic Interactive Faction War & Strategic Map HUD Card (build an exquisite golden-glassmorphic responsive star map HUD card rendering borders, active conflicts, and tooltip overrides under Playwright E2E visual checks) — **done**.
 
 ---
 
@@ -574,9 +574,9 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title                            | Phase | Impact | Feasibility | Risk(5=safe) | Fit |  Σ  |  Status  |
 | ---- | -------------------------------- | :---: | :----: | :---------: | :----------: | :-: | :-: | :------: |
-| 164  | Faction War Strategy Engine      |   0   |   5    |      5      |      5       |  5  | 20  | Pending  |
-| 165  | Clustered Campaign PubSub Sync    |   1   |   5    |      4      |      5       |  5  | 19  | Pending  |
-| 166  | Glassmorphic Stellar Map HUD     |   2   |   5    |      4      |      5       |  5  | 19  | Pending  |
+| 164  | Faction War Strategy Engine      |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
+| 165  | Clustered Campaign PubSub Sync    |   1   |   5    |      4      |      5       |  5  | 19  | **DONE** |
+| 166  | Glassmorphic Stellar Map HUD     |   2   |   5    |      4      |      5       |  5  | 19  | **DONE** |
 | 161  | Modular REST Handlers            |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
 | 162  | Cross-Process Squad Pub/Sub Sync |   1   |   5    |      4      |      5       |  5  | 19  | **DONE** |
 | 163  | Golden Visual Playwright E2E     |   2   |   4    |      4      |      5       |  5  | 17  | **DONE** |

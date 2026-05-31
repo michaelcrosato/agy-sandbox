@@ -12,6 +12,7 @@ import { EconomyManager } from "./EconomyManager.js";
 import { GalaxyEventsManager } from "./GalaxyEventsManager.js";
 import { FactionRegistry } from "./FactionRegistry.js";
 import { GalaxyHeartbeat } from "./GalaxyHeartbeat.js";
+import { DeterminismSentry } from "./DeterminismSentry.js";
 import { PLANET_PROFILES } from "./ProductionModel.js";
 import { recordKill, shipBountyValue } from "./CombatRating.js";
 import { mineYield } from "./Mining.js";
@@ -72,6 +73,7 @@ export class GameInstance {
     this.conflictFactionB = null;
     this.galaxyEventsManager = new GalaxyEventsManager();
     this.chronicle = null;
+    this.determinismSentry = new DeterminismSentry();
 
     // Set up engine event handlers
     this.engine.onProjectileFired = (proj, ship) => {

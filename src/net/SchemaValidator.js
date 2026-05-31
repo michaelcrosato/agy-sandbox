@@ -64,6 +64,25 @@ export function validateMessage(msg) {
           error: `Property "${propName}" exceeds max length of ${rule.maxLength}`,
         };
       }
+
+      const CRITICAL_PROPS = [
+        "nickname",
+        "sessionToken",
+        "roomName",
+        "roomId",
+        "presetName",
+        "squadId",
+        "fleetName",
+      ];
+      if (CRITICAL_PROPS.includes(propName)) {
+        const INJECTION_PATTERN = /(\.\.|[/\\]|[&|;$><`\r\n]|--|\/\*|\*\/)/;
+        if (INJECTION_PATTERN.test(val)) {
+          return {
+            valid: false,
+            error: `Security warning: Property "${propName}" contains disallowed injection characters`,
+          };
+        }
+      }
     } else if (rule.type === "number" || rule.type === "integer") {
       if (typeof val !== "number") {
         return {

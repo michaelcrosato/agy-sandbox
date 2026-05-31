@@ -19,6 +19,7 @@
     "agent:bootstrap": "npm ci",
     "codex:generate": "node scripts/agent/generate-codex.js",
     "cluster:smoke": "node scripts/agent/cluster-smoke.js",
+    "benchmark:cluster": "node scripts/agent/cluster-benchmark.js",
     "agent:check": "npm run codex:generate && npm run format:check && npm run lint && npm run typecheck && npm test"
   },
   "devDependencies": {

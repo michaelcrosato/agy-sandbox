@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T04:43:21.950Z",
+  "generatedAt": "2026-05-31T04:55:56.369Z",
   "stats": {
-    "totalSourceFiles": 82,
-    "totalTestFiles": 112,
-    "totalSpecFiles": 123,
-    "totalLoc": 18647,
-    "totalTests": 1529,
+    "totalSourceFiles": 85,
+    "totalTestFiles": 115,
+    "totalSpecFiles": 129,
+    "totalLoc": 19188,
+    "totalTests": 1554,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -357,6 +357,24 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/engine/DeterminismSentry.js",
+      "loc": 151,
+      "classes": [
+        {
+          "name": "DeterminismSentry",
+          "jsdoc": "/**\n* High-performance physics-loop determinism auditing utility.\n* Computes tick-by-tick state hashes of entity positions, velocities, and faction standings\n* using FNV-1a to detect coordinate jumps, drifts, and corruptions.\n*/",
+          "line": 6
+        }
+      ],
+      "exports": [],
+      "testFile": "src/engine/DeterminismSentry.test.js",
+      "testCasesCount": 11,
+      "referencingSpecs": [
+        "plan/specs/123_game_loop_determinism_audit.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
       "path": "src/engine/EconomyManager.js",
       "loc": 255,
       "classes": [
@@ -467,12 +485,12 @@
     },
     {
       "path": "src/engine/GameInstance.js",
-      "loc": 1784,
+      "loc": 1786,
       "classes": [
         {
           "name": "GameInstance",
           "jsdoc": "/**\n* Authoritative sandbox game instance simulator managing sectors, entities,\n* economies, and dynamic galactic factions.\n*/",
-          "line": 51
+          "line": 52
         }
       ],
       "exports": [
@@ -480,13 +498,13 @@
           "name": "SECTOR_ADJACENCY",
           "type": "constant",
           "jsdoc": "/**\n* Map defining which sectors share direct warp-gate trade route adjacency links.\n* Used for simulated economic and price diffusion.\n* @type {Record<string, Array<string>>}\n*/",
-          "line": 26
+          "line": 27
         },
         {
           "name": "getSectorFromPosition",
           "type": "function",
           "jsdoc": "/**\n* Utility helper to identify a sector ID from 2D vector coordinate bounds.\n* @param {object} pos Coordinate point containing x and y coordinates.\n* @returns {string} The sector name identifier.\n*/",
-          "line": 40
+          "line": 41
         }
       ],
       "testFile": "src/engine/GameInstance.test.js",
@@ -1411,6 +1429,30 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/net/MemoryLeakSentry.js",
+      "loc": 104,
+      "classes": [
+        {
+          "name": "MemoryLeakSentry",
+          "jsdoc": null,
+          "line": 10
+        }
+      ],
+      "exports": [],
+      "testFile": "src/net/MemoryLeakSentry.test.js",
+      "testCasesCount": 5,
+      "referencingSpecs": [
+        "plan/specs/121_memory_leak_sentry.md"
+      ],
+      "missingJsDocSymbols": [
+        {
+          "name": "MemoryLeakSentry",
+          "type": "class",
+          "line": 10
+        }
+      ]
+    },
+    {
       "path": "src/net/metrics.js",
       "loc": 65,
       "classes": [],
@@ -1622,6 +1664,43 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/net/SandboxFirewall.js",
+      "loc": 265,
+      "classes": [
+        {
+          "name": "SandboxFirewall",
+          "jsdoc": null,
+          "line": 13
+        }
+      ],
+      "exports": [
+        {
+          "name": "activateFirewall",
+          "type": "function",
+          "jsdoc": "/**\n* Activates active low-overhead DNS and socket level monkeypatching sentries.\n*\n* @param {SandboxFirewall} firewall\n*/",
+          "line": 165
+        },
+        {
+          "name": "deactivateFirewall",
+          "type": "function",
+          "jsdoc": "/**\n* Restores original native network connection and resolution configurations.\n*/",
+          "line": 235
+        }
+      ],
+      "testFile": "src/net/SandboxFirewall.test.js",
+      "testCasesCount": 6,
+      "referencingSpecs": [
+        "plan/specs/120_sandbox_egress_firewall.md"
+      ],
+      "missingJsDocSymbols": [
+        {
+          "name": "SandboxFirewall",
+          "type": "class",
+          "line": 13
+        }
+      ]
+    },
+    {
       "path": "src/net/SandboxTelemetry.js",
       "loc": 171,
       "classes": [
@@ -1720,7 +1799,7 @@
     },
     {
       "path": "src/net/SchemaValidator.js",
-      "loc": 138,
+      "loc": 157,
       "classes": [],
       "exports": [
         {
@@ -1731,10 +1810,11 @@
         }
       ],
       "testFile": "src/net/SchemaValidator.test.js",
-      "testCasesCount": 10,
+      "testCasesCount": 11,
       "referencingSpecs": [
         "plan/specs/089_zero_trust_websocket_validation.md",
-        "plan/specs/099_centralized_commodities_schema_registry.md"
+        "plan/specs/099_centralized_commodities_schema_registry.md",
+        "plan/specs/118_websocket_injection_sentinel.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -3884,11 +3964,98 @@
         "src/net/metrics.js",
         "src/server/wsRateLimiter.integration.test.js"
       ]
+    },
+    {
+      "path": "plan/specs/118_websocket_injection_sentinel.md",
+      "filename": "118_websocket_injection_sentinel.md",
+      "title": "SPEC-118: Zero-Trust WebSocket Injection Sentinel & Hardening",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/SchemaValidator.js",
+        "src/net/SchemaValidator.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/119_cluster_performance_benchmarks.md",
+      "filename": "119_cluster_performance_benchmarks.md",
+      "title": "SPEC-119: Clustered Performance Regression Benchmarks & Latency Gates",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": []
+    },
+    {
+      "path": "plan/specs/120_sandbox_egress_firewall.md",
+      "filename": "120_sandbox_egress_firewall.md",
+      "title": "SPEC-120: Dynamic Sandbox Egress Firewall & Sentry",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/SandboxFirewall.js",
+        "src/net/SandboxFirewall.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/121_memory_leak_sentry.md",
+      "filename": "121_memory_leak_sentry.md",
+      "title": "SPEC-121: Automated Memory Leak Sentry & Self-Healing Garbage Collection",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/MemoryLeakSentry.js",
+        "src/net/MemoryLeakSentry.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/122_cluster_dashboard_stream.md",
+      "filename": "122_cluster_dashboard_stream.md",
+      "title": "SPEC-122: Multi-Process Cluster Live-Dashboard Stream",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": []
+    },
+    {
+      "path": "plan/specs/123_game_loop_determinism_audit.md",
+      "filename": "123_game_loop_determinism_audit.md",
+      "title": "SPEC-123: Game Loop Physics Determinism Audit Sentry",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/engine/DeterminismSentry.js",
+        "src/engine/DeterminismSentry.test.js"
+      ]
     }
   ],
   "epistemicDebt": {
     "untestedCoreFiles": [],
-    "missingJsDocs": [],
+    "missingJsDocs": [
+      {
+        "path": "src/net/MemoryLeakSentry.js",
+        "symbols": [
+          {
+            "name": "MemoryLeakSentry",
+            "type": "class",
+            "line": 10
+          }
+        ]
+      },
+      {
+        "path": "src/net/SandboxFirewall.js",
+        "symbols": [
+          {
+            "name": "SandboxFirewall",
+            "type": "class",
+            "line": 13
+          }
+        ]
+      }
+    ],
     "staleSpecReferences": []
   }
 }

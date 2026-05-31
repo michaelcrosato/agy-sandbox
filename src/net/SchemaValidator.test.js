@@ -161,4 +161,42 @@ describe("SchemaValidator", () => {
       }).valid,
     ).toBe(false);
   });
+
+  test("rejects injection, shell metacharacters, and path traversal strings in critical fields", () => {
+    // Path traversal in roomName
+    const roomTraversal = {
+      type: "create_room",
+      roomName: "../../../etc/passwd",
+    };
+    const res1 = validateMessage(roomTraversal);
+    expect(res1.valid).toBe(false);
+    expect(res1.error).toContain("Security warning");
+
+    // Shell injection in nickname
+    const nickShell = {
+      type: "join",
+      nickname: "pilot; rm -rf /",
+    };
+    const res2 = validateMessage(nickShell);
+    expect(res2.valid).toBe(false);
+    expect(res2.error).toContain("Security warning");
+
+    // SQL comments in presetName
+    const presetSql = {
+      type: "preset_save",
+      presetName: "preset' --",
+    };
+    const res3 = validateMessage(presetSql);
+    expect(res3.valid).toBe(false);
+    expect(res3.error).toContain("Security warning");
+
+    // Path separators in roomId
+    const roomPath = {
+      type: "join_room",
+      roomId: "rooms/public",
+    };
+    const res4 = validateMessage(roomPath);
+    expect(res4.valid).toBe(false);
+    expect(res4.error).toContain("Security warning");
+  });
 });

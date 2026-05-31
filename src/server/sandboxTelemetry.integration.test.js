@@ -93,4 +93,41 @@ describe("Sandbox Telemetry Observability Integration Tests (SPEC-094)", () => {
         });
     });
   });
+
+  test("metrics endpoint exposes sandbox firewall and memory leak sentry metrics", () => {
+    return new Promise((resolve, reject) => {
+      http
+        .get(`http://localhost:${port}/metrics`, (res) => {
+          expect(res.statusCode).toBe(200);
+          let body = "";
+          res.on("data", (chunk) => {
+            body += chunk;
+          });
+          res.on("end", () => {
+            const metrics = JSON.parse(body);
+            // Firewall checks
+            expect(metrics).toHaveProperty("sandbox_firewall");
+            expect(metrics.sandbox_firewall.block_count).toBe(0);
+            expect(Array.isArray(metrics.sandbox_firewall.blocked_events)).toBe(
+              true,
+            );
+
+            // Memory Leak Sentry checks
+            expect(metrics).toHaveProperty("memory_leak_alerts");
+            expect(metrics.memory_leak_alerts.alertCount).toBe(0);
+            expect(metrics.memory_leak_alerts.hasFired).toBe(false);
+            expect(typeof metrics.memory_leak_alerts.leakRateBytesPerMin).toBe(
+              "number",
+            );
+
+            // Determinism Sentry checks (SPEC-123)
+            expect(metrics).toHaveProperty("determinism_drift_alerts_total");
+            expect(metrics.determinism_drift_alerts_total).toBe(0);
+
+            resolve();
+          });
+        })
+        .on("error", reject);
+    });
+  });
 });

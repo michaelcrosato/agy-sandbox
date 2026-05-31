@@ -39,6 +39,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T21:58 · iter-0118 · GREEN · cycle-31-spec-121-122-123-memory-leak-cluster-determinism
+- **Baseline:** `4ffe339` on `feat/procedural-missions`; 1,140 Jest green.
+- **Move:** Implement SPEC-121 (Memory Leak Sentry), SPEC-122 (Cluster Dashboard Stream), and SPEC-123 (Physics Determinism Audit Sentry) to complete Wave v31.
+- **Changed:**
+  - Designed pure, modular `src/net/MemoryLeakSentry.js` polling heap memory growth rates and scheduling automatic `global.gc()` sweeps when leak rate exceeds 5MB/minute under active workloads.
+  - Exposed Memory Sentry alerts, metrics, and diagnostics under GET `/metrics` with Access-Control CORS headers.
+  - Enhanced Codex Dashboard (`dashboard-codex.html`) to concurrently poll all registered cluster worker ports via Access-Control CORS, aggregating connections, heap sizes, worst Event Loop delay, and rendering a neon-orange Cluster Memory card.
+  - Designed modular `src/engine/DeterminismSentry.js` computing 32-bit FNV-1a checksums of entity coordinates, velocities, and faction standings to alert on NaN/Infinity corruptions or coordinate jumps exceeding 500 units.
+  - Integrated `DeterminismSentry` to audit state right after kinematics update in `src/server.js` and aggregate alerts via `determinism_drift_alerts_total` in `/metrics`.
+  - Created comprehensive Jest unit suites and updated telemetry / dashboard integration tests.
+- **Decisions:** Used native Node process memory RSS and heapUsed parameters with FNV-1a non-cryptographic checksumming inside the 30Hz game loops to guarantee zero overhead while maintaining absolute simulation purity.
+- **Validation:** Executed `npm run agent:check` confirming that Prettier, ESLint, TypeScript checkJs, and all 1,162 Jest tests pass 100% green.
+- **Next:** Replenish the next engineering wave of specifications (Phase R).
+
 ## 2026-05-31T21:44 · iter-0117 · GREEN · cycle-28-spec-117-websocket-rate-limiter-telemetry
 - **Baseline:** `b01a583` on `feat/procedural-missions`; 1,139 Jest green.
 - **Move:** Implement SPEC-117 (Zero-Trust WebSocket Rate Limiter & Observability Telemetry).

@@ -232,18 +232,48 @@ Completed waves (`001–114`) are recorded DONE in `PROGRESS.md`. The active clu
 
 ---
 
-## EXECUTION WAVES (v29)
+## EXECUTION WAVES (v29) — Completed (DONE)
 
-Completed waves (`001–114`) are recorded DONE in `PROGRESS.md`. The dynamic secure execution and backpressure wave:
+Completed waves (`001–117`) are recorded DONE in `PROGRESS.md`. The dynamic secure execution and backpressure wave:
 
 ### Phase 0 — Sandbox Security & Isolation — `115`
-- `115` Ephemeral Workspace Isolation Layer & Sandbox Cloner (build a copy-on-write workspace sandbox cloner provisioning isolated temp directories for untrusted AI agent execution runs, monitor footprints, and clean up cleanly post-execution).
+- `115` Ephemeral Workspace Isolation Layer & Sandbox Cloner (build a copy-on-write workspace sandbox cloner provisioning isolated temp directories for untrusted AI agent execution runs, monitor footprints, and clean up cleanly post-execution) — **done**.
 
 ### Phase 1 — System Load & Backpressure Safety — `116`
-- `116` Resource Allocation Limits & Memory/CPU Backpressure Sentinels (develop a light-overhead resource monitor and backpressure sentinel polling memory usage and CPU time to actively prevent host OOM or thread lock failures).
+- `116` Resource Allocation Limits & Memory/CPU Backpressure Sentinels (develop a light-overhead resource monitor and backpressure sentinel polling memory usage and CPU time to actively prevent host OOM or thread lock failures) — **done**.
 
 ### Phase 2 — WebSocket Security — `117`
-- `117` Zero-Trust WebSocket Rate Limiter & Observability Telemetry (integrate high-throughput connection-level rate limiting in connection handlers capping sockets at 100 messages/sec and visualize occurrences on dynamic SVG line charts on the Codex dashboard).
+- `117` Zero-Trust WebSocket Rate Limiter & Observability Telemetry (integrate high-throughput connection-level rate limiting in connection handlers capping sockets at 100 messages/sec and visualize occurrences on dynamic SVG line charts on the Codex dashboard) — **done**.
+
+---
+
+## EXECUTION WAVES (v30) — Completed (DONE)
+
+The secure hardening and sharded benchmark wave:
+
+### Phase 0 — Security Containment & Injection Sentry — `118`
+- `118` Zero-Trust WebSocket Injection Sentinel & Hardening (implement strict regex-based sanitization rejecting path-traversal, command shell sequences, and injection pattern strings inside WebSocket payloads) — **done**.
+
+### Phase 1 — Scale Benchmarks & Latency Gates — `119`
+- `119` Clustered Performance Regression Benchmarks & Latency Gates (develop programmatic sharded worker load-testing script and assert strict latency boundaries to prevent performance degradation) — **done**.
+
+### Phase 2 — Outbound Network Defense — `120`
+- `120` Dynamic Sandbox Egress Firewall & Sentry (implement robust outbound connection blocking policies to contain AI execution runs and restrict egress to authorized IP ranges) — **done**.
+
+---
+
+## EXECUTION WAVES (v31)
+
+The memory leak sentry, cluster dashboard telemetry, and deterministic loop audit wave:
+
+### Phase 0 — Self-Healing Memory Sentry — `121`
+- `121` Automated Memory Leak Sentry & Self-Healing Garbage Collection (build a lightweight memory leak governance sentinel polling heap growth rates, scheduling GC sweeps under active load, and exposing diagnostics in telemetry).
+
+### Phase 1 — Cluster Observability — `122`
+- `122` Multi-Process Cluster Live-Dashboard Stream (enhance the Codex Dashboard to concurrently poll metrics from all sharded cluster workers and render aggregate network, memory, and latency SVGs).
+
+### Phase 2 — Core Simulation Determinism — `123`
+- `123` Game Loop Physics Determinism Audit Sentry (implement a high-performance physics-loop determinism auditing utility that hashes coordinates using FNV-1a, alerting on drifts).
 
 ---
 
@@ -253,11 +283,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 115 | Ephemeral Workspace Sandbox | 0 | 5 | 5 | 5 | 5 | 20 |
-| 116 | Resource Backpressure Limiter | 1 | 5 | 5 | 5 | 5 | 20 |
-| 117 | WebSocket Rate Limiter | 2 | 4 | 5 | 5 | 5 | 19 |
+| 121 | Memory Leak Sentry | 0 | 5 | 5 | 5 | 5 | 20 |
+| 122 | Cluster Dashboard Stream | 1 | 5 | 4 | 5 | 5 | 19 |
+| 123 | Loop Determinism Audit | 2 | 5 | 4 | 5 | 5 | 19 |
 
-**Recommended start:** `115` (Σ20 — Ephemeral Workspace Sandbox) immediately.
+**Recommended start:** `121` (Σ20 — Memory Leak Sentry) immediately.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

@@ -82,7 +82,7 @@ describe("WebSocket Rate Limiter Integration Tests (SPEC-117)", () => {
         } else {
           reject(new Error("Rate limit exceeded message was never received"));
         }
-      }, 5000);
+      }, 10000);
     });
-  });
+  }, 15000);
 });

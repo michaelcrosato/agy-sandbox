@@ -24,6 +24,7 @@ import {
   ApiRateLimiter,
   activateOutboundSentinel,
 } from "./net/ApiRateLimiter.js";
+import { SandboxFirewall, activateFirewall } from "./net/SandboxFirewall.js";
 import { applyGalaxy } from "./persistence/serializers.js";
 import { InMemoryPubSub } from "./net/PubSub.js";
 import { isAllowedOrigin } from "./net/originPolicy.js";
@@ -34,6 +35,7 @@ import { createLogger } from "./net/logger.js";
 import { LatencyMonitor } from "./net/LatencyMonitor.js";
 import { SandboxTelemetry } from "./net/SandboxTelemetry.js";
 import { ResourceLimiter } from "./net/ResourceLimiter.js";
+import { MemoryLeakSentry } from "./net/MemoryLeakSentry.js";
 import {
   handleOutfitBuy,
   handleShipBuy,
@@ -108,6 +110,20 @@ const latencyMonitor = new LatencyMonitor();
 latencyMonitor.start();
 const sandboxTelemetry = new SandboxTelemetry();
 sandboxTelemetry.start();
+
+const memoryLeakSentry = new MemoryLeakSentry({
+  sandboxTelemetry,
+  isActiveLoad: () => {
+    try {
+      return (
+        typeof wss !== "undefined" && wss && wss.clients && wss.clients.size > 0
+      );
+    } catch (_err) {
+      return false;
+    }
+  },
+});
+memoryLeakSentry.start();
 const resourceLimiter = new ResourceLimiter({
   onHardLimit: () => {
     if (process.env.NODE_ENV === "test") {
@@ -178,12 +194,28 @@ const server = http.createServer((req, res) => {
 
   // Observability endpoint (spec 010): read-only runtime metrics snapshot.
   if (safeUrl === "/metrics" || safeUrl === "/healthz") {
-    res.writeHead(200, { "Content-Type": "application/json" });
+    res.writeHead(200, {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    });
     const snap = metrics.snapshot();
+    let totalDrifts = 0;
+    for (const inst of instances.values()) {
+      if (inst.determinismSentry) {
+        totalDrifts += inst.determinismSentry.getDriftAlertsTotal();
+      }
+    }
     const augmented = {
       ...snap,
+      cluster_worker_ports: Array.from(
+        { length: WORKERS },
+        (_, i) => PORT - SHARD_INDEX + i,
+      ),
+      shard_index: SHARD_INDEX,
+      workers_total: WORKERS,
       clients_active: wss.clients.size,
       rooms_active: instances.size,
+      determinism_drift_alerts_total: totalDrifts,
       tick_ms_avg: snap.observations.tick_ms?.avg ?? 0,
       broadcast_bytes_total: snap.counters.broadcast_bytes ?? 0,
       matchmaking_queue_size: matchmakingQueue.size,
@@ -194,6 +226,11 @@ const server = http.createServer((req, res) => {
         block_count: apiRateLimiter.blockCount,
         expended_tokens: apiRateLimiter.expendedTokens,
       },
+      sandbox_firewall: {
+        block_count: sandboxFirewall.blockCount,
+        blocked_events: sandboxFirewall.blockedEvents,
+      },
+      memory_leak_alerts: memoryLeakSentry.getDiagnostics(),
       rooms: buildLobbyRoomsList(instances).map((r) => ({
         ...r,
         players: r.playersCount,
@@ -389,6 +426,18 @@ const apiRateLimiter = new ApiRateLimiter({
   ],
 });
 activateOutboundSentinel(apiRateLimiter);
+
+const sandboxFirewall = new SandboxFirewall({
+  allowlistDomains: [
+    "google.com",
+    "api.google.com",
+    "openai.com",
+    "api.openai.com",
+    "localhost",
+    "127.0.0.1",
+  ],
+});
+activateFirewall(sandboxFirewall);
 
 // Setup multi-room ticker loops
 const TICK_RATE = 30;
@@ -641,6 +690,11 @@ const physicsInterval = setInterval(() => {
 
     // G. Update local room physical kinematics
     room.engine.update(dt);
+
+    // Audit physics loop determinism (SPEC-123)
+    if (room.determinismSentry) {
+      room.determinismSentry.audit(room);
+    }
 
     // G. Restore shield regens and weapon cooldowns
     for (const [ship, origRegen] of originalRegens.entries()) {
@@ -1625,6 +1679,7 @@ const shutdown = async () => {
   console.log("\n🔌 Shutting down server gracefully...");
   latencyMonitor.stop();
   sandboxTelemetry.stop();
+  memoryLeakSentry.stop();
   resourceLimiter.stop();
 
   // Clear all heartbeat and simulation intervals immediately to prevent race conditions during teardown (spec 019f)

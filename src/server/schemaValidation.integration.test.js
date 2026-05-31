@@ -165,6 +165,44 @@ describe("WebSocket Schema Validation Integration Tests (SPEC-089)", () => {
     });
   });
 
+  test("rejects join_room message containing path traversal or shell character", () => {
+    return new Promise((resolve, reject) => {
+      const ws = new WebSocket(`ws://localhost:${port}`);
+
+      ws.on("open", () => {
+        // Send join_room message with path traversal characters in roomId
+        ws.send(
+          JSON.stringify({
+            type: "join_room",
+            roomId: "../etc/passwd",
+            nickname: "Tracer",
+          }),
+        );
+      });
+
+      ws.on("message", (data) => {
+        let msg;
+        try {
+          msg = JSON.parse(data.toString());
+        } catch (e) {
+          return; // Ignore binary state broadcasts
+        }
+        if (msg.type === "notification") {
+          expect(msg.style).toBe("error");
+          expect(msg.message).toContain("Invalid network payload");
+          expect(msg.message).toContain("Security warning");
+          ws.close();
+          resolve();
+        }
+      });
+
+      ws.on("error", (err) => {
+        ws.close();
+        reject(err);
+      });
+    });
+  });
+
   test("serves centralized commodities and schemas on GET /schema", async () => {
     const response = await fetch(`http://localhost:${port}/schema`);
     expect(response.status).toBe(200);

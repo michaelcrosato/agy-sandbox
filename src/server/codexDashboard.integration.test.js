@@ -89,6 +89,8 @@ describe("Living Codex & Dashboard HTTP Integration Tests (SPEC-102)", () => {
           expect(body).toContain('id="action-select"');
           expect(body).toContain('id="schema-fields-container"');
           expect(body).toContain('id="code-preview"');
+          // SPEC-122 Cluster telemetry memory card validation
+          expect(body).toContain('id="chart-val-memory"');
           resolve();
         });
 

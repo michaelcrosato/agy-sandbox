@@ -44,6 +44,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-05-31T17:26 · iter-0147 · GREEN · static-ast-security-sentry-shipped
+
+- **Baseline:** `feat/v49-ast-static-security-sentry`; 1,332 Jest green, 63 client green.
+- **Move:** Build an advanced static analysis AST and lexical pre-scan engine to inspect guest scripts before worker startups, blocking prototype-pollution, eval, and unauthorized import escapes.
+- **Changed:**
+  - Created `src/net/StaticSecuritySentry.js` lexically parsing script contents into token trees.
+  - Implemented secure syntax checks blocking `eval()`, `Function`, `globalThis/global/window` access, and bracket/dot property accesses for `.prototype`, `.constructor`, and `.__proto__`.
+  - Enforced strict dynamic require/import literal string constraints and restricted core Node package resolutions.
+  - Integrated the static scanner into `GuestRunner.js` to short-circuit and crash runs before process spawn.
+  - Configured `bypassStaticCheck` inside tests to evaluate dynamic/runtime containment bounds in `GuestRunner.test.js`.
+  - Authored a comprehensive 23-test suite inside `src/net/StaticSecuritySentry.test.js`.
+- **Decisions:** Integrated a bypass flag `bypassStaticCheck` in standard options to allow specific dynamic testing contexts in `GuestRunner.test.js` to assert runtime exceptions safely.
+- **Validation:** Executed `npm run agent:check:core` successfully passing 1,332 backend Jest assertions and 63 Vitest tests with 0 linter or format errors.
+- **Next:** Formulate and execute Spec-172 (Dynamic Memory & CPU Priority Scheduler Sentry) to govern host execution under resource stress.
+
 ## 2026-05-31T17:21 · iter-0146 · GREEN · faction-war-strategic-map-hud-shipped
 
 - **Baseline:** `feat/v46-faction-war-campaign`; 1,309 Jest green, 63 client green.

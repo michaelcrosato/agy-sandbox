@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T04:07:38.271Z",
+  "generatedAt": "2026-05-31T04:31:33.613Z",
   "stats": {
     "totalSourceFiles": 80,
     "totalTestFiles": 109,
-    "totalSpecFiles": 118,
-    "totalLoc": 18125,
-    "totalTests": 1515,
+    "totalSpecFiles": 120,
+    "totalLoc": 18175,
+    "totalTests": 1516,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -1784,7 +1784,8 @@
       "testFile": "src/persistence/GalacticChronicle.test.js",
       "testCasesCount": 7,
       "referencingSpecs": [
-        "plan/specs/096_galactic_chronicle_observability.md"
+        "plan/specs/096_galactic_chronicle_observability.md",
+        "plan/specs/114_faction_decay_chronicle.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -2025,7 +2026,7 @@
     },
     {
       "path": "src/server/galaxyTicker.js",
-      "loc": 376,
+      "loc": 426,
       "classes": [],
       "exports": [
         {
@@ -2078,10 +2079,11 @@
         }
       ],
       "testFile": "src/server/galaxyTicker.test.js",
-      "testCasesCount": 4,
+      "testCasesCount": 5,
       "referencingSpecs": [
         "plan/specs/042_server_monolith_extraction_galaxy_ticker.md",
-        "plan/specs/078_reputation_decay_heartbeat.md"
+        "plan/specs/078_reputation_decay_heartbeat.md",
+        "plan/specs/114_faction_decay_chronicle.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -3786,6 +3788,28 @@
       "priority": "Normal",
       "pillar": "None",
       "filesMentioned": []
+    },
+    {
+      "path": "plan/specs/113_cluster_smoke_orchestration.md",
+      "filename": "113_cluster_smoke_orchestration.md",
+      "title": "SPEC-113: Authoritative Multi-Process Cluster Test Harness & Orchestration Smoke Tests",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": []
+    },
+    {
+      "path": "plan/specs/114_faction_decay_chronicle.md",
+      "filename": "114_faction_decay_chronicle.md",
+      "title": "SPEC-114: Faction Standing Decays & Real-Time Galactic Chronicles Integration",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/server/galaxyTicker.js",
+        "src/persistence/GalacticChronicle.js",
+        "src/server/galaxyTicker.test.js"
+      ]
     }
   ],
   "epistemicDebt": {

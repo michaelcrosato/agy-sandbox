@@ -29,7 +29,7 @@ _**v23 re-audit baseline (2026-05-31, ENTIRE v23 blueprint shipped): 1,013 Jest 
 _**v28 re-audit baseline (2026-05-31): 1,129 Jest tests / 102 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; all previous specs completed with perfect Living Codex coverage.**_
 
 - [ ] `113` Programmatic Multi-Process Cluster Test Harness & Orchestration Smoke (develop programmatic spawner `scripts/agent/cluster-smoke.js` running multiple workers, routing mock clients via sticky LB presence keys, testing cross-shard matchmaking, and sweeping connections cleanly without process leakage)
-- [~] `114` Faction Standing Decays & Real-Time Galactic Chronicles Integration (wire the slow faction standings reputation decay ticks inside `galaxyTicker.js` to trigger dynamic chronicle news updates visible on the dashboard UI timeline)
+- [x] `114` Faction Standing Decays & Real-Time Galactic Chronicles Integration (wire the slow faction standings reputation decay ticks inside `galaxyTicker.js` to trigger dynamic chronicle news updates visible on the dashboard UI timeline) — **done** (connected slower standing decay pulses inside `galaxyTicker.js` to trigger persistent `GalacticChronicle` news records under the `"system"` category, resolved player nicknames from active sockets and ship entities, and validated chronicle triggering under new tests in `galaxyTicker.test.js`)
 
 ## v27 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

@@ -352,7 +352,33 @@ export function runGalaxyHeartbeatInterval(instances) {
     InvariantVerifier.verify(room, logger);
 
     const changedNames = room.galaxyHeartbeat.pulse();
-    room.decayReputations();
+    const decayChanges = room.decayReputations();
+
+    if (
+      decayChanges &&
+      Object.keys(decayChanges).length > 0 &&
+      room.chronicle
+    ) {
+      for (const [playerId, factions] of Object.entries(decayChanges)) {
+        if (Object.keys(factions).length === 0) continue;
+        const nickname = findNicknameForPlayer(room, playerId);
+        for (const [faction, val] of Object.entries(factions)) {
+          const description = `Commander ${nickname}'s standing with ${faction} drifted toward neutral (${val}) due to inactive standings decay.`;
+          room.chronicle.recordEvent({
+            sector: room.id,
+            category: "system",
+            title: `Standing Decay: ${nickname}`,
+            description: description,
+            impactMetrics: {
+              playerId: playerId,
+              faction: faction,
+              standing: val,
+            },
+          });
+        }
+      }
+    }
+
     for (const name of changedNames) {
       const planet = room.planets.find((p) => p.name === name);
       if (planet) {
@@ -372,4 +398,28 @@ export function runGalaxyHeartbeatInterval(instances) {
       });
     }
   }
+}
+
+/**
+ * Resolves a player's nickname from playerId by searching room clients or entities.
+ * @param {Object} room
+ * @param {string} playerId
+ * @returns {string} The resolved nickname or the original playerId.
+ */
+function findNicknameForPlayer(room, playerId) {
+  if (room && room.clients) {
+    for (const client of room.clients.values()) {
+      if (client.id === playerId) {
+        return client.nickname;
+      }
+    }
+  }
+  if (room && room.engine && room.engine.entities) {
+    const ent = room.engine.entities.find((e) => e.id === playerId);
+    if (ent) {
+      if (ent.nickname) return ent.nickname;
+      if (ent.name) return ent.name;
+    }
+  }
+  return playerId;
 }

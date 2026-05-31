@@ -39,7 +39,26 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
-## 2026-05-31T02:03 · iter-0026 · GREEN · spec-105-interactive-onboarding-tutorial
+## 2026-05-31T21:32 · iter-0114 · GREEN · cycle-28-spec-114-faction-decay-chronicle
+- **Baseline:** `eb7c021` on `feat/procedural-missions`; 1,129 Jest green.
+- **Move:** Implement SPEC-114 (Faction Standing Decays & Real-Time Galactic Chronicles Integration).
+- **Changed:**
+  - Integrated the slow reputation standings decay ticks in `runGalaxyHeartbeatInterval` inside
+    `src/server/galaxyTicker.js` with the persistent macro event ledger `GalacticChronicle`.
+  - Added a new exception-proof, JSDoc-compliant helper `findNicknameForPlayer` in `galaxyTicker.js`
+    resolving client IDs to nicknames from online clients or active ship entities.
+  - Generates dynamic, context-specific news messages such as: `"Commander Valeria's standing with
+    Rim Cartel drifted toward neutral due to inactive standings decay."`
+  - Wrote a comprehensive Jest unit test inside `src/server/galaxyTicker.test.js` validating
+    correct GalacticChronicle triggers, categories, titles, and descriptions on decay pulses.
+- **Decisions:** Integrated standing decays under the `"system"` category inside the chronicle to
+  keep economic price shocks cleanly partitioned under the `"economy"` category.
+- **Validation:** Executed `npm run agent:check` confirming that Prettier, ESLint, TypeScript
+  checkJs, and all 1,130 Jest tests pass 100% green.
+- **Next:** Transition to SPEC-113 (Authoritative Multi-Process Cluster Test Harness & Orchestration Smoke).
+
+
+## 2026-05-31T02:03 · iter-0112 · GREEN · spec-105-interactive-onboarding-tutorial
 
 - **Baseline:** v25 iteration start; SPEC-106 done, SPEC-105 in-progress (TutorialManager created, needed gate green)
 - **Move:** Ship SPEC-105 Interactive Neon Onboarding Tutorial — validate, fix lint/test failures, and close the spec

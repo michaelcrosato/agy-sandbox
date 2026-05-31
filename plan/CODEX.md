@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T04:07:38.271Z` · Baseline: `18,125 LOC` across `80 source files`
+> Generated: `2026-05-31T04:31:33.613Z` · Baseline: `18,175 LOC` across `80 source files`
 
 ---
 
@@ -9,11 +9,11 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `18,125 LOC` | 🟢 Healthy |
+| **Total Code Volume** | `18,175 LOC` | 🟢 Healthy |
 | **Source Modules** | `80 files` | 🟢 Structured |
 | **Test Suites** | `109 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1515 cases` | 🟢 Deterministic |
-| **Active/Archived Specs** | `118 specifications` | 🟢 Traceable |
+| **Total Test Cases** | `1516 cases` | 🟢 Deterministic |
+| **Active/Archived Specs** | `120 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `0 files` | 🟢 100% Covered |
 
 ---
@@ -102,7 +102,7 @@
 
 | File | LOC | Classes / Exports | Unit Test File | Referencing Specs |
 | --- | --- | --- | --- | --- |
-| [GalacticChronicle.js](file:///C:/dev/agy-sandbox/src/persistence/GalacticChronicle.js) | 118 | `class GalacticChronicle` | [GalacticChronicle.test.js](file:///C:/dev/agy-sandbox/src/persistence/GalacticChronicle.test.js) | [`096_galactic_chronicle_observability`](file:///C:/dev/agy-sandbox/plan/specs/096_galactic_chronicle_observability.md) |
+| [GalacticChronicle.js](file:///C:/dev/agy-sandbox/src/persistence/GalacticChronicle.js) | 118 | `class GalacticChronicle` | [GalacticChronicle.test.js](file:///C:/dev/agy-sandbox/src/persistence/GalacticChronicle.test.js) | [`096_galactic_chronicle_observability`](file:///C:/dev/agy-sandbox/plan/specs/096_galactic_chronicle_observability.md)<br>[`114_faction_decay_chronicle`](file:///C:/dev/agy-sandbox/plan/specs/114_faction_decay_chronicle.md) |
 | [PersistenceManager.js](file:///C:/dev/agy-sandbox/src/persistence/PersistenceManager.js) | 217 | `class PersistenceManager` | [PersistenceManager.test.js](file:///C:/dev/agy-sandbox/src/persistence/PersistenceManager.test.js) | _None_ |
 | [RedisStore.js](file:///C:/dev/agy-sandbox/src/persistence/RedisStore.js) | 74 | `class RedisStore` | [RedisStore.test.js](file:///C:/dev/agy-sandbox/src/persistence/RedisStore.test.js) | [`019b_redis_store`](file:///C:/dev/agy-sandbox/plan/specs/019b_redis_store.md) |
 | [serializers.js](file:///C:/dev/agy-sandbox/src/persistence/serializers.js) | 424 | `constant SNAPSHOT_VERSION`, `function serializeGalaxy`, `function applyGalaxy`, `function serializePlayer`, `function applyPlayer` | [serializers.test.js](file:///C:/dev/agy-sandbox/src/persistence/serializers.test.js) | [`108_kill_restart_rejoin_persistence`](file:///C:/dev/agy-sandbox/plan/specs/108_kill_restart_rejoin_persistence.md) |
@@ -118,7 +118,7 @@
 | [connectionHandlers.js](file:///C:/dev/agy-sandbox/src/server/connectionHandlers.js) | 228 | `function handleConnectionAction` | [connectionHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/connectionHandlers.test.js) | [`111_connection_lifecycle_decomposition`](file:///C:/dev/agy-sandbox/plan/specs/111_connection_lifecycle_decomposition.md) |
 | [escortHandlers.js](file:///C:/dev/agy-sandbox/src/server/escortHandlers.js) | 32 | `function handleEscortAction` | [escortHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/escortHandlers.test.js) | [`110_server_handler_extraction_round5`](file:///C:/dev/agy-sandbox/plan/specs/110_server_handler_extraction_round5.md) |
 | [fleetHandlers.js](file:///C:/dev/agy-sandbox/src/server/fleetHandlers.js) | 52 | `function handleFleetAction` | [fleetHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/fleetHandlers.test.js) | [`109_server_handler_extraction_round4`](file:///C:/dev/agy-sandbox/plan/specs/109_server_handler_extraction_round4.md) |
-| [galaxyTicker.js](file:///C:/dev/agy-sandbox/src/server/galaxyTicker.js) | 376 | `function runEconomyTickForRoom`, `function broadcastEventSyncForRoom`, `function runSectorEventTickForRoom`, `function runEconomyNormalizationForRoom`, `function runEconomyShortageInterval`, `function runEnvironmentalSiegeInterval`, `function runEconomyNormalizationInterval`, `function runGalaxyHeartbeatInterval` | [galaxyTicker.test.js](file:///C:/dev/agy-sandbox/src/server/galaxyTicker.test.js) | [`042_server_monolith_extraction_galaxy_ticker`](file:///C:/dev/agy-sandbox/plan/specs/042_server_monolith_extraction_galaxy_ticker.md)<br>[`078_reputation_decay_heartbeat`](file:///C:/dev/agy-sandbox/plan/specs/078_reputation_decay_heartbeat.md) |
+| [galaxyTicker.js](file:///C:/dev/agy-sandbox/src/server/galaxyTicker.js) | 426 | `function runEconomyTickForRoom`, `function broadcastEventSyncForRoom`, `function runSectorEventTickForRoom`, `function runEconomyNormalizationForRoom`, `function runEconomyShortageInterval`, `function runEnvironmentalSiegeInterval`, `function runEconomyNormalizationInterval`, `function runGalaxyHeartbeatInterval` | [galaxyTicker.test.js](file:///C:/dev/agy-sandbox/src/server/galaxyTicker.test.js) | [`042_server_monolith_extraction_galaxy_ticker`](file:///C:/dev/agy-sandbox/plan/specs/042_server_monolith_extraction_galaxy_ticker.md)<br>[`078_reputation_decay_heartbeat`](file:///C:/dev/agy-sandbox/plan/specs/078_reputation_decay_heartbeat.md)<br>[`114_faction_decay_chronicle`](file:///C:/dev/agy-sandbox/plan/specs/114_faction_decay_chronicle.md) |
 | [gameplayHandlers.js](file:///C:/dev/agy-sandbox/src/server/gameplayHandlers.js) | 336 | `function handleControls`, `function handleLand`, `function handleLaunch` | [gameplayHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/gameplayHandlers.test.js) | [`109_server_handler_extraction_round4`](file:///C:/dev/agy-sandbox/plan/specs/109_server_handler_extraction_round4.md) |
 | [lobbySync.js](file:///C:/dev/agy-sandbox/src/server/lobbySync.js) | 59 | `function buildLobbyRoomsList`, `function broadcastLobbySync`, `function sendLobbyList` | [lobbySync.test.js](file:///C:/dev/agy-sandbox/src/server/lobbySync.test.js) | [`042_server_monolith_extraction_galaxy_ticker`](file:///C:/dev/agy-sandbox/plan/specs/042_server_monolith_extraction_galaxy_ticker.md) |
 | [matchmaking.js](file:///C:/dev/agy-sandbox/src/server/matchmaking.js) | 255 | `class JoinQueue`, `function roomMatches`, `function freeSlots`, `function matchRoom`, `function matchQueueToRooms` | [matchmaking.test.js](file:///C:/dev/agy-sandbox/src/server/matchmaking.test.js) | [`036_matchmaking_room_filters`](file:///C:/dev/agy-sandbox/plan/specs/036_matchmaking_room_filters.md)<br>[`043_matchmaking_queue_lifecycle`](file:///C:/dev/agy-sandbox/plan/specs/043_matchmaking_queue_lifecycle.md)<br>[`069_matchmaking_queues_ratings`](file:///C:/dev/agy-sandbox/plan/specs/069_matchmaking_queues_ratings.md) |

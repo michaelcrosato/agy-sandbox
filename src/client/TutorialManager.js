@@ -1,5 +1,6 @@
 /**
  * @typedef {Object} TutorialStep
+ * @property {number} index - Step index.
  * @property {string} title - Step title.
  * @property {string} instruction - Instructive guidance text.
  * @property {string[]} tasks - Tasks description array.
@@ -7,8 +8,8 @@
  */
 
 /**
- * Interactive Neon Onboarding Tutorial & Cockpit HUD Guide (SPEC-105).
- * Coordinates steps of flight mechanics, targeting, warp, docking, and trading.
+ * Interactive Neon Onboarding Tutorial & Cockpit HUD Guide (SPEC-105/SPEC-158).
+ * Coordinates steps: thrust_maneuver, lock_target, destroy_drone, collect_salvage, dock_at_port.
  */
 export class TutorialManager {
   /**
@@ -30,21 +31,19 @@ export class TutorialManager {
     this.network = context.network || null;
 
     this.isActive = false;
-    this.currentStep = 1;
+    this.currentStep = "thrust_maneuver"; // State machine string step keys
 
-    // Trackers for movement mastery in step 1
+    // Trackers for movement mastery in step 1 (thrust_maneuver)
     this.rotationTracked = false;
     this.thrustTracked = false;
-
-    // Track sector changes in step 3
-    this.initialSector = null;
 
     // Cache the UI dialog card element
     this.cardEl = null;
 
-    /** @type {Record<number, TutorialStep>} */
+    /** @type {Record<string, TutorialStep>} */
     this.STEPS = {
-      1: {
+      thrust_maneuver: {
+        index: 1,
         title: "THRUSTERS & AGILITY",
         instruction:
           "Welcome, Pilot! Let's master basic spaceflight. Use Arrow Keys or WASD to steer and ignite your engines.",
@@ -54,33 +53,37 @@ export class TutorialManager {
         ],
         highlightId: ".right-hud",
       },
-      2: {
+      lock_target: {
+        index: 2,
         title: "STARGATE TARGET LOCK",
         instruction:
-          "Excellent control! Lock your target scanner on the local hyperlane stargate portal to get route coordinates.",
-        tasks: ["Press [T] to Lock Stargate Scanner"],
+          "Excellent control! Lock your target scanner on the local Training Drone entity to map tactical trajectories.",
+        tasks: ["Press [T] to Lock Target Scanner"],
         highlightId: "#target-scanner",
       },
-      3: {
-        title: "SECTOR HYPERSPACE JUMP",
+      destroy_drone: {
+        index: 3,
+        title: "TACTICAL ENGAGEMENT",
         instruction:
-          "A hyperlane stargate connects sectors. Fly near the stargate (< 150 u) and press [J] to engage warp drive.",
-        tasks: ["Perform Sector Warp Jump"],
-        highlightId: "#warp-prompt",
+          "Weapons hot! Fire your blasters at the Training Drone until it is completely neutralized.",
+        tasks: ["Engage Blasters [Space] & Neutralize Drone"],
+        highlightId: "#combat-hud",
       },
-      4: {
+      collect_salvage: {
+        index: 4,
+        title: "CARGO HARVESTING",
+        instruction:
+          "Training Drone destroyed! Fly close to the dropped wreckage salvage pod (< 100 u) to scoop it.",
+        tasks: ["Harvest Wreckage Salvage Pod"],
+        highlightId: "#cargo-hold",
+      },
+      dock_at_port: {
+        index: 5,
         title: "SPACEPORT DOCKING",
         instruction:
-          "Welcome to the new sector! Fly close to the planet spaceport (< 250 u) at low speed (< 80 u/s) and press [L] to land.",
-        tasks: ["Secure Clearance and Land [L]"],
+          "Onboarding objectives completed! Fly close to the planet's spaceport and press [L] to dock.",
+        tasks: ["Dock at spaceport [L] to complete flight guide"],
         highlightId: "#landing-prompt",
-      },
-      5: {
-        title: "COMMODITY TRANSACTION",
-        instruction:
-          "Systems secured! Open the planetary trade market panel and purchase or sell 1 ton of any commodity.",
-        tasks: ["Complete Cargo Purchase or Sale"],
-        highlightId: "#spaceport-overlay",
       },
     };
   }
@@ -96,7 +99,6 @@ export class TutorialManager {
       return;
     }
 
-    // Also check if server already marked this player profile complete
     if (this.network && this.network.tutorialCompleted) {
       localStorage.setItem("nebula_tutorial_completed", "true");
       return;
@@ -116,6 +118,8 @@ export class TutorialManager {
 
     const el = document.createElement("div");
     el.id = "tutorial-prompt-card";
+
+    // Gold-glassmorphic styling
     el.className = "glass-panel";
     el.style.position = "absolute";
     el.style.top = "160px";
@@ -125,17 +129,19 @@ export class TutorialManager {
     el.style.padding = "20px";
     el.style.zIndex = "9999";
     el.style.textAlign = "center";
-    el.style.border = "1px solid var(--color-cyan)";
+    el.style.background = "rgba(18, 14, 5, 0.85)";
+    el.style.backdropFilter = "blur(12px)";
+    el.style.border = "1px solid rgba(218, 165, 32, 0.45)";
     el.style.boxShadow =
-      "0 0 15px var(--color-cyan-glow), var(--shadow-premium)";
+      "0 0 20px rgba(218, 165, 32, 0.25), var(--shadow-premium)";
 
     el.innerHTML = `
-      <h3 style="color: var(--color-cyan); text-shadow: 0 0 8px var(--color-cyan-glow); font-size: 14px; margin-bottom: 8px;">COCKPIT ONBOARDING</h3>
+      <h3 style="color: #ffd700; text-shadow: 0 0 8px rgba(255, 215, 0, 0.6); font-size: 14px; margin-bottom: 8px;">COCKPIT ONBOARDING</h3>
       <p style="font-size: 11px; line-height: 1.5; color: rgba(240, 242, 250, 0.85); margin-bottom: 16px;">
-        Welcome to the Nebula Sector, Pilot. Would you like to run the interactive flight guide to master thrusters, target locking, stargates, and trading? Completed pilots receive a 500 CR reward.
+        Welcome to the Nebula Sector, Pilot. Would you like to run the interactive flight guide to master thrusters, target locking, combat, salvage harvesting, and docking? Completed pilots receive a 500 CR reward.
       </p>
       <div style="display: flex; gap: 10px; justify-content: center;">
-        <button id="btn-tutorial-start" class="btn-primary" style="padding: 6px 16px; font-size: 9px; pointer-events: auto;">LAUNCH FLIGHT GUIDE</button>
+        <button id="btn-tutorial-start" class="btn-primary" style="padding: 6px 16px; font-size: 9px; pointer-events: auto; border-color: rgba(218, 165, 32, 0.5); color: #ffd700; background: rgba(218, 165, 32, 0.1);">LAUNCH FLIGHT GUIDE</button>
         <button id="btn-tutorial-skip" class="btn-primary" style="padding: 6px 16px; font-size: 9px; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.25); color: #8a90a6; pointer-events: auto;">BYPASS</button>
       </div>
     `;
@@ -158,24 +164,18 @@ export class TutorialManager {
    */
   start() {
     this.isActive = true;
-    this.currentStep = 1;
+    this.currentStep = "thrust_maneuver";
     this.rotationTracked = false;
     this.thrustTracked = false;
-    this.initialSector = null;
 
     this.uiController.notify("Flight Onboarding Guide ENGAGED.", "success");
+
+    if (this.network && this.network.connected) {
+      this.network.send({ type: "tutorial_start" });
+    }
+
     this.renderStepCard();
     this.applyStepHighlights();
-
-    // Hook trade completions to track step 5
-    if (this.spaceportUI) {
-      const origRender = this.spaceportUI.renderTrade.bind(this.spaceportUI);
-      this.spaceportUI.renderTrade = () => {
-        origRender();
-        // Hook trading buttons to capture completed transactions
-        this.hookTradingTransactions();
-      };
-    }
   }
 
   /**
@@ -197,7 +197,30 @@ export class TutorialManager {
   }
 
   /**
-   * Dynamically renders/updates the floating neon step dialog card.
+   * Receives server-authoritative step synchronization messages.
+   * @param {Object} msg - WS tutorial state payload.
+   */
+  handleServerState(msg) {
+    if (!this.isActive) return;
+
+    if (msg.step) {
+      if (msg.step === "completed") {
+        this.completeTutorial();
+        return;
+      }
+
+      this.currentStep = msg.step;
+      if (msg.step === "thrust_maneuver") {
+        this.rotationTracked = !!msg.isRotationDone;
+        this.thrustTracked = !!msg.isThrustDone;
+      }
+      this.renderStepCard();
+      this.applyStepHighlights();
+    }
+  }
+
+  /**
+   * Dynamically renders/updates the floating golden-glassmorphic step dialog card.
    */
   renderStepCard() {
     this.removeCard();
@@ -212,6 +235,8 @@ export class TutorialManager {
 
     const el = document.createElement("div");
     el.id = "tutorial-step-card";
+
+    // Gold-glassmorphic styling
     el.className = "glass-panel";
     el.style.position = "absolute";
     el.style.top = "150px";
@@ -220,22 +245,24 @@ export class TutorialManager {
     el.style.width = "380px";
     el.style.padding = "16px";
     el.style.zIndex = "9999";
-    el.style.border = "1px solid var(--color-cyan)";
+    el.style.background = "rgba(18, 14, 5, 0.85)";
+    el.style.backdropFilter = "blur(12px)";
+    el.style.border = "1px solid rgba(218, 165, 32, 0.45)";
     el.style.boxShadow =
-      "0 0 15px var(--color-cyan-glow), var(--shadow-premium)";
+      "0 0 20px rgba(218, 165, 32, 0.25), var(--shadow-premium)";
     el.style.display = "flex";
     el.style.flexDirection = "column";
     el.style.gap = "10px";
 
     let taskListHtml = "";
-    if (this.currentStep === 1) {
+    if (this.currentStep === "thrust_maneuver") {
       taskListHtml = `
         <div style="display: flex; align-items: center; gap: 8px; font-size: 10px;">
-          <span style="display: inline-flex; width: 12px; height: 12px; border: 1px solid ${this.rotationTracked ? "#00ff88" : "rgba(255,255,255,0.3)"}; border-radius: 3px; justify-content: center; align-items: center; font-size: 8px; color: #00ff88; background: ${this.rotationTracked ? "rgba(0,255,136,0.15)" : "transparent"}">${this.rotationTracked ? "✓" : ""}</span>
+          <span style="display: inline-flex; width: 12px; height: 12px; border: 1px solid ${this.rotationTracked ? "#ffd700" : "rgba(255,255,255,0.3)"}; border-radius: 3px; justify-content: center; align-items: center; font-size: 8px; color: #ffd700; background: ${this.rotationTracked ? "rgba(218,165,32,0.15)" : "transparent"}">${this.rotationTracked ? "✓" : ""}</span>
           <span style="color: ${this.rotationTracked ? "rgba(240,242,250,0.6)" : "var(--color-text-primary)"}">Rotate Ship [A/D or Left/Right]</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px; font-size: 10px;">
-          <span style="display: inline-flex; width: 12px; height: 12px; border: 1px solid ${this.thrustTracked ? "#00ff88" : "rgba(255,255,255,0.3)"}; border-radius: 3px; justify-content: center; align-items: center; font-size: 8px; color: #00ff88; background: ${this.thrustTracked ? "rgba(0,255,136,0.15)" : "transparent"}">${this.thrustTracked ? "✓" : ""}</span>
+          <span style="display: inline-flex; width: 12px; height: 12px; border: 1px solid ${this.thrustTracked ? "#ffd700" : "rgba(255,255,255,0.3)"}; border-radius: 3px; justify-content: center; align-items: center; font-size: 8px; color: #ffd700; background: ${this.thrustTracked ? "rgba(218,165,32,0.15)" : "transparent"}">${this.thrustTracked ? "✓" : ""}</span>
           <span style="color: ${this.thrustTracked ? "rgba(240,242,250,0.6)" : "var(--color-text-primary)"}">Ignite Thrusters [W or UpArrow]</span>
         </div>
       `;
@@ -243,7 +270,7 @@ export class TutorialManager {
       step.tasks.forEach((t) => {
         taskListHtml += `
           <div style="display: flex; align-items: center; gap: 8px; font-size: 10px;">
-            <span style="display: inline-flex; width: 12px; height: 12px; border: 1px solid rgba(255,255,255,0.3); border-radius: 3px; justify-content: center; align-items: center; font-size: 8px; color: #00ff88;"></span>
+            <span style="display: inline-flex; width: 12px; height: 12px; border: 1px solid #ffd700; border-radius: 3px; justify-content: center; align-items: center; font-size: 8px; color: #ffd700; background: rgba(218,165,32,0.1)"></span>
             <span>${t}</span>
           </div>
         `;
@@ -252,10 +279,10 @@ export class TutorialManager {
 
     el.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-family: var(--font-display); font-size: 11px; color: var(--color-cyan); text-shadow: 0 0 6px var(--color-cyan-glow); font-weight: bold; letter-spacing: 1px;">${step.title}</span>
-        <span style="font-size: 8px; color: var(--color-text-secondary); text-transform: uppercase;">Step ${this.currentStep} of 5</span>
+        <span style="font-family: var(--font-display); font-size: 11px; color: #ffd700; text-shadow: 0 0 6px rgba(255, 215, 0, 0.4); font-weight: bold; letter-spacing: 1px;">${step.title}</span>
+        <span style="font-size: 8px; color: var(--color-text-secondary); text-transform: uppercase;">Step ${step.index} of 5</span>
       </div>
-      <p style="font-size: 11px; line-height: 1.45; color: rgba(240,242,250,0.9);">${step.instruction}</p>
+      <p style="font-size: 11px; line-height: 1.45; color: rgba(240, 242, 250, 0.9);">${step.instruction}</p>
       <div style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; margin-top: 2px;">
         ${taskListHtml}
       </div>
@@ -320,158 +347,48 @@ export class TutorialManager {
   update(_dt) {
     if (!this.isActive) return;
 
-    // A. Verify player entity is alive
     if (!this.player || this.player.isDestroyed) {
       return;
     }
 
-    // B. State verification depending on step
-    switch (this.currentStep) {
-      case 1:
-        // Steer/Thrust Tracking
-        if (!this.rotationTracked) {
-          const keys = this.inputHandler.keys;
-          if (
-            keys["ArrowLeft"] ||
-            keys["ArrowRight"] ||
-            keys["KeyA"] ||
-            keys["KeyD"]
-          ) {
-            this.rotationTracked = true;
-            this.renderStepCard();
-          }
+    // Step 1 local tracking
+    if (this.currentStep === "thrust_maneuver") {
+      if (!this.rotationTracked) {
+        const keys = this.inputHandler.keys;
+        if (
+          keys["ArrowLeft"] ||
+          keys["ArrowRight"] ||
+          keys["KeyA"] ||
+          keys["KeyD"]
+        ) {
+          this.rotationTracked = true;
+          this.renderStepCard();
         }
-        if (!this.thrustTracked) {
-          const keys = this.inputHandler.keys;
-          if (keys["ArrowUp"] || keys["KeyW"]) {
-            this.thrustTracked = true;
-            this.renderStepCard();
-          }
-        }
-        if (this.rotationTracked && this.thrustTracked) {
-          this.advanceStepDelay(2);
-        }
-        break;
-
-      case 2: {
-        // Stargate lock tracking
-        // If they lock onto a stargate (warp gate) or if renderer has navigationTarget, advance
-        const hasGateTarget =
-          this.renderer.navigationTarget &&
-          this.renderer.navigationTarget.type === "warp_gate";
-        if (hasGateTarget) {
-          this.advanceStepDelay(3);
-        } else {
-          // Listen to KeyT during step 2 to cycle/target nearest stargate automatically
-          const keys = this.inputHandler.keys;
-          if (keys["KeyT"]) {
-            // Find nearest stargate in local entities
-            const localGate = this.renderer.entities?.find(
-              (ent) => ent.type === "warp_gate",
-            );
-            if (localGate) {
-              this.renderer.navigationTarget = localGate;
-              this.uiController.notify(
-                "Scanner target lock engaged: stargate hyperlane mapped!",
-                "info",
-              );
-              this.advanceStepDelay(3);
-            }
-          }
-        }
-        break;
       }
-
-      case 3: {
-        // Sector jump tracking
-        // Initialize current sector on entrance of Step 3
-        if (!this.initialSector) {
-          this.initialSector = this.getSectorFromPosition(this.player.position);
+      if (!this.thrustTracked) {
+        const keys = this.inputHandler.keys;
+        if (keys["ArrowUp"] || keys["KeyW"]) {
+          this.thrustTracked = true;
+          this.renderStepCard();
         }
-        // If current sector is different than initial sector, warp completed
-        const curSec = this.getSectorFromPosition(this.player.position);
-        if (this.initialSector && curSec !== this.initialSector) {
-          this.advanceStepDelay(4);
-        }
-        break;
       }
-
-      case 4: {
-        // Spaceport landing tracking
-        // Check if isLanded variable from outer game is true (or if spaceport panel is visible)
-        // Since isLanded is a global or main scope, we can check if spaceport panel overlay is open
-        const spaceportOverlay = document.getElementById("spaceport-overlay");
-        const isOpen =
-          spaceportOverlay && !spaceportOverlay.classList.contains("hidden");
-        if (isOpen) {
-          this.advanceStepDelay(5);
-        }
-        break;
-      }
-
-      case 5:
-        // Trade tracking - handled by click event hook inside hookTradingTransactions
-        break;
     }
   }
 
   /**
-   * Helper to resolve the sector name from player coordinates.
-   * @param {Vector2D} pos - Position vector.
-   * @returns {string} Sector name.
-   */
-  getSectorFromPosition(pos) {
-    if (!pos) return "unknown";
-    // standard coordinates boundaries
-    if (pos.x < -1500) return "rim";
-    if (pos.x > 1500) return "core";
-    return "public";
-  }
-
-  /**
    * Transition steps smoothly after a brief delay to ensure high visual satisfaction.
-   * @param {number} nextStep - The step index to advance to.
+   * @param {string} nextStep - The step key to advance to.
    */
   advanceStepDelay(nextStep) {
-    // Only trigger once
-    if (this.currentStep >= nextStep) return;
-
     this.currentStep = nextStep;
 
     this.uiController.notify("Objective Completed!", "success");
 
-    setTimeout(() => {
-      if (!this.isActive) return;
+    // Run layout updates immediately to avoid test synchronization issues
+    if (this.isActive) {
       this.renderStepCard();
       this.applyStepHighlights();
-    }, 1000);
-  }
-
-  /**
-   * Hooks into the trade buttons inside SpaceportUI to capture completed commodity transactions.
-   */
-  hookTradingTransactions() {
-    if (this.currentStep !== 5) return;
-
-    const overlay = document.getElementById("spaceport-overlay");
-    if (!overlay) return;
-
-    const tradePanel = overlay.querySelector("#tab-trade");
-    if (!tradePanel || tradePanel.classList.contains("hidden")) return;
-
-    // Query both buy and sell buttons inside trade panel
-    const tradeButtons = tradePanel.querySelectorAll(
-      ".btn-trade-buy, .btn-trade-sell",
-    );
-    tradeButtons.forEach((btn) => {
-      // Add a single-click event tracking completion
-      btn.addEventListener("click", () => {
-        // Delay slightly to confirm state completes successfully
-        setTimeout(() => {
-          this.completeTutorial();
-        }, 100);
-      });
-    });
+    }
   }
 
   /**
@@ -484,20 +401,16 @@ export class TutorialManager {
     this.removeCard();
     this.clearAllHighlights();
 
-    // 1. Award reward credits starter package (+500 CR)
     if (this.player) {
       this.player.credits = (this.player.credits || 0) + 500;
     }
 
-    // 2. Persist completion to localStorage
     localStorage.setItem("nebula_tutorial_completed", "true");
 
-    // 3. Issue authoritative network synchronizer message
     if (this.network && this.network.connected) {
       this.network.send({ type: "tutorial_complete" });
     }
 
-    // 4. Trigger celebration notifications and sounds
     this.uiController.notify("ONBOARDING CERTIFICATION COMPLETED!", "success");
     this.uiController.notify(
       "Starter Economy package awarded: +500 CR!",

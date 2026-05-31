@@ -3,10 +3,7 @@ import { TutorialManager } from "../TutorialManager.js";
 import { Ship } from "../../engine/Ship.js";
 import { UIController } from "../UIController.js";
 import { InputHandler } from "../InputHandler.js";
-
-import { Vector2D } from "../../physics/Vector2D.js";
-
-describe("Interactive Cockpit Onboarding Tutorial HUD Guide (SPEC-105)", () => {
+describe("Interactive Cockpit Onboarding Tutorial HUD Guide (SPEC-105/SPEC-158)", () => {
   let player;
   let uiController;
   let inputHandler;
@@ -80,7 +77,7 @@ describe("Interactive Cockpit Onboarding Tutorial HUD Guide (SPEC-105)", () => {
 
   test("initializes correctly with standard properties", () => {
     expect(tutorialManager.isActive).toBe(false);
-    expect(tutorialManager.currentStep).toBe(1);
+    expect(tutorialManager.currentStep).toBe("thrust_maneuver");
     expect(tutorialManager.rotationTracked).toBe(false);
     expect(tutorialManager.thrustTracked).toBe(false);
   });
@@ -115,9 +112,9 @@ describe("Interactive Cockpit Onboarding Tutorial HUD Guide (SPEC-105)", () => {
     expect(msgSent).toEqual({ type: "tutorial_complete" });
   });
 
-  test("Step 1: Tracks movement mastery and auto-advances to Step 2", () => {
+  test("Step 1: Tracks movement mastery and advances step", () => {
     tutorialManager.start();
-    expect(tutorialManager.currentStep).toBe(1);
+    expect(tutorialManager.currentStep).toBe("thrust_maneuver");
 
     // Mock keypress for steering
     inputHandler.keys["KeyA"] = true;
@@ -131,8 +128,8 @@ describe("Interactive Cockpit Onboarding Tutorial HUD Guide (SPEC-105)", () => {
     expect(tutorialManager.thrustTracked).toBe(true);
 
     // Advance step
-    tutorialManager.advanceStepDelay(2);
-    expect(tutorialManager.currentStep).toBe(2);
+    tutorialManager.advanceStepDelay("lock_target");
+    expect(tutorialManager.currentStep).toBe("lock_target");
     expect(
       document
         .querySelector("#target-scanner")
@@ -140,75 +137,41 @@ describe("Interactive Cockpit Onboarding Tutorial HUD Guide (SPEC-105)", () => {
     ).toBe(true);
   });
 
-  test("Step 2: Tracks target locks on hyperlane stargates and advances to Step 3", () => {
+  test("Step 2-5: Synchronizes step transitions from server-authoritative messages", () => {
     tutorialManager.start();
-    tutorialManager.currentStep = 2;
 
-    const mockWarpGate = {
-      id: "gate-1",
-      type: "warp_gate",
-      position: new Vector2D(500, 500),
-    };
-    renderer.entities = [mockWarpGate];
+    // Move to step 2 (lock_target)
+    tutorialManager.handleServerState({ step: "lock_target" });
+    expect(tutorialManager.currentStep).toBe("lock_target");
 
-    // Trigger KeyT to cycle target scanner
-    inputHandler.keys["KeyT"] = true;
-    tutorialManager.update(0.1);
+    // Move to step 3 (destroy_drone)
+    tutorialManager.handleServerState({ step: "destroy_drone" });
+    expect(tutorialManager.currentStep).toBe("destroy_drone");
 
-    expect(renderer.navigationTarget).toEqual(mockWarpGate);
-    expect(tutorialManager.currentStep).toBe(3);
+    // Move to step 4 (collect_salvage)
+    tutorialManager.handleServerState({ step: "collect_salvage" });
+    expect(tutorialManager.currentStep).toBe("collect_salvage");
+
+    // Move to step 5 (dock_at_port)
+    tutorialManager.handleServerState({ step: "dock_at_port" });
+    expect(tutorialManager.currentStep).toBe("dock_at_port");
+    expect(
+      document
+        .querySelector("#landing-prompt")
+        .classList.contains("hud-highlight-glow"),
+    ).toBe(true);
   });
 
-  test("Step 3: Detects sector transition jumps and advances to Step 4", () => {
-    tutorialManager.start();
-    tutorialManager.currentStep = 3;
-    player.position = new Vector2D(0, 0); // initial sector 'public'
-
-    tutorialManager.update(0.1);
-    expect(tutorialManager.initialSector).toBe("public");
-
-    // Perform warp jump transition to 'rim' sector
-    player.position = new Vector2D(-2000, 0);
-    tutorialManager.update(0.1);
-
-    expect(tutorialManager.currentStep).toBe(4);
-  });
-
-  test("Step 4: Detects docking clearance spaceport landings and advances to Step 5", () => {
-    tutorialManager.start();
-    tutorialManager.currentStep = 4;
-
-    // Simulate landing
-    const spaceportOverlay = document.getElementById("spaceport-overlay");
-    spaceportOverlay.classList.remove("hidden");
-
-    tutorialManager.update(0.1);
-
-    expect(tutorialManager.currentStep).toBe(5);
-  });
-
-  test("Step 5: Hooks commodity market trades, completes onboarding and distributes rewards", () => {
+  test("Onboarding completion distributes rewards and syncs state to server", () => {
     let msgSent = null;
     network.send = (msg) => {
       msgSent = msg;
     };
 
     tutorialManager.start();
-    tutorialManager.currentStep = 5;
+    tutorialManager.handleServerState({ step: "dock_at_port" });
 
-    // Simulate landing trade screen tab open
-    const overlay = document.getElementById("spaceport-overlay");
-    overlay.classList.remove("hidden");
-    const tradeTab = overlay.querySelector("#tab-trade");
-    tradeTab.classList.remove("hidden");
-
-    // Hook trade triggers
-    tutorialManager.hookTradingTransactions();
-
-    // Trigger transaction click
-    tradeTab.querySelector(".btn-trade-buy").click();
-
-    // Force execute trade completion callback delay
+    // Simulate onboarding completion
     tutorialManager.completeTutorial();
 
     expect(tutorialManager.isActive).toBe(false);

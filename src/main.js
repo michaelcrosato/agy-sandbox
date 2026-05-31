@@ -863,6 +863,19 @@ inputHandler.onTargetPressed = () => {
   }
 
   uiController.notify(`Scanners locked: ${playerTarget.name}`, "info");
+
+  // Track target lock during tutorial
+  if (
+    playerTarget &&
+    playerTarget.name === "Training Drone" &&
+    window.tutorialManager &&
+    window.tutorialManager.isActive &&
+    window.tutorialManager.currentStep === "lock_target"
+  ) {
+    if (window.network && window.network.connected) {
+      window.network.send({ type: "tutorial_progress", step: "destroy_drone" });
+    }
+  }
 };
 
 inputHandler.onHostilePressed = () => {
@@ -1613,6 +1626,12 @@ network.onProjectileFired = (msg) => {
 
 network.onNotification = (msg) => {
   uiController.notify(msg.message, msg.style || "info");
+};
+
+network.onTutorialState = (msg) => {
+  if (window.tutorialManager) {
+    window.tutorialManager.handleServerState(msg);
+  }
 };
 
 network.onCargoPickup = (msg) => {

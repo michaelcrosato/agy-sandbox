@@ -1,12 +1,12 @@
 [
   {
-    "timestamp": 1780235380089,
-    "timestampIso": "2026-05-31T13:49:40.089Z",
+    "timestamp": 1780237506752,
+    "timestampIso": "2026-05-31T14:25:06.752Z",
     "category": "process",
     "action": "affinity_fallback",
     "details": {
-      "pid": 46960,
-      "error": "Command failed: powershell -Command \"$p = Get-Process -Id 46960 -ErrorAction SilentlyContinue; if ($p) { $p.ProcessorAffinity = 1 }\"\n"
+      "pid": 45996,
+      "error": "Command failed: powershell -Command \"$p = Get-Process -Id 45996 -ErrorAction SilentlyContinue; if ($p) { $p.ProcessorAffinity = 1 }\"\n"
     },
     "stack": ""
   }

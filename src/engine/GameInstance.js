@@ -903,6 +903,31 @@ export class GameInstance {
 
     // --- Ships destroyed ---
     else if (ent.type === "ship") {
+      if (ent.name === "Training Drone") {
+        const pod = new CargoPod({
+          resourceType: "Wreckage Salvage",
+          amount: 1,
+          position: ent.position.clone(),
+          velocity: new Vector2D(0, 0),
+        });
+        pod.isTrainingSalvage = true;
+        this.engine.addEntity(pod);
+
+        for (const client of this.clients.values()) {
+          client.tutorialStep = "collect_salvage";
+          client.send({
+            type: "notification",
+            message:
+              "Training Drone neutralized! Deploy cargo scoop and harvest the wreckage salvage pod.",
+            style: "success",
+          });
+          client.send({
+            type: "tutorial_state",
+            step: "collect_salvage",
+          });
+        }
+      }
+
       if (ent.name === "Diplomatic Transport") {
         for (const client of this.clients.values()) {
           const escMissionIdx = client.missionManager.activeMissions.findIndex(

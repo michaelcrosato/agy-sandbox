@@ -233,6 +233,10 @@ export class NetworkHandler {
           if (this.onCargoPickup) this.onCargoPickup(msg);
           break;
 
+        case "tutorial_state":
+          if (this.onTutorialState) this.onTutorialState(msg);
+          break;
+
         case "pong":
           {
             const latency = Date.now() - msg.time;

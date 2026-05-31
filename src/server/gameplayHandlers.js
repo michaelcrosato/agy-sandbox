@@ -13,6 +13,40 @@ export function handleControls(clientObj, msg) {
   if (clientObj.ship && !clientObj.isLanded && !clientObj.ship.isDestroyed) {
     clientObj.ship.setControls(msg.controls);
     clientObj.ship.heading = msg.heading;
+
+    // Track movement inputs during the first tutorial step
+    if (clientObj.tutorialStep === "thrust_maneuver") {
+      const controls = msg.controls || {};
+      const steering = controls.left || controls.right;
+      const thrusting = controls.forward;
+      if (steering) {
+        clientObj.tutorialRotationDone = true;
+      }
+      if (thrusting) {
+        clientObj.tutorialThrustDone = true;
+      }
+
+      // Sync state back to client
+      clientObj.send({
+        type: "tutorial_state",
+        step: "thrust_maneuver",
+        isRotationDone: !!clientObj.tutorialRotationDone,
+        isThrustDone: !!clientObj.tutorialThrustDone,
+      });
+
+      if (clientObj.tutorialRotationDone && clientObj.tutorialThrustDone) {
+        clientObj.tutorialStep = "lock_target";
+        clientObj.send({
+          type: "notification",
+          message: "Thrusters verified! Target the Training Drone scanner.",
+          style: "success",
+        });
+        clientObj.send({
+          type: "tutorial_state",
+          step: "lock_target",
+        });
+      }
+    }
   }
 }
 

@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-05-31T13:49:21.527Z",
+  "generatedAt": "2026-05-31T14:21:37.858Z",
   "stats": {
     "totalSourceFiles": 101,
     "totalTestFiles": 129,
     "totalSpecFiles": 165,
-    "totalLoc": 22549,
+    "totalLoc": 22722,
     "totalTests": 1663,
     "untestedCoreFilesCount": 6
   },
@@ -2896,14 +2896,14 @@
     },
     {
       "path": "src/server/tutorialHandlers.js",
-      "loc": 37,
+      "loc": 210,
       "classes": [],
       "exports": [
         {
-          "name": "handleTutorialComplete",
+          "name": "handleTutorialProgress",
           "type": "function",
-          "jsdoc": "/**\n* Handles the \"tutorial_complete\" WebSocket message.\n* Marks the tutorial as completed, awards credits, and immediately persists state.\n*\n* @param {object} clientObj - The active client connection object.\n* @param {Map} instances - The Map of active room instances.\n* @param {object} persistenceManager - The PersistenceManager instance.\n*/",
-          "line": 9
+          "jsdoc": "/**\n* Handles client-triggered step progression signals.\n*\n* @param {Object} clientObj - The active client connection object.\n* @param {Object} msg - The incoming message payload.\n*/",
+          "line": 104
         }
       ],
       "testFile": "src/server/tutorialHandlers.test.js",

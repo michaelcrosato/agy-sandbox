@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T13:49:21.527Z` · Baseline: `22,549 LOC` across `101 source files`
+> Generated: `2026-05-31T14:21:37.858Z` · Baseline: `22,722 LOC` across `101 source files`
 
 ---
 
@@ -9,7 +9,7 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `22,549 LOC` | 🟢 Healthy |
+| **Total Code Volume** | `22,722 LOC` | 🟢 Healthy |
 | **Source Modules** | `101 files` | 🟢 Structured |
 | **Test Suites** | `129 test files` | 🟢 Integrated |
 | **Total Test Cases** | `1663 cases` | 🟢 Deterministic |
@@ -149,7 +149,7 @@
 | [squadHandlers.js](file:///C:/dev/agy-sandbox/src/server/squadHandlers.js) | 93 | `function handleSquadAction` | [squadHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/squadHandlers.test.js) | [`110_server_handler_extraction_round5`](file:///C:/dev/agy-sandbox/plan/specs/110_server_handler_extraction_round5.md) |
 | [SquadManager.js](file:///C:/dev/agy-sandbox/src/server/SquadManager.js) | 136 | `class Squad`, `class SquadManager`, `constant squadManager` | [SquadManager.test.js](file:///C:/dev/agy-sandbox/src/server/SquadManager.test.js) | [`059_alliance_fleets`](file:///C:/dev/agy-sandbox/plan/specs/059_alliance_fleets.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
 | [supervisor.js](file:///C:/dev/agy-sandbox/src/server/supervisor.js) | 111 | `function planWorkers`, `function runSupervisor` | [supervisor.test.js](file:///C:/dev/agy-sandbox/src/server/supervisor.test.js) | [`019c_worker_process_model`](file:///C:/dev/agy-sandbox/plan/specs/019c_worker_process_model.md)<br>[`062_redis_cluster_integration`](file:///C:/dev/agy-sandbox/plan/specs/062_redis_cluster_integration.md) |
-| [tutorialHandlers.js](file:///C:/dev/agy-sandbox/src/server/tutorialHandlers.js) | 37 | `function handleTutorialComplete` | [tutorialHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/tutorialHandlers.test.js) | [`110_server_handler_extraction_round5`](file:///C:/dev/agy-sandbox/plan/specs/110_server_handler_extraction_round5.md) |
+| [tutorialHandlers.js](file:///C:/dev/agy-sandbox/src/server/tutorialHandlers.js) | 210 | `function handleTutorialProgress` | [tutorialHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/tutorialHandlers.test.js) | [`110_server_handler_extraction_round5`](file:///C:/dev/agy-sandbox/plan/specs/110_server_handler_extraction_round5.md) |
 
 ---
 

@@ -77,7 +77,11 @@ import {
 } from "./server/gameplayHandlers.js";
 import { handleSquadAction } from "./server/squadHandlers.js";
 import { handleEscortAction } from "./server/escortHandlers.js";
-import { handleTutorialComplete } from "./server/tutorialHandlers.js";
+import {
+  handleTutorialStart,
+  handleTutorialProgress,
+  handleTutorialComplete,
+} from "./server/tutorialHandlers.js";
 import { handleConnectionAction } from "./server/connectionHandlers.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import { COMMODITIES_METADATA, SCHEMAS } from "./net/SchemaRegistry.js";
@@ -937,6 +941,35 @@ const physicsInterval = setInterval(() => {
           if (ship.type === "ship" && !ship.isDestroyed) {
             const dist = ship.position.distance(pod.position);
             if (dist <= ship.radius + pod.radius) {
+              if (pod.isTrainingSalvage) {
+                podsToRemove.push(pod);
+                const client = Array.from(room.clients.values()).find(
+                  (c) => c.ship === ship,
+                );
+                if (client) {
+                  client.tutorialStep = "dock_at_port";
+                  client.send({
+                    type: "notification",
+                    message:
+                      "Salvage harvested! Return to the spaceport and land [L] to complete onboarding.",
+                    style: "success",
+                  });
+                  client.send({
+                    type: "tutorial_state",
+                    step: "dock_at_port",
+                  });
+                  client.send({
+                    type: "cargo_pickup",
+                    resourceType: pod.resourceType,
+                    amount: pod.amount,
+                    x: pod.position.x,
+                    y: pod.position.y,
+                  });
+                  client.sendStats();
+                }
+                break;
+              }
+
               const success = ship.addCargo(pod.resourceType, pod.amount);
               if (success) {
                 podsToRemove.push(pod);
@@ -1943,7 +1976,16 @@ wss.on("connection", (ws, req) => {
     } else if (msg.type === "controls") {
       handleControls(clientObj, msg);
     } else if (msg.type === "land") {
-      handleLand(clientObj, room, persistenceManager);
+      if (clientObj.tutorialStep === "dock_at_port") {
+        await handleTutorialComplete(
+          clientObj,
+          instances,
+          persistenceManager,
+          joinRoom,
+        );
+      } else {
+        handleLand(clientObj, room, persistenceManager);
+      }
     } else if (msg.type === "launch") {
       handleLaunch(clientObj, room);
     } else if (msg.type === "trade") {
@@ -2018,6 +2060,10 @@ wss.on("connection", (ws, req) => {
       handleEscortAction(clientObj, msg, room);
     } else if (msg.type === "distress_beacon") {
       handleDistressBeacon(clientObj, room);
+    } else if (msg.type === "tutorial_start") {
+      await handleTutorialStart(clientObj, instances, joinRoom);
+    } else if (msg.type === "tutorial_progress") {
+      handleTutorialProgress(clientObj, msg);
     } else if (msg.type === "tutorial_complete") {
       handleTutorialComplete(clientObj, instances, persistenceManager);
     } else if (msg.type === "ping") {

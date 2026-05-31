@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T06:30:59.024Z",
+  "generatedAt": "2026-05-31T06:35:03.118Z",
   "stats": {
     "totalSourceFiles": 100,
     "totalTestFiles": 127,
     "totalSpecFiles": 162,
-    "totalLoc": 22141,
-    "totalTests": 1639,
+    "totalLoc": 22257,
+    "totalTests": 1649,
     "untestedCoreFilesCount": 6
   },
   "files": [
@@ -557,7 +557,7 @@
     },
     {
       "path": "src/engine/Hyperdrive.js",
-      "loc": 238,
+      "loc": 245,
       "classes": [],
       "exports": [
         {
@@ -576,41 +576,41 @@
           "name": "consumeJump",
           "type": "function",
           "jsdoc": "/**\n* Spends jump fuel if the ship can afford it. Clamps the result at 0.\n* @param {Object} ship - Mutated on success (`hyperFuel`).\n* @param {number} [cost] - Fuel to spend (defaults to `jumpCost`).\n* @returns {boolean} True if the jump was paid for; false (no mutation) otherwise.\n*/",
-          "line": 37
+          "line": 39
         },
         {
           "name": "refuel",
           "type": "function",
           "jsdoc": "/**\n* Adds fuel, clamped to `maxHyperFuel`.\n* @param {Object} ship - Mutated (`hyperFuel`).\n* @param {number} units - Fuel to add (must be a positive finite number).\n* @returns {number} The amount actually added (0 on bad input or a full tank).\n*/",
-          "line": 52
+          "line": 56
         },
         {
           "name": "ramscoopRegen",
           "type": "function",
           "jsdoc": "/**\n* Passive Ramscoop fuel regeneration over a time step. No-op when the rate is\n* non-positive (ships without a Ramscoop) or dt is invalid.\n* @param {Object} ship - Mutated (`hyperFuel`).\n* @param {number} dt - Elapsed seconds.\n* @param {number} [rate] - Fuel per second (defaults to `ramscoopRate`).\n* @returns {number} Fuel actually added.\n*/",
-          "line": 69
+          "line": 73
         },
         {
           "name": "getWarpToll",
           "type": "function",
           "jsdoc": "/**\n* Calculates the stargate warp toll based on faction standing.\n* @param {Object} ship - The jumping ship.\n* @param {Object|null} factionRegistry - The FactionRegistry instance.\n* @param {string} governingFaction - Governing faction of the sector.\n* @returns {number} The credit toll to charge.\n*/",
-          "line": 89
+          "line": 93
         },
         {
           "name": "isEntityHostile",
           "type": "function",
           "jsdoc": "/**\n* Helper to determine if an entity is hostile to the jumping ship.\n* @param {Object} ship - The jumping ship.\n* @param {Object} ent - Candidate entity.\n* @param {Object|null} factionRegistry - Standings/relations registry.\n* @returns {boolean}\n*/",
-          "line": 120
+          "line": 124
         },
         {
           "name": "validateWarpJump",
           "type": "function",
           "jsdoc": "/**\n* Validates stargate distance, hyper-fuel, and credit toll requirements for a jump.\n* @param {Object} ship - The jumping ship.\n* @param {Object} gate - Stargate entity.\n* @param {number} [jumpCost] - Fuel cost.\n* @param {Object|null} [factionRegistry] - Faction standings.\n* @param {string} [governingFaction] - Faction name.\n* @param {Array<Object>} [entities] - Array of all entities in sector.\n* @returns {{ ok: boolean, reason?: string }} Result.\n*/",
-          "line": 173
+          "line": 177
         }
       ],
       "testFile": "src/engine/Hyperdrive.test.js",
-      "testCasesCount": 23,
+      "testCasesCount": 26,
       "referencingSpecs": [
         "plan/specs/052_stargate_warp_tolls_taxes.md",
         "plan/specs/056_warp_lane_interdiction.md"
@@ -637,7 +637,7 @@
     },
     {
       "path": "src/engine/LoadoutManager.js",
-      "loc": 323,
+      "loc": 360,
       "classes": [],
       "exports": [
         {
@@ -669,10 +669,22 @@
           "type": "function",
           "jsdoc": "/**\n* High-level check if player can load a preset (checking slot/power/mass safety, stock levels, rank constraints).\n* @param {Object} ship\n* @param {Array|Object} preset\n* @param {Object} planet\n* @param {string|null} playerId\n* @param {Object|null} factionRegistry\n* @param {string|null} sectorId\n* @param {ReadonlyArray<any>} [catalog=DEFAULT_OUTFITS]\n* @returns {{ allowed: boolean, reason: string, details?: Object }}\n*/",
           "line": 249
+        },
+        {
+          "name": "calculatePresetTotalMass",
+          "type": "function",
+          "jsdoc": "/**\n* Calculates total ship mass (hull mass + active outfits mass) for a ship.\n* @param {Object} ship\n* @param {Array|Object} preset\n* @param {ReadonlyArray<any>} [catalog=DEFAULT_OUTFITS]\n* @returns {number} Total mass in kg.\n*/",
+          "line": 331
+        },
+        {
+          "name": "calculatePresetOutfitMass",
+          "type": "function",
+          "jsdoc": "/**\n* Calculates total outfit mass for a given preset setup.\n* @param {Array|Object} preset\n* @param {ReadonlyArray<any>} [catalog=DEFAULT_OUTFITS]\n* @returns {number} Outfit mass in kg.\n*/",
+          "line": 348
         }
       ],
       "testFile": "src/engine/LoadoutManager.test.js",
-      "testCasesCount": 20,
+      "testCasesCount": 23,
       "referencingSpecs": [
         "plan/specs/100_ship_fittings_presets_loadout_manager.md",
         "plan/specs/104_living_codex_hygiene_jsdoc_audit.md",
@@ -978,7 +990,7 @@
     },
     {
       "path": "src/engine/Ship.js",
-      "loc": 489,
+      "loc": 521,
       "classes": [
         {
           "name": "Ship",
@@ -988,7 +1000,7 @@
       ],
       "exports": [],
       "testFile": "src/engine/Ship.test.js",
-      "testCasesCount": 67,
+      "testCasesCount": 70,
       "referencingSpecs": [
         "plan/specs/055_naval_command_decks.md",
         "plan/specs/067_centralize_commodities_invariants.md"
@@ -2159,7 +2171,7 @@
     },
     {
       "path": "src/net/statsPayload.js",
-      "loc": 70,
+      "loc": 90,
       "classes": [],
       "exports": [
         {
@@ -2650,7 +2662,7 @@
     },
     {
       "path": "src/server/portHandlers.js",
-      "loc": 669,
+      "loc": 689,
       "classes": [],
       "exports": [
         {
@@ -2663,53 +2675,53 @@
           "name": "handleShipBuy",
           "type": "function",
           "jsdoc": "/**\n* Handles purchase of a new ship hull from a shipyard.\n* @param {Object} clientObj - The socket client connection object.\n* @param {string} shipName - Name of the ship hull type.\n* @param {Object} targetPlanet - The planet entity.\n* @param {Object|null} [room=null] - Dynamic GameInstance room.\n*/",
-          "line": 112
+          "line": 132
         },
         {
           "name": "handleEscortCommand",
           "type": "function",
           "jsdoc": "/**\n* Handles transmitting tactical orders to player escorts.\n* @param {Object} clientObj - The socket client connection object.\n* @param {Object} msg - The command message payload containing \"command\" and optional \"targetId\".\n* @param {Object} room - Dynamic GameInstance room.\n*/",
-          "line": 166
+          "line": 186
         },
         {
           "name": "handleVoucherRedeem",
           "type": "function",
           "jsdoc": "/**\n* Handles redemption of bounty vouchers.\n* @param {Object} clientObj - Client connection object.\n* @param {Object|null} [room=null] - Dynamic room.\n*/",
-          "line": 197
+          "line": 217
         },
         {
           "name": "handleOutfitSell",
           "type": "function",
           "jsdoc": "/**\n* Handles sale of an equipped outfit back to the planet.\n* @param {Object} clientObj - The socket client connection object.\n* @param {string} outfitName - Name of the outfit to sell.\n* @param {Object} targetPlanet - The planet entity.\n* @param {Object|null} [room=null] - Dynamic GameInstance room.\n*/",
-          "line": 244
+          "line": 264
         },
         {
           "name": "handlePresetSave",
           "type": "function",
           "jsdoc": "/**\n* Saves current outfitting configuration to a custom preset slot.\n* @param {Object} clientObj - The socket client connection object.\n* @param {number} presetIndex - Index of the preset to save (0, 1, or 2).\n* @param {string|null} [presetName=null] - Custom name for the preset.\n*/",
-          "line": 329
+          "line": 349
         },
         {
           "name": "handlePresetLoad",
           "type": "function",
           "jsdoc": "/**\n* Loads a custom preset configuration, enforcing transactions, slots, power constraints, and stock availability.\n* @param {Object} clientObj - The socket client connection object.\n* @param {number} presetIndex - Index of the preset to load (0, 1, or 2).\n* @param {Object} targetPlanet - The planet entity player is landed on.\n* @param {Object|null} [room=null] - Dynamic GameInstance room.\n*/",
-          "line": 369
+          "line": 389
         },
         {
           "name": "handleOreRefine",
           "type": "function",
           "jsdoc": "/**\n* Handles refining raw ore into minerals (or machinery) on command.\n* @param {Object} clientObj - The socket client connection object.\n* @param {number} quantity - Quantity of raw 'ore' to refine.\n* @param {string} targetCommodity - Target refined commodity.\n* @param {Object} room - Dynamic GameInstance room.\n*/",
-          "line": 484
+          "line": 504
         },
         {
           "name": "handleDistressBeacon",
           "type": "function",
           "jsdoc": "/**\n* Handles the distress beacon trigger.\n* @param {Object} clientObj - The socket client connection object.\n* @param {Object} room - The Dynamic GameInstance room.\n*/",
-          "line": 549
+          "line": 569
         }
       ],
       "testFile": "src/server/portHandlers.test.js",
-      "testCasesCount": 37,
+      "testCasesCount": 38,
       "referencingSpecs": [
         "plan/specs/046_modularize_port_mission_handlers.md",
         "plan/specs/050_wingman_tactical_formation_controls.md",

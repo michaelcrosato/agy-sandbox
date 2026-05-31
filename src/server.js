@@ -455,6 +455,52 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // SPEC-155: Dynamic outfitting metrics API endpoint
+  if (req.method === "GET" && safeUrl === "/api/outfitting/metrics") {
+    const metrics = [];
+    for (const client of clients.values()) {
+      if (client.ship) {
+        metrics.push({
+          playerId: client.id,
+          name: client.ship.name,
+          hullMass:
+            client.ship.hullMass !== undefined ? client.ship.hullMass : 2000,
+          outfitMass:
+            client.ship.outfitMass !== undefined ? client.ship.outfitMass : 0,
+          totalMass: client.ship.mass !== undefined ? client.ship.mass : 2000,
+          maxOutfitMass:
+            client.ship.maxOutfitMass !== undefined
+              ? client.ship.maxOutfitMass
+              : 3000,
+          effectiveTurnRate:
+            typeof client.ship.getEffectiveTurnRate === "function"
+              ? client.ship.getEffectiveTurnRate()
+              : client.ship.turnRate || 2.5,
+          effectiveMaxSpeed:
+            typeof client.ship.getEffectiveMaxSpeed === "function"
+              ? client.ship.getEffectiveMaxSpeed()
+              : client.ship.maxSpeed || 300,
+          thrustToMass:
+            typeof client.ship.getThrustToMassRatio === "function"
+              ? client.ship.getThrustToMassRatio()
+              : client.ship.thrustPower / (client.ship.mass || 2000),
+          chargeDuration:
+            typeof client.ship.getEffectiveHyperdriveChargeDuration ===
+            "function"
+              ? client.ship.getEffectiveHyperdriveChargeDuration()
+              : 5,
+          outfits: client.ship.outfits || [],
+        });
+      }
+    }
+    res.writeHead(200, {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    });
+    res.end(JSON.stringify({ ok: true, metrics }));
+    return;
+  }
+
   // SPEC-153: Secure Interactive Codex CLI sandbox command dispatcher
   if (req.method === "POST" && safeUrl === "/api/sandbox/execute") {
     let body = "";

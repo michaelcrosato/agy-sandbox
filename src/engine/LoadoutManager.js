@@ -320,3 +320,40 @@ export function canLoadPreset(
 
   return { allowed: true, reason: "", details };
 }
+
+/**
+ * Calculates total ship mass (hull mass + active outfits mass) for a ship.
+ * @param {Object} ship
+ * @param {Array|Object} preset
+ * @param {ReadonlyArray<any>} [catalog=DEFAULT_OUTFITS]
+ * @returns {number} Total mass in kg.
+ */
+export function calculatePresetTotalMass(
+  ship,
+  preset,
+  catalog = DEFAULT_OUTFITS,
+) {
+  if (!ship) return 0;
+  const hullMass = ship.hullMass !== undefined ? ship.hullMass : 2000;
+  const outfitMass = calculatePresetOutfitMass(preset, catalog);
+  return hullMass + outfitMass;
+}
+
+/**
+ * Calculates total outfit mass for a given preset setup.
+ * @param {Array|Object} preset
+ * @param {ReadonlyArray<any>} [catalog=DEFAULT_OUTFITS]
+ * @returns {number} Outfit mass in kg.
+ */
+export function calculatePresetOutfitMass(preset, catalog = DEFAULT_OUTFITS) {
+  const outfits = getPresetOutfits(preset);
+  let outfitMass = 0;
+  for (const name of outfits) {
+    if (name === "Basic Laser") continue;
+    const outfit = catalog.find((o) => o.name === name);
+    if (outfit && outfit.mass) {
+      outfitMass += outfit.mass;
+    }
+  }
+  return outfitMass;
+}

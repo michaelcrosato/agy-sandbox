@@ -51,6 +51,26 @@ export function buildStatsPayload(
     thrustPower: ship.thrustPower,
     turnRate: ship.turnRate,
     weaponDamage: ship.weaponDamage,
+    hullMass: ship.hullMass !== undefined ? ship.hullMass : 2000,
+    outfitMass: ship.outfitMass !== undefined ? ship.outfitMass : 0,
+    mass: ship.mass !== undefined ? ship.mass : 2000,
+    maxOutfitMass: ship.maxOutfitMass !== undefined ? ship.maxOutfitMass : 3000,
+    effectiveTurnRate:
+      typeof ship.getEffectiveTurnRate === "function"
+        ? ship.getEffectiveTurnRate()
+        : ship.turnRate || 2.5,
+    effectiveMaxSpeed:
+      typeof ship.getEffectiveMaxSpeed === "function"
+        ? ship.getEffectiveMaxSpeed()
+        : ship.maxSpeed || 300,
+    thrustToMass:
+      typeof ship.getThrustToMassRatio === "function"
+        ? ship.getThrustToMassRatio()
+        : ship.thrustPower / (ship.mass || 2000),
+    chargeDuration:
+      typeof ship.getEffectiveHyperdriveChargeDuration === "function"
+        ? ship.getEffectiveHyperdriveChargeDuration()
+        : 5,
     activeMissions: clientObj.missionManager
       ? clientObj.missionManager.activeMissions
       : [],

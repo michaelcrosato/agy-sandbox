@@ -2,6 +2,8 @@ import {
   validatePreset,
   calculatePresetCost,
   canLoadPreset,
+  calculatePresetTotalMass,
+  calculatePresetOutfitMass,
 } from "./LoadoutManager.js";
 import { DEFAULT_OUTFITS } from "./outfitCatalog.js";
 
@@ -288,6 +290,51 @@ describe("LoadoutManager (SPEC-100)", () => {
         mockFactionRegistry,
       );
       expect(result.allowed).toBe(true);
+    });
+  });
+
+  describe("calculatePresetTotalMass and calculatePresetOutfitMass", () => {
+    test("computes total mass and outfit mass accurately", () => {
+      const preset = [
+        "Basic Laser",
+        "Plasma Cannon", // mass 300
+        "Heavy Shields", // mass 800
+      ];
+      const ship = { hullMass: 2000 };
+
+      const outfitMass = calculatePresetOutfitMass(
+        preset,
+        mockPlanet.outfitter,
+      );
+      const totalMass = calculatePresetTotalMass(
+        ship,
+        preset,
+        mockPlanet.outfitter,
+      );
+
+      expect(outfitMass).toBe(1100);
+      expect(totalMass).toBe(3100);
+    });
+
+    test("validatePreset rejects configurations exceeding ship maximum outfit mass", () => {
+      const heavyPreset = [
+        "Sub-space Cargo Compressor",
+        "Sub-space Cargo Compressor",
+        "Sub-space Cargo Compressor",
+      ];
+      const catalog = [
+        {
+          name: "Sub-space Cargo Compressor",
+          cost: 2800,
+          type: "cargo",
+          value: 45,
+          mass: 1200,
+        },
+      ];
+      const ship = { maxOutfitMass: 3000 };
+      const val = validatePreset(ship, heavyPreset, catalog);
+      expect(val.allowed).toBe(false);
+      expect(val.reason).toContain("exceeds ship outfit mass limit");
     });
   });
 });

@@ -44,6 +44,22 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-05-31T07:15 · iter-0135 · GREEN · spec-155-mass-agility-outfitting-hud
+
+- **Baseline:** `ab3f3e9` on `feat/procedural-missions`; 1,235 Jest green.
+- **Move:** Implement SPEC-155 to scale ship physical agility, velocity limits, and hyperdrive jump fuel costs based on chassis outfitting mass ratios, and design the golden-glassmorphic HUD card.
+- **Changed:**
+  - Extended `LoadoutManager.js` to dynamically compute total outfitting component mass and total ship weight for any preset setup.
+  - Implemented dynamic linear velocity cap scaling inside `Ship.js` based on outfitting mass ratios, reducing maximum speed ceiling proportionally as outfit weight accumulates.
+  - Hardened stargate jump algorithms inside `Hyperdrive.js` (`canJump`, `consumeJump`, `validateWarpJump`) to scale fuel jump costs dynamically based on the outfitting mass ratio, returning precise fuel requirements.
+  - Exposed advanced outfitting metrics (mass ratios, agility limits, warp charge durations, and thrust capacities) through WebSocket stats payloads via `statsPayload.js` and a new GET `/api/outfitting/metrics` HTTP API inside `src/server.js`.
+  - Enforced strict chassis mass limit validation check on individual outfit purchases inside `portHandlers.js`.
+  - Designed gold-glassmorphic outfitter panel inside `SpaceportUI.js` complete with horizontal golden chassis mass progress bars, circular SVG agility dials, and live thrust gauges.
+  - Authored comprehensive Jest test suites in `LoadoutManager.test.js`, `Ship.test.js`, `Hyperdrive.test.js`, and `portHandlers.test.js` verifying mass limits and dynamic physics scaling.
+- **Decisions:** Scaling linear speed caps and hyperdrive fuel consumption dynamically enforces highly tactile trade-offs when customizing fittings. Storable preset configurations and individual outfitting purchases are guarded by the same unified maximum outfitting mass constraints.
+- **Validation:** Executed `npm run agent:check` confirming a 100% green gate across 1,242 Jest tests, eslint checks, prettier formatting, and strict type check compiles.
+- **Next:** Proceed to SPEC-156 to implement standings-triggered dynamic faction hostile patrols and vengeance bounty hunters spawner.
+
 ## 2026-05-31T06:50 · iter-0134 · GREEN · spec-154-world-derived-missions-landing-flow
 
 - **Baseline:** `ebc4293` on `feat/procedural-missions`; 1,233 Jest green.

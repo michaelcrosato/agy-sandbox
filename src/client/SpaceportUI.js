@@ -562,6 +562,39 @@ export class SpaceportUI {
             <span class="hud-stat-val" id="perf-shield">0 GW</span>
             <span class="hud-stat-label">Weapon Output Boost:</span>
             <span class="hud-stat-val" id="perf-weapon">+0 MW</span>
+            <span class="hud-stat-label">Thrust Ratio:</span>
+            <span class="hud-stat-val" id="perf-thrust-ratio">0.0 m/s²</span>
+            <span class="hud-stat-label">Warp Core Charge:</span>
+            <span class="hud-stat-val" id="perf-charge-duration">5.0 s</span>
+          </div>
+
+          <div style="margin-top: 12px; font-size: 11px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px; color: #fbbf24; font-weight: 600;">
+              <span>Chassis Mass Limit:</span>
+              <span id="perf-mass-limit-text">0 / 3000 kg</span>
+            </div>
+            <div style="width: 100%; height: 6px; background: rgba(251, 191, 36, 0.1); border-radius: 3px; border: 1px solid rgba(251, 191, 36, 0.2); overflow: hidden;">
+              <div id="perf-mass-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #fbbf24, #d97706); transition: width 0.3s ease;"></div>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-around; margin-top: 12px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; padding: 8px;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+              <span style="color: #a3a3a3; font-size: 10px; font-weight: 600; letter-spacing: 0.5px;">AGILITY GAUGE</span>
+              <svg width="60" height="60" viewBox="0 0 66 66">
+                <circle cx="33" cy="33" r="28" fill="none" stroke="rgba(251, 191, 36, 0.1)" stroke-width="4"></circle>
+                <circle id="perf-agility-ring" cx="33" cy="33" r="28" fill="none" stroke="#fbbf24" stroke-width="4" stroke-dasharray="175.9" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 33 33)" style="transition: stroke-dashoffset 0.5s ease; filter: drop-shadow(0 0 4px #fbbf24);"></circle>
+                <text x="33" y="37" font-size="10" font-weight="bold" fill="#ffffff" text-anchor="middle" id="perf-agility-text">100%</text>
+              </svg>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+              <span style="color: #a3a3a3; font-size: 10px; font-weight: 600; letter-spacing: 0.5px;">THRUST RATIO</span>
+              <svg width="60" height="60" viewBox="0 0 66 66">
+                <circle cx="33" cy="33" r="28" fill="none" stroke="rgba(56, 189, 248, 0.1)" stroke-width="4"></circle>
+                <circle id="perf-thrust-ring" cx="33" cy="33" r="28" fill="none" stroke="#38bdf8" stroke-width="4" stroke-dasharray="175.9" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 33 33)" style="transition: stroke-dashoffset 0.5s ease; filter: drop-shadow(0 0 4px #38bdf8);"></circle>
+                <text x="33" y="37" font-size="10" font-weight="bold" fill="#ffffff" text-anchor="middle" id="perf-thrust-text">4.0</text>
+              </svg>
+            </div>
           </div>
 
           <div class="presets-section">
@@ -699,14 +732,66 @@ export class SpaceportUI {
     }
 
     // Performance diagnostics stats values
+    const hullMass = this.player.hullMass || 2000;
+    const outfitMass = this.player.outfitMass || 0;
+    const totalMass = this.player.mass || 2000;
+    const maxOutfitMass = this.player.maxOutfitMass || 3000;
+    const effectiveMaxSpeed =
+      this.player.effectiveMaxSpeed || this.player.maxSpeed || 300;
+    const thrustToMass =
+      this.player.thrustToMass || this.player.thrustPower / totalMass || 4.0;
+    const chargeDuration = this.player.chargeDuration || 5.0;
+
     this.paneOutfitter.querySelector("#perf-mass").innerText =
-      `${(this.player.mass || 2000).toLocaleString()} kg`;
+      `${totalMass.toLocaleString()} kg`;
     this.paneOutfitter.querySelector("#perf-speed").innerText =
-      `${this.player.maxSpeed || 300} units/s`;
+      `${Math.round(effectiveMaxSpeed)} units/s`;
     this.paneOutfitter.querySelector("#perf-shield").innerText =
       `${this.player.maxShield || 100} GW`;
     this.paneOutfitter.querySelector("#perf-weapon").innerText =
       `+${this.player.weaponDamage || 0} MW`;
+
+    this.paneOutfitter.querySelector("#perf-thrust-ratio").innerText =
+      `${thrustToMass.toFixed(2)} m/s²`;
+    this.paneOutfitter.querySelector("#perf-charge-duration").innerText =
+      `${chargeDuration.toFixed(1)} s`;
+
+    // 1. Chassis Mass horizontal bar
+    const massPct = Math.min(
+      100,
+      Math.max(0, (outfitMass / maxOutfitMass) * 100),
+    );
+    this.paneOutfitter.querySelector("#perf-mass-limit-text").innerText =
+      `${outfitMass.toLocaleString()} / ${maxOutfitMass.toLocaleString()} kg`;
+    this.paneOutfitter.querySelector("#perf-mass-progress-bar").style.width =
+      `${massPct}%`;
+
+    // 2. Agility SVG Gauge
+    // turnRate ratio vs hull
+    const agilityRatio = hullMass / totalMass; // 1.0 (empty) to lower
+    const agilityPct = Math.min(
+      100,
+      Math.max(0, Math.round(agilityRatio * 100)),
+    );
+    this.paneOutfitter.querySelector("#perf-agility-text").innerText =
+      `${agilityPct}%`;
+    const agilityOffset = 175.9 * (1 - agilityPct / 100);
+    this.paneOutfitter.querySelector(
+      "#perf-agility-ring",
+    ).style.strokeDashoffset = agilityOffset;
+
+    // 3. Thrust SVG Gauge
+    const maxThrustMetric = 10;
+    const thrustPct = Math.min(
+      100,
+      Math.max(0, Math.round((thrustToMass / maxThrustMetric) * 100)),
+    );
+    this.paneOutfitter.querySelector("#perf-thrust-text").innerText =
+      thrustToMass.toFixed(1);
+    const thrustOffset = 175.9 * (1 - thrustPct / 100);
+    this.paneOutfitter.querySelector(
+      "#perf-thrust-ring",
+    ).style.strokeDashoffset = thrustOffset;
 
     // Presets slots setup
     const presetsList = this.paneOutfitter.querySelector("#presets-list");

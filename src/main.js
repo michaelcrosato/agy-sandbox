@@ -1436,6 +1436,14 @@ network.onStatsReceived = (msg) => {
   player.thrustPower = msg.thrustPower;
   player.maxSpeed = msg.maxSpeed;
   player.name = msg.nickname;
+  player.hullMass = msg.hullMass;
+  player.outfitMass = msg.outfitMass;
+  player.mass = msg.mass;
+  player.maxOutfitMass = msg.maxOutfitMass;
+  player.effectiveTurnRate = msg.effectiveTurnRate;
+  player.effectiveMaxSpeed = msg.effectiveMaxSpeed;
+  player.thrustToMass = msg.thrustToMass;
+  player.chargeDuration = msg.chargeDuration;
 
   // Endless Sky variables mapping
   player.energy = msg.energy;

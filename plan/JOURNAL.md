@@ -5,8 +5,8 @@ It records cycle transitions, key milestones, and precise next steps.
 
 ## Cycle 43 — 2026-05-31
 
-- **Summary:** Successfully transitioned to Cycle 43 under the role of Autonomous Principal AI/Infrastructure Engineer & Sandbox Architect. Formulated Wave v42 specifications. Fully implemented and verified SPEC-154 (World-Derived Generative Missions Landing Flow Integration), decoupling mission acceptance/abandonment routines into a modular spaceport mission handlers file, mapping planet ownership directly from active rooms to resolve emergent reputation modifiers, and creating dedicated unit/integration test suites. All 1,235 Jest tests are fully green.
-- **Next Action:** Transition to Cycle 43 Phase D (Execute) to claim and implement SPEC-155 (Outfitting Fitting Preset Mass-Agility Dynamics HUD Card) to scale ship handling and agility based on chassis outfitting mass ratios, and build its golden-glassmorphic HUD status panel.
+- **Summary:** Successfully transitioned to Cycle 43 under the role of Autonomous Principal AI/Infrastructure Engineer & Sandbox Architect. Formulated Wave v42 specifications. Fully implemented and verified SPEC-154 (World-Derived Generative Missions Landing Flow Integration), decoupling mission acceptance/abandonment routines into a modular spaceport mission handlers file, mapping planet ownership directly from active rooms to resolve emergent reputation modifiers, and creating dedicated unit/integration test suites. Completed SPEC-155 (Outfitting Fitting Preset Mass-Agility Dynamics HUD Card) scaling linear speed caps and hyperdrive fuel jump costs programmatically on the server depending on total loadout chassis mass ratios, enforcing mass limit validations, and rendering Circular SVG golden dials and mass bars on the outfitter HUD card. All 1,242 Jest tests are fully green.
+- **Next Action:** Transition to Cycle 43 Phase D (Execute) to claim and implement SPEC-156 (Dynamic Faction Hostility Patrols & Vengeance Hunters Spawner) to monitor standings in the galaxy loop and spawn elite faction hunter NPCs to track and aggressively engage hostile players in-sector.
 
 ## Cycle 42 — 2026-05-31
 

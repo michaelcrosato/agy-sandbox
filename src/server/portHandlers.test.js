@@ -100,6 +100,18 @@ describe("portHandlers.handleOutfitBuy (spec 046)", () => {
       style: "error",
     });
   });
+
+  test("rejects buy if purchase would exceed ship outfit mass limit", () => {
+    mockClient.ship.maxOutfitMass = 500;
+    handleOutfitBuy(mockClient, "Heavy Shields", mockPlanet);
+
+    expect(mockClient.ship.credits).toBe(10000);
+    expect(mockClient.sentNotifications[0]).toEqual({
+      type: "notification",
+      message: "Purchase exceeds ship outfit mass limit (500 kg)!",
+      style: "error",
+    });
+  });
 });
 
 describe("portHandlers.handleShipBuy (spec 046)", () => {

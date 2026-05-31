@@ -89,6 +89,26 @@ export function handleOutfitBuy(
     return;
   }
 
+  // Strict outfitting mass limit check
+  const maxMass =
+    clientObj.ship.maxOutfitMass !== undefined
+      ? clientObj.ship.maxOutfitMass
+      : 3000;
+  const currentMass = clientObj.ship.outfits.reduce((sum, name) => {
+    if (name === "Basic Laser") return sum;
+    const o = DEFAULT_OUTFITS.find((x) => x.name === name);
+    return sum + (o && o.mass ? o.mass : 0);
+  }, 0);
+  const nextMass = currentMass + (outfit.mass ? outfit.mass : 0);
+  if (nextMass > maxMass) {
+    clientObj.send({
+      type: "notification",
+      message: `Purchase exceeds ship outfit mass limit (${maxMass} kg)!`,
+      style: "error",
+    });
+    return;
+  }
+
   clientObj.ship.credits -= cost;
   clientObj.ship.outfits.push(outfit.name);
 

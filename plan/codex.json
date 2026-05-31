@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T06:28:45.571Z",
+  "generatedAt": "2026-05-31T06:30:59.024Z",
   "stats": {
-    "totalSourceFiles": 99,
-    "totalTestFiles": 126,
+    "totalSourceFiles": 100,
+    "totalTestFiles": 127,
     "totalSpecFiles": 162,
-    "totalLoc": 22117,
-    "totalTests": 1636,
+    "totalLoc": 22141,
+    "totalTests": 1639,
     "untestedCoreFilesCount": 6
   },
   "files": [
@@ -2650,74 +2650,62 @@
     },
     {
       "path": "src/server/portHandlers.js",
-      "loc": 794,
+      "loc": 669,
       "classes": [],
       "exports": [
         {
           "name": "handleOutfitBuy",
           "type": "function",
           "jsdoc": "/**\n* Handles purchase of an outfit from a planet.\n* @param {Object} clientObj - The socket client connection object.\n* @param {string} outfitName - Name of the outfit to purchase.\n* @param {Object} targetPlanet - The planet entity.\n* @param {Object|null} [room=null] - Dynamic GameInstance room.\n*/",
-          "line": 32
+          "line": 28
         },
         {
           "name": "handleShipBuy",
           "type": "function",
           "jsdoc": "/**\n* Handles purchase of a new ship hull from a shipyard.\n* @param {Object} clientObj - The socket client connection object.\n* @param {string} shipName - Name of the ship hull type.\n* @param {Object} targetPlanet - The planet entity.\n* @param {Object|null} [room=null] - Dynamic GameInstance room.\n*/",
-          "line": 116
-        },
-        {
-          "name": "handleMissionAccept",
-          "type": "function",
-          "jsdoc": "/**\n* Handles accepting a dynamic generative mission.\n* @param {Object} clientObj - The socket client connection object.\n* @param {string} planetName - Governing planet where the mission resides.\n* @param {string} missionId - The unique ID of the mission.\n* @param {Object} targetPlanet - The planet entity.\n* @param {Object} room - The dynamic GameInstance room.\n*/",
-          "line": 172
-        },
-        {
-          "name": "handleMissionAbandon",
-          "type": "function",
-          "jsdoc": "/**\n* Handles abandoning an active mission.\n* @param {Object} clientObj - The socket client connection object.\n* @param {string} missionId - The unique ID of the active mission.\n*/",
-          "line": 268
+          "line": 112
         },
         {
           "name": "handleEscortCommand",
           "type": "function",
           "jsdoc": "/**\n* Handles transmitting tactical orders to player escorts.\n* @param {Object} clientObj - The socket client connection object.\n* @param {Object} msg - The command message payload containing \"command\" and optional \"targetId\".\n* @param {Object} room - Dynamic GameInstance room.\n*/",
-          "line": 291
+          "line": 166
         },
         {
           "name": "handleVoucherRedeem",
           "type": "function",
           "jsdoc": "/**\n* Handles redemption of bounty vouchers.\n* @param {Object} clientObj - Client connection object.\n* @param {Object|null} [room=null] - Dynamic room.\n*/",
-          "line": 322
+          "line": 197
         },
         {
           "name": "handleOutfitSell",
           "type": "function",
           "jsdoc": "/**\n* Handles sale of an equipped outfit back to the planet.\n* @param {Object} clientObj - The socket client connection object.\n* @param {string} outfitName - Name of the outfit to sell.\n* @param {Object} targetPlanet - The planet entity.\n* @param {Object|null} [room=null] - Dynamic GameInstance room.\n*/",
-          "line": 369
+          "line": 244
         },
         {
           "name": "handlePresetSave",
           "type": "function",
           "jsdoc": "/**\n* Saves current outfitting configuration to a custom preset slot.\n* @param {Object} clientObj - The socket client connection object.\n* @param {number} presetIndex - Index of the preset to save (0, 1, or 2).\n* @param {string|null} [presetName=null] - Custom name for the preset.\n*/",
-          "line": 454
+          "line": 329
         },
         {
           "name": "handlePresetLoad",
           "type": "function",
           "jsdoc": "/**\n* Loads a custom preset configuration, enforcing transactions, slots, power constraints, and stock availability.\n* @param {Object} clientObj - The socket client connection object.\n* @param {number} presetIndex - Index of the preset to load (0, 1, or 2).\n* @param {Object} targetPlanet - The planet entity player is landed on.\n* @param {Object|null} [room=null] - Dynamic GameInstance room.\n*/",
-          "line": 494
+          "line": 369
         },
         {
           "name": "handleOreRefine",
           "type": "function",
           "jsdoc": "/**\n* Handles refining raw ore into minerals (or machinery) on command.\n* @param {Object} clientObj - The socket client connection object.\n* @param {number} quantity - Quantity of raw 'ore' to refine.\n* @param {string} targetCommodity - Target refined commodity.\n* @param {Object} room - Dynamic GameInstance room.\n*/",
-          "line": 609
+          "line": 484
         },
         {
           "name": "handleDistressBeacon",
           "type": "function",
           "jsdoc": "/**\n* Handles the distress beacon trigger.\n* @param {Object} clientObj - The socket client connection object.\n* @param {Object} room - The Dynamic GameInstance room.\n*/",
-          "line": 674
+          "line": 549
         }
       ],
       "testFile": "src/server/portHandlers.test.js",
@@ -2771,6 +2759,31 @@
       "testFile": "src/server/roomLifecycle.test.js",
       "testCasesCount": 9,
       "referencingSpecs": [],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/spaceportMissionHandlers.js",
+      "loc": 149,
+      "classes": [],
+      "exports": [
+        {
+          "name": "handleMissionAccept",
+          "type": "function",
+          "jsdoc": "/**\n* Handles accepting a dynamic generative mission.\n* @param {Object} clientObj - The socket client connection object representing the active player.\n* @param {string} planetName - Governing planet where the mission resides.\n* @param {string} missionId - The unique ID of the mission.\n* @param {Object} targetPlanet - The planet entity.\n* @param {Object} room - The dynamic GameInstance room.\n* @returns {void}\n*/",
+          "line": 15
+        },
+        {
+          "name": "handleMissionAbandon",
+          "type": "function",
+          "jsdoc": "/**\n* Handles abandoning an active mission.\n* @param {Object} clientObj - The socket client connection object representing the active player.\n* @param {string} missionId - The unique ID of the active mission.\n* @returns {void}\n*/",
+          "line": 127
+        }
+      ],
+      "testFile": "src/server/spaceportMissionHandlers.test.js",
+      "testCasesCount": 3,
+      "referencingSpecs": [
+        "plan/specs/154_world_derived_missions_landing_flow.md"
+      ],
       "missingJsDocSymbols": []
     },
     {
@@ -4864,12 +4877,6 @@
         "spec": "plan/specs/145_secure_guest_rpc_sentry.md",
         "brokenFiles": [
           "src/net/GuestRpcSentry.test.js"
-        ]
-      },
-      {
-        "spec": "plan/specs/154_world_derived_missions_landing_flow.md",
-        "brokenFiles": [
-          "src/server/spaceportMissionHandlers.js"
         ]
       }
     ]

@@ -1,8 +1,6 @@
 import {
   handleOutfitBuy,
   handleShipBuy,
-  handleMissionAccept,
-  handleMissionAbandon,
   handleEscortCommand,
   handleOutfitSell,
   handlePresetSave,
@@ -10,6 +8,10 @@ import {
   handleOreRefine,
   handleDistressBeacon,
 } from "./portHandlers.js";
+import {
+  handleMissionAccept,
+  handleMissionAbandon,
+} from "./spaceportMissionHandlers.js";
 import { DEFAULT_OUTFITS } from "../engine/outfitCatalog.js";
 import { Vector2D } from "../physics/Vector2D.js";
 

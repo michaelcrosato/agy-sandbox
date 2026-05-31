@@ -44,6 +44,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-05-31T06:50 · iter-0134 · GREEN · spec-154-world-derived-missions-landing-flow
+
+- **Baseline:** `ebc4293` on `feat/procedural-missions`; 1,233 Jest green.
+- **Move:** Implement SPEC-154 to decouple spaceport mission handlers and integrate dynamic generative missions landing flow.
+- **Changed:**
+  - Decoupled `handleMissionAccept` and `handleMissionAbandon` from `src/server/portHandlers.js` into a new modular file `src/server/spaceportMissionHandlers.js`.
+  - Hardened dynamic faction reputation modifier resolution inside `handleMissionAccept` by mapping planet factions directly from active room planet entities.
+  - Routed server endpoints in `src/server.js` and updated existing integration tests in `src/server/portHandlers.test.js` to leverage the extracted modular handlers.
+  - Authored a comprehensive new unit and integration test suite `src/server/spaceportMissionHandlers.test.js` verifying generative mission acceptances, contract surpluses/shortages, bounty target lookups, and abandonment flows.
+- **Decisions:** Spaceport mission accepting and abandonment handlers are cleaner and more testable when separated from general landing-state routers. Dynamic faction lookup must extract planet ownership directly from the current room configuration so the emergent reputation engine calculates correct modifiers.
+- **Validation:** Executed `npm run agent:check` confirming a 100% green gate across 1,235 Jest tests, eslint rules, prettier format, and typecheck checks.
+- **Next:** Proceed to SPEC-155 to implement outfitting loadout preset mass-agility scaling and design the golden-glassmorphic HUD cards.
+
 ## 2026-05-31T06:40 · iter-0133 · GREEN · replenish-wave-v42-emergent-missions-mass-agility-faction-hunters
 
 - **Baseline:** `01c12b9` on `feat/procedural-missions`; 1,233 Jest green.

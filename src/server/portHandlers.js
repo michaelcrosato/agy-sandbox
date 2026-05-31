@@ -14,10 +14,6 @@ import {
   getModifiedUpgradePrice,
 } from "../engine/Trading.js";
 import { canLoadPreset, getPresetOutfits } from "../engine/LoadoutManager.js";
-import {
-  createSeededRng,
-  DEFAULT_GENERATIVE_OPTIONS,
-} from "../engine/GenerativeMissions.js";
 import { Vector2D } from "../physics/Vector2D.js";
 import { Ship } from "../engine/Ship.js";
 import { AIController } from "../engine/ai/AIController.js";
@@ -158,127 +154,6 @@ export function handleShipBuy(clientObj, shipName, targetPlanet, room = null) {
       message: "Insufficient credits for ship purchase!",
       style: "error",
     });
-  }
-}
-
-/**
- * Handles accepting a dynamic generative mission.
- * @param {Object} clientObj - The socket client connection object.
- * @param {string} planetName - Governing planet where the mission resides.
- * @param {string} missionId - The unique ID of the mission.
- * @param {Object} targetPlanet - The planet entity.
- * @param {Object} room - The dynamic GameInstance room.
- */
-export function handleMissionAccept(
-  clientObj,
-  planetName,
-  missionId,
-  targetPlanet,
-  room,
-) {
-  if (
-    !clientObj ||
-    !clientObj.ship ||
-    !clientObj.isLanded ||
-    !targetPlanet ||
-    !room
-  )
-    return;
-
-  if (!clientObj.missionManager.availableMissions[planetName]) {
-    let generated = [];
-    if (typeof clientObj.missionManager.generateWorldMissions === "function") {
-      const bountyTargets =
-        room && room.ships && typeof room.ships.values === "function"
-          ? Array.from(room.ships.values())
-              .filter(
-                (s) =>
-                  s &&
-                  s.type === "ship" &&
-                  s.id !== clientObj.id &&
-                  s.bountyValue,
-              )
-              .map((s) => ({
-                id: s.id,
-                name: s.name,
-                bountyValue: s.bountyValue,
-                faction: s.faction,
-              }))
-          : [];
-
-      const world = {
-        planets: room.planets,
-        baseMarkets: room.baseMarkets || {},
-        bountyTargets: bountyTargets,
-        factionRegistry: room.factionRegistry,
-        playerId: clientObj.id,
-      };
-
-      const options = {
-        rng: createSeededRng(Math.floor(Date.now() + Math.random() * 100000)),
-        ...DEFAULT_GENERATIVE_OPTIONS,
-      };
-
-      generated = clientObj.missionManager.generateWorldMissions(
-        planetName,
-        world,
-        options,
-      );
-    }
-
-    if (
-      generated.length === 0 &&
-      typeof clientObj.missionManager.generateMissionsForPlanet === "function"
-    ) {
-      clientObj.missionManager.generateMissionsForPlanet(
-        planetName,
-        room.planets,
-        room.factionRegistry,
-        clientObj.id,
-      );
-    }
-  }
-
-  const res = clientObj.missionManager.acceptMission(
-    planetName,
-    missionId,
-    clientObj.ship,
-  );
-  if (res.success) {
-    clientObj.send({
-      type: "notification",
-      message: res.message,
-      style: "success",
-    });
-    clientObj.sendStats();
-  } else {
-    clientObj.send({
-      type: "notification",
-      message: res.message,
-      style: "error",
-    });
-  }
-}
-
-/**
- * Handles abandoning an active mission.
- * @param {Object} clientObj - The socket client connection object.
- * @param {string} missionId - The unique ID of the active mission.
- */
-export function handleMissionAbandon(clientObj, missionId) {
-  if (!clientObj || !clientObj.ship) return;
-
-  const activeM = clientObj.missionManager.activeMissions.find(
-    (m) => m.id === missionId,
-  );
-  if (activeM) {
-    clientObj.missionManager.abandonMission(missionId, clientObj.ship);
-    clientObj.send({
-      type: "notification",
-      message: `Abandoned contract: ${activeM.title}`,
-      style: "info",
-    });
-    clientObj.sendStats();
   }
 }
 

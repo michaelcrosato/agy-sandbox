@@ -47,8 +47,6 @@ import { ProcessReaper } from "./net/ProcessReaper.js";
 import {
   handleOutfitBuy,
   handleShipBuy,
-  handleMissionAccept,
-  handleMissionAbandon,
   handleVoucherRedeem,
   handleOutfitSell,
   handlePresetSave,
@@ -56,6 +54,10 @@ import {
   handleOreRefine,
   handleDistressBeacon,
 } from "./server/portHandlers.js";
+import {
+  handleMissionAccept,
+  handleMissionAbandon,
+} from "./server/spaceportMissionHandlers.js";
 import {
   handleTrade,
   handlePortService,

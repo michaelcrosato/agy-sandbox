@@ -28,6 +28,14 @@ _**v22 re-audit baseline (2026-05-31, ENTIRE v22 sandbox blueprint shipped): 979
 _**v23 re-audit baseline (2026-05-31, ENTIRE v23 blueprint shipped): 1,013 Jest tests / 91 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; Living Codex + Interactive Ontological Tree + Centralized Commodities Schema Registry + Emergent Faction Territory Control + Fittings Presets all DONE.**_
 _**v28 re-audit baseline (2026-05-31): 1,129 Jest tests / 102 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; all previous specs completed with perfect Living Codex coverage.**_
 
+## v29 — Frontier Lab Execution Wave (IN PROGRESS) — see [`ROADMAP.md`](ROADMAP.md)
+
+- [ ] `115` Ephemeral Workspace Isolation Layer & Sandbox Cloner (build a copy-on-write workspace sandbox cloner provisioning isolated temp directories for untrusted AI agent execution runs, monitor footprints, and clean up cleanly post-execution)
+- [ ] `116` Resource Allocation Limits & Memory/CPU Backpressure Sentinels (develop a light-overhead resource monitor and backpressure sentinel polling memory usage and CPU time to actively prevent host OOM or thread lock failures)
+- [ ] `117` Zero-Trust WebSocket Rate Limiter & Observability Telemetry (integrate high-throughput connection-level rate limiting in connection handlers capping sockets at 100 messages/sec and visualize occurrences on dynamic SVG line charts on the Codex dashboard)
+
+## v28 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
+
 - [x] `113` Programmatic Multi-Process Cluster Test Harness & Orchestration Smoke (develop programmatic spawner `scripts/agent/cluster-smoke.js` running multiple workers, routing mock clients via sticky LB presence keys, testing cross-shard matchmaking, and sweeping connections cleanly without process leakage) — **done** (built a comprehensive multi-worker smoke test spawner `scripts/agent/cluster-smoke.js` running multiple workers, implemented active sticky HTTP/WebSocket gateway proxy resolving ports dynamically from shared database presence leases, simulated pilot matchmaking queue admissions, asserted hot-rebalancing and dynamic re-routing under graceful node drains, and integrated process sweeps; all green)
 - [x] `114` Faction Standing Decays & Real-Time Galactic Chronicles Integration (wire the slow faction standings reputation decay ticks inside `galaxyTicker.js` to trigger dynamic chronicle news updates visible on the dashboard UI timeline) — **done** (connected slower standing decay pulses inside `galaxyTicker.js` to trigger persistent `GalacticChronicle` news records under the `"system"` category, resolved player nicknames from active sockets and ship entities, and validated chronicle triggering under new tests in `galaxyTicker.test.js`)
 

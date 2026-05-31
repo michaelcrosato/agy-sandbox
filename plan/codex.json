@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-31T04:34:52.048Z",
+  "generatedAt": "2026-05-31T04:35:55.690Z",
   "stats": {
     "totalSourceFiles": 80,
     "totalTestFiles": 109,
-    "totalSpecFiles": 120,
+    "totalSpecFiles": 123,
     "totalLoc": 18175,
     "totalTests": 1516,
     "untestedCoreFilesCount": 0
@@ -1407,7 +1407,8 @@
       "testFile": "src/net/metrics.test.js",
       "testCasesCount": 6,
       "referencingSpecs": [
-        "plan/specs/010_observability_metrics.md"
+        "plan/specs/010_observability_metrics.md",
+        "plan/specs/117_websocket_rate_limiter_telemetry.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -1982,7 +1983,8 @@
       "testFile": "src/server/connectionHandlers.test.js",
       "testCasesCount": 12,
       "referencingSpecs": [
-        "plan/specs/111_connection_lifecycle_decomposition.md"
+        "plan/specs/111_connection_lifecycle_decomposition.md",
+        "plan/specs/117_websocket_rate_limiter_telemetry.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -3810,11 +3812,67 @@
         "src/persistence/GalacticChronicle.js",
         "src/server/galaxyTicker.test.js"
       ]
+    },
+    {
+      "path": "plan/specs/115_ephemeral_workspace_sandbox.md",
+      "filename": "115_ephemeral_workspace_sandbox.md",
+      "title": "SPEC-115: Ephemeral Workspace Isolation Layer & Sandbox Cloner",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/EphemeralSandbox.js"
+      ]
+    },
+    {
+      "path": "plan/specs/116_resource_backpressure_limiter.md",
+      "filename": "116_resource_backpressure_limiter.md",
+      "title": "SPEC-116: Resource Allocation Limits & Memory/CPU Backpressure Sentinels",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/ResourceLimiter.js",
+        "src/net/ResourceLimiter.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/117_websocket_rate_limiter_telemetry.md",
+      "filename": "117_websocket_rate_limiter_telemetry.md",
+      "title": "SPEC-117: Zero-Trust WebSocket Rate Limiter & Observability Telemetry",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/server/connectionHandlers.js",
+        "src/net/metrics.js",
+        "src/server/wsRateLimiter.integration.test.js"
+      ]
     }
   ],
   "epistemicDebt": {
     "untestedCoreFiles": [],
     "missingJsDocs": [],
-    "staleSpecReferences": []
+    "staleSpecReferences": [
+      {
+        "spec": "plan/specs/115_ephemeral_workspace_sandbox.md",
+        "brokenFiles": [
+          "src/net/EphemeralSandbox.js"
+        ]
+      },
+      {
+        "spec": "plan/specs/116_resource_backpressure_limiter.md",
+        "brokenFiles": [
+          "src/net/ResourceLimiter.js",
+          "src/net/ResourceLimiter.test.js"
+        ]
+      },
+      {
+        "spec": "plan/specs/117_websocket_rate_limiter_telemetry.md",
+        "brokenFiles": [
+          "src/server/wsRateLimiter.integration.test.js"
+        ]
+      }
+    ]
   }
 }

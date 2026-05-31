@@ -220,15 +220,30 @@ Completed waves (`001–112`) are recorded DONE in `PROGRESS.md`. The active mod
 
 ---
 
-## EXECUTION WAVES (v28)
+## EXECUTION WAVES (v28) — Completed (DONE)
 
-Completed waves (`001–112`) are recorded DONE in `PROGRESS.md`. The active cluster orchestration and faction chronicle integration wave:
+Completed waves (`001–114`) are recorded DONE in `PROGRESS.md`. The active cluster orchestration and faction chronicle integration wave:
 
 ### Phase 0 — Scaling & Integration — `113`
-- `113` Programmatic Multi-Process Cluster Test Harness & Orchestration Smoke (develop programmatic spawner `scripts/agent/cluster-smoke.js` running multiple workers, routing mock clients via sticky LB presence keys, testing cross-shard matchmaking, and sweeping connections cleanly without process leakage).
+- `113` Programmatic Multi-Process Cluster Test Harness & Orchestration Smoke (develop programmatic spawner `scripts/agent/cluster-smoke.js` running multiple workers, routing mock clients via sticky LB presence keys, testing cross-shard matchmaking, and sweeping connections cleanly without process leakage) — **done**.
 
 ### Phase 1 — Emergent Gameplay & Narrative — `114`
-- `114` Faction Standing Decays & Real-Time Galactic Chronicles Integration (wire theslow faction standings reputation decay ticks inside `galaxyTicker.js` to trigger dynamic chronicle news updates visible on the dashboard UI timeline).
+- `114` Faction Standing Decays & Real-Time Galactic Chronicles Integration (wire theslow faction standings reputation decay ticks inside `galaxyTicker.js` to trigger dynamic chronicle news updates visible on the dashboard UI timeline) — **done**.
+
+---
+
+## EXECUTION WAVES (v29)
+
+Completed waves (`001–114`) are recorded DONE in `PROGRESS.md`. The dynamic secure execution and backpressure wave:
+
+### Phase 0 — Sandbox Security & Isolation — `115`
+- `115` Ephemeral Workspace Isolation Layer & Sandbox Cloner (build a copy-on-write workspace sandbox cloner provisioning isolated temp directories for untrusted AI agent execution runs, monitor footprints, and clean up cleanly post-execution).
+
+### Phase 1 — System Load & Backpressure Safety — `116`
+- `116` Resource Allocation Limits & Memory/CPU Backpressure Sentinels (develop a light-overhead resource monitor and backpressure sentinel polling memory usage and CPU time to actively prevent host OOM or thread lock failures).
+
+### Phase 2 — WebSocket Security — `117`
+- `117` Zero-Trust WebSocket Rate Limiter & Observability Telemetry (integrate high-throughput connection-level rate limiting in connection handlers capping sockets at 100 messages/sec and visualize occurrences on dynamic SVG line charts on the Codex dashboard).
 
 ---
 
@@ -238,10 +253,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 113 | Cluster Orchestration Smoke | 0 | 5 | 4 | 4 | 5 | 18 |
-| 114 | Standing Decay Chronicle | 1 | 4 | 5 | 5 | 5 | 19 |
+| 115 | Ephemeral Workspace Sandbox | 0 | 5 | 5 | 5 | 5 | 20 |
+| 116 | Resource Backpressure Limiter | 1 | 5 | 5 | 5 | 5 | 20 |
+| 117 | WebSocket Rate Limiter | 2 | 4 | 5 | 5 | 5 | 19 |
 
-**Recommended start:** `114` (Σ19 — Standing Decay Chronicle) immediately.
+**Recommended start:** `115` (Σ20 — Ephemeral Workspace Sandbox) immediately.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

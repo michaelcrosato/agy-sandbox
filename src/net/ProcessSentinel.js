@@ -223,7 +223,10 @@ function checkPath(filePath, isWrite = false) {
     const resolved = path.resolve(pStr);
 
     // 1. If it resolved inside the active sandboxDir, it's always allowed (read/write)
-    if (resolved.startsWith(sandboxDir)) {
+    if (
+      resolved === sandboxDir ||
+      resolved.startsWith(sandboxDir.endsWith(path.sep) ? sandboxDir : sandboxDir + path.sep)
+    ) {
       return;
     }
 
@@ -248,8 +251,10 @@ function checkPath(filePath, isWrite = false) {
     const rootNodeModules = path.resolve(sandboxDir, "../../node_modules");
     const workspaceNodeModules = path.resolve(process.cwd(), "node_modules");
     if (
-      resolved.startsWith(rootNodeModules) ||
-      resolved.startsWith(workspaceNodeModules)
+      resolved === rootNodeModules ||
+      resolved.startsWith(rootNodeModules.endsWith(path.sep) ? rootNodeModules : rootNodeModules + path.sep) ||
+      resolved === workspaceNodeModules ||
+      resolved.startsWith(workspaceNodeModules.endsWith(path.sep) ? workspaceNodeModules : workspaceNodeModules + path.sep)
     ) {
       return;
     }
@@ -266,7 +271,10 @@ function checkPath(filePath, isWrite = false) {
     const workerFile = path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
     );
-    if (resolved.startsWith(workerFile)) {
+    if (
+      resolved === workerFile ||
+      resolved.startsWith(workerFile.endsWith(path.sep) ? workerFile : workerFile + path.sep)
+    ) {
       return;
     }
 
@@ -462,7 +470,10 @@ export function validateCommand(command, args = []) {
         if (arg && !arg.startsWith("-")) {
           const resolved = path.resolve(arg);
           // Allow inside sandbox
-          if (resolved.startsWith(sandboxDir)) {
+          if (
+            resolved === sandboxDir ||
+            resolved.startsWith(sandboxDir.endsWith(path.sep) ? sandboxDir : sandboxDir + path.sep)
+          ) {
             continue;
           }
           // Allow inside node_modules
@@ -475,8 +486,10 @@ export function validateCommand(command, args = []) {
             "node_modules",
           );
           if (
-            resolved.startsWith(rootNodeModules) ||
-            resolved.startsWith(workspaceNodeModules)
+            resolved === rootNodeModules ||
+            resolved.startsWith(rootNodeModules.endsWith(path.sep) ? rootNodeModules : rootNodeModules + path.sep) ||
+            resolved === workspaceNodeModules ||
+            resolved.startsWith(workspaceNodeModules.endsWith(path.sep) ? workspaceNodeModules : workspaceNodeModules + path.sep)
           ) {
             continue;
           }
@@ -484,7 +497,10 @@ export function validateCommand(command, args = []) {
           const workerFile = path.resolve(
             path.dirname(fileURLToPath(import.meta.url)),
           );
-          if (resolved.startsWith(workerFile)) {
+          if (
+            resolved === workerFile ||
+            resolved.startsWith(workerFile.endsWith(path.sep) ? workerFile : workerFile + path.sep)
+          ) {
             continue;
           }
           // Otherwise, it resolves outside sandbox and is an escape attempt!

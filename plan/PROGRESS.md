@@ -36,8 +36,16 @@ _**v42 re-audit baseline (2026-05-31, ENTIRE v41 blueprint shipped): 1,233 Jest 
 _**v43 re-audit baseline (2026-05-31, ENTIRE v42 blueprint shipped): 1,247 Jest tests / 121 suites green; world-derived missions flow, mass-agility physics dynamics, and dynamic faction vengeance spawner all 100% DONE.**_
 _**v44 re-audit baseline (2026-05-31, ENTIRE v43 blueprint shipped): 1,270 Jest tests / 124 suites green; secure script jailing, ProcessReaper process-tree tracking, and log compaction all 100% DONE.**_
 _**v45 re-audit baseline (2026-05-31, ENTIRE v45 blueprint shipped): 1,292 Jest tests / 126 suites + 63 client tests green; modular REST API handlers, sharded Redis Pub/Sub, and Playwright visual automation E2E regression guard all 100% DONE.**_
+_**v47 re-audit baseline (2026-05-31, ENTIRE Cycle 46 sandbox baseline audit completed): 1,294 Jest tests / 126 suites + 63 client tests green; PortReclaimer and ConfigWatcher teardowns fully stabilized and verified.**_
 
-## v46 — Faction War Campaign, Interactive Stellar HUD, and Real-Time Strategic Maps (IN PROGRESS) — see [`ROADMAP.md`](ROADMAP.md)
+## v47 — Hyper-Secure Agent Sandbox and Teardown Hardening (IN PROGRESS) — see [`ROADMAP.md`](ROADMAP.md)
+
+- [ ] `167` Lock Down Node Native C++ Bindings (process.dlopen, process.binding, process._linkedBinding) (block untrusted scripts from escaping V8 contexts inside child processes; verify via tests)
+- [ ] `168` Restrict Dynamic/Static Imports of Dangerous Core Native Libraries in GuestLoader (prevent loading dangerous core modules like node:child_process and node:vm in guest processes)
+- [x] `169` Prevent Sandbox Directory Traversal Escapes via Sibling Directory Boundary Separation (enforce path separators in startsWith checks inside ProcessSentinel to block sibling directory traversal escapes) — **done** (hardened startsWith prefix checks across both checkPath and validateCommand by suffixing containment directory bounds with path.sep, and authored unit tests inside ProcessSentinel.test.js verifying sibling boundary containment for reads, writes, and command scripts; 14 tests green)
+- [ ] `170` Autonomic Process Tree Teardown Registry in ProcessReaper on Host Signal Interceptions (implement automated process exit and signal listeners cleanly terminating all child process trees)
+
+## v46 — Faction War Campaign, Interactive Stellar HUD, and Real-Time Strategic Maps (DEFERRED) — see [`ROADMAP.md`](ROADMAP.md)
 
 - [ ] `164` Faction War Strategy Engine & Real-Time Conflict Zone Map REST API (design a pure headless FactionWarCampaign.js strategy engine simulating dynamic sector military conflicts and exposing REST endpoint GET /api/faction/campaign)
 - [ ] `165` Clustered Sync for Galactic Military Fleets over Redis Pub/Sub (extend the sharded worker subscriber model to synchronize military actions, sector conquests, and campaign alerts globally)

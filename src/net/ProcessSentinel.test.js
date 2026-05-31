@@ -5,6 +5,7 @@ import {
 } from "./ProcessSentinel.js";
 import childProcess from "child_process";
 import fs from "fs";
+import path from "path";
 
 beforeAll(() => {
   process.env.TEST_SENTINEL_FORCE = "true";
@@ -277,6 +278,32 @@ describe("ProcessSentinel (SPEC-106)", () => {
       } catch {
         // ignore
       }
+    }
+  });
+
+  test("ProcessSentinel blocks sibling prefix directory traversal escapes (SPEC-169)", () => {
+    const sandboxDir = path.resolve("./.sandbox-test-sentinel-dir");
+    const siblingDir = path.resolve("./.sandbox-test-sentinel-dir-sibling");
+    process.env.GUEST_SCRIPT_PATH = "src/net/temp_guest_ok.js";
+    try {
+      ProcessSentinel.activate();
+      ProcessSentinel.setSandboxDirectory(sandboxDir);
+
+      // Attempting to read/write inside the sibling directory sharing prefix must be blocked
+      expect(() => {
+        fs.writeFileSync(path.join(siblingDir, "evil.txt"), "data");
+      }).toThrow(/\[SECURITY ACCESS DENIED\]/);
+
+      expect(() => {
+        fs.readFileSync(path.join(siblingDir, "evil.txt"));
+      }).toThrow(/\[SECURITY ACCESS DENIED\]/);
+
+      // Node command check with sibling script target must be blocked
+      expect(
+        validateCommand("node", [path.join(siblingDir, "script.js")]).allowed
+      ).toBe(false);
+    } finally {
+      delete process.env.GUEST_SCRIPT_PATH;
     }
   });
 });

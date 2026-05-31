@@ -8,12 +8,12 @@ _v1 baseline (2026-05-28): 569 tests / 33 suites; 2 high `npm audit` advisories 
 _v2 re-audit baseline (2026-05-29, after Phase 0+1): 614 tests / 42 suites; 0 CVEs._
 _v3 re-audit baseline (2026-05-30, ENTIRE v2 blueprint shipped): 696 Jest tests / 51 suites + 17 client green; 0 `npm audit` vulnerabilities; `npm outdated` empty; typecheck gate + CI LTS matrix live._
 _v4 re-audit baseline (2026-05-30, ENTIRE v3 blueprint shipped): 775 Jest tests / 61 suites + 18 client green; 0 `npm audit` vulnerabilities; matchmaking queue + compression + schema codec all DONE._
-_v5 re-audit baseline (2026-05-30, ENTIRE v4 blueprint shipped): 798 Jest tests / 65 suites + 18 client green; 0 `npm audit` vulnerabilities; dynamic refining + matchmaking disconnect auto-admit + glassmorphic dashboard all DONE.** Remaining = v5 Phase 0 (045) + Phase 1 (046) + Phase 2 (047)._
-_v6 re-audit baseline (2026-05-30, ENTIRE v5 blueprint shipped): 811 Jest tests / 66 suites + 18 client green; 0 `npm audit` vulnerabilities; contraband jammers + modular port handlers + dynamic reputation spawns all DONE.** Remaining = v6 Phase 0 (050) + Phase 1 (049) + Phase 2 (048)._
-_v7 re-audit baseline (2026-05-30, ENTIRE v6 blueprint shipped): 821 Jest tests / 66 suites + 18 client green; 0 `npm audit` vulnerabilities; contraband space scans + spatial interest grid + wingman formations all DONE.** Remaining = v7 Phase 0 (051) + Phase 1 (052) + Phase 2 (053)._
-_v8 re-audit baseline (2026-05-30, ENTIRE v7 blueprint shipped): 827 Jest tests / 66 suites + 15 client green; 0 `npm audit` vulnerabilities; kinetic damage + warp tolls + bounty radar HUD all DONE.** Remaining = v8 Phase 0 (055) + Phase 1 (056) + Phase 2 (054)._
-_v9 re-audit baseline (2026-05-30, ENTIRE v8 blueprint shipped): 839 Jest tests / 66 suites + 22 client green; 0 `npm audit` vulnerabilities; dynamic reputation battles + interdiction + command decks all DONE.** Remaining = v9 Phase 0 (057) + Phase 1 (058) + Phase 2 (059)._
-_v10 re-audit baseline (2026-05-30, ENTIRE v9 blueprint shipped): 871 Jest tests / 69 suites + 24 client green; 0 `npm audit` vulnerabilities; dynamic market events + fittings loadouts + multiplayer co-op squads all DONE. Remaining = none (ALL v10 blueprint shipped!).**_
+_v5 re-audit baseline (2026-05-30, ENTIRE v4 blueprint shipped): 798 Jest tests / 65 suites + 18 client green; 0 `npm audit` vulnerabilities; dynamic refining + matchmaking disconnect auto-admit + glassmorphic dashboard all DONE.\*\* Remaining = v5 Phase 0 (045) + Phase 1 (046) + Phase 2 (047)._
+_v6 re-audit baseline (2026-05-30, ENTIRE v5 blueprint shipped): 811 Jest tests / 66 suites + 18 client green; 0 `npm audit` vulnerabilities; contraband jammers + modular port handlers + dynamic reputation spawns all DONE.\*\* Remaining = v6 Phase 0 (050) + Phase 1 (049) + Phase 2 (048)._
+_v7 re-audit baseline (2026-05-30, ENTIRE v6 blueprint shipped): 821 Jest tests / 66 suites + 18 client green; 0 `npm audit` vulnerabilities; contraband space scans + spatial interest grid + wingman formations all DONE.\*\* Remaining = v7 Phase 0 (051) + Phase 1 (052) + Phase 2 (053)._
+_v8 re-audit baseline (2026-05-30, ENTIRE v7 blueprint shipped): 827 Jest tests / 66 suites + 15 client green; 0 `npm audit` vulnerabilities; kinetic damage + warp tolls + bounty radar HUD all DONE.\*\* Remaining = v8 Phase 0 (055) + Phase 1 (056) + Phase 2 (054)._
+_v9 re-audit baseline (2026-05-30, ENTIRE v8 blueprint shipped): 839 Jest tests / 66 suites + 22 client green; 0 `npm audit` vulnerabilities; dynamic reputation battles + interdiction + command decks all DONE.\*\* Remaining = v9 Phase 0 (057) + Phase 1 (058) + Phase 2 (059)._
+_v10 re-audit baseline (2026-05-30, ENTIRE v9 blueprint shipped): 871 Jest tests / 69 suites + 24 client green; 0 `npm audit` vulnerabilities; dynamic market events + fittings loadouts + multiplayer co-op squads all DONE. Remaining = none (ALL v10 blueprint shipped!).\*\*_
 _v11 re-audit baseline (2026-05-30, ENTIRE v10 blueprint shipped): 871 Jest tests / 69 suites + 24 client green; 0 `npm audit` vulnerabilities; naval rank boards + physical trade caravans + multi-worker Redis cluster sync all DONE._
 _**v12 re-audit baseline (2026-05-30, ENTIRE v11 blueprint shipped): 882 Jest tests / 71 suites + 24 client green; 0 `npm audit` vulnerabilities; dynamic cosmic storms + Allied ambassador escorts + elite faction hunters all DONE.**_
 _**v13 re-audit baseline (2026-05-30, ENTIRE v12 blueprint shipped): 886 Jest tests / 71 suites + 24 client green; 0 `npm audit` vulnerabilities; procedural mission completions + UtilityAI global rollout + centralized commodities all DONE.**_
@@ -31,14 +31,19 @@ _**v35 re-audit baseline (2026-05-31, ENTIRE v35 blueprint shipped): 1,198 Jest 
 _**v36 re-audit baseline (2026-05-31, ENTIRE v36 blueprint shipped): 1,209 Jest tests / 117 suites green; host-isolated process guest runner, dynamic egress firewall admin controls, and strict absolute filesystem path jailing all DONE.**_
 _**v37 re-audit baseline (2026-05-31, ENTIRE v37 blueprint shipped): 1,213 Jest tests / 117 suites green; V8 memory caps, cumulative CPU time-slice budget policing, and environment variable sanitization masking all DONE.**_
 _**v38 re-audit baseline (2026-05-31, ENTIRE v38 blueprint shipped): 1,216 Jest tests / 117 suites green; golden-glassmorphic resource HUD telemetry gauge panel, pre-activated zero-trust outbound firewall containment, and ESM dynamic loader module jailing all 100% DONE.**_
+_**v39 re-audit baseline (2026-05-31, ENTIRE v39 blueprint shipped): 1,222 Jest tests / 118 suites green; secure schema-validated Guest RPC channel sentry, post-run workspace snapshot drift auditing, self-healing copy-on-write restoration cleanup, and golden-glassmorphic cockpit dashboard card all 100% DONE.**_
 
+## v40 — Authenticated HMAC Channels, OS Throttling, and COW Virtual Filesystem Wave (TO DO) — see [`ROADMAP.md`](ROADMAP.md)
+
+- [ ] `148` Secure Execution-Run Single-Use HMAC Cryptographic Key Sentry (generate dynamically HMAC run tokens in host, verifying them on child Guest RPC headers and SIGKILLing unauthenticated requests)
+- [ ] `149` Dynamic OS-Level Child Process CPU Priority Throttling Scheduler (programmatically schedule guest child PID execution to low CPU priorities immediately upon spawn to safeguard host cycles)
+- [ ] `150` Absolute Zero-Trust Copy-On-Write In-Memory Virtual Filesystem Sentry (redirect guest process writes transparently into virtual copy-on-write overlay dictionaries, completely bypassing disk foot-print)
 
 ## v39 — Secure Guest RPC Channel & Workspace Integrity Self-Healing Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 - [x] `145` Secure Sandboxed Guest RPC Channel Sentry (establish schema-validated allowlisted IPC channel for guest state queries and block prototype injection escapes) — **done** (developed schema-validated GuestRpcSentry validating parameters and blocking prototype-pollution attacks, integrated channel inside GuestRunner and GuestRunnerWorker under globalThis.guestRpcQuery, and verified via Jest unit/integration tests)
 - [x] `146` Workspace Drift Auditing Sentinel & Integrity Self-Healer (take baseline copy-on-write directory snapshots and purge untracked file leaks or modifications post-execution) — **done** (developed recursive directory snapshotting and automatic restoration purging inside WorkspaceDriftSentry, integrated into GuestRunner to auto-heal sandbox workspace post-run while preserving security logs, and covered with robust Jest unit and integration tests)
 - [x] `147` Golden-Glassmorphic Guest RPC & Workspace Drift HUD Card (enhance dashboard with visual RPC logger feed and real-time sandbox drift self-healing gauges) — **done** (exposed cumulative RPC and self-healing counters via /metrics in server.js, integrated golden-glassmorphic status panel and circular workspace purity gauge on dashboard-codex.html complete with live log feeds and offline random simulation mode, and verified element presence in HTTP integration tests)
-
 
 ## v38 — Guest Sandbox Observability, Network Containment & ESM Loader Jailing Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
@@ -65,7 +70,6 @@ _**v38 re-audit baseline (2026-05-31, ENTIRE v38 blueprint shipped): 1,216 Jest 
 - [x] `135` Golden-Glassmorphic CPU Watchdog & Tamper Cockpit Gauge (enhance dashboard-codex.html with visual sentry cockpit card showing Event Loop latency gauges and prototype/scope tamper alarms) — **done** (integrated a premium, gold-glassmorphic CPU Watchdog & Tamper Sentry status card to dashboard-codex.html rendering real-time Event Loop heartbeat delay bars, and glowing status alarms for prototype tampering and global scope pollution polled dynamically from /metrics, added robust offline random simulations, and verified page markup under http integration tests inside codexDashboard.integration.test.js)
 
 ## v34 — Sandbox Safety, Centralized Auditing & Console Visualization Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
-
 
 - [x] `130` Autonomic Process-Tree Tracking & Orphan Reaper (intercept child process spawns globally and recursively kill nested process trees to prevent system leakage) — **done** (monkey-patched all successful Node child_process async/sync spawns globally in ProcessSentinel.js to auto-register to ProcessReaper, extended ProcessReaper.js with portable OS-specific recursive process tree teardowns using taskkill on Windows and recursive pgrep scanning on Unix, and authored robust Jest tests covering automatic registration and recursive grandchildren pid sweeping)
 - [x] `131` Centralized Security Audit Registry & Observability Ledger (log filesystem path escapes and block triggers to an append-only JSON audit ledger, exposing telemetry under `/metrics`) — **done** (developed SandboxSecurityRegistry.js providing a tamper-proof registry that appends millisecond-timestamped security block events with full callstacks, categories, and custom parameters into a persistent JSON ledger on disk under plan/security_audit.json with auto-compaction bounds of 500 records, integrated it seamlessly into filesystem checks inside ProcessSentinel.js, egress firewall blocks inside SandboxFirewall.js, and API rate limiting sentinels in ApiRateLimiter.js, exposed violations under /metrics, and authored robust Jest unit and integration tests confirming correctness)
@@ -131,230 +135,285 @@ _**v38 re-audit baseline (2026-05-31, ENTIRE v38 blueprint shipped): 1,216 Jest 
 ## v23 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Core Architecture Hardening
+
 - [x] `101` Self-Synchronizing Codebase "Living Codex" & Semantic Registry (scan directories, map classes, methods, JSDoc, tests, and specs into a dynamic machine plan/codex.json and plan/CODEX.md ontology) — **done** (files: `scripts/agent/generate-codex.js`, `scripts/agent/generate-codex.test.js`, `package.json`, `plan/codex.json`, `plan/CODEX.md`; implemented an automated Node.js repository parser scanning all source modules, JSDocs, specs, and test suites, compiling a detailed machine-readable JSON graph and a beautiful human-readable CODEX.md ontology report with epistemic debt detection, and wired it directly into npm run agent:check; all 981 backend Jest tests green)
 - [x] `102` Interactive Visual Codex Dashboard & Ontological Tree UI (build zero-dependency HTML visualizer serving plan/codex.json, displaying folder topologies, JSDoc completions, test linkages, and spec alignment) — **done** (files: `dashboard-codex.html`, `src/server.js`, `src/server/codexDashboard.integration.test.js`, and updated `plan/CODEX.md`, `plan/codex.json`, `plan/PROGRESS.md`, `plan/ROADMAP.md`, `plan/STATE.md`, `plan/specs/102_living_codex_interactive_dashboard.md`; created a premium neon-cyan glassmorphic dashboard showcasing codebase graphs, SVG interactive trees, search filters, and structural metrics, served over GET /dashboard-codex and GET /codex, and validated via worker-thread integration tests; 984 backend Jest tests green)
 - [x] `099` Centralized Commodities & Unified Schema Registry (centralize commodities configurations and all WebSocket / request command structures into a unified schema registry to prevent client/server drift and validation bugs) — **done** (files: `src/net/SchemaRegistry.js`, `src/net/SchemaRegistry.test.js`, `src/engine/commodities.js`, `src/engine/GameInstance.js`, `src/net/SchemaValidator.js`, `src/server.js`, `src/client/UIController.js`, `src/client/SpaceportUI.js`, `src/server/schemaValidation.integration.test.js`; centralized commodities dictionary metadata, unified baseline planet markets `BASE_MARKETS`, extracted all WebSocket validation schemas into single source of truth registry, refactored client and engine files to eliminate all duplication, exposed a secure dynamic `/schema` HTTP endpoint, added comprehensive invariants unit tests, and fully validated the HTTP payload via worker integrations; all 989 backend Jest tests green)
 
 ### Phase 1 — Emergent Universe Operations
+
 - [x] `098` Emergent Faction Territory Control & Dynamic Sector Borders (build dynamic influence tracker shifting sector control, security ratings, and tax rates dynamically based on combat and mission outcomes) — **done** (files: `src/engine/TerritoryControl.js`, `src/engine/TerritoryControl.test.js`, `src/engine/GameInstance.js`, `src/engine/Trading.js`, `src/server/galaxyTicker.js`, `src/server.js`, `src/client/NetworkHandler.js`, `src/client/UIController.js`, `index.html`, `src/persistence/serializers.js`, `src/persistence/serializers.test.js`, `plan/specs/098_emergent_faction_territory_control.md`; integrated dynamic influence tracking, dynamic guard faction assignment on spawns, combat destructions adjusting sector influence scores, trade transaction and mission completion influence nudges, dynamic sector tax surcharges, serializer restoration across server restarts, neon-cyan HUD overlay displays, and verified everything under full end-to-end integration tests; all 997 Jest tests green)
 
 ### Phase 2 — Ship Fittings & Loadout UI
+
 - [x] `100` Ship Fittings Presets & Loadout Manager (build server-persisted outfitting loadout preset manager allowing single-click preset purchases and dynamic slot/power grid safety validation) — **done** (files: `src/engine/LoadoutManager.js`, `src/engine/LoadoutManager.test.js`, `src/server/portHandlers.js`, `src/server/portHandlers.test.js`, `src/client/NetworkHandler.js`, `src/client/SpaceportUI.js`, `src/net/SchemaRegistry.js`, `src/server.js`; engineered the central fittings presets validation engine ensuring presets do not exceed slot caps, virtual power drawing capacities, or maximum outfit mass limits, computed stands-discounted and tax-adjusted package cost splits, verified planetary outfitter inventory stock availability and standings rank locks, integrated responsive named preset text inputs on the outfitter HUD panel, and verified the entire pipeline under robust unit and integration testing; all 1,013 Jest tests green)
 
 ## v22 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Adv Evals & Load Scaling
+
 - [x] `095` High-Concurrency Sandbox Stress-Testing & Simulated Network Latency Injector (build application-level latency/drop injector and concurrent headless load runner simulating 50+ concurrent pilots clashing in sectors) — **done** (files: `src/net/NetworkLatencyInjector.js`, `src/net/NetworkLatencyInjector.test.js`, `scripts/agent/stress-test.js`, `src/server/stressConcurrency.integration.test.js`, `src/server.js`; created a highly configurable socket decorator to delay and drop packages, engineered an async spawner spawning 25+ pilots clashing concurrently under clean teardowns, and verified event-loop lag induced backpressure shedding end-to-end; 955 Jest tests green)
 
 ### Phase 1 — Observability & Universe History
+
 - [x] `096` The Galactic Chronicle & Dynamic persistent simulation history logs (record major econ spikes and faction stand-off results in pruned JSON store and display on neon timeline sidebar) — **done** (files: `src/persistence/GalacticChronicle.js`, `src/persistence/GalacticChronicle.test.js`, `dashboard.html`, `src/server/dashboard.integration.test.js`, `src/server/galaxyTicker.js`, `src/server.js`, `src/engine/GameInstance.js`; created a highly optimized persistent simulation ledger recording shortages/surpluses, dynamic sector shocks, faction clashes, and interdictions; exposed GET /chronicle HTTP JSON endpoint and drew a futuristic neon-gold glassmorphic timeline sidebar inside dashboard.html; 968 Jest tests green)
 
 ### Phase 2 — Security & Cost Sentinel
+
 - [x] `097` Sandboxed Outbound API Rate Limiter & Network Domain Sentinel (protect host budgets via sliding-window limiters wrapping external AI prompts, returning warning mocks and blocking non-allowlisted egress domains) — **done** (files: `src/net/ApiRateLimiter.js`, `src/net/ApiRateLimiter.test.js`, `src/server.js`, `dashboard.html`, `src/server/dashboard.integration.test.js`; created a thread-safe sliding window rate limiter enforcing hourly/minute request bounds, built a domain sentinel allowlisting safe hostnames, monkey-patched Node's http/https request methods and global fetch to safely short-circuit and emit deterministic error mocks, and drew a sleek crimson-amber block and token tracker UI card on the developer dashboard; all 979 Jest tests + 57 Vitest client + 3 Vitest browser tests green)
 
 ## v21 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Security & Teardown Lifecycle
+
 - [x] `092` Automated Zombie Process Reaper & Orphan Port Cleanup Subsystem (build a modular ProcessReaper class tracking worker threads/child processes and a PowerShell teardown script to kill orphaned tasks and free locked socket ports) — **done** (files: `src/net/ProcessReaper.js`, `src/net/ProcessReaper.test.js`, `scripts/agent/cleanup-orphans.ps1`, `src/server/supervisor.integration.test.js`; created a robust process tracking reaper class and host-side PowerShell process sweep script to force-kill zombie tasks and free bound socket ports under Windows developer hosts, fully verified with mock worker and subprocess testing; 936 Jest tests green)
 - [x] `093` State Leakage Defender & Workspace Isolation Sandbox (develop an automatic workspace sanitizing script to detect and sweep untracked test directories and local temp logs while preserving planning ledgers) — **done** (files: `scripts/agent/workspace-sanitize.ps1`, `src/net/WorkspaceSanitizer.test.js`, `.gitignore`; implemented a recursive workspace sanitizing powershell script that removes untracked test directories and local temp logs while preserving critical ledgers and planning directories, automatically registered under git hooks to verify clean/predictable sandbox states; 937 Jest tests green)
 
 ### Phase 2 — Observability & Telemetry
+
 - [x] `094` LLM Observability & Sandbox Resource Telemetry Recorder (implement sandbox-level memory, CPU, and disk utilization recording to log resource leaks and plot peak footprints on the telemetry dashboard) — **done** (files: `src/net/SandboxTelemetry.js`, `src/net/SandboxTelemetry.test.js`, `src/server/sandboxTelemetry.integration.test.js`, `src/server.js`, `dashboard.html`; created real-time CPU, peak-tracking heap memory, and recursive folder footprint telemetry recorder with memory leak estimation, integrated directly to dashboard.html visual UI cards and Exposed metrics API; 953 Jest tests green)
 
 ## v20 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
-
 ### Phase 0 — Quick Wins & Safety
+
 - [x] `089` zero-trust WebSocket input schema validation (construct a performant zero-dependency schema validation utility for all inbound socket payloads to prevent prototype pollution and overflow injections) — **done** (files: `src/net/SchemaValidator.js`, `src/net/SchemaValidator.test.js`, `src/server.js`, `src/server/schemaValidation.integration.test.js`; implemented pure, zero-dependency validation schemas and stripped unknown keys to prevent prototype pollution across all inbound socket payloads, fully verified by unit and socket-level integration tests; 933 Jest tests green)
 - [x] `090` event-loop latency monitoring & backpressure load-shedding (monitor process tick lag dynamically and implement automatic broadcast shedding of optional frames under critical loop load) — **done** (files: `src/net/LatencyMonitor.js`, `src/net/LatencyMonitor.test.js`, `src/server/latencyMonitoring.integration.test.js`, `src/server.js`; designed a high-resolution rolling average latency monitor, exposed metrics on /metrics, and implemented dynamic frame-shedding for connections during critical loop loads; 937 Jest tests green)
 
 ### Phase 1 — Core Upgrades & Feature Delivery
+
 - [x] `091` game invariant verifier & heartbeat self-healing (periodically audit credits, cargo capacities, physics coordinates, and outfitting slots on server heartbeat, silently repairing anomalous states) — **done** (files: `src/engine/InvariantVerifier.js`, `src/engine/InvariantVerifier.test.js`, `src/server/galaxyTicker.js`; built pure, deterministic audit and repair module for credits, cargo capacities, position/velocity coordinates, and fittings slot overflow, wired directly to slow-heartbeat ticks; 947 Jest tests green)
 
 ## v19 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
+
 - [x] `087` dynamic trade profit metric in AI perception (calculate price spreads across docked ports in sector, apply standings discounts, and feed normalized profitability score directly to buildPerception's tradeProfit perception value) — **done** (files: `src/engine/ai/buildPerception.js`, `src/engine/ai/buildPerception.test.js`, `src/engine/GameInstance.js`, `src/engine/ai/AIController.js`; implemented standings-aware, black-market and transaction-tax aware dynamic price spread calculations, factoring them into NPC merchant profit scoring and updating AIController initialization/update routes; 917 Jest tests green)
 
 ### Phase 1 — Core Upgrades & Feature Delivery
+
 - [x] `086` NPC smuggler fleets & underworld trader AI (design smuggler merchant AI loading contraband cargo, pathing through outlaw ports, and activating decoy radar jammers to escape security space patrols) — **done** (files: `src/engine/ai/AIController.js`, `src/engine/ai/AIController.test.js`, `src/engine/ai/UtilityAI.js`, `src/engine/ai/buildPerception.js`, `src/client/CanvasRenderer.js`, `src/engine/Ship.js`; integrated smuggler attributes, FSM cargo loading, high-priority `ESCAPE_SECURITY` utility goal, visual decoy jammer chaff particles, outlaw/smuggler style theme, and exhaustive unit tests verifying the escape, chaff, and trading logic; 921 Jest tests green)
 
 ### Phase 2 — System Architecture
+
 - [x] `088` stargate navigation NAV-computer overlay (construct slide-out gold glassmorphic HUD nav-computer card, calculate shortest path BFS gate routes to hud target sector, and draw neon-purple holographic visual gates brackets) — **done** (files: `index.html`, `index.css`, `src/client/CanvasRenderer.js`, `src/client/UIController.js`, `src/client/__tests__/UIController.test.js`, `src/main.js`; designed a beautiful slide-out gold-glassmorphic HUD NAV-computer panel calculating and rendering shortest-path BFS warp gate route checkpoints between player sector and targeted stargate, drawing neon-purple pulsing dashed holographic visual brackets on canvas, and verified with Vitest client tests; 57 client tests passing)
 
 ## v18 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
+
 - [x] `083` client-side entity interpolation & remote ship smoothing (implement smooth LERP/SLERP interpolation buffer caching for remote entities inside CanvasRenderer to eliminate movement stuttering) — **done** (files: `src/client/Interpolator.js`, `src/client/__tests__/Interpolator.test.js`, `src/main.js`; designed rolling history buffers with short-arc angular LERP/LERP calculations, capped extrapolation to prevent drift, wired pushing to `EntityInterpolator` on server snapshot receipts in `syncEntitiesFromServer`, cleared on warp/initialization, pruned stale entries in `gameLoop`, and wrapped drawing with smooth interpolated position/heading mappings and restorations; 54 Vitest client tests and 3 Vitest browser tests pass 100% green)
 
 ### Phase 1 — Core Upgrades & Feature Delivery
+
 - [x] `084` emergency distress beacons & emergent rescue caravans (catalog Emergency Distress Beacon outfit, program distress beacon server listener, spawn allied refuel tankers or hostile rim pirate ambushers based on local standing) — **done** (files: `src/engine/outfitCatalog.js`, `src/server/portHandlers.js`, `src/server/portHandlers.test.js`, `src/engine/Outfitting.js`, `src/engine/ai/AIController.js`; cataloged Emergency Distress Beacon as utility outfit, implemented handleDistressBeacon spawning allied refuel tankers for friendly/neutral standings or hostile rim pirate raiders for negative standings, fixed word-boundary sector name matching, declared refuel tanker AI properties, and verified all behaviors with 28 passing unit tests; 916 Jest tests green)
 
 ### Phase 2 — System Architecture
+
 - [x] `085` underworld smuggling contracts & standing propagation (procedurally generate smuggling contracts at Rogue's Hollow, attach negative standing consequences to major law factions, and verify propagation on completion) — **done** (files: `src/engine/MissionManager.js`, `src/server.js`, `src/engine/faction.integration.test.js`)
 
 ## v17 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
+
 - [x] `080` tractor outfit mass correction (ensure the Tractor Beam Matrix outfit correctly applies its 200 kg mass to the ship's hull on buy or salvage) — **done** (files: `src/engine/Outfitting.js`, `src/engine/Outfitting.test.js`; verified that Tractor Beam Matrix correctly applies 200 kg mass under existing unit tests)
 
 ### Phase 1 — Core Upgrades & Feature Delivery
+
 - [x] `081` outlaw spaceports and black market contraband pricing (configure Pirate Haven / Rogue's Hollow with blackMarket services, refuse docking to players with negative underworld standing, and award a 1.5x price premium on contraband sales) — **done** (files: `src/engine/GameInstance.js`, `src/server.js`, `src/engine/faction.integration.test.js`; successfully configured Rogue's Hollow with services.blackMarket: true, enforced underworld faction standing docking blocks for hostile players, scaled contraband sales base price by 1.5x at Black Market ports on the server, and verified via extensive integration tests)
 
 ### Phase 2 — System Architecture
+
 - [x] `082` faction-aware trade advisor HUD panel (implement TradeAdvisor calculation engine sorting top 3 trade routes by standing-adjusted net profits, and render as a dynamic gold HUD cockpit panel) — **done** (files: `src/engine/Trading.js`, `src/engine/Trading.test.js`, `index.html`, `index.css`, `src/client/UIController.js`, `src/client/__tests__/UIController.test.js`; successfully implemented the findBestTradeRoutes margin sorting engine, designed a premium dark-gold glassmorphic HUD cockpit advisory overlay, wired live client-side route updates factoring in standings discounts and transaction taxes, and fully verified with unit and integration tests; 912 Jest tests and 30 Vitest client tests passing 100% green)
 
 ## v16 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
+
 - [x] `077` raw ore refining port services and mining laser mass (implement Spaceport refining conversions, tax adjustments, and mining laser outfits contributing mass property to hulls) — **done** (files: `src/server/portHandlers.js`, `src/server.js`, `src/server/portHandlers.test.js`; successfully decoupled raw ore refining handler into handleOreRefine, supported both port_refine and ore_refine ws message commands, applied faction price modifiers/standing taxes to base fees, verified dynamic 250kg Mining Laser outfit mass integration and its dynamic impact on ship agility/turn rate under extensive integration tests)
 
 ### Phase 1 — Core Upgrades & Feature Delivery
+
 - [x] `078` reputation decay heartbeat hook (globally trigger FactionRegistry reputation decays drift towards zero from server ticker updates) — **done** (files: `src/server/galaxyTicker.js`, `src/server/galaxyTicker.test.js`; successfully verified standings decay heartbeats triggering periodically inside the slow galaxy heartbeat loop enqueued in server instances, fully covered by unit tests)
 
 ### Phase 2 — System Architecture
+
 - [x] `079` wingman intercept tactics and shield/armor HUD telemetry (program wingman intercept targets commands and FSM transitions, and render mini cockpit HUD status panels) — **done** (files: `src/engine/ai/AIController.js`, `src/engine/ai/AIController.test.js`, `src/server/portHandlers.js`, `index.html`, `src/client/UIController.js`, `src/client/__tests__/UIController.test.js`; successfully engineered tactical wingman escort FSM intercept target lock-on commands breaking off formations to target enemy ships, updated command listeners, constructed a stunning gold WINGMAN SUPPORT cockpit HUD overlay, mapped real-time shield and armor bar telemetry outputs, and verified the entire telemetry and command lifecycle via extensive unit and integration tests; 909 Jest tests and 28 Vitest client tests passing green)
 
 ## v15 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
+
 - [x] `074` Faction Pairwise Standing Propagation & Pairwise Relations (wire canonical alliances and enemies in FactionRegistry, so that standing gains/losses auto-propagate to Allies and Enemies proportionally) — **done** (files: `src/engine/FactionRegistry.js`, `src/engine/FactionRegistry.test.js`; successfully verified pairwise standing propagation for Allies (+50% gain) and Enemies (-50% loss) in FactionRegistry, fully covered by extensive unit tests in the faction suite)
 
 ### Phase 1 — Core Upgrades & Feature Delivery
+
 - [x] `075` Generative Mission Server Consequence Pipeline (connect generative mission completions from checkArrivalCompletions and checkBountyCompletion to mutate planetary market price indices and standing registries) — **done** (files: `src/server.js`, `src/engine/GameInstance.js`, `src/engine/faction.integration.test.js`; successfully wired courier, passenger, smuggling, and bounty mission arrival landing and destruction consequences to authoritative planet markets and FactionRegistry standing merits, broadcasted dynamic GALAXY NEWS price and threat alerts, synced planetary markets over websockets, and fully supported multi-player fleet credit and consequence distribution under extensive integration tests)
 
 ### Phase 2 — System Architecture
+
 - [x] `076` Wingman Fleet Command Formations & Cockpit HUD Guides (implement relative offset positioning escorts, wire escort_formation message triggers, and draw vector connection guidelines) — **done** (files: `src/engine/ai/AIController.js`, `src/engine/ai/AIController.test.js`, `src/server.js`, `src/client/CanvasRenderer.js`, `src/main.js`; successfully engineered pure relative coordinate offset transformations for wingman escorts under Delta Wing and rotating Defensive Orbit formations, wired wss escort_formation listener triggers, mapped cockpit F2 and F3 HUD keystrokes, rendered futuristic glowing dashed vector guidelines and bounding corner brackets connecting flagships to active escorts, and fully verified behaviors with new FSM math unit tests)
 
 ## v14 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
+
 - [x] `071` Client-Side Input Prediction & Server Reconciliation Harness (engineer a pure deterministic reconciler simulating physics vectors, input sequences, and authoritative state snapping under packet lag) — **done** (files: `src/client/Reconciler.js`, `src/client/__tests/Reconciler.test.js`; successfully implemented a pure, deterministic Reconciler class caching sequences of enqueued local input vectors, predicting position/velocity/heading offsets instantly from control keys, and replaying unacknowledged inputs over authoritative server snapshot baselines on demand to reconcile coordinates cleanly under simulated network latency)
 
 - [x] `072` Snapshot Delta Compression Network Pipeline (implement client-specific acknowledged frame baseline tracking and field-level dynamic dirty checks to compress broadcast payloads) — **done** (files: `src/net/DeltaStateCodec.js`, `src/net/DeltaStateCodec.test.js`; successfully implemented DeltaStateCodec supporting encodeDelta/decodeDelta that performs field-level property dirty checking and deletion scans against acknowledged baseline frames to significantly shrink WebSocket broadcast packets, fully covered by unit tests)
 
 ### Phase 2 — System Architecture
+
 - [x] `073` Observability Teleboard Sparkline Chart Extensions (expand visual telemetry dashboard cards with smooth, self-rendering canvas sparkline line graphs visualizing real-time history logs) — **done** (files: `dashboard.html`, `src/server.js`, `src/server/dashboard.integration.test.js`; successfully expanded the live observability dashboard by adding vector-based canvas sparkline line graphs for CPU tick rate processing times, broadcast bandwidth, and enqueued matchmaking queue sizes, storing rolling history data arrays in client memory, augmenting `/metrics` JSON endpoint payloads with top-level statistics and sector lists, and verifying HTTP serving plus telemetry payload fields in robust integration tests)
 
 ## v13 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
+
 - [x] `068` Playwright Canvas Visual Smoke & Component Interactions (expand Vitest Browser Mode visual infrastructure, implement fully-populated viewport mocks, and verify visual regression stability) — **done** (files: `src/client/__tests/CanvasRenderer.browser.test.js`, `src/client/__tests__/__screenshots__/CanvasRenderer.browser.test.js/space-scene-composite-rich-chromium-win32.png`; successfully expanded the Vitest Browser Mode visual regression suite, implemented a fully-populated viewport mock with starfields, engine exhaust flares, target indicators, projectiles, cosmic storm bounds, cargo pods with active tethers, and stargates, and froze the system clock using a `Date.now()` mock to achieve 100% stable, identical screenshot comparisons across runs)
 
 - [x] `069` Matchmaking Room Queues, Ratings & Priority Filters (upgrade matchmaking loop to support Combat Rating MMR matching, dynamic search tolerance expansion over elapsed wait times, and group matchmaking) — **done** (files: `src/server/matchmaking.js`, `src/server/matchmaking.test.js`; implemented combat rating MMR checks, a progressive tolerance expansion queue enqueuing timestamps and widening rating tolerances dynamically over elapsed time, and squad group slot reservations)
 
 ### Phase 2 — System Architecture
+
 - [x] `070` Sharded Database Storage Backend Partitioning (introduce ShardedStore partitioning keys across multiple storage partition layers, isolating states and ensuring infinite horizontal scale) — **done** (files: `src/persistence/ShardedStore.js`, `src/persistence/ShardedStore.test.js`; successfully implemented ShardedStore database sharding persistence layer partitioning keys evenly across multi-shard arrays using standard 32-bit FNV-1a uniform string hashing, fully isolating states across shards, and verified horizontal scaling partitioning structures via robust unit test coverage; 897 Jest tests green)
 
 ## v12 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
+
 - [x] `065` Procedural Mission Completions, Trade Standing Merits, & Standing Decay (map delivery/hunt dynamic generated missions, wire successful trade standing merits, and enable global reputation decay heartbeat) — **done** (files: `src/engine/MissionManager.js`, `src/engine/faction.integration.test.js`; successfully mapped generated delivery and hunt mission completions dynamically to checkArrivalCompletions and checkBountyCompletion, wired applyMissionConsequences dynamically on target landing or destruction to automatically update FactionRegistry standing merits and market commodity stock/prices, verified all behaviors including tradestanding pricing modifier decays and diplomatic relation propagation via robust integration tests; all 33 faction integration tests pass 100% green).
 
 ### Phase 1 — Core Upgrades & Feature Delivery
+
 - [x] `066` UtilityAI Advisor Spawns Rollout & Hardening (enable Goal-Driven UtilityAI on raiders, storyline bosses, escorts, mock bots, and harden threat detection perception) — **done** (files: `src/server.js`, `src/engine/ai/buildPerception.js`, `src/engine/ai/AIController.js`, `src/engine/ai/AIController.advisor.test.js`; successfully enabled `useUtilityAdvisor: true` and wired faction/standing policies across all remaining NPC spawns (storyline and bounty bosses), robustly hardened `scanSensors` in `AIController.js` and `buildPerception`'s cosmic storm checks to be 100% null-safe and exception-proof under partial or non-ship entities, and verified all behaviors via additional unit tests in the advisor suite).
 
 ### Phase 2 — Scale-Out & Premium Features
+
 - [x] `067` Centralize Commodities & System Invariants (centralize commodities to prevent drift, wire makeEmptyCargo across modules, and build robust economic invariant tests) — **done** (files: `src/engine/commodities.js`, `src/engine/commodities.test.js`; successfully centralized all cargo and priced market keys onto a canonically frozen `COMMODITIES` array and a clean independent `makeEmptyCargo` generator, and verified structural coverage invariants across all default ships, planets, and BASE_MARKETS economies).
 
 ## v11 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
+
 - [x] `063` Dynamic Cosmic Storms & Wandering Anomalies (wandering server-authoritative cosmic hazards that drift across sectors, draining ship energy, reducing sensor range, and causing direct armor decay) — **done** (files: `src/engine/CosmicStorm.js`, `src/engine/CosmicStorm.test.js`, `src/engine/CosmicStorm.integration.test.js`, `src/engine/GameInstance.js`, `src/engine/ai/buildPerception.js`, `src/server.js`, `src/client/CanvasRenderer.js`, `src/engine/EconomyManager.test.js`; implemented server-authoritative wandering cosmic storm hazards that drift across sectors, draining ship energy, jamming sensors, and causing armor decay, with dynamic canvas rendering and 100% green Jest coverage; 879 Jest tests green).
 
 ### Phase 1 — Core Upgrades & Feature Delivery
+
 - [x] `064` Faction Reputation Milestones & Bounty Hunters (standing-locked Allied ambassadorial escort missions at Spaceports, and persistent nadir-standing elite faction hunter spawns aggressively chasing players) — **done** (files: `src/engine/MissionManager.js`, `src/engine/GameInstance.js`, `src/server.js`, `src/engine/faction.integration.test.js`; implemented allied ambassador escort quests, spawned companion Diplomatic Transport ships following players, triggered periodic pirate ambushers during escort transit with strict cleanup, scrambling elite faction hunters carrying interdictor matrices targeting nadir-standing players (<= -60), and verified all generation, spawning, target-following, and elite voucher rewards via new integration tests; 882 Jest tests green).
 
 ## v10 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
+
 - [x] `060` Factional Naval Mission Boards & Rank Campaigns (tie FactionRegistry standing progress with specialized rank-locked commendations, premium faction starships, and advanced weaponry) — **done** (files: `src/engine/Ship.js`, `src/engine/MissionManager.js`, `src/engine/PortServices.js`, `src/persistence/serializers.js`, `src/server.js`, `src/server/portHandlers.js`, `src/engine/faction.integration.test.js`; implemented player naval merit tracking and rank promotions triggered on completing high-reward faction campaign missions, enforced purchase unlocks on premium starships and weaponry based on explicit naval campaign ranks, integrated authoritative standing-restricted procedural mission board filtering, and verified the entire merit progression and acquisition lockout loop via comprehensive integration tests; 866 Jest tests 100% green).
 
 ### Phase 1 — Core Upgrades & Debt Paydown
+
 - [x] `061` Dynamic Planetary Stock Caravans & Cargo Convoy AI (physical cargo transport AI fleets flying across sector warp gates to load and unload goods, modifying planetary stock levels dynamically upon arrival) — **done** (files: `src/client/CanvasRenderer.js`, `src/engine/ai/AIController.js`, `src/engine/ai/AIController.test.js`, `src/engine/ProductionModel.test.js`, `src/server.js`; implemented physical cargo caravans with stargate travel capabilities, loaded raw materials at mining producers and sold/unloaded at consuming planets with strict positive commodity inventory clamping, wired authoritative delta tracking on the server for `"market_sync"` WS broadcasts, drew custom gold visual styling for caravan ships on the client canvas, and fully covered AI route planning, FSM trading, jump teleportation, and inventory mutations via comprehensive unit and integration tests; 870 Jest tests green).
 
 ### Phase 2 — Scale-Out & Premium Features
-- [x] `062` High-Concurrency Multi-Worker Redis Cluster State Sync (fully wire supervisor processes and consistent load balancing to run clustered sharded Redis Pub/Sub networks behind a flag) — **done** (files: `src/server.js`, `src/server/supervisor.js`, `src/persistence/multinode.integration.test.js`; wired `InMemoryPubSub` / `RedisPubSub` connections, routed global and squad chat messages cross-process via pub/sub channels, propagated `REDIS_SCALE_OUT` environment variable toggles through the supervisor to active worker forks, enforced graceful lease renewal heartbeats inside the multi-worker presence loops, and fully verified concurrent websocket sharding presence sync and multi-worker pubsub exchange via new cluster-sharding integration tests; 871 Jest tests green).
 
+- [x] `062` High-Concurrency Multi-Worker Redis Cluster State Sync (fully wire supervisor processes and consistent load balancing to run clustered sharded Redis Pub/Sub networks behind a flag) — **done** (files: `src/server.js`, `src/server/supervisor.js`, `src/persistence/multinode.integration.test.js`; wired `InMemoryPubSub` / `RedisPubSub` connections, routed global and squad chat messages cross-process via pub/sub channels, propagated `REDIS_SCALE_OUT` environment variable toggles through the supervisor to active worker forks, enforced graceful lease renewal heartbeats inside the multi-worker presence loops, and fully verified concurrent websocket sharding presence sync and multi-worker pubsub exchange via new cluster-sharding integration tests; 871 Jest tests green).
 
 ## v9 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
+
 - [x] `057` Dynamic Market Events & Sector Economy Shocks (periodically trigger economic events with dynamic trade price modifiers, broadcast Announcements, and adapt merchant AI) — **done** (files: `src/engine/GalaxyEventsManager.js`, `src/engine/GalaxyEventsManager.test.js`, `src/engine/EconomyManager.js`, `src/engine/faction.integration.test.js`, `src/server.js`, `src/client/NetworkHandler.js`, `src/client/UIController.js`, `src/main.js`, `index.html`; created GalaxyEventsManager with famine/harvest-boom/blockade/breakthrough roster, wired event multipliers to dynamically modify planet markets on sever side, added local client duration ticking and pulsing glassmorphic ticker banner at top of HUD viewport, and verified AI trade scoring reroots merchant AIs naturally; 845 Jest + 22 client Vitest tests 100% green).
 
 ### Phase 1 — Core Upgrades & Debt Paydown
+
 - [x] `058` Outfitting Fittings Shop & Loadout Presets (partition equipment into Weapon/Shield/Utility slots, support 90% trade-in refunds, and save/load custom loadout profiles) — **done** (files: `src/engine/Ship.js`, `src/engine/Outfitting.js`, `src/engine/Outfitting.test.js`, `src/server/portHandlers.js`, `src/server/portHandlers.test.js`, `src/server.js`, `src/persistence/serializers.js`, `src/client/NetworkHandler.js`, `src/client/SpaceportUI.js`; implemented starship outfitting fittings slots segmenting Weapons (Max 2), Shields (Max 1), and Utilities (Max 1), verified dynamic 90% trade-in refunds and active Agility mass reversal, programmed loadout preset saving and loading with net credit transaction calculations, saved custom player presets via the persistence layers, and created a highly visual glassmorphic slot dashboard in client Outfitter tab with Dynamic Performance Diagnostics HUD and Save/Load hotkey presets; 856 Jest tests green).
 
 ### Phase 2 — Scale-Out & Premium Features
+
 - [x] `059` Multiplayer Squads & Allied Shared Standing (squad creation protocol, split bounty/merit rewards among sector squadmates, and render squad status panel overlay on client HUD) — **done** (files: `src/server/SquadManager.js`, `src/server/SquadManager.test.js`, `src/net/interest.js`, `src/net/statsPayload.js`, `src/engine/GameInstance.js`, `src/server.js`, `src/main.js`, `index.html`, `index.css`, `src/client/UIController.js`, `src/client/__tests__/UIController.test.js`, `src/server/squad.integration.test.js`; implemented SquadManager managing dynamic squad membership, invitations, active leaders and empty squad dissolution, integrated squad sensor-sharing options within AoI interestFilter, split faction standings and govern bounty vouchers proportionally among sector squadmates, updated server WS handlers for invite/join/leave and squad-exclusive chat channel routing, built the HUD `#squad-panel` DOM view card in index.html, styled it and the squad chat channel in index.css, wired client stats parsing in main.js, and drew dynamic team vitals/targets/positions in UIController.js; 865 Jest tests + 24 client Vitest tests 100% green).
 
 ## v8 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
+
 - [x] `055` Naval Command Decks & Faction Bounty Vouchers (reputation progression) — **done** (files: `src/engine/Ship.js`, `src/engine/PortServices.js`, `src/server/portHandlers.js`, `src/client/SpaceportUI.js`, `index.html`; successfully transitioned instant credit payouts from hostile neutralizations into collectible faction bounty vouchers, implemented Naval Command Decks with rank progression milestones and +15% Allied commendation credit bonuses, enforced premium shipyard hulls and outfitter weapon rank lockouts; 833 Jest tests passing, 100% green gate check).
 
 ### Phase 1 — Core Upgrades & Debt Paydown
+
 - [x] `056` Hyperspace Warp Lane Interdiction (tactical gravity fields) — **done** (files: `src/engine/outfitCatalog.js`, `src/engine/Hyperdrive.js`, `src/engine/ai/AIController.js`, `src/client/CanvasRenderer.js`; added Hyperdrive Interdictor Matrix outfit, integrated active hostile gravity well checks blocking warp jumps within 300 units, enabled NPC warships and guards to deploy interdictors during combat, and rendered dynamic pulsing gravity waves on canvas; 836 Jest tests green).
 
 ### Phase 2 — Scale-Out & Premium Features
+
 - [x] `054` Faction Conflict Battlegrounds (emergent sector wars) — **done** (files: `src/engine/GameInstance.js`, `src/engine/ai/AIController.js`, `src/engine/ai/buildPerception.js`, `src/engine/faction.integration.test.js`; successfully implemented sector conflict zones, spawned Federation and Pirate war fleets clashing dynamically in space battles, overrode AI threat assessment dynamically inside buildPerception, applied specialized +2.0/-2.5 standing adjustments under diplomatic propagation, and wrote comprehensive integration tests covering targeting, fleet spawning, and standings; 839 Jest tests + 22 client Vitest tests 100% green).
 
 ## v7 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
+
 - [x] `051` Collision Kinetic Damage & Shield Absorption (fleet tactical safety) — **done** (files: `src/engine/SpaceEngine.js`, `src/engine/SpaceEngine.test.js`; implemented relative-momentum kinetic damage calculations for both dynamic-to-dynamic collisions of variable masses and dynamic-to-static planet collisions, with full backward-compatibility for standard 2000kg ship configurations; all 823 Jest tests green).
 
 ### Phase 1 — Core Upgrades & Debt Paydown
+
 - [x] `052` Stargate Warp Tolls & Port Transaction Taxes (reputation standings) — **done** (files: `src/engine/Hyperdrive.js`, `src/engine/Trading.js`, `src/engine/faction.integration.test.js`, `src/server.js`, `src/server/portHandlers.js`; connected stargate jump fees (150/0/500 CR) and port transaction docking/sales taxes (5%/0%/15%) to the FactionRegistry standings, with allied/friendly waivers, neutral defaults, and hostile surcharges; added comprehensive integration tests; all 826 Jest tests green).
 
 ### Phase 2 — Scale-Out & Premium Features
+
 - [x] `053` Faction Bounty Locator Radar (immersive professions) — **done** (files: `src/engine/outfitCatalog.js`, `src/engine/Outfitting.js`, `src/engine/Outfitting.test.js`, `index.html`, `index.css`, `src/client/UIController.js`, `src/main.js`, `src/client/__tests__/UIController.test.js`; integrated the Bounty Locator Radar outfit to catalog; added relative distance, absolute compass heading, and relative CSS-rotated arrow indicator calculations to the HUD UIController; fully null-safe; all 827 Jest + 15 client Vitest tests green).
 
 ## v6 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
+
 - [x] `050` Wingman Tactical Formation & Targeting Controls (fleet depth) — **done** (files: `src/server/portHandlers.js`, `src/server/portHandlers.test.js`, `src/server.js`, `src/engine/ai/AIController.js`, `src/engine/ai/AIController.test.js`, `src/engine/Ship.js`; extracted inline `"escort_command"` message handler into `portHandlers.js` and added comprehensive tests; declared target on Ship constructor; extended escort AI to inherit flagship active targets in attack mode; all 816 Jest tests green).
 
 ### Phase 1 — Core Upgrades & Debt Paydown
+
 - [x] `049` Interest Management Grid Optimizations (performance scaling) — **done** (files: `src/net/interest.js`, `src/net/interest.test.js`, `src/server.js`; refactored `interestFilter` to segment entities using a high-performance 2D spatial grid hash map; pre-built grid once per broadcast frame in `server.js` loop; added high-concurrency simulation benchmark test confirming a 13.7x performance speedup (18ms vs 247ms); all 818 Jest tests green).
 
 ### Phase 2 — Scale-Out & Premium Features
+
 - [x] `048` Contraband Space Patrol Scans & Hails (immersive smuggling) — **done** (files: `src/engine/GameInstance.js`, `src/engine/faction.integration.test.js`, `src/server.js`; added real-time remote contraband scans in space when smuggling players fly close to sector faction patrols, utilizing jammers to bypass scans, and triggering faction standing penalties and immediate aggressive AI guard locking on failure; added comprehensive integration tests covering skip, bypass, and failure targeting scenarios; all 821 Jest tests green).
 
 ## v5 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
+
 - [x] `045` Shielded Cargo Holds & Decoy Jammers (smuggling bypass) — **done** (files: `src/engine/outfitCatalog.js`, `src/engine/Outfitting.js`, `src/engine/Outfitting.test.js`, `src/server.js`, `src/server/portHandlers.test.js`; added "Shielded Cargo Holds" and "Security Decoy Jammer" outfits to the catalog and outfitting stats switch; implemented probabilistic security scan bypass checks on core planet landing using a seeded/injected PRNG; added comprehensive unit tests; all 811 Jest tests green).
 
 ### Phase 1 — Core Upgrades & Debt Paydown
+
 - [x] `046` Modularize Port & Mission Handlers (tech debt) — **done** (files: `src/server/portHandlers.js`, `src/server/portHandlers.test.js`, `src/server.js`; extracted WS message handlers for outfit purchases, shipyard hull acquisitions, mission acceptances, and abandonments into a clean, testable sub-module; added comprehensive mock connection unit tests; reduced server.js size by over 100 lines; all 811 Jest tests green).
 
 ### Phase 2 — Scale-Out & Premium Features
+
 - [x] `047` Dynamic Reputation & Patrol Spawns (immersive gameplay) — **done** (files: `src/engine/GameInstance.js`, `src/engine/faction.integration.test.js`, `src/server.js`; added dynamic reputation-based patrol spawns where active naval interceptors aggressively target players with standings below the hostile threshold; implemented safe distance offsets and spawn caps; wrote comprehensive integration tests; all 811 Jest tests green).
 
 ## v4 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
+
 - [x] `039` Tractor outfit mass correction (bug fix) — **done** (files: `src/engine/Outfitting.js`, `src/engine/Outfitting.test.js`; added `case "tractor"` to `applyOutfitStats` switch so that the Tractor Beam Matrix 200 kg mass is correctly applied on purchase and salvage; added unit test verifying ship mass increase; 776 tests green).
 
 ### Phase 1 — Core Upgrades & Debt Paydown
+
 - [x] `040` UtilityAI advisor rollout + rich action mapping — **done** (files: `src/engine/ai/buildPerception.js`, `src/engine/ai/AIController.js`, `src/engine/ai/AIController.advisor.test.js`; fed live faction standings and relations into buildPerception; upgraded scanSensors to evaluate combined target weaknesses across shields, armor, and heat; implemented REGROUP retreat-and-recharge behavior, TRADE market-spread planet routing, and ENGAGE target locking actions; added 3 new unit tests; all 781 Jest tests green).
 - [x] `041` Player-side raw ore refining at ports — **done** (files: `src/engine/PortServices.js`, `src/engine/PortServices.test.js`, `src/engine/GameInstance.js`, `src/server.js`, `index.html`, `src/client/NetworkHandler.js`, `src/client/SpaceportUI.js`, `src/engine/faction.integration.test.js`; implemented pure `applyRefine`/`refineCost` helpers, hooked the `"port_refine"` socket client message handler on the server, enabled refinery services on mining/industrial worlds, added custom UI controls and dynamic active refresh logic, and implemented comprehensive unit + standing integration tests; all 789 Jest tests green).
 - [x] `042` Server monolith extraction (heartbeats, GC, lobby sync) — **done** (files: `src/server/galaxyTicker.js`, `src/server/galaxyTicker.test.js`, `src/server/roomGc.js`, `src/server/roomGc.test.js`, `src/server/lobbySync.js`, `src/server/lobbySync.test.js`, `src/server.js`; extracted periodic economy shortage/surplus event loops, environmental siege/EMP storms, economy price normalization, and galaxy heartbeats; extracted sector garbage collection sweepers and multi-worker registry presence releases; extracted lobby synchronization lists and broadcast synchronization loops; added full modular unit test suites; reduced server.js size by over 260 lines; all 796 Jest tests green).
 
 ### Phase 2 — Scale-Out & Premium Features
+
 - [x] `043` Matchmaking queue disconnect-rejoin lifecycle — **done** (files: `src/client/NetworkHandler.js`, `src/server.js`, `src/server/matchmaking.integration.test.js`; wired connection teardowns and room switches to sweep the matchmaking queue and automatically admit the next waiting player, sent `"match_admitted"` socket messages, pruned disconnected players from the queue, and added integration tests; all 798 tests green).
 - [x] `044` Interactive Observability Dashboard (`/dashboard.html`) — **done** (files: `dashboard.html`, new `src/server/dashboard.integration.test.js`; designed a premium glassmorphic live telemetry interface polling `/metrics` with sleek dark theme,Outfit typography, progress indicators, system logs, and responsive layout; added integration tests verifying successful HTTP serving of dashboard and JSON metrics; 778 tests green).
 
 ## v3 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 ### Phase 0 — Quick Wins & Safety
+
 - [x] `026` CI Node 22/24/26 matrix + engines floor `>=22` — **done** (files: `.github/workflows/ci.yml` matrix `['22','24','26']` (dropped EOL Node 20, added Current 26) + `client-tests` job → Node 24; `package.json` `engines.node` `>=20`→`>=22`; `.nvmrc` `22`→`24` (Active LTS). Local gate green on Node 24.15; CI verifies 22/24/26 on push.)
 - [x] `027` Pin/document the `ws` CVE-2026-45736 security floor (≥ 8.20.1) — **done** (files: new `src/net/wsVersion.test.js` reads the **resolved** `node_modules/ws/package.json` version and asserts it ≥ 8.20.1 (the CVE-2026-45736 fix), with a documented doc-comment citing the CVE; `ws@8.21.0` resolved, `npm ls ws` ≥ floor, `npm audit` 0. A future downgrade below 8.20.1 now fails the gate.)
 - [x] `028` Fix hit-flash armor-branch dead code (real bug, found by 021) — **done** (files: `src/client/UIController.js` tracks `this._lastShield` separately and classifies `shieldDropped` off the real shield delta (`shield < _lastShield - 0.5`) instead of the algebraically-circular combined-total formula — so armor hits now flash red (`"armor"`) and the previously-dead branch is reachable; `UIController.test.js` pins both kinds (+1 armor-with-shields-full case) → 18 client tests; removed the fixed `BACKLOG.md` entry.)
 - [x] `029` Reputation `decayAll` heartbeat hook — **done** (files: `GameInstance.decayReputations(rate)` delegates to the pure `FactionRegistry.decayAll`; `server.js` galaxy-heartbeat loop calls `room.decayReputations()` each 8s pulse so standings heal toward neutral over time; +2 tests in `faction.integration.test.js` (drifts toward 0 over N calls; explicit-rate + empty no-op). 700 tests / 52 suites green; server boots.)
 
 ### Phase 1 — Core Upgrades & Debt Paydown
+
 - [x] `030` Engine typecheck ratchet (`src/engine` + `persistence`) — **done** (files: `src/engine/SpaceEntity.js`, `src/engine/Ship.js`, `src/engine/ai/AIController.js`, `src/engine/SpaceEngine.js`, `tsconfig.json`; resolved all JSDoc/type compilation errors across `src/engine` and `src/persistence` under `tsc --noEmit` without any `@ts-ignore` or `@ts-nocheck` bypasses; 705 engine tests + 18 client tests passing; exit code 0).
 - [x] `031` `COMMODITIES` centralization — **done** (files: new `src/engine/commodities.js` exports the frozen 7-name `COMMODITIES` + `makeEmptyCargo()`; `Ship` and `Trading.applyHullPurchase` derive their zero-init cargo from it (behavior-identical); new `commodities.test.js` (5) asserts the invariant — `makeEmptyCargo`/`Ship.cargo`/`Planet` default market cover exactly `COMMODITIES`, every `BASE_MARKETS` planet defines all 7 with no stray keys. 705 tests / 53 suites green.)
 - [x] `032` Mission + trade faction standings — **done** (files: `src/engine/GameInstance.js`, `src/engine/MissionManager.js`, `src/server.js`, `src/engine/faction.integration.test.js`; connected courier, smuggler, passenger, and bounty contract completions to the consequence pipeline so generated missions adjust player reputations authoritatively; wired successful commodity trades to nudge standings by +0.5 per transaction; added 3 new integration tests in `faction.integration.test.js` verifying the live pipeline round-trips; 708 tests green).
@@ -363,6 +422,7 @@ _**v38 re-audit baseline (2026-05-31, ENTIRE v38 blueprint shipped): 1,216 Jest 
 - [x] `035` Client visual layer (Vitest Browser Mode + Playwright) — **done** (files: `package.json`, `package-lock.json`, `vitest.config.js`, new `vitest.browser.config.js`, new `src/client/__tests/CanvasRenderer.browser.test.js`, new `src/client/__tests/InputHandler.browser.test.js`; set up a dedicated browser testing configuration using Vitest Browser Mode and Playwright; implemented a deterministic visual-regression smoke test for `CanvasRenderer` and a comprehensive DOM event keyboard/blur test for `InputHandler`; all tests green).
 
 ### Phase 2 — Scale-Out & Competitive Features
+
 - [x] `019b` RedisStore behind `Store` — **done** (files: `src/persistence/RedisStore.js`, `src/persistence/RedisStore.test.js`, `src/persistence/multinode.integration.test.js`; implemented the Store key-value contract subclassing `Store` to target a Redis client; verified all async round-trip and isolation capabilities against a fake in-memory client; refactored the multi-node integration suite to assert identical, seamless behavior on both `InMemoryStore` and `RedisStore` backends).
 - [x] `019c` Worker process model — **done** (files: `src/server.js`, new `src/server/supervisor.js`, new `src/server/supervisor.test.js`, new `src/server/supervisor.integration.test.js`; wrapped standard server boot in parameterized `startServer` enabling optional dynamic RedisStore mapping; implemented pure planning decision policies in `planWorkers` for scaling up/down and restarts; created cluster fork supervisor self-healing daemon for `WORKERS > 1`; wrote multi-threaded isolated in-process integration tests confirming correct routing boundaries).
 - [x] `019d` Sticky routing / LB front door — **done** (files: `src/net/roomRouter.js`, `src/net/roomRouter.test.js`, `src/server/supervisor.integration.test.js`, `plan/specs/019d_sticky_routing_lb.md`; implemented the stateless routing-decision helper `routeConnection` with dynamic override, wrote NGINX/HAProxy consistent consistent hashing load-balancer docs, and added multi-worker integration routing and isolation tests).
@@ -373,6 +433,7 @@ _**v38 re-audit baseline (2026-05-31, ENTIRE v38 blueprint shipped): 1,216 Jest 
 - [x] `038` Schema-based state encoding eval — **done** (commit `4d193bd`; files: new `src/net/SchemaCodec.js` + `.test.js` (5, green); an EVAL prototype extending spec-015 `BinaryCodec` with a **value-string dictionary** — interns ALL strings (object keys AND repeated string values like `"ship"`) into one per-frame table referenced by varint index. Bit-exact `decode(encode(x))` round-trip incl. `undefined` delta-removal fields. **Measured**: for a 40-entity keyframe `SchemaCodec < BinaryCodec < JSON`. **Recommendation**: modest win over the key-dictionary alone at the cost of a maintained string table → adopt only if profiling shows broadcast size is the bottleneck; `BinaryCodec` stays the wire format. Eval-only, not wired into the live broadcast.)
 
 ## ✅ Phase 0 — Quick Wins & Safety (DONE)
+
 - [x] `001` Remediate localtunnel/axios CVEs — **done** (files: `src/server.js` dynamic optional import + graceful fallback, removed `localtunnel` from `package.json`/lockfile, `README.md` cloudflared guidance; `npm audit` → 0 vulnerabilities)
 - [x] `002` Harden ws inbound (maxPayload + Origin verifyClient) — **done** (files: new `src/net/originPolicy.js` + `.test.js`; `src/server.js` WSS sets `maxPayload: 256KB` + `verifyClient` same-origin/allowlist check)
 - [x] `003` ws connection heartbeat / dead-socket reaper — **done** (files: new `src/net/heartbeat.js` + `.test.js`; `src/server.js` 30s ping/terminate sweep, per-connection `isAlive`+pong, cleared on shutdown)
@@ -381,6 +442,7 @@ _**v38 re-audit baseline (2026-05-31, ENTIRE v38 blueprint shipped): 1,216 Jest 
 - [x] `006` Economy NaN self-heal + heartbeat diffusion guard — **done** (files: `src/engine/EconomyManager.js` self-heals non-finite price→baseline; `src/engine/GalaxyHeartbeat.js` skips/guards non-finite operands; +3 tests. Closes TICKET003 follow-up)
 
 ## ✅ Phase 1 — Core Upgrades (DONE)
+
 - [x] `007` Modularize server.js (extract tested units) — **done** (files: new `src/engine/Outfitting.js` (applyOutfitStats), `src/net/statsPayload.js` (buildStatsPayload), `src/server/roomLifecycle.js` (shouldGcRoom + sanitizeNickname) + tests; `src/server.js` routes through them, behavior-identical, boots. Supersedes TICKET005)
 - [x] `008` Persistence kill→restart→rejoin integration test — **done** (file: new `src/persistence/restart.integration.test.js` — real JsonFileStore round-trip, fresh manager/instance, asserts markets+pulses+full player ledger. Supersedes TICKET004)
 - [x] `009` Decouple threat detection from ship names; wire seeded names — **done** (files: `AIController.isPirateShip` role-precedence + null-safe; `GameInstance` loot branch routes through it; `spawnNPCPirate` sets `role="pirate"` + procedural `NameGenerator` names; +3 tests)
@@ -390,6 +452,7 @@ _**v38 re-audit baseline (2026-05-31, ENTIRE v38 blueprint shipped): 1,216 Jest 
 - [x] `013` Migrate @google/generative-ai → @google/genai — **done** (files: `scripts/run-agent.js` new unified SDK — `GoogleGenAI({apiKey})`, `models.generateContent`, `Type.*` schema, `result.text`, model `gemini-2.5-pro`; `package.json` swap to devDependency `@google/genai`; runtime `dependencies` now just `ws`; no-key path exits with a clear message, no stack trace)
 
 ## Wave A — Continued hardening & 2026 modernization (NEW · v2 re-audit)
+
 - [x] `020` Salvage outfit dedup (→ applyOutfitStats) — **done** (files: new `src/engine/outfitCatalog.js` (DEFAULT_OUTFITS, single source) + `.test.js`; `Planet.js` + `server.js` salvage both import it; salvage applies stats via `applyOutfitStats` — now covers the EW outfits it silently ignored; server.js −107 LOC → 1979; tractor-mass note → BACKLOG.md)
 - [x] `021` Client test harness (Vitest + jsdom) — **done** (files: new `vitest.config.js` (jsdom env, scoped to `src/client/**`), `jest.config.json` (ignores `/src/client/` so the two runners never cross), `test:client` npm script, `.github/workflows/ci.yml` separate `client-tests` job; extracted `NetworkHandler.applySnapshotMessage`/`applyDeltaMessage` out of the socket closure; new `src/client/__tests__/NetworkHandler.test.js` (7) + `UIController.test.js` (10) = 17 client tests green. Jest engine suite untouched at 628/44; `agent:check` stays green. jsdom (not browser-mode) chosen — no browser binary in sandbox; the spec's own test strategy lists `browser/jsdom`. Found a real dead-branch bug (armor hit-flash unreachable) → BACKLOG. Playwright visual-regression smoke deferred → BACKLOG-worthy follow-up.)
 - [x] `022` CI Node LTS matrix (20/22/24) + version alignment — **done** (files: `.github/workflows/ci.yml` `strategy.matrix.node-version: [20,22,24]` + `${{ matrix.node-version }}`, `fail-fast: false`; `.nvmrc` → 22 (Maintenance LTS). Local gate green on Node 24; CI runs 20/22 on push.)
@@ -398,6 +461,7 @@ _**v38 re-audit baseline (2026-05-31, ENTIRE v38 blueprint shipped): 1,216 Jest 
 - [x] `025` Continue server.js extraction (message handlers) — **done** (files: new `src/engine/Trading.js` (`tradeOne` + `applyHullPurchase`) + `.test.js` (9); `server.js` `trade` + `ship_buy` handlers route through them, behavior-identical, boots; server.js → 1938 LOC)
 
 ## Phase 2 — Major Features
+
 - [x] `014` Interest management (viewport/proximity delta filtering) — **done** (files: new pure `src/net/interest.js` (`interestFilter(entities, viewer, {radius, alwaysIncludeId, alwaysIncludeIds})`, fail-open, order-preserving) + `.test.js` (9, incl. the DoD 50-entity/8-viewer bandwidth-reduction harness). `server.js` broadcast loop reworked from one-frame-for-all to **per-client** framing: serialize the room once, then per client AOI-filter against its ship + frame via `nextFrame` against a **per-client** baseline (`client.broadcastState`), always including the client's own ship; the baseline advances only on a successful send so a backpressure-skipped client never desyncs; `joinRoom` seeds the per-client baseline. Entities entering/leaving AOI become natural add/remove deltas (StateCodec), so no client-side ghosts. `INTEREST_MANAGEMENT=0` env restores send-all. 670 tests / 48 suites green; live `ws` smoke confirmed a client receives init + state_snapshot (40 in-AOI entities) + state_delta. Browser visual-render check is the only headlessly-unverifiable bit; combat-target always-include refinement → BACKLOG-worthy.)
 - [x] `015` Binary wire protocol for broadcasts — **done** (files: new pure `src/net/BinaryCodec.js` — versioned TLV `encode(frame)→Uint8Array`/`decode(buf)→frame` whose key win is a per-frame **key dictionary** (entity field names written once, referenced by varint index) plus zig-zag varint ints + float64 + length-prefixed UTF-8; preserves `undefined` delta-removal fields JSON drops. `BinaryCodec.test.js` (13): exhaustive round-trip (`toStrictEqual`), version/truncation/type-guard rejection, **binary < JSON for a 40-entity keyframe**, and a `StateCodec` churn integration. `server.js` broadcast encodes state frames to binary (default on; `BINARY_PROTOCOL=0` → JSON fallback) and counts `broadcast_bytes` by byteLength; `NetworkHandler` sets `binaryType="arraybuffer"` and decodes ArrayBuffer frames (chat/etc. stay JSON). 683 tests / 49 suites + 17 client green; live `ws` smoke confirmed a client decodes **binary** state_snapshot (52 entities) + state_delta end-to-end. Browser visual render is the only headlessly-unverifiable bit; a string-value dictionary is a future compaction.)
 - [x] `016` Faction runtime wiring (P3) — **done** (files: `GameInstance` now owns a `FactionRegistry` (created before `seedGalaxy`), tags planets via new `assignPlanetFactions()` + NPC ships by role (Pirates/Federation/Independents), hands guards a `standingPolicy()` + `factionPolicy()` and pirates a `factionPolicy()`, and adjusts the killer's standing with the victim's faction on every NPC kill (propagates to allies/enemies). New `FactionRegistry.standingPolicy()` (per-player view) + `AIController` `standingPolicy` option → a guard now targets a player whose standing with its faction is hostile. New `Trading.factionPrice()` applied in the `server.js` trade handler (friendly discount / hostile surcharge); `server.js` land handler refuses docking when hostile; `Planet` gains a `faction` field. Persistence already round-trips the registry (verified). New `faction.integration.test.js` (9) incl. the scripted DoD: one standing swing changes BOTH guard targeting AND dock price. 657 tests / 47 suites green; server boots. Mission/trade standing hooks + reputation decay → BACKLOG (the generated-mission consequence pipeline isn't server-wired yet).)
@@ -406,6 +470,7 @@ _**v38 re-audit baseline (2026-05-31, ENTIRE v38 blueprint shipped): 1,216 Jest 
 - [x] `019` Horizontal scaling (multi-process/Redis, P7) — **first slice done** (DoD met: decomposition doc + minimal slice + no single-process regression). Files: new pure `src/net/roomRouter.js` — `assignShard(roomId, shardCount)` (deterministic FNV-1a hash → shard) + `RoomRegistry` (roomId→nodeId ownership with claim/release/transfer/`roomsForNode`/serialize) + `roomRouter.test.js` (11); `src/persistence/multinode.integration.test.js` (2) — two in-test "nodes" sharing one `Store` both restore the same persisted galaxy and a room handed off A→B preserves state (presence persisted via the store); design doc `plan/specs/019a_scaling_decomposition.md` decomposing the epic into shippable sub-specs **019b** RedisStore, **019c** worker process model, **019d** sticky routing, **019e** cross-process presence/lease, **019f** graceful drain — each with its own DoD. Router/registry are standalone (not wired into the live server) so single-process local play is unchanged; server still boots. 696 tests / 51 suites green. Real Redis/multi-host infra is the documented ops follow-up (019b–f).
 
 ## Completed before this blueprint (context)
+
 The EW1–EW9 easy-win backlog from `docs/ai/FEATURE_PLAN.md` is **done** (combat rating, jettison, port
 services, passenger missions, name generator, FLAK+Interceptor, hyperdrive fuel, boarding, mining) —
 see `tickets/TICKET006–014` and `docs/LOG.md` iter-0016…0024. Do not re-do these.

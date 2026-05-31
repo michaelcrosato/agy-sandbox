@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-31T06:11:02.122Z",
+  "generatedAt": "2026-05-31T06:12:26.870Z",
   "stats": {
     "totalSourceFiles": 98,
     "totalTestFiles": 125,
-    "totalSpecFiles": 153,
+    "totalSpecFiles": 156,
     "totalLoc": 21380,
     "totalTests": 1624,
     "untestedCoreFilesCount": 5
@@ -4561,6 +4561,36 @@
       "filesMentioned": [
         "src/server.js",
         "src/server/codexDashboard.integration.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/148_secure_hmac_guest_rpc_key.md",
+      "filename": "148_secure_hmac_guest_rpc_key.md",
+      "title": "SPEC-148: Secure Execution-Run Single-Use HMAC Cryptographic Key Sentry",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": []
+    },
+    {
+      "path": "plan/specs/149_dynamic_os_priority_scheduler.md",
+      "filename": "149_dynamic_os_priority_scheduler.md",
+      "title": "SPEC-149: Dynamic OS-Level Child Process CPU Priority Throttling Scheduler",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": []
+    },
+    {
+      "path": "plan/specs/150_zero_trust_virtual_filesystem.md",
+      "filename": "150_zero_trust_virtual_filesystem.md",
+      "title": "SPEC-150: Absolute Zero-Trust Copy-On-Write In-Memory Virtual Filesystem Sentry",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/WorkspaceDriftSentry.test.js",
+        "src/net/ProcessSentinel.test.js"
       ]
     }
   ],

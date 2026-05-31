@@ -39,6 +39,18 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T21:40 · iter-0115 · GREEN · cycle-28-spec-115-ephemeral-workspace-sandbox
+- **Baseline:** `8de9b47` on `feat/procedural-missions`; 1,130 Jest green.
+- **Move:** Implement SPEC-115 (Ephemeral Workspace Isolation Layer & Sandbox Cloner).
+- **Changed:**
+  - Designed copy-on-write ephemeral workspace cloner in `src/net/EphemeralSandbox.js` that quickly provisions transient sandbox environments containing only git-tracked repository files.
+  - Monkey-patched Node's filesystem APIs (`fs.writeFile`, `fs.writeFileSync`, `fs.mkdir`, `fs.mkdirSync`, `fs.rm`, `fs.rmSync`, `fs.unlink`, `fs.unlinkSync`, `fs.rename`, `fs.renameSync`, `fs.createWriteStream`, and corresponding `fs.promises` equivalents) inside `src/net/ProcessSentinel.js` to strictly enforce directory boundaries.
+  - Throws a descriptive security isolation escape exception (`[SECURITY ACCESS DENIED]`) if any file mutation is attempted outside of the active sandbox directory.
+  - Designed 4 deterministic Jest tests in `src/net/EphemeralSandbox.test.js` asserting provisions, file mutation boundary checks, deactivation, and automated teardowns.
+- **Decisions:** Static and dynamic casting for monkey-patched `fs` properties bypassed standard TS checkJs compilation constraints by dynamically preserving original functions' properties (e.g. `__promisify__`).
+- **Validation:** Executed `npm run agent:check` confirming that Prettier, ESLint, TypeScript checkJs, and all 1134 Jest tests pass 100% green.
+- **Next:** Proceed to SPEC-116 (Resource Allocation Limits & Memory/CPU Backpressure Sentinels).
+
 ## 2026-05-31T21:32 · iter-0114 · GREEN · cycle-28-spec-114-faction-decay-chronicle
 - **Baseline:** `eb7c021` on `feat/procedural-missions`; 1,129 Jest green.
 - **Move:** Implement SPEC-114 (Faction Standing Decays & Real-Time Galactic Chronicles Integration).

@@ -30,7 +30,7 @@ _**v28 re-audit baseline (2026-05-31): 1,129 Jest tests / 102 suites + 57 client
 
 ## v29 — Frontier Lab Execution Wave (IN PROGRESS) — see [`ROADMAP.md`](ROADMAP.md)
 
-- [ ] `115` Ephemeral Workspace Isolation Layer & Sandbox Cloner (build a copy-on-write workspace sandbox cloner provisioning isolated temp directories for untrusted AI agent execution runs, monitor footprints, and clean up cleanly post-execution)
+- [x] `115` Ephemeral Workspace Isolation Layer & Sandbox Cloner (build a copy-on-write workspace sandbox cloner provisioning isolated temp directories for untrusted AI agent execution runs, monitor footprints, and clean up cleanly post-execution) — **done** (engineered `src/net/EphemeralSandbox.js` cloning only git-tracked files to temporary copy-on-write sandboxes fast, monkeypatched Node's sync/async/promises FS and fs.promises file mutation API in `ProcessSentinel.js` to assert directory write limits and prevent boundary escapes, and wrote comprehensive unit tests in `src/net/EphemeralSandbox.test.js`)
 - [ ] `116` Resource Allocation Limits & Memory/CPU Backpressure Sentinels (develop a light-overhead resource monitor and backpressure sentinel polling memory usage and CPU time to actively prevent host OOM or thread lock failures)
 - [ ] `117` Zero-Trust WebSocket Rate Limiter & Observability Telemetry (integrate high-throughput connection-level rate limiting in connection handlers capping sockets at 100 messages/sec and visualize occurrences on dynamic SVG line charts on the Codex dashboard)
 

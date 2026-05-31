@@ -5,6 +5,9 @@
  */
 
 import childProcess from "child_process";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Store original native child_process functions
 const originalSpawn = childProcess.spawn;
@@ -15,11 +18,57 @@ const originalExecSync = childProcess.execSync;
 const originalExecFile = childProcess.execFile;
 const originalExecFileSync = childProcess.execFileSync;
 
+// Store original native fs functions
+const originalWriteFile = fs.writeFile;
+const originalWriteFileSync = fs.writeFileSync;
+const originalMkdir = fs.mkdir;
+const originalMkdirSync = fs.mkdirSync;
+const originalRm = fs.rm;
+const originalRmSync = fs.rmSync;
+const originalUnlink = fs.unlink;
+const originalUnlinkSync = fs.unlinkSync;
+const originalRename = fs.rename;
+const originalRenameSync = fs.renameSync;
+const originalCreateWriteStream = fs.createWriteStream;
+
+// Store original promises fs functions
+const originalPromisesWriteFile = fs.promises ? fs.promises.writeFile : null;
+const originalPromisesMkdir = fs.promises ? fs.promises.mkdir : null;
+const originalPromisesRm = fs.promises ? fs.promises.rm : null;
+const originalPromisesUnlink = fs.promises ? fs.promises.unlink : null;
+const originalPromisesRename = fs.promises ? fs.promises.rename : null;
+
 let isPatched = false;
+let activeSandboxDir = null;
+
 const stats = {
   allowedCount: 0,
   blockedCount: 0,
 };
+
+/**
+ * Asserts that the given file path resides strictly within the active sandbox containment directory.
+ * Throws a security boundary isolation error if an escape is detected.
+ * @param {any} filePath - Path to check.
+ */
+function checkPath(filePath) {
+  if (!activeSandboxDir || !filePath) return;
+  let pStr;
+  if (filePath instanceof URL) {
+    pStr = fileURLToPath(filePath);
+  } else if (typeof filePath === "string") {
+    pStr = filePath;
+  } else {
+    pStr = String(filePath);
+  }
+  const resolved = path.resolve(pStr);
+  if (!resolved.startsWith(activeSandboxDir)) {
+    stats.blockedCount++;
+    throw new Error(
+      `[SECURITY ACCESS DENIED] Isolation boundary escape attempt detected: path [${resolved}] is outside sandboxed directory [${activeSandboxDir}]`,
+    );
+  }
+}
 
 /**
  * Parsed representation of a command.
@@ -348,11 +397,143 @@ export const ProcessSentinel = {
       }
     );
 
+    // Monkeypatch synchronous/callback fs write operations
+    fs.writeFile = /** @type {any} */ (
+      function (file, ...args) {
+        checkPath(file);
+        return originalWriteFile.apply(this, arguments);
+      }
+    );
+    if (originalWriteFile && originalWriteFile.__promisify__) {
+      fs.writeFile.__promisify__ = originalWriteFile.__promisify__;
+    }
+
+    fs.writeFileSync = function (file, ...args) {
+      checkPath(file);
+      return originalWriteFileSync.apply(this, arguments);
+    };
+
+    fs.mkdir = /** @type {any} */ (
+      function (dir, ...args) {
+        checkPath(dir);
+        return originalMkdir.apply(this, arguments);
+      }
+    );
+    if (originalMkdir && originalMkdir.__promisify__) {
+      fs.mkdir.__promisify__ = originalMkdir.__promisify__;
+    }
+
+    fs.mkdirSync = function (dir, ...args) {
+      checkPath(dir);
+      return originalMkdirSync.apply(this, arguments);
+    };
+
+    fs.rm = /** @type {any} */ (
+      function (p, ...args) {
+        checkPath(p);
+        return originalRm.apply(this, arguments);
+      }
+    );
+    if (originalRm && originalRm.__promisify__) {
+      fs.rm.__promisify__ = originalRm.__promisify__;
+    }
+
+    fs.rmSync = function (p, ...args) {
+      checkPath(p);
+      return originalRmSync.apply(this, arguments);
+    };
+
+    fs.unlink = /** @type {any} */ (
+      function (p, ...args) {
+        checkPath(p);
+        return originalUnlink.apply(this, arguments);
+      }
+    );
+    if (originalUnlink && originalUnlink.__promisify__) {
+      fs.unlink.__promisify__ = originalUnlink.__promisify__;
+    }
+
+    fs.unlinkSync = function (p, ...args) {
+      checkPath(p);
+      return originalUnlinkSync.apply(this, arguments);
+    };
+
+    fs.rename = /** @type {any} */ (
+      function (oldPath, newPath, ...args) {
+        checkPath(oldPath);
+        checkPath(newPath);
+        return originalRename.apply(this, arguments);
+      }
+    );
+    if (originalRename && originalRename.__promisify__) {
+      fs.rename.__promisify__ = originalRename.__promisify__;
+    }
+
+    fs.renameSync = function (oldPath, newPath, ...args) {
+      checkPath(oldPath);
+      checkPath(newPath);
+      return originalRenameSync.apply(this, arguments);
+    };
+
+    fs.createWriteStream = function (pathName, ...args) {
+      checkPath(pathName);
+      return originalCreateWriteStream.apply(this, arguments);
+    };
+
+    // Monkeypatch fs.promises if available
+    if (fs.promises) {
+      fs.promises.writeFile = function (file, ...args) {
+        checkPath(file);
+        return originalPromisesWriteFile.apply(this, arguments);
+      };
+
+      fs.promises.mkdir = function (dir, ...args) {
+        checkPath(dir);
+        return originalPromisesMkdir.apply(this, arguments);
+      };
+
+      fs.promises.rm = function (p, ...args) {
+        checkPath(p);
+        return originalPromisesRm.apply(this, arguments);
+      };
+
+      fs.promises.unlink = function (p, ...args) {
+        checkPath(p);
+        return originalPromisesUnlink.apply(this, arguments);
+      };
+
+      fs.promises.rename = function (oldPath, newPath, ...args) {
+        checkPath(oldPath);
+        checkPath(newPath);
+        return originalPromisesRename.apply(this, arguments);
+      };
+    }
+
     isPatched = true;
   },
 
   /**
-   * Deactivates monkey-patches and restores original native child_process methods.
+   * Sets the active sandbox containment directory. All subsequent file mutations
+   * will be strictly bound within this directory.
+   * @param {string} dirPath - Absolute path to sandbox.
+   */
+  setSandboxDirectory(dirPath) {
+    if (dirPath) {
+      activeSandboxDir = path.resolve(dirPath);
+    } else {
+      activeSandboxDir = null;
+    }
+  },
+
+  /**
+   * Clears the active sandbox containment directory, disabling fs boundaries.
+   */
+  clearSandboxDirectory() {
+    activeSandboxDir = null;
+  },
+
+  /**
+   * Deactivates monkey-patches and restores original native child_process and fs methods.
    */
   deactivate() {
     if (!isPatched) return;
@@ -363,6 +544,30 @@ export const ProcessSentinel = {
     childProcess.execSync = originalExecSync;
     childProcess.execFile = originalExecFile;
     childProcess.execFileSync = originalExecFileSync;
+
+    // Restore fs functions
+    fs.writeFile = originalWriteFile;
+    fs.writeFileSync = originalWriteFileSync;
+    fs.mkdir = originalMkdir;
+    fs.mkdirSync = originalMkdirSync;
+    fs.rm = originalRm;
+    fs.rmSync = originalRmSync;
+    fs.unlink = originalUnlink;
+    fs.unlinkSync = originalUnlinkSync;
+    fs.rename = originalRename;
+    fs.renameSync = originalRenameSync;
+    fs.createWriteStream = originalCreateWriteStream;
+
+    // Restore promises functions
+    if (fs.promises) {
+      fs.promises.writeFile = originalPromisesWriteFile;
+      fs.promises.mkdir = originalPromisesMkdir;
+      fs.promises.rm = originalPromisesRm;
+      fs.promises.unlink = originalPromisesUnlink;
+      fs.promises.rename = originalPromisesRename;
+    }
+
+    activeSandboxDir = null;
     isPatched = false;
   },
 };

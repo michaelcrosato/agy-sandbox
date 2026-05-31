@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T04:35:55.690Z",
+  "generatedAt": "2026-05-31T04:38:58.636Z",
   "stats": {
-    "totalSourceFiles": 80,
-    "totalTestFiles": 109,
+    "totalSourceFiles": 81,
+    "totalTestFiles": 110,
     "totalSpecFiles": 123,
-    "totalLoc": 18175,
-    "totalTests": 1516,
+    "totalLoc": 18490,
+    "totalTests": 1521,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -1298,6 +1298,24 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/net/EphemeralSandbox.js",
+      "loc": 110,
+      "classes": [
+        {
+          "name": "EphemeralSandbox",
+          "jsdoc": "/**\n* EphemeralSandbox (spec 115) — copy-on-write virtual workspace sandboxing cloner.\n* Provisions strictly-contained transient workspaces and restricts file mutations.\n*/",
+          "line": 10
+        }
+      ],
+      "exports": [],
+      "testFile": "src/net/EphemeralSandbox.test.js",
+      "testCasesCount": 5,
+      "referencingSpecs": [
+        "plan/specs/115_ephemeral_workspace_sandbox.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
       "path": "src/net/heartbeat.js",
       "loc": 30,
       "classes": [],
@@ -1483,26 +1501,26 @@
     },
     {
       "path": "src/net/ProcessSentinel.js",
-      "loc": 369,
+      "loc": 574,
       "classes": [],
       "exports": [
         {
           "name": "parseCommandString",
           "type": "function",
           "jsdoc": "/**\n* Parses a full command string into a binary name and an array of arguments,\n* respecting basic quotes.\n* @param {string} cmdStr - Full shell command string.\n* @returns {ParsedCommand}\n*/",
-          "line": 37
+          "line": 86
         },
         {
           "name": "validateCommand",
           "type": "function",
           "jsdoc": "/**\n* Validates whether a command and its arguments are permitted under the strict security whitelist.\n* @param {string} command - The command or binary path under evaluation.\n* @param {string[]} [args=[]] - Optional array of arguments passed to the command.\n* @returns {{ allowed: boolean, reason?: string }}\n*/",
-          "line": 81
+          "line": 130
         },
         {
           "name": "ProcessSentinel",
           "type": "constant",
           "jsdoc": "/**\n* ProcessSentinel (spec 106) — child process security sentinel whitelister.\n* @type {object}\n*/",
-          "line": 193
+          "line": 242
         }
       ],
       "testFile": "src/net/ProcessSentinel.test.js",
@@ -3854,12 +3872,6 @@
     "untestedCoreFiles": [],
     "missingJsDocs": [],
     "staleSpecReferences": [
-      {
-        "spec": "plan/specs/115_ephemeral_workspace_sandbox.md",
-        "brokenFiles": [
-          "src/net/EphemeralSandbox.js"
-        ]
-      },
       {
         "spec": "plan/specs/116_resource_backpressure_limiter.md",
         "brokenFiles": [

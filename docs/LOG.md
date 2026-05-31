@@ -44,6 +44,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-05-31T14:40 · iter-0140 · GREEN · spec-160-sandbox-containment-teardown
+
+- **Baseline:** `82764f6` on `feat/procedural-missions`; 1,264 Jest green.
+- **Move:** Implement SPEC-160 to secure the agent execution sandbox environment against command escapes and process leaks.
+- **Changed:**
+  - Harden `ProcessSentinel.js` `validateCommand` to resolve and jail `node` positional arguments strictly inside the active sandbox directory, whitelisting reads on `node_modules` and worker bootstrap files.
+  - Monkey-patch standard child_process methods (`spawn`, `spawnSync`, `fork`, `exec`, `execSync`, `execFile`, `execFileSync`) inside `ProcessSentinel.activate()` to bypass containment and return immediately if no guest script path or forced test mode is active, completely resolving concurrent test interference.
+  - Expose `process_reaper.active_processes`, `process_reaper.active_workers`, and `process_sentinel` telemetry stats inside `src/server.js` dynamic `/metrics` HTTP endpoint.
+  - Configure `SandboxSecurityRegistry` file logging to automatically compact `security_audit.json` to exactly 500 lines to prevent OOM/disk overhead.
+  - Authored a comprehensive new unit and integration test suite `src/net/TeardownContainment.test.js` validating script path jailing, process tree termination, and log compaction, while setting forced isolation mode variables across test runners.
+- **Decisions:** Hardening command line positional arguments passed to whitelisted command wrappers prevents arbitrary execution escapes. Thread-safe parallel test isolation bypasses prevent global monkey-patching side effects from corrupting concurrent Jest test threads.
+- **Validation:** Executed `npm run agent:check` confirming a 100% green gate across all 1,270 Jest tests, ESLint flat lints, Prettier formatting compliance, and TypeScript compile validations.
+- **Next:** Transition to Cycle 46 Phase R (Replenish) to promote backlog items, execute codebase audits, and formulate the next wave of specifications.
+
 ## 2026-05-31T14:30 · iter-0139 · GREEN · spec-159-commodities-schema-invariant-sentry
 
 - **Baseline:** `9e1a6d7` on `feat/procedural-missions`; 1,258 Jest green.

@@ -6,6 +6,14 @@ import {
 import childProcess from "child_process";
 import fs from "fs";
 
+beforeAll(() => {
+  process.env.TEST_SENTINEL_FORCE = "true";
+});
+
+afterAll(() => {
+  delete process.env.TEST_SENTINEL_FORCE;
+});
+
 describe("ProcessSentinel (SPEC-106)", () => {
   beforeEach(() => {
     ProcessSentinel.resetStats();

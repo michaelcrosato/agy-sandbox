@@ -62,6 +62,7 @@ describe("ProcessReaper (SPEC-092)", () => {
   test("automatically registers spawned processes when ProcessSentinel is active", async () => {
     expect(ProcessReaper.getProcessCount()).toBe(0);
 
+    process.env.TEST_SENTINEL_FORCE = "true";
     ProcessSentinel.activate();
     try {
       const proc = childProcess.spawn("node", ["src/net/temp_port_worker.mjs"]);
@@ -71,6 +72,7 @@ describe("ProcessReaper (SPEC-092)", () => {
       expect(ProcessReaper.getProcessCount()).toBe(0);
     } finally {
       ProcessSentinel.deactivate();
+      delete process.env.TEST_SENTINEL_FORCE;
     }
   });
 

@@ -8,6 +8,7 @@ describe("EphemeralSandbox copy-on-write workspace & containment (spec 115)", ()
   let testRoot;
 
   beforeAll(() => {
+    process.env.TEST_SENTINEL_FORCE = "true";
     testRoot = path.resolve("./.sandbox-worktrees-test");
     // Ensure any stale test directories are removed
     try {
@@ -27,6 +28,7 @@ describe("EphemeralSandbox copy-on-write workspace & containment (spec 115)", ()
   });
 
   afterAll(() => {
+    delete process.env.TEST_SENTINEL_FORCE;
     try {
       fs.rmSync(testRoot, { recursive: true, force: true });
     } catch {

@@ -4,8 +4,8 @@ To remain token-efficient, this file represents the absolute minimum context req
 
 - **CYCLE:** Cycle 45
 - **CURRENT_TASK:** REPLENISH
-- **SPEC_FILE:** plan/specs/159_commodities_schema_invariant_sentry.md
-- **STATUS:** Completed SPEC-157, SPEC-158 & SPEC-159 in Wave v43.
+- **SPEC_FILE:** plan/specs/160_sandbox_containment_teardown.md
+- **STATUS:** Completed SPEC-160 in Wave v44.
 - **VERIFY_COMMAND:** npm run agent:check
-- **LAST_VERIFIED:** 1,264 Jest tests green, 6 Vitest client tests green, linter 0 errors, Prettier verified.
-- **IMMEDIATE_OBJECTIVE:** Replenish the backlog, execute codebase audits, formulate new specifications for Wave v44 under Cycle 45.
+- **LAST_VERIFIED:** 1,270 Jest tests green, linter 0 errors, Prettier verified.
+- **IMMEDIATE_OBJECTIVE:** Replenish the backlog, execute codebase audits, formulate new specifications for Wave v45 under Cycle 45.

@@ -34,6 +34,11 @@ _**v38 re-audit baseline (2026-05-31, ENTIRE v38 blueprint shipped): 1,216 Jest 
 _**v39 re-audit baseline (2026-05-31, ENTIRE v39 blueprint shipped): 1,222 Jest tests / 118 suites green; secure schema-validated Guest RPC channel sentry, post-run workspace snapshot drift auditing, self-healing copy-on-write restoration cleanup, and golden-glassmorphic cockpit dashboard card all 100% DONE.**_
 _**v42 re-audit baseline (2026-05-31, ENTIRE v41 blueprint shipped): 1,233 Jest tests / 119 suites green; kernel isolation, secure module verification registry, and visual cli terminal HUD all 100% DONE.**_
 _**v43 re-audit baseline (2026-05-31, ENTIRE v42 blueprint shipped): 1,247 Jest tests / 121 suites green; world-derived missions flow, mass-agility physics dynamics, and dynamic faction vengeance spawner all 100% DONE.**_
+_**v44 re-audit baseline (2026-05-31, ENTIRE v43 blueprint shipped): 1,270 Jest tests / 124 suites green; secure script jailing, ProcessReaper process-tree tracking, and log compaction all 100% DONE.**_
+
+## v44 — Sandbox Containment & Teardown Lifecycle Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
+
+- [x] `160` Secure Sandbox Containment, Node-Script Path Jailing & Robust Teardown Sentry (harden the agent sandbox, jailing node scripts strictly within the workspace, strengthening ProcessReaper teardown, and auto-compacting security logs to 500 records) — **done** (engineered path jailing constraints in checkPath and validateCommand blocking host script escapes, added thread-safe parallel isolation bypasses to all monkey-patched child_process methods within activate(), exposed ProcessReaper active tracking statistics under server metrics, capped security log persistence at exactly 500 lines via SandboxSecurityRegistry log compaction, and covered all behaviors with robust new Jest suites under TeardownContainment.test.js; 1,270 Jest tests 100% green)
 
 ## v43 — Outfitting Presets, Interactive Onboarding, and Economic Invariants Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

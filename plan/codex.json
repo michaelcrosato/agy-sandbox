@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T14:29:28.069Z",
+  "generatedAt": "2026-05-31T14:38:19.774Z",
   "stats": {
     "totalSourceFiles": 101,
-    "totalTestFiles": 130,
-    "totalSpecFiles": 165,
-    "totalLoc": 23019,
-    "totalTests": 1675,
+    "totalTestFiles": 131,
+    "totalSpecFiles": 166,
+    "totalLoc": 23112,
+    "totalTests": 1684,
     "untestedCoreFilesCount": 6
   },
   "files": [
@@ -1773,7 +1773,7 @@
     },
     {
       "path": "src/net/ProcessSentinel.js",
-      "loc": 1211,
+      "loc": 1304,
       "classes": [
         {
           "name": "for",
@@ -1801,19 +1801,19 @@
           "name": "parseCommandString",
           "type": "function",
           "jsdoc": "/**\n* Parses a full command string into a binary name and an array of arguments,\n* respecting basic quotes.\n* @param {string} cmdStr - Full shell command string.\n* @returns {ParsedCommand}\n*/",
-          "line": 324
+          "line": 329
         },
         {
           "name": "validateCommand",
           "type": "function",
           "jsdoc": "/**\n* Validates whether a command and its arguments are permitted under the strict security whitelist.\n* @param {string} command - The command or binary path under evaluation.\n* @param {string[]} [args=[]] - Optional array of arguments passed to the command.\n* @returns {{ allowed: boolean, reason?: string }}\n*/",
-          "line": 368
+          "line": 373
         },
         {
           "name": "ProcessSentinel",
           "type": "constant",
           "jsdoc": "/**\n* ProcessSentinel (spec 106) — child process security sentinel whitelister.\n* @type {object}\n*/",
-          "line": 480
+          "line": 531
         }
       ],
       "testFile": "src/net/ProcessSentinel.test.js",
@@ -4813,6 +4813,17 @@
         "src/engine/EconomyManager.js",
         "src/engine/EconomyManager.test.js",
         "src/engine/EconomyRegistry.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/160_sandbox_containment_teardown.md",
+      "filename": "160_sandbox_containment_teardown.md",
+      "title": "SPEC-160: Secure Agent Sandbox Containment, Node-Script Path Jailing & Robust Teardown Sentry",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/TeardownContainment.test.js"
       ]
     }
   ],

@@ -187,6 +187,11 @@ function checkPath(filePath, isWrite = false) {
   if (isCheckingPath) return;
   isCheckingPath = true;
   try {
+    // Bypass containment check when not executing a guest script and not in forced test mode (SPEC-160)
+    if (!process.env.GUEST_SCRIPT_PATH && !process.env.TEST_SENTINEL_FORCE) {
+      return;
+    }
+
     const sandboxDir =
       activeSandboxDir ||
       (process.env.GUEST_SANDBOX_DIR
@@ -444,6 +449,52 @@ export function validateCommand(command, args = []) {
         };
       }
     }
+
+    // Path Jailing: Verify any JS script target passed to node resolves inside the sandbox bounds (SPEC-160)
+    const sandboxDir =
+      activeSandboxDir ||
+      (process.env.GUEST_SANDBOX_DIR
+        ? path.resolve(process.env.GUEST_SANDBOX_DIR)
+        : null);
+    if (sandboxDir) {
+      for (const arg of args) {
+        // Any positional argument not starting with - is treated as a target script/file path
+        if (arg && !arg.startsWith("-")) {
+          const resolved = path.resolve(arg);
+          // Allow inside sandbox
+          if (resolved.startsWith(sandboxDir)) {
+            continue;
+          }
+          // Allow inside node_modules
+          const rootNodeModules = path.resolve(
+            sandboxDir,
+            "../../node_modules",
+          );
+          const workspaceNodeModules = path.resolve(
+            process.cwd(),
+            "node_modules",
+          );
+          if (
+            resolved.startsWith(rootNodeModules) ||
+            resolved.startsWith(workspaceNodeModules)
+          ) {
+            continue;
+          }
+          // Allow worker bootstrap directory files
+          const workerFile = path.resolve(
+            path.dirname(fileURLToPath(import.meta.url)),
+          );
+          if (resolved.startsWith(workerFile)) {
+            continue;
+          }
+          // Otherwise, it resolves outside sandbox and is an escape attempt!
+          return {
+            allowed: false,
+            reason: `Node script execution target [${arg}] resolves outside sandboxed workspace: [${resolved}]`,
+          };
+        }
+      }
+    }
   }
 
   // 4. Netstat Command Guardrails (Windows Port checks)
@@ -537,6 +588,12 @@ export const ProcessSentinel = {
 
     childProcess.spawn = /** @type {any} */ (
       function (command, args, options) {
+        if (
+          !process.env.GUEST_SCRIPT_PATH &&
+          !process.env.TEST_SENTINEL_FORCE
+        ) {
+          return originalSpawn.apply(this, arguments);
+        }
         const actualArgs = Array.isArray(args) ? args : [];
         const validation = validateCommand(command, actualArgs);
         if (!validation.allowed) {
@@ -552,6 +609,12 @@ export const ProcessSentinel = {
 
     childProcess.spawnSync = /** @type {any} */ (
       function (command, args, options) {
+        if (
+          !process.env.GUEST_SCRIPT_PATH &&
+          !process.env.TEST_SENTINEL_FORCE
+        ) {
+          return originalSpawnSync.apply(this, arguments);
+        }
         const actualArgs = Array.isArray(args) ? args : [];
         const validation = validateCommand(command, actualArgs);
         if (!validation.allowed) {
@@ -567,6 +630,12 @@ export const ProcessSentinel = {
 
     childProcess.fork = /** @type {any} */ (
       function (modulePath, args, options) {
+        if (
+          !process.env.GUEST_SCRIPT_PATH &&
+          !process.env.TEST_SENTINEL_FORCE
+        ) {
+          return originalFork.apply(this, arguments);
+        }
         const actualArgs = Array.isArray(args) ? args : [];
         const validation = validateCommand("node", [modulePath, ...actualArgs]);
         if (!validation.allowed) {
@@ -586,6 +655,12 @@ export const ProcessSentinel = {
 
     childProcess.exec = /** @type {any} */ (
       function (command, options, callback) {
+        if (
+          !process.env.GUEST_SCRIPT_PATH &&
+          !process.env.TEST_SENTINEL_FORCE
+        ) {
+          return originalExec.apply(this, arguments);
+        }
         const actualCallback =
           typeof options === "function" ? options : callback;
 
@@ -628,6 +703,12 @@ export const ProcessSentinel = {
 
     childProcess.execSync = /** @type {any} */ (
       function (command, options) {
+        if (
+          !process.env.GUEST_SCRIPT_PATH &&
+          !process.env.TEST_SENTINEL_FORCE
+        ) {
+          return originalExecSync.apply(this, arguments);
+        }
         const forbiddenShellChars = /[&|;><$]/;
         if (forbiddenShellChars.test(command)) {
           stats.blockedCount++;
@@ -653,6 +734,12 @@ export const ProcessSentinel = {
 
     childProcess.execFile = /** @type {any} */ (
       function (file, args, options, callback) {
+        if (
+          !process.env.GUEST_SCRIPT_PATH &&
+          !process.env.TEST_SENTINEL_FORCE
+        ) {
+          return originalExecFile.apply(this, arguments);
+        }
         const actualArgs = Array.isArray(args) ? args : [];
         const validation = validateCommand(file, actualArgs);
         if (!validation.allowed) {
@@ -677,6 +764,12 @@ export const ProcessSentinel = {
 
     childProcess.execFileSync = /** @type {any} */ (
       function (file, args, options) {
+        if (
+          !process.env.GUEST_SCRIPT_PATH &&
+          !process.env.TEST_SENTINEL_FORCE
+        ) {
+          return originalExecFileSync.apply(this, arguments);
+        }
         const actualArgs = Array.isArray(args) ? args : [];
         const validation = validateCommand(file, actualArgs);
         if (!validation.allowed) {

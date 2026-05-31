@@ -44,6 +44,7 @@ import { GuestRunner } from "./net/GuestRunner.js";
 import { GuestRpcSentry } from "./net/GuestRpcSentry.js";
 import { WorkspaceDriftSentry } from "./net/WorkspaceDriftSentry.js";
 import { ProcessReaper } from "./net/ProcessReaper.js";
+import { ProcessSentinel } from "./net/ProcessSentinel.js";
 import {
   handleOutfitBuy,
   handleShipBuy,
@@ -268,6 +269,11 @@ const server = http.createServer((req, res) => {
       anomaly_triggers_total: anomalyDetector.anomalyTriggersTotal,
       anomaly_detector: anomalyDetector.getDiagnostics(),
       sandbox_security: SandboxSecurityRegistry.getMetrics(),
+      process_reaper: {
+        active_processes: ProcessReaper.getProcessCount(),
+        active_workers: ProcessReaper.getWorkerCount(),
+      },
+      process_sentinel: ProcessSentinel.getStats(),
       guest_sandbox: {
         active_runs: Array.from(GuestRunner.activeRuns.values()),
         recent_runs: GuestRunner.recentRuns,

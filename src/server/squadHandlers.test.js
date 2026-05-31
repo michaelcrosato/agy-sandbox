@@ -166,4 +166,130 @@ describe("squadHandlers", () => {
       expect(clientObj.send).not.toHaveBeenCalled();
     });
   });
+
+  describe("squad scale-out distributed routing over pubsub", () => {
+    let mockPubsub;
+
+    beforeEach(() => {
+      mockPubsub = {
+        publish: jest.fn().mockResolvedValue(),
+        subscribe: jest.fn().mockResolvedValue(),
+        unsubscribe: jest.fn().mockResolvedValue(),
+      };
+    });
+
+    test("publishes squad_invite event to pubsub when target is remote", () => {
+      squadManager.getSquadForPlayer.mockReturnValue({
+        id: "squad1",
+        leaderId: "p1",
+        memberIds: new Set(["p1"]),
+      });
+
+      handleSquadAction(
+        clientObj,
+        {
+          type: "squad_invite",
+          targetId: "remote-p",
+          targetNickname: "RemotePilot",
+        },
+        // empty clients wss, representing remote player
+        { clients: new Set([{ clientObj: clientObj }]) },
+        squadManager,
+        mockPubsub,
+      );
+
+      expect(mockPubsub.publish).toHaveBeenCalledWith("squad:events", {
+        type: "squad_invite",
+        senderId: "p1",
+        senderNickname: "Player1",
+        targetId: "remote-p",
+        targetNickname: "RemotePilot",
+        squadId: "squad1",
+      });
+      expect(clientObj.send).toHaveBeenCalledWith({
+        type: "notification",
+        message: "Sent squad invite to RemotePilot!",
+        style: "success",
+      });
+    });
+
+    test("publishes squad_update event to pubsub upon squad creation inside invite flow", () => {
+      squadManager.getSquadForPlayer.mockReturnValue(null);
+      squadManager.createSquad.mockReturnValue({
+        id: "new-squad-123",
+        leaderId: "p1",
+        memberIds: new Set(["p1"]),
+      });
+
+      handleSquadAction(
+        clientObj,
+        { type: "squad_invite", targetId: "p2" },
+        wss,
+        squadManager,
+        mockPubsub,
+      );
+
+      expect(squadManager.createSquad).toHaveBeenCalledWith("p1");
+      expect(mockPubsub.publish).toHaveBeenCalledWith("squad:events", {
+        type: "squad_update",
+        squadId: "new-squad-123",
+        leaderId: "p1",
+        memberIds: ["p1"],
+      });
+    });
+
+    test("publishes squad_update event to pubsub when joining a squad", () => {
+      squadManager.joinSquad.mockReturnValue({ success: true });
+      squadManager.getSquadForPlayer.mockReturnValue({
+        id: "squad1",
+        leaderId: "p2",
+        memberIds: new Set(["p1", "p2"]),
+      });
+
+      handleSquadAction(
+        clientObj,
+        { type: "squad_join", squadId: "squad1" },
+        wss,
+        squadManager,
+        mockPubsub,
+      );
+
+      expect(mockPubsub.publish).toHaveBeenCalledWith("squad:events", {
+        type: "squad_update",
+        squadId: "squad1",
+        leaderId: "p2",
+        memberIds: ["p1", "p2"],
+      });
+    });
+
+    test("publishes squad_update event to pubsub when leaving a squad", () => {
+      squadManager.getSquadForPlayer.mockReturnValue({ id: "squad1" });
+      squadManager.squads = new Map([
+        [
+          "squad1",
+          {
+            id: "squad1",
+            leaderId: "p2",
+            memberIds: new Set(["p2"]),
+          },
+        ],
+      ]);
+
+      handleSquadAction(
+        clientObj,
+        { type: "squad_leave" },
+        wss,
+        squadManager,
+        mockPubsub,
+      );
+
+      expect(squadManager.leaveSquad).toHaveBeenCalledWith("p1");
+      expect(mockPubsub.publish).toHaveBeenCalledWith("squad:events", {
+        type: "squad_update",
+        squadId: "squad1",
+        leaderId: "p2",
+        memberIds: ["p2"],
+      });
+    });
+  });
 });

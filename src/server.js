@@ -15,7 +15,7 @@ import { nextFrame } from "./net/BroadcastFramer.js";
 import { interestFilter, buildSpatialGrid } from "./net/interest.js";
 import { encode as encodeFrame } from "./net/BinaryCodec.js";
 import { perMessageDeflateOption } from "./net/wsCompression.js";
-import { squadManager } from "./server/SquadManager.js";
+import { squadManager, Squad } from "./server/SquadManager.js";
 import { JoinQueue, freeSlots, roomMatches } from "./server/matchmaking.js";
 import { JsonFileStore } from "./persistence/Store.js";
 import { PersistenceManager } from "./persistence/PersistenceManager.js";
@@ -1265,7 +1265,32 @@ wss.on("connection", (ws, req) => {
         this.ws.send(JSON.stringify(data));
       }
     },
-    sendStats() {
+    async sendStats() {
+      // Save local player stats to the shared presence store so other shards can read them
+      if (this.ship) {
+        try {
+          const presencePayload = {
+            id: this.id,
+            nickname: this.nickname,
+            roomId: this.roomId,
+            ship: {
+              shield: this.ship.shield,
+              maxShield: this.ship.maxShield,
+              armor: this.ship.armor,
+              maxArmor: this.ship.maxArmor,
+              targetName: this.ship.target ? this.ship.target.name : null,
+              position: { x: this.ship.position.x, y: this.ship.position.y },
+            },
+          };
+          await storeInstance.save(
+            `presence:player:${this.id}`,
+            presencePayload,
+          );
+        } catch (_err) {
+          // swallow store write failures safely
+        }
+      }
+
       const room = instances.get(this.roomId);
       const registry = room ? room.factionRegistry : null;
 
@@ -1274,9 +1299,37 @@ wss.on("connection", (ws, req) => {
       if (squad) {
         for (const memberId of squad.memberIds) {
           if (memberId === this.id) continue;
-          const smClient = Array.from(wss.clients)
+
+          let smClient = Array.from(wss.clients)
             .map((w) => w.clientObj)
             .find((c) => c && c.id === memberId);
+
+          if (!smClient) {
+            try {
+              const remotePresence = await storeInstance.load(
+                `presence:player:${memberId}`,
+              );
+              if (remotePresence) {
+                smClient = {
+                  id: remotePresence.id,
+                  nickname: remotePresence.nickname,
+                  ship: {
+                    shield: remotePresence.ship.shield,
+                    maxShield: remotePresence.ship.maxShield,
+                    armor: remotePresence.ship.armor,
+                    maxArmor: remotePresence.ship.maxArmor,
+                    target: remotePresence.ship.targetName
+                      ? { name: remotePresence.ship.targetName }
+                      : null,
+                    position: remotePresence.ship.position,
+                  },
+                };
+              }
+            } catch (_err) {
+              // safe fallback
+            }
+          }
+
           if (smClient) {
             squadMembers.push(smClient);
           }
@@ -1594,7 +1647,7 @@ wss.on("connection", (ws, req) => {
       msg.type === "squad_join" ||
       msg.type === "squad_leave"
     ) {
-      handleSquadAction(clientObj, msg, wss, squadManager);
+      handleSquadAction(clientObj, msg, wss, squadManager, pubsub);
     } else if (msg.type === "port_redeem_vouchers") {
       handleVoucherRedeem(clientObj, room);
     } else if (msg.type === "mission_accept") {
@@ -1891,6 +1944,115 @@ async function setupPubSubSubscriptions() {
       const c = ws.clientObj;
       if (c && squadManager.getSquadId(c.id) === squadId) {
         c.send(payload);
+      }
+    }
+  });
+
+  await pubsub.subscribe("squad:events", (payload) => {
+    if (payload.type === "squad_invite") {
+      for (const ws of wss.clients) {
+        const c = ws.clientObj;
+        if (
+          c &&
+          (c.id === payload.targetId ||
+            (payload.targetNickname && c.nickname === payload.targetNickname))
+        ) {
+          c.send({
+            type: "squad_invite_received",
+            senderId: payload.senderId,
+            senderNickname: payload.senderNickname,
+            squadId: payload.squadId,
+          });
+        }
+      }
+    } else if (payload.type === "squad_update") {
+      const { squadId, leaderId, memberIds } = payload;
+      const squad = squadManager.squads.get(squadId);
+      const oldMembers = squad ? Array.from(squad.memberIds) : [];
+
+      if (memberIds.length === 0) {
+        squadManager.squads.delete(squadId);
+        for (const mId of oldMembers) {
+          squadManager.playerToSquad.delete(mId);
+          const localC = Array.from(wss.clients)
+            .map((w) => w.clientObj)
+            .find((c) => c && c.id === mId);
+          if (localC) {
+            localC.send({
+              type: "notification",
+              message: "Your squad has been dissolved.",
+              style: "info",
+            });
+            localC.sendStats();
+          }
+        }
+      } else {
+        let sq = squadManager.squads.get(squadId);
+        if (!sq) {
+          sq = new Squad(squadId, leaderId);
+          sq.memberIds = new Set(memberIds);
+          squadManager.squads.set(squadId, sq);
+        } else {
+          sq.leaderId = leaderId;
+          sq.memberIds = new Set(memberIds);
+        }
+
+        for (const mId of memberIds) {
+          squadManager.playerToSquad.set(mId, squadId);
+        }
+        for (const mId of oldMembers) {
+          if (!memberIds.includes(mId)) {
+            squadManager.playerToSquad.delete(mId);
+          }
+        }
+
+        if (oldMembers.length > 0) {
+          const joinedId = memberIds.find((m) => !oldMembers.includes(m));
+          if (joinedId) {
+            let joinedNickname = "A player";
+            const localJoined = Array.from(wss.clients)
+              .map((w) => w.clientObj)
+              .find((c) => c && c.id === joinedId);
+            if (localJoined) {
+              joinedNickname = localJoined.nickname;
+            }
+
+            for (const ws of wss.clients) {
+              const c = ws.clientObj;
+              if (c && memberIds.includes(c.id) && c.id !== joinedId) {
+                c.send({
+                  type: "notification",
+                  message: `${joinedNickname} joined the squad!`,
+                  style: "success",
+                });
+                c.sendStats();
+              }
+            }
+          }
+
+          const leftId = oldMembers.find((m) => !memberIds.includes(m));
+          if (leftId) {
+            let leftNickname = "A player";
+            const localLeft = Array.from(wss.clients)
+              .map((w) => w.clientObj)
+              .find((c) => c && c.id === leftId);
+            if (localLeft) {
+              leftNickname = localLeft.nickname;
+            }
+
+            for (const ws of wss.clients) {
+              const c = ws.clientObj;
+              if (c && memberIds.includes(c.id)) {
+                c.send({
+                  type: "notification",
+                  message: `${leftNickname} left the squad.`,
+                  style: "info",
+                });
+                c.sendStats();
+              }
+            }
+          }
+        }
       }
     }
   });

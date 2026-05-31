@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T15:23:49.388Z` · Baseline: `23,692 LOC` across `102 source files`
+> Generated: `2026-05-31T15:26:13.901Z` · Baseline: `23,755 LOC` across `102 source files`
 
 ---
 
@@ -9,10 +9,10 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `23,692 LOC` | 🟢 Healthy |
+| **Total Code Volume** | `23,755 LOC` | 🟢 Healthy |
 | **Source Modules** | `102 files` | 🟢 Structured |
 | **Test Suites** | `132 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1706 cases` | 🟢 Deterministic |
+| **Total Test Cases** | `1712 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `170 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `6 files` | ⚠️ Debt Pending |
 
@@ -147,7 +147,7 @@
 | [roomGc.js](file:///C:/dev/agy-sandbox/src/server/roomGc.js) | 57 | _None_ | [roomGc.test.js](file:///C:/dev/agy-sandbox/src/server/roomGc.test.js) | [`042_server_monolith_extraction_galaxy_ticker`](file:///C:/dev/agy-sandbox/plan/specs/042_server_monolith_extraction_galaxy_ticker.md) |
 | [roomLifecycle.js](file:///C:/dev/agy-sandbox/src/server/roomLifecycle.js) | 38 | `constant DEFAULT_ROOM_IDLE_MS`, `function shouldGcRoom`, `function sanitizeNickname` | [roomLifecycle.test.js](file:///C:/dev/agy-sandbox/src/server/roomLifecycle.test.js) | _None_ |
 | [spaceportMissionHandlers.js](file:///C:/dev/agy-sandbox/src/server/spaceportMissionHandlers.js) | 149 | `function handleMissionAccept`, `function handleMissionAbandon` | [spaceportMissionHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/spaceportMissionHandlers.test.js) | [`154_world_derived_missions_landing_flow`](file:///C:/dev/agy-sandbox/plan/specs/154_world_derived_missions_landing_flow.md) |
-| [squadHandlers.js](file:///C:/dev/agy-sandbox/src/server/squadHandlers.js) | 93 | `function handleSquadAction` | [squadHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/squadHandlers.test.js) | [`110_server_handler_extraction_round5`](file:///C:/dev/agy-sandbox/plan/specs/110_server_handler_extraction_round5.md) |
+| [squadHandlers.js](file:///C:/dev/agy-sandbox/src/server/squadHandlers.js) | 156 | `function handleSquadAction` | [squadHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/squadHandlers.test.js) | [`110_server_handler_extraction_round5`](file:///C:/dev/agy-sandbox/plan/specs/110_server_handler_extraction_round5.md) |
 | [SquadManager.js](file:///C:/dev/agy-sandbox/src/server/SquadManager.js) | 136 | `class Squad`, `class SquadManager`, `constant squadManager` | [SquadManager.test.js](file:///C:/dev/agy-sandbox/src/server/SquadManager.test.js) | [`059_alliance_fleets`](file:///C:/dev/agy-sandbox/plan/specs/059_alliance_fleets.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
 | [supervisor.js](file:///C:/dev/agy-sandbox/src/server/supervisor.js) | 111 | `function planWorkers`, `function runSupervisor` | [supervisor.test.js](file:///C:/dev/agy-sandbox/src/server/supervisor.test.js) | [`019c_worker_process_model`](file:///C:/dev/agy-sandbox/plan/specs/019c_worker_process_model.md)<br>[`062_redis_cluster_integration`](file:///C:/dev/agy-sandbox/plan/specs/062_redis_cluster_integration.md) |
 | [tutorialHandlers.js](file:///C:/dev/agy-sandbox/src/server/tutorialHandlers.js) | 210 | `function handleTutorialProgress` | [tutorialHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/tutorialHandlers.test.js) | [`110_server_handler_extraction_round5`](file:///C:/dev/agy-sandbox/plan/specs/110_server_handler_extraction_round5.md) |

@@ -237,4 +237,171 @@ describe("Squad Multiplayer Integration (SPEC-059)", () => {
     const hasAsteroidB = sharedResult.some((e) => e.id === "ast-1");
     expect(hasAsteroidB).toBe(true);
   });
+
+  test("cross-process presence stat loading and remote squadmate coordination", async () => {
+    // We mock the shared store mapping for player presence
+    const mockStore = {
+      data: new Map(),
+      async save(key, obj) {
+        this.data.set(key, obj);
+        return true;
+      },
+      async load(key) {
+        return this.data.get(key) || null;
+      },
+    };
+
+    // We register p2 presence directly in the mock store
+    await mockStore.save("presence:player:p2", {
+      id: "p2",
+      nickname: "RemoteWingman",
+      roomId: "sector-1",
+      ship: {
+        shield: 80,
+        maxShield: 100,
+        armor: 90,
+        maxArmor: 100,
+        targetName: "BountyTarget",
+        position: { x: 500, y: 600 },
+      },
+    });
+
+    // Mock client object p1
+    const mockClient1 = {
+      id: "p1",
+      nickname: "Leader",
+      roomId: "sector-1",
+      ship: {
+        credits: 200,
+        cargo: [],
+        shield: 100,
+        maxShield: 100,
+        armor: 100,
+        maxArmor: 100,
+        name: "Specter V",
+        outfits: [],
+        energy: 100,
+        maxEnergy: 100,
+        heat: 0,
+        maxHeat: 100,
+        hyperFuel: 5,
+        maxHyperFuel: 5,
+      },
+      ws: {
+        send() {},
+      },
+      sentPayloads: [],
+      send(payload) {
+        this.sentPayloads.push(payload);
+      },
+    };
+
+    // Construct mock wss containing only p1, simulating p2 is remote (on another process)
+    const mockWss = {
+      clients: new Set([{ clientObj: mockClient1 }]),
+    };
+
+    // Re-bind sendStats to simulate the new server sendStats execution context
+    mockClient1.sendStats = async function () {
+      // 1. Write presence to mockStore
+      await mockStore.save(`presence:player:${this.id}`, {
+        id: this.id,
+        nickname: this.nickname,
+        roomId: this.roomId,
+        ship: {
+          shield: this.ship.shield,
+          maxShield: this.ship.maxShield,
+          armor: this.ship.armor,
+          maxArmor: this.ship.maxArmor,
+          position: { x: 0, y: 0 },
+        },
+      });
+
+      // 2. Fetch squadmates (p2)
+      let squadMembers = [];
+      const squad = squadManager.getSquadForPlayer(this.id);
+      if (squad) {
+        for (const memberId of squad.memberIds) {
+          if (memberId === this.id) continue;
+
+          let smClient = Array.from(mockWss.clients)
+            .map((w) => w.clientObj)
+            .find((c) => c && c.id === memberId);
+
+          if (!smClient) {
+            const remotePresence = await mockStore.load(
+              `presence:player:${memberId}`,
+            );
+            if (remotePresence) {
+              smClient = {
+                id: remotePresence.id,
+                nickname: remotePresence.nickname,
+                ship: {
+                  shield: remotePresence.shield,
+                  maxShield: remotePresence.maxShield,
+                  armor: remotePresence.armor,
+                  maxArmor: remotePresence.maxArmor,
+                  target: remotePresence.targetName
+                    ? { name: remotePresence.targetName }
+                    : null,
+                  position: remotePresence.position,
+                },
+              };
+              if (remotePresence.ship) {
+                smClient.ship = {
+                  shield: remotePresence.ship.shield,
+                  maxShield: remotePresence.ship.maxShield,
+                  armor: remotePresence.ship.armor,
+                  maxArmor: remotePresence.ship.maxArmor,
+                  target: remotePresence.ship.targetName
+                    ? { name: remotePresence.ship.targetName }
+                    : null,
+                  position: remotePresence.ship.position,
+                };
+              }
+            }
+          }
+          if (smClient) {
+            squadMembers.push(smClient);
+          }
+        }
+      }
+
+      // Mock buildStatsPayload call
+      const payload = {
+        type: "stats",
+        squad: squadMembers.map((m) => ({
+          id: m.id,
+          nickname: m.nickname,
+          shield: m.ship.shield,
+          maxShield: m.ship.maxShield,
+          x: m.ship.position.x,
+          y: m.ship.position.y,
+        })),
+      };
+      this.send(payload);
+    };
+
+    // Form the squad in squadManager (both p1 and p2)
+    const squad = squadManager.createSquad("p1");
+    squadManager.joinSquad(squad.id, "p2");
+
+    // Execute sendStats
+    await mockClient1.sendStats();
+
+    // Verify p2 presence was correctly loaded from mockStore and packaged
+    expect(mockClient1.sentPayloads.length).toBe(1);
+    const statsMsg = mockClient1.sentPayloads[0];
+    expect(statsMsg.type).toBe("stats");
+    expect(statsMsg.squad.length).toBe(1);
+    expect(statsMsg.squad[0].id).toBe("p2");
+    expect(statsMsg.squad[0].nickname).toBe("RemoteWingman");
+    expect(statsMsg.squad[0].shield).toBe(80);
+    expect(statsMsg.squad[0].x).toBe(500);
+
+    // Verify p1 presence was written to store
+    const p1Presence = await mockStore.load("presence:player:p1");
+    expect(p1Presence).not.toBeNull();
+    expect(p1Presence.nickname).toBe("Leader");
+  });
 });

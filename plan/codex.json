@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T15:23:49.388Z",
+  "generatedAt": "2026-05-31T15:26:13.901Z",
   "stats": {
     "totalSourceFiles": 102,
     "totalTestFiles": 132,
     "totalSpecFiles": 170,
-    "totalLoc": 23692,
-    "totalTests": 1706,
+    "totalLoc": 23755,
+    "totalTests": 1712,
     "untestedCoreFilesCount": 6
   },
   "files": [
@@ -2845,18 +2845,18 @@
     },
     {
       "path": "src/server/squadHandlers.js",
-      "loc": 93,
+      "loc": 156,
       "classes": [],
       "exports": [
         {
           "name": "handleSquadAction",
           "type": "function",
-          "jsdoc": "/**\n* Handles \"squad_invite\", \"squad_join\", and \"squad_leave\" WebSocket messages.\n*\n* @param {object} clientObj - The active client connection object.\n* @param {object} msg - The incoming action message payload.\n* @param {object} wss - The WebSocketServer instance to access other connected clients.\n* @param {object} squadManager - The squad manager instance.\n*/",
-          "line": 9
+          "jsdoc": "/**\n* Handles \"squad_invite\", \"squad_join\", and \"squad_leave\" WebSocket messages.\n*\n* @param {object} clientObj - The active client connection object.\n* @param {object} msg - The incoming action message payload.\n* @param {object} wss - The WebSocketServer instance to access other connected clients.\n* @param {object} squadManager - The squad manager instance.\n* @param {object} [pubsub] - The optional PubSub instance for cross-process events.\n*/",
+          "line": 10
         }
       ],
       "testFile": "src/server/squadHandlers.test.js",
-      "testCasesCount": 11,
+      "testCasesCount": 16,
       "referencingSpecs": [
         "plan/specs/110_server_handler_extraction_round5.md"
       ],

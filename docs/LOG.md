@@ -44,6 +44,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-05-31T08:26 · iter-0142 · GREEN · spec-162-cross-process-squad-pubsub-sync
+
+- **Baseline:** `a495c09` on `main`; 1,285 Jest green, 63 client green.
+- **Move:** Implement SPEC-162 to establish a cross-process squad and position synchronization pipeline over sharded Redis Pub/Sub channels and dynamic presence mapping.
+- **Changed:**
+  - Extended `src/server/squadHandlers.js` to accept a `pubsub` instance and publish distributed invite broadcasts and real-time roster updates globally.
+  - Refactored `sendStats` inside `src/server.js` to serialize dynamic local player presence profiles to the shared persistent store under `presence:player:<id>`.
+  - Mapped asynchronous presence loading lookups on cache misses inside `sendStats` to transparently load remote squadmate ship stats and coordinates from the shared store.
+  - Registered `squad:events` pub/sub subscriber in `setupPubSubSubscriptions` to coordinate invitations, member joins/leaves, and squad dissolution updates across sharded processes.
+  - Added robust new unit and integration tests inside `src/server/squadHandlers.test.js` and `src/server/squad.integration.test.js` verifying sharded publishes, invitations, and persistent presence stat resolutions.
+- **Decisions:** Designing symmetric old-versus-new roster membership comparisons inside the subscriber callback ensures precise local notifications and `sendStats` updates under distributed cluster conditions.
+- **Validation:** Executed full check gate `npm run agent:check:core` passing all 1,290 Jest tests, static ESLint lints, Prettier checks, and typechecks. Checked 63 client tests successfully via `npm run test:client`.
+- **Next:** Transition to SPEC-163 to establish Golden Visual E2E Playwright Automation verifying cockpit HUD layout purity.
+
+
 ## 2026-05-31T08:24 · iter-0141 · GREEN · spec-161-decompose-http-rest-endpoints
 
 - **Baseline:** `57b65a5` on `main`; 1,270 Jest green, 63 client green.

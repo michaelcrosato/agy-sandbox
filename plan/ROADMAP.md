@@ -522,15 +522,47 @@ The guest sandbox observability, network containment, and ESM module loader jail
 
 ---
 
+## EXECUTION WAVES (v44) — Completed (DONE)
+
+The sandbox containment and node script path jailing wave:
+
+### Phase 0 — Secure Sandbox Containment & Teardown Sentry — `160`
+
+- `160` Secure Sandbox Containment, Node-Script Path Jailing & Robust Teardown Sentry (harden the agent sandbox, jailing node scripts strictly within the workspace, strengthening ProcessReaper teardown, and auto-compacting security logs to 500 records) — **done**.
+
+---
+
+## EXECUTION WAVES (v45) — Open (In Progress)
+
+The modular REST API, sharded Pub/Sub co-op, and visual automation E2E guard wave:
+
+### Phase 0 — Modular HTTP REST Handlers — `161`
+
+- `161` Decompose HTTP REST Endpoints to Modular Handler & Author Integration Tests (decouple REST routes from main `src/server.js` monolith to modular handlers `src/server/restHandlers.js`, adding comprehensive integration tests) — **pending**.
+
+### Phase 1 — Cross-Process Squad Pub/Sub Sync — `162`
+
+- `162` Cross-Process Chat & Sector Interest Sync Pipeline over Redis Pub/Sub (implement squad chat and positioning synchronization across sharded workers in a horizon-grade multi-process environment) — **pending**.
+
+### Phase 2 — Golden Visual Playwright E2E Guard — `163`
+
+- `163` Golden Visual E2E Playwright Automation & UI Telemetry Regression Guard (design Playwright visual-regression tests verifying HUD cockpit and dashboard cards under responsive viewport sizes, saving to `browser_recordings/`) — **pending**.
+
+---
+
 ## MASTER PRIORITIZATION TABLE (next-cycle work)
 
 Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + Fit.
 
 | Spec | Title                            | Phase | Impact | Feasibility | Risk(5=safe) | Fit |  Σ  |  Status  |
 | ---- | -------------------------------- | :---: | :----: | :---------: | :----------: | :-: | :-: | :------: |
-| 157  | Outfitting Presets Modular       |   0   |   5    |      5      |      5       |  5  | 20  | Pending  |
-| 158  | Guided Onboarding Tutorial       |   1   |   5    |      4      |      5       |  5  | 19  | Pending  |
-| 159  | Economy Invariant Sentry         |   2   |   5    |      5      |      5       |  5  | 20  | Pending  |
+| 161  | Modular REST Handlers            |   0   |   5    |      5      |      5       |  5  | 20  | Pending  |
+| 162  | Cross-Process Squad Pub/Sub Sync |   1   |   5    |      4      |      5       |  5  | 19  | Pending  |
+| 163  | Golden Visual Playwright E2E     |   2   |   4    |      4      |      5       |  5  | 17  | Pending  |
+| 160  | Secure Sandbox Teardown          |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
+| 157  | Outfitting Presets Modular       |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
+| 158  | Guided Onboarding Tutorial       |   1   |   5    |      4      |      5       |  5  | 19  | **DONE** |
+| 159  | Economy Invariant Sentry         |   2   |   5    |      5      |      5       |  5  | 20  | **DONE** |
 | 154  | World-Derived Missions           |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
 | 155  | Mass-Agility Dynamics HUD        |   1   |   4    |      5      |      5       |  5  | 19  | **DONE** |
 | 156  | Dynamic Faction Hunters          |   2   |   5    |      4      |      5       |  5  | 19  | **DONE** |

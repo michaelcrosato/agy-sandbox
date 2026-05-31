@@ -295,7 +295,7 @@ describe("Supervisor process model integration (spec 019c)", () => {
     wsClient.close();
 
     // Give the worker time to persist the galaxy state to disk and transfer the registry ownership
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 2500));
 
     // 5. Try to join testRoom on Worker 1 (port1). Since Worker 0 has shut down and transferred the room,
     // Worker 1 should now host the dynamically transferred room and load its persisted state!

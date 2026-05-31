@@ -35,6 +35,13 @@ _**v39 re-audit baseline (2026-05-31, ENTIRE v39 blueprint shipped): 1,222 Jest 
 _**v42 re-audit baseline (2026-05-31, ENTIRE v41 blueprint shipped): 1,233 Jest tests / 119 suites green; kernel isolation, secure module verification registry, and visual cli terminal HUD all 100% DONE.**_
 _**v43 re-audit baseline (2026-05-31, ENTIRE v42 blueprint shipped): 1,247 Jest tests / 121 suites green; world-derived missions flow, mass-agility physics dynamics, and dynamic faction vengeance spawner all 100% DONE.**_
 _**v44 re-audit baseline (2026-05-31, ENTIRE v43 blueprint shipped): 1,270 Jest tests / 124 suites green; secure script jailing, ProcessReaper process-tree tracking, and log compaction all 100% DONE.**_
+_**v45 re-audit baseline (2026-05-31, ENTIRE v44 sandbox blueprint shipped): 1,270 Jest tests / 124 suites + 63 client tests green; REST API handlers extraction, sharded squad Pub/Sub, and Playwright visual automation planned.**_
+
+## v45 — Modular REST API, Sharded Pub/Sub, and Visual Automation Wave (IN PROGRESS) — see [`ROADMAP.md`](ROADMAP.md)
+
+- [x] `161` Decompose HTTP REST Endpoints to Modular Handler & Author Integration Tests (decouple REST routes from main `src/server.js` monolith to modular handlers `src/server/restHandlers.js`, adding comprehensive integration tests) — **done** (decoupled all 9 REST endpoints and static file serving into a pure tested restHandlers.js ES module, integrated OPTIONS CORS preflight at the root of the handler, captured all JSON SyntaxErrors as 400 Bad Request responses, refactored server.js to delegate requests with a dynamic context options parameter, and covered the code with a robust 15-test headless Jest suite inside restHandlers.test.js; 1,285 Jest tests 100% green)
+- [ ] `162` Cross-Process Chat & Sector Interest Sync Pipeline over Redis Pub/Sub (implement squad chat and positioning synchronization across sharded workers in a horizon-grade multi-process environment)
+- [ ] `163` Golden Visual E2E Playwright Automation & UI Telemetry Regression Guard (design Playwright visual-regression tests verifying HUD cockpit and dashboard cards under responsive viewport sizes, saving to `browser_recordings/`)
 
 ## v44 — Sandbox Containment & Teardown Lifecycle Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

@@ -44,6 +44,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-05-31T08:24 · iter-0141 · GREEN · spec-161-decompose-http-rest-endpoints
+
+- **Baseline:** `57b65a5` on `main`; 1,270 Jest green, 63 client green.
+- **Move:** Implement SPEC-161 to decompose the HTTP API routing monolith into an independent, pure modular handler with headless tests.
+- **Changed:**
+  - Designed `src/server/restHandlers.js` exporting JSDoc-annotated `handleRestRequest(req, res, options)` to handle all 9 REST endpoints and static file serving.
+  - Refactored `src/server.js` monolith to delegate all HTTP requests to `handleRestRequest` using a clean options parameter containing all registry and session singletons.
+  - Implemented early CORS OPTIONS preflight detection at the root of `handleRestRequest` to prevent endpoint interception.
+  - Structured global catch blocks inside all POST endpoints to respond with a 400 Bad Request if malformed payload SyntaxErrors occur.
+  - Developed a comprehensive new unit and integration test suite `src/server/restHandlers.test.js` covering CORS preflight, REST endpoints, parameter validation, rejections, path traversals, and file types.
+- **Decisions:** Delegating requests via a dynamic context option object prevents cross-test environment contamination and preserves engine/purity constraints. Returning Promises in asynchronous tests eliminates the latency and timeout overhead of done callbacks.
+- **Validation:** Executed full check gate `npm run agent:check:core` passing 1,285 backend Jest tests, ESLint static analysis, Prettier checks, and typecheck compile. Verified 63 client-side tests via `npm run test:client`.
+- **Next:** Transition to SPEC-162 to implement cross-process squad synchronization and positional telemetry channels over Redis Pub/Sub.
+
+
 ## 2026-05-31T14:40 · iter-0140 · GREEN · spec-160-sandbox-containment-teardown
 
 - **Baseline:** `82764f6` on `feat/procedural-missions`; 1,264 Jest green.

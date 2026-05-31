@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T14:56:34.842Z",
+  "generatedAt": "2026-05-31T15:23:49.388Z",
   "stats": {
-    "totalSourceFiles": 101,
-    "totalTestFiles": 131,
-    "totalSpecFiles": 166,
-    "totalLoc": 23110,
-    "totalTests": 1684,
+    "totalSourceFiles": 102,
+    "totalTestFiles": 132,
+    "totalSpecFiles": 170,
+    "totalLoc": 23692,
+    "totalTests": 1706,
     "untestedCoreFilesCount": 6
   },
   "files": [
@@ -1869,7 +1869,8 @@
       "testFile": "src/net/PubSub.test.js",
       "testCasesCount": 7,
       "referencingSpecs": [
-        "plan/specs/104_living_codex_hygiene_jsdoc_audit.md"
+        "plan/specs/104_living_codex_hygiene_jsdoc_audit.md",
+        "plan/specs/162_cross_process_pubsub_sync.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -2754,6 +2755,25 @@
         "plan/specs/058_loadout_presets.md",
         "plan/specs/060_naval_campaigns.md",
         "plan/specs/077_refinement_mining_laser_industrial_dock.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/restHandlers.js",
+      "loc": 582,
+      "classes": [],
+      "exports": [
+        {
+          "name": "handleRestRequest",
+          "type": "function",
+          "jsdoc": "/**\n* Handles incoming REST API and static file serving requests modularly.\n*\n* @param {import(\"http\").IncomingMessage} req The HTTP request.\n* @param {import(\"http\").ServerResponse} res The HTTP response.\n* @param {Object} options The configuration/dependency singletons option object.\n* @param {Object} options.metrics The core metrics registry.\n* @param {Map} options.instances The active room/sector instances directory.\n* @param {Object} options.matchmakingQueue The active JoinQueue.\n* @param {Object} options.latencyMonitor The LatencyMonitor singleton.\n* @param {Object} options.sandboxTelemetry The SandboxTelemetry singleton.\n* @param {Object} options.apiRateLimiter The ApiRateLimiter singleton.\n* @param {Object} options.sandboxFirewall The SandboxFirewall singleton.\n* @param {Object} options.memoryLeakSentry The MemoryLeakSentry singleton.\n* @param {Object} options.anomalyDetector The AnomalyDetector singleton.\n* @param {Map} options.clients The map of active sockets/clients ws -> clientObj.\n* @param {Object} options.galacticChronicle The GalacticChronicle instance.\n* @param {number} options.PORT The HTTP port the server is listening on.\n* @param {number} options.WORKERS The total number of sharded worker processes.\n* @param {number} options.SHARD_INDEX The current shard index.\n* @param {Object} options.wss The WebSocketServer instance.\n* @param {string} [options.ROOT_DIR] The optional repository root directory path.\n*/",
+          "line": 43
+        }
+      ],
+      "testFile": "src/server/restHandlers.test.js",
+      "testCasesCount": 22,
+      "referencingSpecs": [
+        "plan/specs/161_decompose_http_rest_endpoints.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -3659,6 +3679,15 @@
         "src/server/SquadManager.js",
         "src/net/interest.js"
       ]
+    },
+    {
+      "path": "plan/specs/060_autonomy_safety_truth_sync.md",
+      "filename": "060_autonomy_safety_truth_sync.md",
+      "title": "060 — Autonomy Safety & Truth Sync",
+      "status": "In Progress",
+      "priority": "Critical",
+      "pillar": "None",
+      "filesMentioned": []
     },
     {
       "path": "plan/specs/060_naval_campaigns.md",
@@ -4825,6 +4854,43 @@
       "filesMentioned": [
         "src/net/TeardownContainment.test.js"
       ]
+    },
+    {
+      "path": "plan/specs/161_decompose_http_rest_endpoints.md",
+      "filename": "161_decompose_http_rest_endpoints.md",
+      "title": "SPEC-161: Decompose HTTP REST Endpoints to Modular Handler & Author Integration Tests",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/server.js",
+        "src/server/restHandlers.js",
+        "src/server/restHandlers.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/162_cross_process_pubsub_sync.md",
+      "filename": "162_cross_process_pubsub_sync.md",
+      "title": "SPEC-162: Cross-Process Chat & Sector Interest Sync Pipeline over Redis Pub/Sub",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/PubSub.js",
+        "src/server.js"
+      ]
+    },
+    {
+      "path": "plan/specs/163_playwright_e2e_regression_guard.md",
+      "filename": "163_playwright_e2e_regression_guard.md",
+      "title": "SPEC-163: Golden Visual E2E Playwright Automation & UI Telemetry Regression Guard",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/client/__tests__/CanvasRenderer.browser.test.js",
+        "src/client/__tests__/PlaywrightVisual.test.js"
+      ]
     }
   ],
   "epistemicDebt": {
@@ -4969,6 +5035,13 @@
         "spec": "plan/specs/158_guided_onboarding_tutorial_mission.md",
         "brokenFiles": [
           "src/client/tutorialUI.test.js"
+        ]
+      },
+      {
+        "spec": "plan/specs/163_playwright_e2e_regression_guard.md",
+        "brokenFiles": [
+          "src/client/__tests__/CanvasRenderer.browser.test.js",
+          "src/client/__tests__/PlaywrightVisual.test.js"
         ]
       }
     ]

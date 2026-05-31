@@ -39,6 +39,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T23:30 · iter-0126 · GREEN · cycle-36-replenish-spec-136-137-138
+- **Baseline:** `4f17452` on `feat/procedural-missions`; 1,198 Jest green.
+- **Move:** Perform Cycle 36 Phase R (Replenish) to promote backlogs, conduct sandbox boundary audits, and formulate the new Wave v36 specifications.
+- **Changed:**
+  - Audited host vs. guest boundaries, V8 process leaks, and filesystem/firewall containment escape vectors.
+  - Researched E2B Firecracker microVM containerization models and secure JS sandbox prototype escapes.
+  - Created `plan/specs/136_isolated_guest_runner.md` defining child-process guest V8 execution with budgets and reapers.
+  - Created `plan/specs/137_dynamic_firewall_admin.md` defining visual whitelisting and dynamic `/api/firewall/rules` hot-reloading.
+  - Created `plan/specs/138_strict_path_jailing.md` defining rigorous resolved path bounds and dependency read exceptions.
+  - Formulated Wave v36 specifications inside `plan/PROGRESS.md` and `plan/ROADMAP.md`, updating checklists and master priority scores.
+- **Decisions:** Prioritized host-isolated guest execution in a child process (SPEC-136) as Phase 0 to shut down in-process V8 heap leaks and state mutations before building out dynamic whitelisting panels (SPEC-137).
+- **Validation:** Running `npm run agent:check` yielded 100% green gate, passing all eslint, prettier, tsc typechecks, and 1,198 unit and integration tests green.
+- **Next:** Proceed with SPEC-136 implementation under a dedicated branch to build the host-isolated guest runner.
+
 ## 2026-05-31T23:15 · iter-0125 · GREEN · spec-134-global-prototype-tamper-proofing-integrity-guard
 - **Baseline:** `1f3c6a0` on `feat/procedural-missions`; 1,194 Jest green.
 - **Move:** Implement SPEC-134 to recursively freeze all core JavaScript built-in constructors and prototypes, monkey-patch Object mutation APIs to intercept prototype pollution, and periodically sweep global scope variable pollution.

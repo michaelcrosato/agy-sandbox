@@ -27,6 +27,13 @@ _**v21 re-audit baseline (2026-05-31, ENTIRE v21 sandbox blueprint shipped): 953
 _**v22 re-audit baseline (2026-05-31, ENTIRE v22 sandbox blueprint shipped): 979 Jest tests / 86 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; High-concurrency stress testing + Galactic chronicle dynamic history + Sandboxed outbound rate limiter sentinel all DONE.**_
 _**v23 re-audit baseline (2026-05-31, ENTIRE v23 blueprint shipped): 1,013 Jest tests / 91 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; Living Codex + Interactive Ontological Tree + Centralized Commodities Schema Registry + Emergent Faction Territory Control + Fittings Presets all DONE.**_
 _**v28 re-audit baseline (2026-05-31): 1,129 Jest tests / 102 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; all previous specs completed with perfect Living Codex coverage.**_
+_**v35 re-audit baseline (2026-05-31, ENTIRE v35 blueprint shipped): 1,198 Jest tests / 115 suites green; all CPU watchdog, prototype sentry, and cockpit visual alarm gauges fully complete and green.**_
+
+## v36 — Autonomous Process Isolation & Path Jailing Hardening Wave (TO DO) — see [`ROADMAP.md`](ROADMAP.md)
+
+- [ ] `136` Host-Isolated Process Guest Runner & Workspace Self-Healer (spawn untrusted guest scripts in a dedicated low-privilege child process with environment and timeout controls, pre-activating process and prototype locks before code runs)
+- [ ] `137` Dynamic Egress Firewall Admin & Visual Whitelisting Control (enhance dashboard-codex.html with visual whitelisting options dynamically editing plan/config.json via zero-downtime hot-reload endpoints)
+- [ ] `138` Strict Path Jailing & Sandboxed Input File Boundary Guard (enhance ProcessSentinel to securely resolve and strictly constrain guest file access within active sandbox directories, whitelisting reads on dependency node_modules)
 
 ## v35 — Sandbox Exhaustion Sentry & Object Integrity Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

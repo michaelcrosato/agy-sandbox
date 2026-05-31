@@ -3,6 +3,11 @@
 This is the machine-readable execution ledger for the autonomous-engineering loop in `agy-sandbox`.
 It records cycle transitions, key milestones, and precise next steps.
 
+## Cycle 36 — 2026-05-31
+- **Status:** GREEN
+- **Summary:** Successfully initiated Cycle 36 under the role of Autonomous Principal AI/Infrastructure Engineer & Sandbox Architect. Completed the Replenish [R] phase by re-running sandbox boundary audits, examining 2026 secure containerization microVM (E2B Firecracker) architectures, and evaluating V8 in-process JS sandbox escapes. Promoted the next active engineering wave on disk (Wave v36): SPEC-136 (Host-Isolated Process Guest Runner & Workspace Self-Healer) to isolate guest executions to low-privilege child processes with timeout constraints, SPEC-137 (Dynamic Egress Firewall Admin & Visual Whitelisting Control) to manage dynamic configurations live via HTTP API endpoints, and SPEC-138 (Strict Path Jailing & Sandboxed Input File Boundary Guard) to protect against filesystem traversal escapes. Formulated specifications, refreshed progress registers, and prepared priorities tables to launch development.
+- **Next Action:** Transition to Cycle 36 Phase D (Execute) to claim and implement SPEC-136 on a dedicated feature branch.
+
 ## Cycle 35 (Iteration 2) — 2026-05-31
 - **Status:** GREEN
 - **Summary:** Successfully implemented, tested, and verified SPEC-134 (Global Prototype Tamper-Proofing & Object Integrity Guard) under the role of Autonomous Principal AI/Infrastructure Engineer & Sandbox Architect. Designed and developed `IntegrityGuard.js` recursively freezing core JavaScript built-in constructors and prototypes to make them immutable, monkey-patching Object.defineProperty, defineProperties, and setPrototypeOf to block prototype pollution attempts with dynamic runtime violations logged, and snapshotting global scope properties to periodically sweep/self-heal global scope pollution. Fully integrated IntegrityGuard starting/stopping into the `EphemeralSandbox.js` guest run lifecycle. Resolved a critical cross-suite environment pollution issue by modifying SandboxSecurityRegistry to dynamically resolve the audit file path on demand, ensuring complete isolation of parallel Jest tests. All 1,198 Jest tests pass 100% green.

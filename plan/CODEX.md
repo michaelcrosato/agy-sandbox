@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T05:29:55.277Z` · Baseline: `20,376 LOC` across `93 source files`
+> Generated: `2026-05-31T05:33:45.348Z` · Baseline: `20,376 LOC` across `93 source files`
 
 ---
 
@@ -13,7 +13,7 @@
 | **Source Modules** | `93 files` | 🟢 Structured |
 | **Test Suites** | `122 test files` | 🟢 Integrated |
 | **Total Test Cases** | `1597 cases` | 🟢 Deterministic |
-| **Active/Archived Specs** | `141 specifications` | 🟢 Traceable |
+| **Active/Archived Specs** | `144 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `2 files` | ⚠️ Debt Pending |
 
 ---
@@ -97,7 +97,7 @@
 | [originPolicy.js](file:///C:/dev/agy-sandbox/src/net/originPolicy.js) | 60 | `function isAllowedOrigin` | [originPolicy.test.js](file:///C:/dev/agy-sandbox/src/net/originPolicy.test.js) | [`002_ws_inbound_hardening`](file:///C:/dev/agy-sandbox/plan/specs/002_ws_inbound_hardening.md) |
 | [PortReclaimer.js](file:///C:/dev/agy-sandbox/src/net/PortReclaimer.js) | 105 | _None_ | [PortReclaimer.test.js](file:///C:/dev/agy-sandbox/src/net/PortReclaimer.test.js) | [`106_sandbox_containment_sentinel`](file:///C:/dev/agy-sandbox/plan/specs/106_sandbox_containment_sentinel.md) |
 | [ProcessReaper.js](file:///C:/dev/agy-sandbox/src/net/ProcessReaper.js) | 160 | `constant ProcessReaper` | [ProcessReaper.test.js](file:///C:/dev/agy-sandbox/src/net/ProcessReaper.test.js) | [`092_zombie_reaper_orphan_cleanup`](file:///C:/dev/agy-sandbox/plan/specs/092_zombie_reaper_orphan_cleanup.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
-| [ProcessSentinel.js](file:///C:/dev/agy-sandbox/src/net/ProcessSentinel.js) | 613 | `function parseCommandString`, `function validateCommand`, `constant ProcessSentinel` | [ProcessSentinel.test.js](file:///C:/dev/agy-sandbox/src/net/ProcessSentinel.test.js) | [`106_sandbox_containment_sentinel`](file:///C:/dev/agy-sandbox/plan/specs/106_sandbox_containment_sentinel.md) |
+| [ProcessSentinel.js](file:///C:/dev/agy-sandbox/src/net/ProcessSentinel.js) | 613 | `function parseCommandString`, `function validateCommand`, `constant ProcessSentinel` | [ProcessSentinel.test.js](file:///C:/dev/agy-sandbox/src/net/ProcessSentinel.test.js) | [`106_sandbox_containment_sentinel`](file:///C:/dev/agy-sandbox/plan/specs/106_sandbox_containment_sentinel.md)<br>[`138_strict_path_jailing`](file:///C:/dev/agy-sandbox/plan/specs/138_strict_path_jailing.md) |
 | [PubSub.js](file:///C:/dev/agy-sandbox/src/net/PubSub.js) | 198 | `class PubSub`, `class InMemoryPubSub`, `class RedisPubSub` | [PubSub.test.js](file:///C:/dev/agy-sandbox/src/net/PubSub.test.js) | [`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
 | [ResourceLimiter.js](file:///C:/dev/agy-sandbox/src/net/ResourceLimiter.js) | 157 | `class ResourceLimiter` | [ResourceLimiter.test.js](file:///C:/dev/agy-sandbox/src/net/ResourceLimiter.test.js) | [`116_resource_backpressure_limiter`](file:///C:/dev/agy-sandbox/plan/specs/116_resource_backpressure_limiter.md)<br>[`128_adaptive_backpressure`](file:///C:/dev/agy-sandbox/plan/specs/128_adaptive_backpressure.md) |
 | [roomRouter.js](file:///C:/dev/agy-sandbox/src/net/roomRouter.js) | 304 | `class RoomRegistry`, `function hashString`, `function assignShard`, `function routeConnection`, `function planDrain` | [roomRouter.test.js](file:///C:/dev/agy-sandbox/src/net/roomRouter.test.js) | [`019a_scaling_decomposition`](file:///C:/dev/agy-sandbox/plan/specs/019a_scaling_decomposition.md)<br>[`019d_sticky_routing_lb`](file:///C:/dev/agy-sandbox/plan/specs/019d_sticky_routing_lb.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
@@ -151,8 +151,8 @@
 - [ ] `src/net/MainThreadWatchdogWorker.js` is missing a unit test suite.
 - [ ] `src/net/mockFreezeScript.js` is missing a unit test suite.
 
-### ⚠️ Stale Specification File References (0)
-_None! All specification file references correspond to real paths._
+### ⚠️ Stale Specification File References (1)
+- [ ] Spec [`136_isolated_guest_runner.md`](file:///C:/dev/agy-sandbox/plan/specs/136_isolated_guest_runner.md) references missing files: `src/net/GuestRunner.js`
 
 ### ⚠️ Missing JSDoc Type Signatures (5 symbols)
 - `src/net/IntegrityGuard.js`:

@@ -333,7 +333,22 @@ The sandbox exhaustion prevention and object integrity wave:
 - `134` Global Prototype Tamper-Proofing & Object Integrity Guard (freeze core JavaScript prototypes and monitor global variables at startup to prevent privilege escalation or sandbox escapes).
 
 ### Phase 2 — CPU/Tamper Sentry HUD — `135`
-- `135` Golden-Glassmorphic CPU Watchdog & Tamper Cockpit Gauge (enhance dashboard-codex.html with visual sentry cockpit card showing Event Loop latency gauges and prototype/scope tamper alarms).
+- `135` Golden-Glassmorphic CPU Watchdog & Tamper Cockpit Gauge (enhance dashboard-codex.html with visual sentry cockpit card showing Event Loop latency gauges and prototype/scope tamper alarms) — **done**.
+
+---
+
+## EXECUTION WAVES (v36)
+
+The autonomous isolation, path jailing, and whitelisting control wave:
+
+### Phase 0 — Host-Isolated Execution — `136`
+- `136` Host-Isolated Process Guest Runner & Workspace Self-Healer (spawn untrusted guest scripts in a dedicated low-privilege child process with environment and timeout controls, pre-activating process and prototype locks before code runs).
+
+### Phase 1 — Dynamic Whitelisting — `137`
+- `137` Dynamic Egress Firewall Admin & Visual Whitelisting Control (enhance dashboard-codex.html with visual whitelisting options dynamically editing plan/config.json via zero-downtime hot-reload endpoints).
+
+### Phase 2 — Strict Path Jailing — `138`
+- `138` Strict Path Jailing & Sandboxed Input File Boundary Guard (enhance ProcessSentinel to securely resolve and strictly constrain guest file access within active sandbox directories, whitelisting reads on dependency node_modules).
 
 ---
 
@@ -343,11 +358,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 133 | CPU Watchdog | 0 | 5 | 5 | 5 | 5 | 20 |
-| 134 | Prototype Sentry | 1 | 5 | 5 | 5 | 5 | 20 |
-| 135 | CPU/Tamper HUD | 2 | 5 | 5 | 5 | 5 | 20 |
+| 136 | Isolated Guest Runner | 0 | 5 | 5 | 5 | 5 | 20 |
+| 137 | Dynamic Firewall Admin | 1 | 5 | 5 | 5 | 5 | 20 |
+| 138 | Strict Path Jailing | 2 | 5 | 5 | 5 | 5 | 20 |
 
-**Recommended start:** `133` (Σ20 — CPU Watchdog) immediately.
+**Recommended start:** `136` (Σ20 — Isolated Guest Runner) immediately.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-31T05:29:55.277Z",
+  "generatedAt": "2026-05-31T05:33:45.348Z",
   "stats": {
     "totalSourceFiles": 93,
     "totalTestFiles": 122,
-    "totalSpecFiles": 141,
+    "totalSpecFiles": 144,
     "totalLoc": 20376,
     "totalTests": 1597,
     "untestedCoreFilesCount": 2
@@ -1692,7 +1692,8 @@
       "testFile": "src/net/ProcessSentinel.test.js",
       "testCasesCount": 9,
       "referencingSpecs": [
-        "plan/specs/106_sandbox_containment_sentinel.md"
+        "plan/specs/106_sandbox_containment_sentinel.md",
+        "plan/specs/138_strict_path_jailing.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -4311,6 +4312,40 @@
       "priority": "Normal",
       "pillar": "None",
       "filesMentioned": []
+    },
+    {
+      "path": "plan/specs/136_isolated_guest_runner.md",
+      "filename": "136_isolated_guest_runner.md",
+      "title": "SPEC-136: Host-Isolated Process Guest Runner & Workspace Self-Healer",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/GuestRunner.js"
+      ]
+    },
+    {
+      "path": "plan/specs/137_dynamic_firewall_admin.md",
+      "filename": "137_dynamic_firewall_admin.md",
+      "title": "SPEC-137: Dynamic Egress Firewall Admin & Visual Whitelisting Control",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/server.js"
+      ]
+    },
+    {
+      "path": "plan/specs/138_strict_path_jailing.md",
+      "filename": "138_strict_path_jailing.md",
+      "title": "SPEC-138: Strict Path Jailing & Sandboxed Input File Boundary Guard",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/ProcessSentinel.js",
+        "src/net/ProcessSentinel.test.js"
+      ]
     }
   ],
   "epistemicDebt": {
@@ -4370,6 +4405,13 @@
         ]
       }
     ],
-    "staleSpecReferences": []
+    "staleSpecReferences": [
+      {
+        "spec": "plan/specs/136_isolated_guest_runner.md",
+        "brokenFiles": [
+          "src/net/GuestRunner.js"
+        ]
+      }
+    ]
   }
 }

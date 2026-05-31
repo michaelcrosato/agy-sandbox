@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-05-31T06:19:40.651Z",
+  "generatedAt": "2026-05-31T06:27:05.512Z",
   "stats": {
-    "totalSourceFiles": 98,
-    "totalTestFiles": 125,
-    "totalSpecFiles": 156,
-    "totalLoc": 21919,
-    "totalTests": 1628,
-    "untestedCoreFilesCount": 5
+    "totalSourceFiles": 99,
+    "totalTestFiles": 126,
+    "totalSpecFiles": 159,
+    "totalLoc": 22115,
+    "totalTests": 1636,
+    "untestedCoreFilesCount": 6
   },
   "files": [
     {
@@ -1389,7 +1389,7 @@
     },
     {
       "path": "src/net/GuestLoader.js",
-      "loc": 25,
+      "loc": 82,
       "classes": [],
       "exports": [],
       "testFile": null,
@@ -1441,18 +1441,18 @@
     },
     {
       "path": "src/net/GuestRunner.js",
-      "loc": 412,
+      "loc": 480,
       "classes": [],
       "exports": [
         {
           "name": "GuestRunner",
           "type": "constant",
           "jsdoc": null,
-          "line": 20
+          "line": 21
         }
       ],
       "testFile": "src/net/GuestRunner.test.js",
-      "testCasesCount": 16,
+      "testCasesCount": 19,
       "referencingSpecs": [
         "plan/specs/136_isolated_guest_runner.md"
       ],
@@ -1460,7 +1460,7 @@
         {
           "name": "GuestRunner",
           "type": "constant",
-          "line": 20
+          "line": 21
         }
       ]
     },
@@ -1754,7 +1754,7 @@
     },
     {
       "path": "src/net/ProcessSentinel.js",
-      "loc": 1212,
+      "loc": 1211,
       "classes": [
         {
           "name": "for",
@@ -1769,12 +1769,12 @@
         {
           "name": "for",
           "jsdoc": null,
-          "line": 96
+          "line": 95
         },
         {
           "name": "VirtualReadStream",
           "jsdoc": null,
-          "line": 97
+          "line": 96
         }
       ],
       "exports": [
@@ -1782,19 +1782,19 @@
           "name": "parseCommandString",
           "type": "function",
           "jsdoc": "/**\n* Parses a full command string into a binary name and an array of arguments,\n* respecting basic quotes.\n* @param {string} cmdStr - Full shell command string.\n* @returns {ParsedCommand}\n*/",
-          "line": 325
+          "line": 324
         },
         {
           "name": "validateCommand",
           "type": "function",
           "jsdoc": "/**\n* Validates whether a command and its arguments are permitted under the strict security whitelist.\n* @param {string} command - The command or binary path under evaluation.\n* @param {string[]} [args=[]] - Optional array of arguments passed to the command.\n* @returns {{ allowed: boolean, reason?: string }}\n*/",
-          "line": 369
+          "line": 368
         },
         {
           "name": "ProcessSentinel",
           "type": "constant",
           "jsdoc": "/**\n* ProcessSentinel (spec 106) — child process security sentinel whitelister.\n* @type {object}\n*/",
-          "line": 481
+          "line": 480
         }
       ],
       "testFile": "src/net/ProcessSentinel.test.js",
@@ -1817,12 +1817,12 @@
         {
           "name": "for",
           "type": "class",
-          "line": 96
+          "line": 95
         },
         {
           "name": "VirtualReadStream",
           "type": "class",
-          "line": 97
+          "line": 96
         }
       ]
     },
@@ -2097,6 +2097,35 @@
         "plan/specs/118_websocket_injection_sentinel.md"
       ],
       "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/net/SecureModuleRegistry.js",
+      "loc": 72,
+      "classes": [],
+      "exports": [
+        {
+          "name": "computeFileHash",
+          "type": "function",
+          "jsdoc": "/**\n* Compute the SHA-256 hash of a file's contents.\n* @param {string} filePath - Absolute path to the file.\n* @returns {string} - Computed SHA-256 digest in hex format.\n*/",
+          "line": 18
+        },
+        {
+          "name": "SecureModuleRegistry",
+          "type": "constant",
+          "jsdoc": null,
+          "line": 30
+        }
+      ],
+      "testFile": null,
+      "testCasesCount": 0,
+      "referencingSpecs": [],
+      "missingJsDocSymbols": [
+        {
+          "name": "SecureModuleRegistry",
+          "type": "constant",
+          "line": 30
+        }
+      ]
     },
     {
       "path": "src/net/StateCodec.js",
@@ -4634,6 +4663,33 @@
         "src/net/WorkspaceDriftSentry.test.js",
         "src/net/ProcessSentinel.test.js"
       ]
+    },
+    {
+      "path": "plan/specs/151_kernel_resource_isolation_job_objects.md",
+      "filename": "151_kernel_resource_isolation_job_objects.md",
+      "title": "SPEC-151: Guest Process Kernel-level Resource Isolation and Job Objects Containment Sentry",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": []
+    },
+    {
+      "path": "plan/specs/152_secure_module_verification_sentry.md",
+      "filename": "152_secure_module_verification_sentry.md",
+      "title": "SPEC-152: Cryptographically Signed Secure Module Verification Sentry",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": []
+    },
+    {
+      "path": "plan/specs/153_interactive_codex_cli_terminal.md",
+      "filename": "153_interactive_codex_cli_terminal.md",
+      "title": "SPEC-153: Interactive Codex CLI Terminal Dashboard HUD Card",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": []
     }
   ],
   "epistemicDebt": {
@@ -4642,7 +4698,8 @@
       "src/net/GuestRpcSentry.js",
       "src/net/GuestRunnerWorker.js",
       "src/net/MainThreadWatchdogWorker.js",
-      "src/net/mockFreezeScript.js"
+      "src/net/mockFreezeScript.js",
+      "src/net/SecureModuleRegistry.js"
     ],
     "missingJsDocs": [
       {
@@ -4666,7 +4723,7 @@
           {
             "name": "GuestRunner",
             "type": "constant",
-            "line": 20
+            "line": 21
           }
         ]
       },
@@ -4716,12 +4773,12 @@
           {
             "name": "for",
             "type": "class",
-            "line": 96
+            "line": 95
           },
           {
             "name": "VirtualReadStream",
             "type": "class",
-            "line": 97
+            "line": 96
           }
         ]
       },
@@ -4742,6 +4799,16 @@
             "name": "SandboxSecurityRegistry",
             "type": "constant",
             "line": 62
+          }
+        ]
+      },
+      {
+        "path": "src/net/SecureModuleRegistry.js",
+        "symbols": [
+          {
+            "name": "SecureModuleRegistry",
+            "type": "constant",
+            "line": 30
           }
         ]
       },

@@ -4,9 +4,11 @@
  */
 
 import fs from "fs";
+import childProcess from "child_process";
 import path from "path";
 import { GuestRunner } from "./GuestRunner.js";
 import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
+import { SecureModuleRegistry } from "./SecureModuleRegistry.js";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -28,6 +30,11 @@ describe("GuestRunner", () => {
   const tempRpcOkScript = path.join(__dirname, "temp_guest_rpc_ok.js");
   const tempRpcEvilScript = path.join(__dirname, "temp_guest_rpc_evil.js");
   const tempRpcUnauthScript = path.join(__dirname, "temp_guest_rpc_unauth.js");
+  const tempImportSecureScript = path.join(
+    __dirname,
+    "temp_guest_import_secure.js",
+  );
+  const tempSubModule = path.join(__dirname, "temp_sub_module.js");
   const sandboxDir = path.resolve("./.sandbox-runner-test-dir");
 
   beforeAll(() => {
@@ -96,6 +103,19 @@ dns.lookup("google.com", (err) => {
   console.log("IMPORT_SUCCESS");
 } catch (err) {
   console.log("IMPORT_BLOCKED: " + err.message);
+}`,
+      "utf8",
+    );
+
+    fs.writeFileSync(tempSubModule, `export const val = 42;`, "utf8");
+
+    fs.writeFileSync(
+      tempImportSecureScript,
+      `try {
+  const mod = await import("./temp_sub_module.js");
+  console.log("SECURE_IMPORT_SUCCESS:" + mod.val);
+} catch (err) {
+  console.log("SECURE_IMPORT_BLOCKED: " + err.message);
 }`,
       "utf8",
     );
@@ -186,6 +206,8 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
       tempRpcOkScript,
       tempRpcEvilScript,
       tempRpcUnauthScript,
+      tempImportSecureScript,
+      tempSubModule,
     ];
     for (const f of files) {
       try {
@@ -277,9 +299,10 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
 
     // Timeout must register as a CPU violation
     const metrics = SandboxSecurityRegistry.getMetrics();
-    expect(metrics.security_violations_total).toBe(1);
-    expect(metrics.recent_violations[0].category).toBe("cpu");
-    expect(metrics.recent_violations[0].action).toBe("guest_timeout");
+    const hasTimeout = metrics.recent_violations.some(
+      (v) => v.category === "cpu" && v.action === "guest_timeout",
+    );
+    expect(hasTimeout).toBe(true);
   });
 
   test("should forcefully terminate or fail a guest script that exceeds the V8 memory limit", async () => {
@@ -474,11 +497,9 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
     };
 
     const originalWarn = console.warn;
-    let warnCalled = false;
-    let warnMsg = "";
+    const warnings = [];
     console.warn = function (msg) {
-      warnCalled = true;
-      warnMsg = msg;
+      warnings.push(msg);
     };
 
     try {
@@ -486,13 +507,78 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
         timeoutMs: 3000,
       });
       expect(callCount).toBeGreaterThan(0);
-      expect(warnCalled).toBe(true);
-      expect(warnMsg).toContain(
-        "Failed to set low CPU scheduling priority for guest PID",
-      );
+      expect(warnings.length).toBeGreaterThan(0);
+      expect(
+        warnings.some((w) =>
+          w.includes("Failed to set low CPU scheduling priority for guest PID"),
+        ),
+      ).toBe(true);
     } finally {
       process.setPriority = originalSetPriority;
       console.warn = originalWarn;
     }
+  });
+
+  test("should attempt to apply kernel-level processor affinity and isolation upon spawn (SPEC-151)", async () => {
+    // Import childProcess dynamically or use childProcess from parent scope
+    const originalExec = childProcess.exec;
+    let commandCalled = null;
+    childProcess.exec = function (cmd, options, callback) {
+      if (cmd.includes("ProcessorAffinity") || cmd.includes("taskset")) {
+        commandCalled = cmd;
+      }
+      const cb = typeof options === "function" ? options : callback;
+      if (cb) process.nextTick(() => cb(null, "", ""));
+      return /** @type {any} */ ({});
+    };
+
+    try {
+      await GuestRunner.runScript(tempImportScript, {
+        timeoutMs: 3000,
+      });
+      expect(commandCalled).not.toBeNull();
+      if (process.platform === "win32") {
+        expect(commandCalled).toContain("ProcessorAffinity");
+      } else if (process.platform === "linux") {
+        expect(commandCalled).toContain("taskset");
+      }
+    } finally {
+      childProcess.exec = originalExec;
+    }
+  });
+
+  test("should block ESM loader imports that fail cryptographic integrity checksum verification (SPEC-152)", async () => {
+    // Ensure the registry is empty so the sub-module has no trusted signature registered
+    SecureModuleRegistry.clear();
+
+    const result = await GuestRunner.runScript(tempImportSecureScript, {
+      timeoutMs: 3000,
+    });
+
+    expect(result.stdout).toContain("SECURE_IMPORT_BLOCKED:");
+    expect(result.stdout).toContain("Cryptographic Signature Mismatch");
+
+    // Verify integrity violation log is registered inside SandboxSecurityRegistry disk file
+    const auditFile = result.childAuditFile || testAuditFile;
+    expect(fs.existsSync(auditFile)).toBe(true);
+    const content = fs.readFileSync(auditFile, "utf8");
+    const logs = JSON.parse(content);
+    const integrityViolation = logs.find(
+      (v) =>
+        v.category === "integrity" && v.action === "module_integrity_violation",
+    );
+    expect(integrityViolation).toBeDefined();
+  });
+
+  test("should successfully import ESM modules that match cryptographic integrity signatures (SPEC-152)", async () => {
+    // Clear and register the correct sub-module hash signature
+    SecureModuleRegistry.clear();
+    SecureModuleRegistry.registerFile(tempSubModule);
+
+    const result = await GuestRunner.runScript(tempImportSecureScript, {
+      timeoutMs: 3000,
+    });
+
+    expect(result.stdout).toContain("SECURE_IMPORT_SUCCESS:42");
   });
 });

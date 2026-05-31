@@ -44,6 +44,23 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-05-31T06:30 · iter-0132 · GREEN · spec-151-152-153-kernel-isolation-module-verification-cli-terminal
+
+- **Baseline:** `56933ab` on `feat/procedural-missions`; 1,222 Jest green.
+- **Move:** Implement SPEC-151, SPEC-152, and SPEC-153 to deliver operating system kernel-level resource containerization, cryptographic ESM module verification checks, and interactive golden-glassmorphic cockpit CLI terminal dashboard.
+- **Changed:**
+  - Implemented platform-agnostic processor core affinity limiting guest child processes to CPU core 0 (Windows via PowerShell Get-Process ProcessorAffinity and Linux via taskset) and low priority scheduler class configurations.
+  - Logged kernel resource isolation and scheduling prioritizer fallback warnings to the SandboxSecurityRegistry.
+  - Designed `SecureModuleRegistry.js` maintaining in-memory maps of approved SHA-256 signatures for dependency files.
+  - Hardened `GuestLoader.js` ESM import hook to compute SHA-256 hashes of resolved local modules on the fly and verify against registered cryptographic signatures, logging `module_integrity_violation` alerts inside `SandboxSecurityRegistry` on mismatch.
+  - Coded secure `POST /api/sandbox/execute` and `POST /api/sandbox/kill` HTTP endpoints inside `src/server.js`, managing temporary file creations/cleanups, parameter type validations, and process tree reaping controls.
+  - Designed golden-glassmorphic `Interactive Guest CLI Terminal HUD` card on `dashboard-codex.html` rendering shell stdout/stderr logs, real-time RSS indicator gauges, active PID values, and forceful process-tree terminations.
+  - Expanded `src/net/GuestRunner.test.js` to cover positive/negative cryptographic module signature blocks and verified raw child execution logs.
+  - Authored premium full HTTP integration suite `src/server/sandboxCli.integration.test.js` and asserted HTML DOM element presence inside `src/server/codexDashboard.integration.test.js`.
+- **Decisions:** Module verification must calculate absolute path mappings to avoid path resolution escapes. Host process must synchronize memory registry signatures with child sandboxes via JSON-serialized environment variable passing. Error throws inside catch blocks must attach catches as `cause` parameter to preserve stack traces for forensics.
+- **Validation:** Executed `npm run agent:check` confirming a 100% green gate across 1,233 Jest tests (119 suites), format checks, linter checks, and `tsc --noEmit` type-checking.
+- **Next:** Proceed to Phase R (Replenish) to replenish backlogs, evaluate next wave specs, and advance the North Star of Starfall Living Galaxy.
+
 ## 2026-05-31T23:59 · iter-0131 · GREEN · spec-145-146-147-guest-rpc-workspace-drift-sentry
 
 - **Baseline:** `ed83216` on `feat/procedural-missions`; 1,216 Jest green.

@@ -43,6 +43,7 @@ import { SandboxSecurityRegistry } from "./net/SandboxSecurityRegistry.js";
 import { GuestRunner } from "./net/GuestRunner.js";
 import { GuestRpcSentry } from "./net/GuestRpcSentry.js";
 import { WorkspaceDriftSentry } from "./net/WorkspaceDriftSentry.js";
+import { ProcessReaper } from "./net/ProcessReaper.js";
 import {
   handleOutfitBuy,
   handleShipBuy,
@@ -439,6 +440,132 @@ const server = http.createServer((req, res) => {
           JSON.stringify({
             success: true,
             allowlistDomains: config.sandboxFirewall.allowlistDomains,
+          }),
+        );
+      } catch (err) {
+        res.writeHead(500, {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+  // SPEC-153: Secure Interactive Codex CLI sandbox command dispatcher
+  if (req.method === "POST" && safeUrl === "/api/sandbox/execute") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk;
+    });
+    req.on("end", async () => {
+      let tempFile = null;
+      try {
+        const payload = JSON.parse(body);
+        if (!payload || typeof payload !== "object") {
+          res.writeHead(400, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(JSON.stringify({ error: "Invalid JSON payload" }));
+          return;
+        }
+
+        const { code } = payload;
+        if (typeof code !== "string" || !code.trim()) {
+          res.writeHead(400, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(JSON.stringify({ error: "Code parameter is required" }));
+          return;
+        }
+
+        // Generate temporary script inside the network modules directory
+        const randId = Math.random().toString(36).substring(2, 7);
+        const tempFilename = `temp_cli_${Date.now()}_${randId}.js`;
+        const tempDir = path.join(ROOT_DIR, "src/net");
+        tempFile = path.join(tempDir, tempFilename);
+
+        fs.writeFileSync(tempFile, code, "utf-8");
+
+        const result = await GuestRunner.runScript(tempFile, {
+          timeoutMs: 5000,
+        });
+
+        res.writeHead(200, {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        });
+        res.end(
+          JSON.stringify({
+            status: result.status,
+            stdout: result.stdout,
+            stderr: result.stderr,
+            exitCode: result.exitCode,
+            error: result.error || null,
+          }),
+        );
+      } catch (err) {
+        res.writeHead(500, {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        });
+        res.end(JSON.stringify({ error: err.message }));
+      } finally {
+        if (tempFile && fs.existsSync(tempFile)) {
+          try {
+            fs.unlinkSync(tempFile);
+          } catch {
+            // ignore cleanup failure
+          }
+        }
+      }
+    });
+    return;
+  }
+
+  // SPEC-153: Secure Interactive Codex CLI sandbox process reaper termination trigger
+  if (req.method === "POST" && safeUrl === "/api/sandbox/kill") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk;
+    });
+    req.on("end", async () => {
+      try {
+        const payload = JSON.parse(body);
+        if (!payload || typeof payload !== "object") {
+          res.writeHead(400, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(JSON.stringify({ error: "Invalid JSON payload" }));
+          return;
+        }
+
+        const { pid } = payload;
+        const numericPid = parseInt(String(pid), 10);
+        if (isNaN(numericPid) || numericPid <= 0) {
+          res.writeHead(400, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(JSON.stringify({ error: "Valid PID parameter is required" }));
+          return;
+        }
+
+        // Call the ProcessReaper to kill the child and its grandchildren
+        await ProcessReaper.reap(numericPid);
+
+        res.writeHead(200, {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        });
+        res.end(
+          JSON.stringify({
+            success: true,
+            message: `Process tree for PID ${numericPid} forcefully reaped.`,
           }),
         );
       } catch (err) {

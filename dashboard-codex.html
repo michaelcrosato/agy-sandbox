@@ -2122,6 +2122,145 @@
               <div style="color: #6b7280; text-align: center; margin-top: 1.5rem;">Waiting for RPC events...</div>
             </div>
           </div>
+
+          <!-- SPEC-153: Interactive Golden-Glassmorphic Codex Guest CLI Sandbox Terminal HUD Card -->
+          <div
+            id="guest-cli-panel"
+            style="
+              background: rgba(251, 191, 36, 0.02);
+              border: 1px solid rgba(251, 191, 36, 0.15);
+              border-radius: 8px;
+              padding: 1.25rem;
+              box-shadow: 0 0 15px rgba(251, 191, 36, 0.05);
+              margin-top: 1rem;
+            "
+          >
+            <div
+              style="
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 0.85rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #fbbf24;
+                margin-bottom: 0.75rem;
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+              "
+            >
+              💻 Interactive Guest CLI Terminal HUD
+            </div>
+
+            <!-- Terminal Output console body -->
+            <div
+              id="cli-terminal-body"
+              style="
+                height: 140px;
+                overflow-y: auto;
+                background: rgba(0, 0, 0, 0.4);
+                border: 1px solid rgba(251, 191, 36, 0.15);
+                border-radius: 4px;
+                padding: 0.5rem;
+                font-family: monospace;
+                font-size: 0.7rem;
+                color: #10b981;
+                margin-bottom: 0.75rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+                box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+              "
+            >
+              <div style="color: #fbbf24; font-weight: bold;">[SYSTEM] Antigravity Sandbox Secure CLI pre-activated.</div>
+              <div style="color: #6b7280;">Enter JavaScript commands to execute in the guest environment...</div>
+            </div>
+
+            <!-- Input area for terminal commands -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <input
+                id="cli-input-field"
+                type="text"
+                placeholder="console.log('hello world');"
+                style="
+                  flex: 1;
+                  background: rgba(0, 0, 0, 0.4);
+                  border: 1px solid rgba(255, 255, 255, 0.1);
+                  border-radius: 4px;
+                  padding: 0.4rem 0.6rem;
+                  font-family: monospace;
+                  font-size: 0.7rem;
+                  color: #fff;
+                  outline: none;
+                  transition: border-color 0.3s ease;
+                "
+                onfocus="this.style.borderColor='rgba(251, 191, 36, 0.5)'"
+                onblur="this.style.borderColor='rgba(255, 255, 255, 0.1)'"
+              />
+              <button
+                id="cli-send-btn"
+                onclick="dispatchCliCommand()"
+                style="
+                  background: rgba(251, 191, 36, 0.1);
+                  border: 1px solid rgba(251, 191, 36, 0.4);
+                  border-radius: 4px;
+                  color: #fbbf24;
+                  font-family: 'Space Grotesk', sans-serif;
+                  font-size: 0.7rem;
+                  font-weight: 700;
+                  padding: 0.4rem 0.8rem;
+                  cursor: pointer;
+                  text-transform: uppercase;
+                  transition: background 0.3s ease, border-color 0.3s ease;
+                "
+                onmouseover="this.style.background='rgba(251, 191, 36, 0.25)'"
+                onmouseout="this.style.background='rgba(251, 191, 36, 0.1)'"
+              >
+                Run
+              </button>
+            </div>
+
+            <!-- RSS Allocation Indicator & Active process kill trigger -->
+            <div
+              style="
+                padding: 0.4rem;
+                background: rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.02);
+                border-radius: 4px;
+                font-size: 0.65rem;
+                font-family: monospace;
+                color: var(--color-text-muted);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
+            >
+              <div style="display: flex; align-items: center; gap: 0.3rem;">
+                <span style="color: #fbbf24;">⚡</span> V8 Memory Indicator:
+                <span id="cli-rss-indicator" style="color: #fff; font-weight: bold;">0.0 MB</span>
+              </div>
+              <button
+                id="cli-kill-btn"
+                onclick="killActiveProcess()"
+                disabled
+                style="
+                  background: rgba(239, 68, 68, 0.1);
+                  border: 1px solid rgba(239, 68, 68, 0.3);
+                  border-radius: 3px;
+                  color: #ef4444;
+                  font-size: 0.6rem;
+                  font-weight: 700;
+                  padding: 0.2rem 0.5rem;
+                  cursor: not-allowed;
+                  opacity: 0.5;
+                  text-transform: uppercase;
+                  transition: background 0.3s ease;
+                "
+              >
+                Kill PID: <span id="cli-active-pid">None</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -3417,6 +3556,33 @@
                 breachLogList.innerHTML = `<div style="color: #64748b; text-align: center; padding: 1rem;">No containment breaches logged. Security boundaries operating at nominal capacity.</div>`;
               }
             }
+
+            // SPEC-153: Update Interactive Sandbox CLI Terminal HUD memory and PID indicators
+            const cliRssEl = document.getElementById("cli-rss-indicator");
+            const cliPidEl = document.getElementById("cli-active-pid");
+            const cliKillBtn = document.getElementById("cli-kill-btn");
+
+            if (guestSandbox && guestSandbox.active_runs && guestSandbox.active_runs.length > 0) {
+              const activeRun = guestSandbox.active_runs[0];
+              const activeRss = (activeRun.rssBytes || 0) / (1024 * 1024);
+              if (cliRssEl) cliRssEl.innerText = `${activeRss.toFixed(1)} MB`;
+              if (cliPidEl) cliPidEl.innerText = activeRun.pid;
+              if (cliKillBtn) {
+                cliKillBtn.disabled = false;
+                cliKillBtn.style.opacity = "1";
+                cliKillBtn.style.cursor = "pointer";
+                cliKillBtn.style.background = "rgba(239, 68, 68, 0.25)";
+              }
+            } else {
+              if (cliRssEl) cliRssEl.innerText = "0.0 MB";
+              if (cliPidEl) cliPidEl.innerText = "None";
+              if (cliKillBtn) {
+                cliKillBtn.disabled = true;
+                cliKillBtn.style.opacity = "0.5";
+                cliKillBtn.style.cursor = "not-allowed";
+                cliKillBtn.style.background = "rgba(239, 68, 68, 0.1)";
+              }
+            }
           }
         } catch (err) {
           // Fallback simulation when offline
@@ -3849,6 +4015,19 @@
               breachLogList.innerHTML = `<div style="color: #64748b; text-align: center; padding: 1rem;">No containment breaches logged. Security boundaries operating at nominal capacity.</div>`;
             }
           }
+
+          // SPEC-153: Update simulated Sandbox CLI Terminal indicator when offline
+          const cliRssEl = document.getElementById("cli-rss-indicator");
+          const cliPidEl = document.getElementById("cli-active-pid");
+          const cliKillBtn = document.getElementById("cli-kill-btn");
+          if (cliRssEl) cliRssEl.innerText = "0.0 MB";
+          if (cliPidEl) cliPidEl.innerText = "None";
+          if (cliKillBtn) {
+            cliKillBtn.disabled = true;
+            cliKillBtn.style.opacity = "0.5";
+            cliKillBtn.style.cursor = "not-allowed";
+            cliKillBtn.style.background = "rgba(239, 68, 68, 0.1)";
+          }
         }
 
         historyConnections.push(connections);
@@ -3968,8 +4147,139 @@
         });
       }
 
+      // SPEC-153: Secure Interactive Sandbox CLI dispatching client controller
+      async function dispatchCliCommand() {
+        const inputEl = document.getElementById("cli-input-field");
+        const termBody = document.getElementById("cli-terminal-body");
+        const runBtn = document.getElementById("cli-send-btn");
+
+        if (!inputEl || !termBody || !runBtn) return;
+
+        const code = inputEl.value.trim();
+        if (!code) return;
+
+        // Log entry to terminal output
+        const userLine = document.createElement("div");
+        userLine.style.color = "#fff";
+        userLine.innerHTML = `<span style="color: #fbbf24;">&gt;</span> ${escapeHtml(code)}`;
+        termBody.appendChild(userLine);
+        termBody.scrollTop = termBody.scrollHeight;
+
+        inputEl.value = "";
+        runBtn.disabled = true;
+        runBtn.style.opacity = "0.5";
+
+        try {
+          const res = await fetch("/api/sandbox/execute", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code }),
+          });
+
+          const data = await res.json();
+          if (res.ok) {
+            const outLine = document.createElement("div");
+            if (data.status === "success") {
+              outLine.style.color = "#10b981";
+              let text = data.stdout || "[Success: No stdout]";
+              outLine.innerHTML = escapeHtml(text).replace(/\n/g, "<br/>");
+            } else {
+              outLine.style.color = "#ef4444";
+              let errText = `[CRASH] Status: ${data.status}`;
+              if (data.error) errText += ` - ${data.error}`;
+              if (data.stderr) errText += `\nStderr: ${data.stderr}`;
+              outLine.innerHTML = escapeHtml(errText).replace(/\n/g, "<br/>");
+            }
+            termBody.appendChild(outLine);
+          } else {
+            const errLine = document.createElement("div");
+            errLine.style.color = "#ef4444";
+            errLine.innerText = `[ERROR] HTTP ${res.status}: ${data.error || "Execution failed"}`;
+            termBody.appendChild(errLine);
+          }
+        } catch (err) {
+          const errLine = document.createElement("div");
+          errLine.style.color = "#ef4444";
+          errLine.innerText = `[CONNECTION ERROR] ${err.message}`;
+          termBody.appendChild(errLine);
+        } finally {
+          runBtn.disabled = false;
+          runBtn.style.opacity = "1";
+          termBody.scrollTop = termBody.scrollHeight;
+          if (typeof updateTelemetry === "function") {
+            updateTelemetry();
+          }
+        }
+      }
+
+      async function killActiveProcess() {
+        const pidEl = document.getElementById("cli-active-pid");
+        const termBody = document.getElementById("cli-terminal-body");
+        if (!pidEl || !termBody) return;
+
+        const pid = parseInt(pidEl.innerText, 10);
+        if (isNaN(pid) || pid <= 0) return;
+
+        const logLine = document.createElement("div");
+        logLine.style.color = "#fbbf24";
+        logLine.innerText = `⏳ Dispatched SIGKILL for active PID ${pid}...`;
+        termBody.appendChild(logLine);
+        termBody.scrollTop = termBody.scrollHeight;
+
+        try {
+          const res = await fetch("/api/sandbox/kill", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ pid }),
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            const successLine = document.createElement("div");
+            successLine.style.color = "#ef4444";
+            successLine.innerText = `💀 PID ${pid} forcefully reaped and killed.`;
+            termBody.appendChild(successLine);
+          } else {
+            const errLine = document.createElement("div");
+            errLine.style.color = "#ef4444";
+            errLine.innerText = `❌ Failed to reap PID ${pid}: ${data.error || "Request failed"}`;
+            termBody.appendChild(errLine);
+          }
+        } catch (err) {
+          const errLine = document.createElement("div");
+          errLine.style.color = "#ef4444";
+          errLine.innerText = `❌ Reap connection error: ${err.message}`;
+          termBody.appendChild(errLine);
+        } finally {
+          termBody.scrollTop = termBody.scrollHeight;
+          if (typeof updateTelemetry === "function") {
+            updateTelemetry();
+          }
+        }
+      }
+
+      function escapeHtml(text) {
+        return text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function initCliTerminal() {
+        const cliInput = document.getElementById("cli-input-field");
+        if (cliInput) {
+          cliInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+              dispatchCliCommand();
+            }
+          });
+        }
+      }
+
       // Start
       initFirewallAdmin();
+      initCliTerminal();
       init();
       updateTelemetry();
       setInterval(updateTelemetry, 1000);

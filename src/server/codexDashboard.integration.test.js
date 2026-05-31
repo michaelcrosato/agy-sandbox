@@ -143,6 +143,15 @@ describe("Living Codex & Dashboard HTTP Integration Tests (SPEC-102)", () => {
           expect(body).toContain('id="drift-files-healed"');
           expect(body).toContain('id="rpc-feed-ticker"');
 
+          // SPEC-153 Guest CLI Sandbox Terminal Card validation
+          expect(body).toContain('id="guest-cli-panel"');
+          expect(body).toContain('id="cli-terminal-body"');
+          expect(body).toContain('id="cli-input-field"');
+          expect(body).toContain('id="cli-send-btn"');
+          expect(body).toContain('id="cli-rss-indicator"');
+          expect(body).toContain('id="cli-kill-btn"');
+          expect(body).toContain('id="cli-active-pid"');
+
           resolve();
         });
 

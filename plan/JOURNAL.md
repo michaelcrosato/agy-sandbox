@@ -3,6 +3,12 @@
 This is the machine-readable execution ledger for the autonomous-engineering loop in `agy-sandbox`.
 It records cycle transitions, key milestones, and precise next steps.
 
+## Cycle 42 — 2026-05-31
+
+- **Status:** GREEN
+- **Summary:** Successfully completed the entire Wave v41 (Kernel Isolation, Secure ESM Modules, and Codex CLI Terminal Wave) under the role of Autonomous Principal AI/Infrastructure Engineer & Sandbox Architect. Shipped SPEC-151 (Guest Process Kernel-level Resource Isolation and Job Objects Containment Sentry) enforcing processor core affinity limiting guest child processes to CPU core 0 on Windows via PowerShell and Linux via taskset + ionice, gracefully logging fallbacks to SandboxSecurityRegistry; SPEC-152 (Cryptographically Signed Secure Module Verification Sentry) engineering SecureModuleRegistry and GuestLoader.js ESM import resolution hook to compute SHA-256 integrity hashes on the fly and verify against registered cryptographic signatures, logging integrity violations inside SandboxSecurityRegistry; and SPEC-153 (Interactive Codex CLI Terminal Dashboard HUD Card) exposing secure execution and process-tree termination POST /api/sandbox/execute and /api/sandbox/kill endpoints in server.js, designing an exquisite gold-glassmorphic Interactive Guest CLI Terminal HUD card on dashboard-codex.html complete with live log feeds, real-time V8 memory RSS indicators, and forcefully reaped process-tree triggers. All 1,233 Jest tests pass 100% green with 0 type-check or format warnings.
+- **Next Action:** Transition to Cycle 42 Phase R (Replenish) to promote backlogs, perform structural boundaries audits, and formulate the new Wave v42 specifications.
+
 ## Cycle 41 — 2026-05-31
 
 - **Status:** GREEN

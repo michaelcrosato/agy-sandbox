@@ -12,6 +12,7 @@ import { ProcessReaper } from "./ProcessReaper.js";
 import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
 import { GuestRpcSentry } from "./GuestRpcSentry.js";
 import { WorkspaceDriftSentry } from "./WorkspaceDriftSentry.js";
+import { SecureModuleRegistry } from "./SecureModuleRegistry.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -83,6 +84,9 @@ export const GuestRunner = {
       // Generate a high-entropy single-use run token for Guest RPC auth verification (SPEC-148)
       const runToken = crypto.randomBytes(32).toString("hex");
 
+      // Register the main guest script file in the module signatures registry (SPEC-152)
+      SecureModuleRegistry.registerFile(resolvedScriptPath);
+
       // Configure secure env mask to prevent sensitive host info leakage (SPEC-141)
       const allowedKeys = [
         "NODE_ENV",
@@ -92,6 +96,7 @@ export const GuestRunner = {
         "GUEST_SANDBOX_DIR",
         "SECURITY_AUDIT_FILE",
         "GUEST_RUN_TOKEN",
+        "GUEST_ALLOWED_MODULE_HASHES",
       ];
       const childEnv = {};
       for (const key of allowedKeys) {
@@ -106,6 +111,9 @@ export const GuestRunner = {
       childEnv.GUEST_SANDBOX_DIR = sandboxDir || "";
       childEnv.SECURITY_AUDIT_FILE = childAuditFile;
       childEnv.GUEST_RUN_TOKEN = runToken;
+      childEnv.GUEST_ALLOWED_MODULE_HASHES = JSON.stringify(
+        SecureModuleRegistry.getRegistry(),
+      );
 
       // Spawn the bootstrap worker via fork to establish IPC channel
       const child = childProcess.fork(workerPath, [], {
@@ -124,6 +132,66 @@ export const GuestRunner = {
           console.warn(
             `[WARNING] Failed to set low CPU scheduling priority for guest PID ${child.pid}: ${err.message}`,
           );
+        }
+      }
+
+      // Configure OS kernel-level process containment boundaries (SPEC-151)
+      if (child.pid) {
+        const numericPid = parseInt(String(child.pid), 10);
+        if (!isNaN(numericPid) && numericPid > 0) {
+          if (process.platform === "win32") {
+            // Enforce processor core affinity (restrict to CPU core 0) natively on Windows via PowerShell
+            childProcess.exec(
+              `powershell -Command "$p = Get-Process -Id ${numericPid} -ErrorAction SilentlyContinue; if ($p) { $p.ProcessorAffinity = 1 }"`,
+              (err) => {
+                if (err) {
+                  console.warn(
+                    `[WARNING] Failed to restrict processor core affinity for guest PID ${numericPid}: ${err.message}`,
+                  );
+                  SandboxSecurityRegistry.logViolation(
+                    "process",
+                    "affinity_fallback",
+                    {
+                      pid: numericPid,
+                      error: err.message,
+                    },
+                  );
+                }
+              },
+            );
+          } else if (process.platform === "linux") {
+            // Enforce processor core affinity and idle I/O priority natively on Linux
+            childProcess.exec(`taskset -cp 0 ${numericPid}`, (err) => {
+              if (err) {
+                console.warn(
+                  `[WARNING] Failed to restrict processor core affinity for guest PID ${numericPid}: ${err.message}`,
+                );
+                SandboxSecurityRegistry.logViolation(
+                  "process",
+                  "affinity_fallback",
+                  {
+                    pid: numericPid,
+                    error: err.message,
+                  },
+                );
+              }
+            });
+            childProcess.exec(`ionice -c 3 -p ${numericPid}`, (err) => {
+              if (err) {
+                console.warn(
+                  `[WARNING] Failed to restrict I/O priority for guest PID ${numericPid}: ${err.message}`,
+                );
+                SandboxSecurityRegistry.logViolation(
+                  "process",
+                  "io_priority_fallback",
+                  {
+                    pid: numericPid,
+                    error: err.message,
+                  },
+                );
+              }
+            });
+          }
         }
       }
 

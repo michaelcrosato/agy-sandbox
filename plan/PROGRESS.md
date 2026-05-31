@@ -31,6 +31,12 @@ _**v35 re-audit baseline (2026-05-31, ENTIRE v35 blueprint shipped): 1,198 Jest 
 _**v36 re-audit baseline (2026-05-31, ENTIRE v36 blueprint shipped): 1,209 Jest tests / 117 suites green; host-isolated process guest runner, dynamic egress firewall admin controls, and strict absolute filesystem path jailing all DONE.**_
 
 
+## v37 — Sandbox Hardware Caps & Resource Guarding Wave (TO DO) — see [`ROADMAP.md`](ROADMAP.md)
+
+- [ ] `139` Safe Guest V8 Memory Limits & Heap Size Allocation Control (enforce `--max-old-space-size` memory budgeting options during guest forks to protect hosts from heap leak exploits)
+- [ ] `140` Guest CPU Time-Slice Budget Monitor & Watchdog (police user/system CPU times on spawned guest processes, terminating infinite tight loops via recursive SIGKILL teardowns)
+- [ ] `141` Guest Sandbox Environment Variable Sanitization Mask (mask and sanitize all parent environment variables during child process forks, whitelisting only essential discovery paths)
+
 ## v36 — Autonomous Process Isolation & Path Jailing Hardening Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 - [x] `136` Host-Isolated Process Guest Runner & Workspace Self-Healer (spawn untrusted guest scripts in a dedicated low-privilege child process with environment and timeout controls, pre-activating process and prototype locks before code runs) — **done** (developed GuestRunner.js and GuestRunnerWorker.js spawning untrusted guest scripts in a dedicated low-privilege child process with execution time limits, pre-activating ProcessSentinel and IntegrityGuard inside the child context before code execution, logging timeouts to SandboxSecurityRegistry, performing complete SIGKILL process-tree reaping using ProcessReaper, fixing all TypeScript type-checking errors, and authoring rigorous Jest unit and integration tests)

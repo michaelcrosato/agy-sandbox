@@ -342,13 +342,28 @@ The sandbox exhaustion prevention and object integrity wave:
 The autonomous isolation, path jailing, and whitelisting control wave:
 
 ### Phase 0 — Host-Isolated Execution — `136`
-- `136` Host-Isolated Process Guest Runner & Workspace Self-Healer (spawn untrusted guest scripts in a dedicated low-privilege child process with environment and timeout controls, pre-activating process and prototype locks before code runs).
+- `136` Host-Isolated Process Guest Runner & Workspace Self-Healer (spawn untrusted guest scripts in a dedicated low-privilege child process with environment and timeout controls, pre-activating process and prototype locks before code runs) — **done**.
 
 ### Phase 1 — Dynamic Whitelisting — `137`
-- `137` Dynamic Egress Firewall Admin & Visual Whitelisting Control (enhance dashboard-codex.html with visual whitelisting options dynamically editing plan/config.json via zero-downtime hot-reload endpoints).
+- `137` Dynamic Egress Firewall Admin & Visual Whitelisting Control (enhance dashboard-codex.html with visual whitelisting options dynamically editing plan/config.json via zero-downtime hot-reload endpoints) — **done**.
 
 ### Phase 2 — Strict Path Jailing — `138`
-- `138` Strict Path Jailing & Sandboxed Input File Boundary Guard (enhance ProcessSentinel to securely resolve and strictly constrain guest file access within active sandbox directories, whitelisting reads on dependency node_modules).
+- `138` Strict Path Jailing & Sandboxed Input File Boundary Guard (enhance ProcessSentinel to securely resolve and strictly constrain guest file access within active sandbox directories, whitelisting reads on dependency node_modules) — **done**.
+
+---
+
+## EXECUTION WAVES (v37)
+
+The sandbox resource hardening, CPU budgeting, and environment variables masking wave:
+
+### Phase 0 — Guest V8 Memory Limits — `139`
+- `139` Safe Guest V8 Memory Limits & Heap Size Allocation Control (enforce `--max-old-space-size` restrictions when spawning untrusted guest scripts to prevent V8 heap OOM leaks).
+
+### Phase 1 — Guest CPU Time-Slice Watchdog — `140`
+- `140` Guest CPU Time-Slice Budget Monitor & Watchdog (police cumulative process CPU time user and system limits, killing tight loops forcefully via SIGKILL process-tree reaping).
+
+### Phase 2 — Guest Sandbox Environment Mask — `141`
+- `141` Guest Sandbox Environment Variable Sanitization Mask (sanitize all parent environment dictionary keys during worker forks to completely prevent dynamic credential leaking).
 
 ---
 
@@ -358,11 +373,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 136 | Isolated Guest Runner | 0 | 5 | 5 | 5 | 5 | 20 |
-| 137 | Dynamic Firewall Admin | 1 | 5 | 5 | 5 | 5 | 20 |
-| 138 | Strict Path Jailing | 2 | 5 | 5 | 5 | 5 | 20 |
+| 139 | V8 Old Space limits | 0 | 5 | 5 | 5 | 5 | 20 |
+| 140 | CPU Time-Slice budget | 1 | 5 | 5 | 5 | 5 | 20 |
+| 141 | Sandbox Env Mask | 2 | 5 | 5 | 5 | 5 | 20 |
 
-**Recommended start:** `136` (Σ20 — Isolated Guest Runner) immediately.
+**Recommended start:** `139` (Σ20 — Guest V8 Memory Limits) immediately.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

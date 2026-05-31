@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-31T05:47:02.772Z",
+  "generatedAt": "2026-05-31T05:48:26.994Z",
   "stats": {
     "totalSourceFiles": 95,
     "totalTestFiles": 124,
-    "totalSpecFiles": 144,
+    "totalSpecFiles": 147,
     "totalLoc": 20712,
     "totalTests": 1610,
     "untestedCoreFilesCount": 3
@@ -4380,6 +4380,39 @@
       "filesMentioned": [
         "src/net/ProcessSentinel.js",
         "src/net/ProcessSentinel.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/139_guest_v8_memory_limits.md",
+      "filename": "139_guest_v8_memory_limits.md",
+      "title": "SPEC-139: Safe Guest V8 Memory Limits & Heap Size Allocation Control",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/GuestRunner.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/140_guest_cpu_timeslice_budget.md",
+      "filename": "140_guest_cpu_timeslice_budget.md",
+      "title": "SPEC-140: Guest CPU Time-Slice Budget Monitor & Watchdog",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/GuestRunner.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/141_guest_sandbox_env_mask.md",
+      "filename": "141_guest_sandbox_env_mask.md",
+      "title": "SPEC-141: Guest Sandbox Environment Variable Sanitization Mask",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/GuestRunner.test.js"
       ]
     }
   ],

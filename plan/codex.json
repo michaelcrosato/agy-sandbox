@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T14:21:37.858Z",
+  "generatedAt": "2026-05-31T14:29:28.069Z",
   "stats": {
     "totalSourceFiles": 101,
-    "totalTestFiles": 129,
+    "totalTestFiles": 130,
     "totalSpecFiles": 165,
-    "totalLoc": 22722,
-    "totalTests": 1663,
+    "totalLoc": 23019,
+    "totalTests": 1675,
     "untestedCoreFilesCount": 6
   },
   "files": [
@@ -262,7 +262,7 @@
     },
     {
       "path": "src/engine/CargoPod.js",
-      "loc": 29,
+      "loc": 30,
       "classes": [
         {
           "name": "CargoPod",
@@ -376,12 +376,17 @@
     },
     {
       "path": "src/engine/EconomyManager.js",
-      "loc": 255,
+      "loc": 319,
       "classes": [
         {
           "name": "EconomyManager",
           "jsdoc": "/**\n* EconomyManager class that encapsulates dynamic market supply/demand, price elasticity,\n* price normalization, and random economic events across all galactic sectors.\n*/",
           "line": 9
+        },
+        {
+          "name": "CommoditiesRegistry",
+          "jsdoc": "/**\n* Centralized Commodities Schema Registry to define, validate, and maintain schemas.\n*/",
+          "line": 259
         }
       ],
       "exports": [],
@@ -468,12 +473,12 @@
     },
     {
       "path": "src/engine/GalaxyHeartbeat.js",
-      "loc": 169,
+      "loc": 339,
       "classes": [
         {
           "name": "GalaxyHeartbeat",
           "jsdoc": "/**\n* GalaxyHeartbeat advances the galactic economy independently of any connected\n* player. Each pulse first lets every planet's producer/consumer profile push\n* its local prices (surplus down, demand up, bounded around baseline), then\n* lets prices flow along trade lanes toward the prices of connected systems\n* (simulated arbitrage) while drifting gently back toward each market's\n* baseline. Over many pulses, production creates real supply pressure that\n* the lane-diffusion ripple then propagates to neighbors — the world keeps\n* living, and producing, when no one watches.\n*\n* The class is pure and deterministic: it owns no timers, sockets, or randomness.\n*/",
-          "line": 18
+          "line": 19
         }
       ],
       "exports": [],
@@ -486,7 +491,7 @@
     },
     {
       "path": "src/engine/GameInstance.js",
-      "loc": 1902,
+      "loc": 1927,
       "classes": [
         {
           "name": "GameInstance",
@@ -1971,14 +1976,14 @@
     },
     {
       "path": "src/net/SandboxSecurityRegistry.js",
-      "loc": 136,
+      "loc": 138,
       "classes": [],
       "exports": [
         {
           "name": "SandboxSecurityRegistry",
           "type": "constant",
           "jsdoc": null,
-          "line": 62
+          "line": 63
         }
       ],
       "testFile": "src/net/SandboxSecurityRegistry.test.js",
@@ -1990,7 +1995,7 @@
         {
           "name": "SandboxSecurityRegistry",
           "type": "constant",
-          "line": 62
+          "line": 63
         }
       ]
     },
@@ -2492,7 +2497,7 @@
     },
     {
       "path": "src/server/galaxyTicker.js",
-      "loc": 426,
+      "loc": 427,
       "classes": [],
       "exports": [
         {
@@ -2556,7 +2561,7 @@
     },
     {
       "path": "src/server/gameplayHandlers.js",
-      "loc": 336,
+      "loc": 370,
       "classes": [],
       "exports": [
         {
@@ -2569,13 +2574,13 @@
           "name": "handleLand",
           "type": "function",
           "jsdoc": "/**\n* Handles the \"land\" message: docking on a planet, contraband scans,\n* mission completion, mission generation, and state saving.\n*\n* @param {object} clientObj - The authenticated client object.\n* @param {object} room - The current GameInstance room.\n* @param {object} persistenceManager - The PersistenceManager instance.\n*/",
-          "line": 27
+          "line": 61
         },
         {
           "name": "handleLaunch",
           "type": "function",
           "jsdoc": "/**\n* Handles the \"launch\" message: taking off from a planet, repositioning ship.\n*\n* @param {object} clientObj - The authenticated client object.\n* @param {object} room - The current GameInstance room.\n*/",
-          "line": 313
+          "line": 347
         }
       ],
       "testFile": "src/server/gameplayHandlers.test.js",
@@ -2907,7 +2912,7 @@
         }
       ],
       "testFile": "src/server/tutorialHandlers.test.js",
-      "testCasesCount": 4,
+      "testCasesCount": 6,
       "referencingSpecs": [
         "plan/specs/110_server_handler_extraction_round5.md"
       ],
@@ -4917,7 +4922,7 @@
           {
             "name": "SandboxSecurityRegistry",
             "type": "constant",
-            "line": 62
+            "line": 63
           }
         ]
       },
@@ -4953,12 +4958,6 @@
         "spec": "plan/specs/158_guided_onboarding_tutorial_mission.md",
         "brokenFiles": [
           "src/client/tutorialUI.test.js"
-        ]
-      },
-      {
-        "spec": "plan/specs/159_commodities_schema_invariant_sentry.md",
-        "brokenFiles": [
-          "src/engine/EconomyRegistry.test.js"
         ]
       }
     ]

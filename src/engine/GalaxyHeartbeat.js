@@ -2,6 +2,7 @@ import {
   applyProductionPulse,
   DEFAULT_PRODUCTION_OPTIONS,
 } from "./ProductionModel.js";
+import { SandboxSecurityRegistry } from "../net/SandboxSecurityRegistry.js";
 
 /**
  * GalaxyHeartbeat advances the galactic economy independently of any connected
@@ -46,15 +47,17 @@ export class GalaxyHeartbeat {
     this.profiles = profiles;
     this.productionOptions = productionOptions;
     this.pulses = 0;
+    this.economyDriftsTotal = 0;
   }
 
   /**
    * Advances the galaxy by one heartbeat. Price changes are computed from the
    * pre-pulse state and applied simultaneously, so the result is independent of
    * planet ordering.
+   * @param {Array<Object>} [entities=[]] - Local room entity list to validate.
    * @returns {Array<string>} Names of planets whose market changed this pulse.
    */
-  pulse() {
+  pulse(entities = []) {
     // 1. Production & consumption pressure each market on its own first.
     // Each planet's production step depends only on its own market and profile,
     // so order is irrelevant; mutating in place is safe and keeps the diffusion
@@ -131,11 +134,178 @@ export class GalaxyHeartbeat {
 
     this.pulses += 1;
 
+    // Audit economic invariants and heal drifts prior to returning changed planets
+    this.auditEconomicInvariants(entities);
+
     const changed = new Set([
       ...producedChanges,
       ...updates.map((u) => u.planet.name),
     ]);
     return [...changed];
+  }
+
+  /**
+   * Real-time economic invariant and drift sentry auditor.
+   * @param {Array<Object>} entities - Local room entities (specifically ship holds).
+   */
+  auditEconomicInvariants(entities = []) {
+    // 1. Audit active planets' market prices
+    for (const planet of this.planets) {
+      if (!planet.market) continue;
+      const base = this.baseMarkets[planet.name] || {};
+      for (const commodity of Object.keys(planet.market)) {
+        const price = planet.market[commodity];
+        if (
+          typeof price !== "number" ||
+          !Number.isFinite(price) ||
+          price < 5 ||
+          price > 5000
+        ) {
+          this.economyDriftsTotal++;
+          const healed = base[commodity] !== undefined ? base[commodity] : 150;
+          planet.market[commodity] = healed;
+          SandboxSecurityRegistry.logViolation(
+            "economy",
+            "planet_price_drift",
+            {
+              planet: planet.name,
+              commodity,
+              invalidPrice: price,
+              healedPrice: healed,
+            },
+          );
+        }
+      }
+    }
+
+    // 2. Audit active ship cargo counts
+    for (const ent of entities) {
+      if (ent && ent.type === "ship" && ent.cargo) {
+        for (const commodity of Object.keys(ent.cargo)) {
+          const val = ent.cargo[commodity];
+          if (typeof val !== "number" || !Number.isFinite(val) || val < 0) {
+            this.economyDriftsTotal++;
+            ent.cargo[commodity] = 0;
+            SandboxSecurityRegistry.logViolation(
+              "economy",
+              "ship_cargo_drift",
+              {
+                shipId: ent.id,
+                shipName: ent.name,
+                commodity,
+                invalidCount: val,
+                healedCount: 0,
+              },
+            );
+          }
+        }
+      }
+    }
+
+    // 3. Audit production rates
+    if (this.productionOptions) {
+      if (
+        typeof this.productionOptions.productionRate !== "number" ||
+        !Number.isFinite(this.productionOptions.productionRate) ||
+        this.productionOptions.productionRate > 0.1 ||
+        this.productionOptions.productionRate < 0
+      ) {
+        this.economyDriftsTotal++;
+        const prev = this.productionOptions.productionRate;
+        this.productionOptions.productionRate = 0.02; // restore conservative default
+        SandboxSecurityRegistry.logViolation(
+          "economy",
+          "production_rate_drift",
+          {
+            invalidRate: prev,
+            healedRate: 0.02,
+          },
+        );
+      }
+      if (
+        typeof this.productionOptions.consumptionRate !== "number" ||
+        !Number.isFinite(this.productionOptions.consumptionRate) ||
+        this.productionOptions.consumptionRate > 0.1 ||
+        this.productionOptions.consumptionRate < 0
+      ) {
+        this.economyDriftsTotal++;
+        const prev = this.productionOptions.consumptionRate;
+        this.productionOptions.consumptionRate = 0.02; // restore conservative default
+        SandboxSecurityRegistry.logViolation(
+          "economy",
+          "consumption_rate_drift",
+          {
+            invalidRate: prev,
+            healedRate: 0.02,
+          },
+        );
+      }
+    }
+
+    // 4. Audit production / consumption profile strengths
+    if (this.profiles) {
+      for (const [planetName, profile] of Object.entries(this.profiles)) {
+        if (!profile) continue;
+        if (profile.produces) {
+          for (const [commodity, strength] of Object.entries(
+            profile.produces,
+          )) {
+            if (
+              typeof strength !== "number" ||
+              !Number.isFinite(strength) ||
+              strength < 0 ||
+              strength > 2.0
+            ) {
+              this.economyDriftsTotal++;
+              const healed =
+                typeof strength === "number" && strength >= 0
+                  ? Math.min(strength, 2.0)
+                  : 1.0;
+              profile.produces[commodity] = healed;
+              SandboxSecurityRegistry.logViolation(
+                "economy",
+                "production_strength_drift",
+                {
+                  planet: planetName,
+                  commodity,
+                  invalidStrength: strength,
+                  healedStrength: healed,
+                },
+              );
+            }
+          }
+        }
+        if (profile.consumes) {
+          for (const [commodity, strength] of Object.entries(
+            profile.consumes,
+          )) {
+            if (
+              typeof strength !== "number" ||
+              !Number.isFinite(strength) ||
+              strength < 0 ||
+              strength > 2.0
+            ) {
+              this.economyDriftsTotal++;
+              const healed =
+                typeof strength === "number" && strength >= 0
+                  ? Math.min(strength, 2.0)
+                  : 1.0;
+              profile.consumes[commodity] = healed;
+              SandboxSecurityRegistry.logViolation(
+                "economy",
+                "consumption_strength_drift",
+                {
+                  planet: planetName,
+                  commodity,
+                  invalidStrength: strength,
+                  healedStrength: healed,
+                },
+              );
+            }
+          }
+        }
+      }
+    }
   }
 
   /**

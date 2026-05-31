@@ -20,6 +20,7 @@ export class CargoPod extends SpaceEntity {
 
     this.resourceType = resourceType;
     this.amount = amount;
+    this.isTrainingSalvage = false;
 
     // Seed slow spinning drift motion
     this.heading = Math.random() * Math.PI * 2;

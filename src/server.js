@@ -1254,6 +1254,14 @@ const physicsInterval = setInterval(() => {
   metrics.gauge("rooms", instances.size);
   metrics.gauge("clients", wss.clients.size);
   metrics.gauge("matchmaking_queue", matchmakingQueue.size);
+
+  let totalEconomyDrifts = 0;
+  for (const room of instances.values()) {
+    if (room.galaxyHeartbeat && room.galaxyHeartbeat.economyDriftsTotal) {
+      totalEconomyDrifts += room.galaxyHeartbeat.economyDriftsTotal;
+    }
+  }
+  metrics.gauge("economy_drift_violations", totalEconomyDrifts);
 }, 1000 / TICK_RATE);
 
 // 2. Room Economy Shortage/Surplus events loops (45 seconds)

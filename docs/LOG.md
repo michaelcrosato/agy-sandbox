@@ -44,6 +44,35 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-05-31T14:30 · iter-0139 · GREEN · spec-159-commodities-schema-invariant-sentry
+
+- **Baseline:** `9e1a6d7` on `feat/procedural-missions`; 1,258 Jest green.
+- **Move:** Implement SPEC-159 to establish a centralized Commodities Schema Registry and a real-time heartbeat Economic Invariant Sentry in the galaxy simulation.
+- **Changed:**
+  - Engineered static `CommoditiesRegistry` class inside `src/engine/EconomyManager.js` with frozen metadata schemas validating mass, baseValue, and category.
+  - Implemented real-time economic invariant sentry `auditEconomicInvariants` inside `src/engine/GalaxyHeartbeat.js` executing strict verification and self-healing: clamping active planet prices within [5, 5000] credits, correcting negative/non-finite cargo hold counts on active ship entities, and restricting out-of-bound production rates and profile strengths.
+  - Logged all economic drifts and anomalies directly into `SandboxSecurityRegistry` under category `"economy"`.
+  - Integrated metric dispatches under `economy_drift_violations` in `src/server.js` and wired local entities in `src/server/galaxyTicker.js`.
+  - Declared `isTrainingSalvage` property in `CargoPod.js` constructor to completely resolve typescript check warnings.
+  - Authored comprehensive unit and integration tests inside `src/engine/EconomyRegistry.test.js` and updated non-finite neighbour price assertions in `src/engine/GalaxyHeartbeat.test.js`.
+- **Decisions:** Establishing real-time economic invariant verification and self-healing inside the authoritative ticking loop guarantees systemic safety against drifts, overflows, and negative states under long unattended runs.
+- **Validation:** Executed `npm run agent:check` confirming a 100% green gate across 1,264 Jest tests, Prettier compliance, and zero typescript errors.
+- **Next:** Transition to Cycle 45 Phase R (Replenish) to perform codebase audits, promote backlog items, and formulate Wave v44 specifications.
+
+## 2026-05-31T14:10 · iter-0138 · GREEN · spec-158-guided-interactive-tutorial
+
+- **Baseline:** `3d3c73a` on `feat/procedural-missions`; 1,252 Jest green.
+- **Move:** Implement SPEC-158 to design a server-authoritative guided interactive onboarding tutorial mission and flight-deck cockpit onboarding card.
+- **Changed:**
+  - Refactored client-side `TutorialManager` to synchronize flight-deck onboarding objectives (thrust maneuver, target lock, drone combat, salvage harvesting, and spaceport docking) with the server-authoritative FSM.
+  - Hooked client control steering/thrust inputs to advance steering phases, routed `tutorial_start` and `tutorial_progress` websocket dispatches.
+  - Programmed `GameInstance` to spawn weak training drones in private sector rooms, drop wreckage salvage pods on drone destruction, and bypass cargo bay restrictions during salvage scoop harvesting.
+  - Styled onboarding prompt HUD cards with elegant golden-glassmorphic CSS and custom animations.
+  - Covered all transitions, spawns, rewards, and garbage collection sweeps in comprehensive unit and integration tests.
+- **Decisions:** Designing a server-authoritative onboarding tutorial FSM guarantees consistent client-state synchronization and secure progression/rewards verification.
+- **Validation:** Committed and verified with a 100% green gate under Jest and Vitest client suites.
+- **Next:** Claim and implement SPEC-159 Centralized Commodities Schema Registry & Real-Time Production Chain Invariant Monitor Sentry.
+
 ## 2026-05-31T13:50 · iter-0137 · GREEN · spec-157-outfitting-presets-modularization
 
 - **Baseline:** `9a3f719` on `feat/procedural-missions`; 1,252 Jest green.

@@ -351,7 +351,8 @@ export function runGalaxyHeartbeatInterval(instances) {
     // Audit-Driven Invariant Verification and Self-Healing (SPEC-091)
     InvariantVerifier.verify(room, logger);
 
-    const changedNames = room.galaxyHeartbeat.pulse();
+    const entities = room.engine ? room.engine.entities : [];
+    const changedNames = room.galaxyHeartbeat.pulse(entities);
     const decayChanges = room.decayReputations();
 
     if (

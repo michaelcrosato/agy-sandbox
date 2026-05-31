@@ -252,3 +252,67 @@ export class EconomyManager {
     return this.activeEconomicEvent;
   }
 }
+
+/**
+ * Centralized Commodities Schema Registry to define, validate, and maintain schemas.
+ */
+export class CommoditiesRegistry {
+  static SCHEMAS = {
+    food: { mass: 1.0, baseValue: 100, category: "basic" },
+    electronics: { mass: 2.0, baseValue: 300, category: "tech" },
+    minerals: { mass: 1.5, baseValue: 150, category: "raw" },
+    luxuries: { mass: 1.0, baseValue: 600, category: "luxury" },
+    contraband: { mass: 0.5, baseValue: 250, category: "contraband" },
+    machinery: { mass: 3.0, baseValue: 100, category: "industrial" },
+    ore: { mass: 2.5, baseValue: 90, category: "raw" },
+    fuel: { mass: 0.8, baseValue: 50, category: "fuel" },
+    alloys: { mass: 2.0, baseValue: 200, category: "industrial" },
+    tech: { mass: 1.2, baseValue: 400, category: "tech" },
+  };
+
+  /**
+   * Validates if a commodity and its properties conform to schema.
+   * @param {string} commodity - Name of the commodity.
+   * @param {Object} properties - Properties of the commodity.
+   * @returns {{ valid: boolean, error?: string }}
+   */
+  static validate(commodity, properties) {
+    const schema = this.SCHEMAS[commodity];
+    if (!schema) {
+      return {
+        valid: false,
+        error: `Commodity '${commodity}' not defined in registry schema.`,
+      };
+    }
+    if (
+      typeof properties.mass !== "number" ||
+      !Number.isFinite(properties.mass) ||
+      properties.mass <= 0
+    ) {
+      return {
+        valid: false,
+        error: `Invalid mass for '${commodity}': must be positive number.`,
+      };
+    }
+    if (
+      typeof properties.baseValue !== "number" ||
+      !Number.isFinite(properties.baseValue) ||
+      properties.baseValue <= 0
+    ) {
+      return {
+        valid: false,
+        error: `Invalid baseValue for '${commodity}': must be positive number.`,
+      };
+    }
+    if (
+      typeof properties.category !== "string" ||
+      properties.category.trim() === ""
+    ) {
+      return {
+        valid: false,
+        error: `Invalid category for '${commodity}': must be non-empty string.`,
+      };
+    }
+    return { valid: true };
+  }
+}

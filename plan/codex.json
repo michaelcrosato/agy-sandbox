@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-31T05:58:19.246Z",
+  "generatedAt": "2026-05-31T05:59:21.807Z",
   "stats": {
     "totalSourceFiles": 95,
     "totalTestFiles": 124,
-    "totalSpecFiles": 147,
+    "totalSpecFiles": 150,
     "totalLoc": 20822,
     "totalTests": 1614,
     "untestedCoreFilesCount": 3
@@ -4412,6 +4412,41 @@
       "priority": "Normal",
       "pillar": "None",
       "filesMentioned": [
+        "src/net/GuestRunner.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/142_guest_sandbox_footprint_hud.md",
+      "filename": "142_guest_sandbox_footprint_hud.md",
+      "title": "SPEC-142: Golden-Glassmorphic Guest Sandbox Footprint HUD Gauge",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/server.js",
+        "src/server/codexDashboard.integration.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/143_guest_outbound_egress_sandboxing.md",
+      "filename": "143_guest_outbound_egress_sandboxing.md",
+      "title": "SPEC-143: Guest Outbound Egress Sandboxing & Network Containment",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/GuestRunner.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/144_secure_guest_module_loader_sentry.md",
+      "filename": "144_secure_guest_module_loader_sentry.md",
+      "title": "SPEC-144: Secure Dynamic Guest Module Loader Sentry & ESM Import Jail",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/server.js",
         "src/net/GuestRunner.test.js"
       ]
     }

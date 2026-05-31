@@ -32,6 +32,12 @@ _**v36 re-audit baseline (2026-05-31, ENTIRE v36 blueprint shipped): 1,209 Jest 
 _**v37 re-audit baseline (2026-05-31, ENTIRE v37 blueprint shipped): 1,213 Jest tests / 117 suites green; V8 memory caps, cumulative CPU time-slice budget policing, and environment variable sanitization masking all DONE.**_
 
 
+## v38 — Guest Sandbox Observability, Network Containment & ESM Loader Jailing Wave (TO DO) — see [`ROADMAP.md`](ROADMAP.md)
+
+- [ ] `142` Golden-Glassmorphic Guest Sandbox Footprint HUD Gauge (enhance cockpit dashboard with visual Guest Sentry card showing circular SVG memory allocation and CPU budget usage rings)
+- [ ] `143` Guest Outbound Egress Sandboxing & Network Containment (pre-activate zero-trust SandboxFirewall in child workers, ensuring absolute network isolation of guest processes)
+- [ ] `144` Secure Dynamic Guest Module Loader Sentry & ESM Import Jail (harden ESM sub-module loading in guest processes to intercept dynamic imports and restrict resolutions strictly inside sandbox bounds)
+
 ## v37 — Sandbox Hardware Caps & Resource Guarding Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 - [x] `139` Safe Guest V8 Memory Limits & Heap Size Allocation Control (enforce `--max-old-space-size` memory budgeting options during guest forks to protect hosts from heap leak exploits) — **done** (configured filtered execArgv arguments inside GuestRunner.js to pass --max-old-space-size bounds dynamically to child worker processes, and verified that guest scripts exceeding heap bounds trigger immediate V8 OOM crashed terminations under 155ms in unit tests)

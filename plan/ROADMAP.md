@@ -357,13 +357,28 @@ The autonomous isolation, path jailing, and whitelisting control wave:
 The sandbox resource hardening, CPU budgeting, and environment variables masking wave:
 
 ### Phase 0 — Guest V8 Memory Limits — `139`
-- `139` Safe Guest V8 Memory Limits & Heap Size Allocation Control (enforce `--max-old-space-size` restrictions when spawning untrusted guest scripts to prevent V8 heap OOM leaks).
+- `139` Safe Guest V8 Memory Limits & Heap Size Allocation Control (enforce `--max-old-space-size` restrictions when spawning untrusted guest scripts to prevent V8 heap OOM leaks) — **done**.
 
 ### Phase 1 — Guest CPU Time-Slice Watchdog — `140`
-- `140` Guest CPU Time-Slice Budget Monitor & Watchdog (police cumulative process CPU time user and system limits, killing tight loops forcefully via SIGKILL process-tree reaping).
+- `140` Guest CPU Time-Slice Budget Monitor & Watchdog (police cumulative process CPU time user and system limits, killing tight loops forcefully via SIGKILL process-tree reaping) — **done**.
 
 ### Phase 2 — Guest Sandbox Environment Mask — `141`
-- `141` Guest Sandbox Environment Variable Sanitization Mask (sanitize all parent environment dictionary keys during worker forks to completely prevent dynamic credential leaking).
+- `141` Guest Sandbox Environment Variable Sanitization Mask (sanitize all parent environment dictionary keys during worker forks to completely prevent dynamic credential leaking) — **done**.
+
+---
+
+## EXECUTION WAVES (v38)
+
+The guest sandbox observability, network containment, and ESM module loader jailing wave:
+
+### Phase 0 — Guest Footprint HUD Gauge — `142`
+- `142` Golden-Glassmorphic Guest Sandbox Footprint HUD Gauge (enhance cockpit dashboard with visual Guest Sentry card showing circular SVG memory allocation and CPU budget usage rings).
+
+### Phase 1 — Guest Egress Sandboxing — `143`
+- `143` Guest Outbound Egress Sandboxing & Network Containment (pre-activate zero-trust SandboxFirewall in child workers, ensuring absolute network isolation of guest processes).
+
+### Phase 2 — Guest Module Loader Sentry — `144`
+- `144` Secure Dynamic Guest Module Loader Sentry & ESM Import Jail (harden ESM sub-module loading in guest processes to intercept dynamic imports and restrict resolutions strictly inside sandbox bounds).
 
 ---
 
@@ -373,11 +388,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 139 | V8 Old Space limits | 0 | 5 | 5 | 5 | 5 | 20 |
-| 140 | CPU Time-Slice budget | 1 | 5 | 5 | 5 | 5 | 20 |
-| 141 | Sandbox Env Mask | 2 | 5 | 5 | 5 | 5 | 20 |
+| 142 | Guest Footprint HUD Gauge | 0 | 5 | 5 | 5 | 5 | 20 |
+| 143 | Guest Egress Sandboxing | 1 | 5 | 5 | 5 | 5 | 20 |
+| 144 | Guest Module Loader Sentry | 2 | 5 | 5 | 5 | 5 | 20 |
 
-**Recommended start:** `139` (Σ20 — Guest V8 Memory Limits) immediately.
+**Recommended start:** `142` (Σ20 — Guest Sandbox Footprint HUD Gauge) immediately.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

@@ -39,6 +39,26 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T01:45 · iter-0108 · GREEN · cycle-23-spec-099-centralized-commodities-schema-registry
+- **Baseline:** `a1db4a0` on `feat/procedural-missions`; 984 Jest green.
+- **Move:** Implement Centralized Commodities & Unified Schema Registry (SPEC-099).
+- **Changed:**
+  - Created `src/net/SchemaRegistry.js` centralizing commodities metadata (mass, baseValue, illegal status, category) and all 25+ inbound WebSocket message validator schemas.
+  - Centralized baseline prices of all planets `BASE_MARKETS` inside `src/net/SchemaRegistry.js`.
+  - Refactored `src/engine/commodities.js` to import `COMMODITIES` from `src/net/SchemaRegistry.js`.
+  - Refactored `src/engine/GameInstance.js` to import and re-export `BASE_MARKETS` from `src/net/SchemaRegistry.js`, shallow cloning `this.baseMarkets = { ...BASE_MARKETS }` inside the constructor to allow test mutations and avoid immutable frozen object errors.
+  - Refactored `src/net/SchemaValidator.js` to import `SCHEMAS` directly from `src/net/SchemaRegistry.js` and validate incoming WebSocket packets cleanly.
+  - Exposed a secure dynamic HTTP endpoint `/schema` serving full JSON commodities database metadata and schemas to the client.
+  - Refactored client-side scripts `src/client/UIController.js` and `src/client/SpaceportUI.js` to import and utilize the centralized `COMMODITIES` and `BASE_MARKETS` from `../net/SchemaRegistry.js`, eliminating duplicate data configurations.
+  - Created extensive Jest unit test suite `src/net/SchemaRegistry.test.js` validating structural parity, boundaries, and types, and added server integration test inside `src/server/schemaValidation.integration.test.js` verifying the `/schema` endpoint response.
+- **Decisions:**
+  - Shallow cloned `this.baseMarkets` in `GameInstance` constructor to preserve absolute immutability of the frozen `BASE_MARKETS` registry config, while allowing integration tests to cleanly mock planet base values without side-effects or leakage.
+  - Re-exported `BASE_MARKETS` from `GameInstance.js` to preserve perfect backwards compatibility with other modules, reducing the blast radius of refactoring.
+- **Validation:**
+  - `npm run agent:check` completed successfully with all 89 test suites and 989 tests green.
+- **Next:**
+  - File/execute Phase 1 emerge operational specs (SPEC-098 Emergent Faction Territory Control & Dynamic Sector Borders).
+
 ## 2026-05-31T01:30 · iter-0107 · GREEN · cycle-23-spec-101-living-codex-semantic-registry
 - **Baseline:** `5214232` on `feat/procedural-missions`; 979 Jest green.
 - **Move:** Implement the Self-Synchronizing Codebase "Living Codex" & Semantic Registry (SPEC-101).

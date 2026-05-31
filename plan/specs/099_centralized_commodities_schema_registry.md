@@ -28,9 +28,9 @@ Starfall’s `COMMODITIES` definitions, prices, and network command validation s
 
 ## Acceptance Criteria
 
-- [ ] Single source of truth for commodities and network schemas is implemented, and duplications are completely eliminated.
-- [ ] Centralized schema properties successfully load, and validation checks remain fully operational.
-- [ ] Complete Jest coverage confirming strict schema structural parity and validation results.
+- [x] Single source of truth for commodities and network schemas is implemented, and duplications are completely eliminated.
+- [x] Centralized schema properties successfully load, and validation checks remain fully operational.
+- [x] Complete Jest coverage confirming strict schema structural parity and validation results.
 
 ## Verification Commands
 

@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T04:01:42.744Z",
+  "generatedAt": "2026-05-31T04:03:23.925Z",
   "stats": {
-    "totalSourceFiles": 76,
-    "totalTestFiles": 105,
+    "totalSourceFiles": 79,
+    "totalTestFiles": 108,
     "totalSpecFiles": 118,
-    "totalLoc": 17735,
-    "totalTests": 1483,
+    "totalLoc": 17897,
+    "totalTests": 1503,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -1967,6 +1967,25 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/server/escortHandlers.js",
+      "loc": 32,
+      "classes": [],
+      "exports": [
+        {
+          "name": "handleEscortAction",
+          "type": "function",
+          "jsdoc": "/**\n* Handles \"escort_command\" and \"escort_formation\" WebSocket messages.\n*\n* @param {object} clientObj - The active client connection object.\n* @param {object} msg - The incoming action message payload.\n* @param {object} room - The current GameInstance room context.\n*/",
+          "line": 10
+        }
+      ],
+      "testFile": "src/server/escortHandlers.test.js",
+      "testCasesCount": 5,
+      "referencingSpecs": [
+        "plan/specs/110_server_handler_extraction_round5.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
       "path": "src/server/fleetHandlers.js",
       "loc": 52,
       "classes": [],
@@ -2280,6 +2299,25 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/server/squadHandlers.js",
+      "loc": 93,
+      "classes": [],
+      "exports": [
+        {
+          "name": "handleSquadAction",
+          "type": "function",
+          "jsdoc": "/**\n* Handles \"squad_invite\", \"squad_join\", and \"squad_leave\" WebSocket messages.\n*\n* @param {object} clientObj - The active client connection object.\n* @param {object} msg - The incoming action message payload.\n* @param {object} wss - The WebSocketServer instance to access other connected clients.\n* @param {object} squadManager - The squad manager instance.\n*/",
+          "line": 9
+        }
+      ],
+      "testFile": "src/server/squadHandlers.test.js",
+      "testCasesCount": 11,
+      "referencingSpecs": [
+        "plan/specs/110_server_handler_extraction_round5.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
       "path": "src/server/SquadManager.js",
       "loc": 136,
       "classes": [
@@ -2333,6 +2371,25 @@
       "referencingSpecs": [
         "plan/specs/019c_worker_process_model.md",
         "plan/specs/062_redis_cluster_integration.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/tutorialHandlers.js",
+      "loc": 37,
+      "classes": [],
+      "exports": [
+        {
+          "name": "handleTutorialComplete",
+          "type": "function",
+          "jsdoc": "/**\n* Handles the \"tutorial_complete\" WebSocket message.\n* Marks the tutorial as completed, awards credits, and immediately persists state.\n*\n* @param {object} clientObj - The active client connection object.\n* @param {Map} instances - The Map of active room instances.\n* @param {object} persistenceManager - The PersistenceManager instance.\n*/",
+          "line": 9
+        }
+      ],
+      "testFile": "src/server/tutorialHandlers.test.js",
+      "testCasesCount": 4,
+      "referencingSpecs": [
+        "plan/specs/110_server_handler_extraction_round5.md"
       ],
       "missingJsDocSymbols": []
     }
@@ -3716,17 +3773,6 @@
     "untestedCoreFiles": [],
     "missingJsDocs": [],
     "staleSpecReferences": [
-      {
-        "spec": "plan/specs/110_server_handler_extraction_round5.md",
-        "brokenFiles": [
-          "src/server/squadHandlers.js",
-          "src/server/escortHandlers.js",
-          "src/server/tutorialHandlers.js",
-          "src/server/squadHandlers.test.js",
-          "src/server/escortHandlers.test.js",
-          "src/server/tutorialHandlers.test.js"
-        ]
-      },
       {
         "spec": "plan/specs/111_connection_lifecycle_decomposition.md",
         "brokenFiles": [

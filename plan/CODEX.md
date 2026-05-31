@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T04:01:42.744Z` · Baseline: `17,735 LOC` across `76 source files`
+> Generated: `2026-05-31T04:03:23.925Z` · Baseline: `17,897 LOC` across `79 source files`
 
 ---
 
@@ -9,10 +9,10 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `17,735 LOC` | 🟢 Healthy |
-| **Source Modules** | `76 files` | 🟢 Structured |
-| **Test Suites** | `105 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1483 cases` | 🟢 Deterministic |
+| **Total Code Volume** | `17,897 LOC` | 🟢 Healthy |
+| **Source Modules** | `79 files` | 🟢 Structured |
+| **Test Suites** | `108 test files` | 🟢 Integrated |
+| **Total Test Cases** | `1503 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `118 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `0 files` | 🟢 100% Covered |
 
@@ -115,6 +115,7 @@
 | --- | --- | --- | --- | --- |
 | [actionHandlers.js](file:///C:/dev/agy-sandbox/src/server/actionHandlers.js) | 425 | `function handleTrade`, `function handlePortService`, `function handleJettison`, `function handleWarpJump`, `function handleBoardingAction` | [actionHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/actionHandlers.test.js) | [`103_modularize_server_actions`](file:///C:/dev/agy-sandbox/plan/specs/103_modularize_server_actions.md) |
 | [chatHandler.js](file:///C:/dev/agy-sandbox/src/server/chatHandler.js) | 76 | _None_ | [chatHandler.test.js](file:///C:/dev/agy-sandbox/src/server/chatHandler.test.js) | [`109_server_handler_extraction_round4`](file:///C:/dev/agy-sandbox/plan/specs/109_server_handler_extraction_round4.md) |
+| [escortHandlers.js](file:///C:/dev/agy-sandbox/src/server/escortHandlers.js) | 32 | `function handleEscortAction` | [escortHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/escortHandlers.test.js) | [`110_server_handler_extraction_round5`](file:///C:/dev/agy-sandbox/plan/specs/110_server_handler_extraction_round5.md) |
 | [fleetHandlers.js](file:///C:/dev/agy-sandbox/src/server/fleetHandlers.js) | 52 | `function handleFleetAction` | [fleetHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/fleetHandlers.test.js) | [`109_server_handler_extraction_round4`](file:///C:/dev/agy-sandbox/plan/specs/109_server_handler_extraction_round4.md) |
 | [galaxyTicker.js](file:///C:/dev/agy-sandbox/src/server/galaxyTicker.js) | 376 | `function runEconomyTickForRoom`, `function broadcastEventSyncForRoom`, `function runSectorEventTickForRoom`, `function runEconomyNormalizationForRoom`, `function runEconomyShortageInterval`, `function runEnvironmentalSiegeInterval`, `function runEconomyNormalizationInterval`, `function runGalaxyHeartbeatInterval` | [galaxyTicker.test.js](file:///C:/dev/agy-sandbox/src/server/galaxyTicker.test.js) | [`042_server_monolith_extraction_galaxy_ticker`](file:///C:/dev/agy-sandbox/plan/specs/042_server_monolith_extraction_galaxy_ticker.md)<br>[`078_reputation_decay_heartbeat`](file:///C:/dev/agy-sandbox/plan/specs/078_reputation_decay_heartbeat.md) |
 | [gameplayHandlers.js](file:///C:/dev/agy-sandbox/src/server/gameplayHandlers.js) | 336 | `function handleControls`, `function handleLand`, `function handleLaunch` | [gameplayHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/gameplayHandlers.test.js) | [`109_server_handler_extraction_round4`](file:///C:/dev/agy-sandbox/plan/specs/109_server_handler_extraction_round4.md) |
@@ -123,8 +124,10 @@
 | [portHandlers.js](file:///C:/dev/agy-sandbox/src/server/portHandlers.js) | 794 | `function handleOutfitBuy`, `function handleShipBuy`, `function handleMissionAccept`, `function handleMissionAbandon`, `function handleEscortCommand`, `function handleVoucherRedeem`, `function handleOutfitSell`, `function handlePresetSave`, `function handlePresetLoad`, `function handleOreRefine`, `function handleDistressBeacon` | [portHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/portHandlers.test.js) | [`046_modularize_port_mission_handlers`](file:///C:/dev/agy-sandbox/plan/specs/046_modularize_port_mission_handlers.md)<br>[`050_wingman_tactical_formation_controls`](file:///C:/dev/agy-sandbox/plan/specs/050_wingman_tactical_formation_controls.md)<br>[`055_naval_command_decks`](file:///C:/dev/agy-sandbox/plan/specs/055_naval_command_decks.md)<br>[`058_loadout_presets`](file:///C:/dev/agy-sandbox/plan/specs/058_loadout_presets.md)<br>[`060_naval_campaigns`](file:///C:/dev/agy-sandbox/plan/specs/060_naval_campaigns.md)<br>[`077_refinement_mining_laser_industrial_dock`](file:///C:/dev/agy-sandbox/plan/specs/077_refinement_mining_laser_industrial_dock.md) |
 | [roomGc.js](file:///C:/dev/agy-sandbox/src/server/roomGc.js) | 57 | _None_ | [roomGc.test.js](file:///C:/dev/agy-sandbox/src/server/roomGc.test.js) | [`042_server_monolith_extraction_galaxy_ticker`](file:///C:/dev/agy-sandbox/plan/specs/042_server_monolith_extraction_galaxy_ticker.md) |
 | [roomLifecycle.js](file:///C:/dev/agy-sandbox/src/server/roomLifecycle.js) | 38 | `constant DEFAULT_ROOM_IDLE_MS`, `function shouldGcRoom`, `function sanitizeNickname` | [roomLifecycle.test.js](file:///C:/dev/agy-sandbox/src/server/roomLifecycle.test.js) | _None_ |
+| [squadHandlers.js](file:///C:/dev/agy-sandbox/src/server/squadHandlers.js) | 93 | `function handleSquadAction` | [squadHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/squadHandlers.test.js) | [`110_server_handler_extraction_round5`](file:///C:/dev/agy-sandbox/plan/specs/110_server_handler_extraction_round5.md) |
 | [SquadManager.js](file:///C:/dev/agy-sandbox/src/server/SquadManager.js) | 136 | `class Squad`, `class SquadManager`, `constant squadManager` | [SquadManager.test.js](file:///C:/dev/agy-sandbox/src/server/SquadManager.test.js) | [`059_alliance_fleets`](file:///C:/dev/agy-sandbox/plan/specs/059_alliance_fleets.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
 | [supervisor.js](file:///C:/dev/agy-sandbox/src/server/supervisor.js) | 111 | `function planWorkers`, `function runSupervisor` | [supervisor.test.js](file:///C:/dev/agy-sandbox/src/server/supervisor.test.js) | [`019c_worker_process_model`](file:///C:/dev/agy-sandbox/plan/specs/019c_worker_process_model.md)<br>[`062_redis_cluster_integration`](file:///C:/dev/agy-sandbox/plan/specs/062_redis_cluster_integration.md) |
+| [tutorialHandlers.js](file:///C:/dev/agy-sandbox/src/server/tutorialHandlers.js) | 37 | `function handleTutorialComplete` | [tutorialHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/tutorialHandlers.test.js) | [`110_server_handler_extraction_round5`](file:///C:/dev/agy-sandbox/plan/specs/110_server_handler_extraction_round5.md) |
 
 ---
 
@@ -133,8 +136,7 @@
 ### ⚠️ Untested Core Modules (0)
 _None! All core modules have associated test suites._
 
-### ⚠️ Stale Specification File References (2)
-- [ ] Spec [`110_server_handler_extraction_round5.md`](file:///C:/dev/agy-sandbox/plan/specs/110_server_handler_extraction_round5.md) references missing files: `src/server/squadHandlers.js`, `src/server/escortHandlers.js`, `src/server/tutorialHandlers.js`, `src/server/squadHandlers.test.js`, `src/server/escortHandlers.test.js`, `src/server/tutorialHandlers.test.js`
+### ⚠️ Stale Specification File References (1)
 - [ ] Spec [`111_connection_lifecycle_decomposition.md`](file:///C:/dev/agy-sandbox/plan/specs/111_connection_lifecycle_decomposition.md) references missing files: `src/server/connectionHandlers.js`, `src/server/connectionHandlers.test.js`
 
 ### ⚠️ Missing JSDoc Type Signatures (0 symbols)

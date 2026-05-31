@@ -43,7 +43,6 @@ import {
   handleShipBuy,
   handleMissionAccept,
   handleMissionAbandon,
-  handleEscortCommand,
   handleVoucherRedeem,
   handleOutfitSell,
   handlePresetSave,
@@ -65,6 +64,9 @@ import {
   handleLand,
   handleLaunch,
 } from "./server/gameplayHandlers.js";
+import { handleSquadAction } from "./server/squadHandlers.js";
+import { handleEscortAction } from "./server/escortHandlers.js";
+import { handleTutorialComplete } from "./server/tutorialHandlers.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import { COMMODITIES_METADATA, SCHEMAS } from "./net/SchemaRegistry.js";
 import { validateMessage } from "./net/SchemaValidator.js";
@@ -1627,84 +1629,12 @@ wss.on("connection", (ws) => {
       );
     } else if (msg.type === "ship_buy") {
       handleShipBuy(clientObj, msg.shipName, clientObj.planetLandedOn, room);
-    } else if (msg.type === "squad_invite") {
-      const target = Array.from(wss.clients)
-        .map((ws) => ws.clientObj)
-        .find(
-          (c) =>
-            c &&
-            (c.id === msg.targetId ||
-              (msg.targetNickname && c.nickname === msg.targetNickname)),
-        );
-      if (!target) {
-        clientObj.send({
-          type: "notification",
-          message: "Target player not found!",
-          style: "error",
-        });
-        return;
-      }
-      let squad = squadManager.getSquadForPlayer(clientObj.id);
-      if (!squad) {
-        squad = squadManager.createSquad(clientObj.id);
-      }
-      target.send({
-        type: "squad_invite_received",
-        senderId: clientObj.id,
-        senderNickname: clientObj.nickname,
-        squadId: squad.id,
-      });
-      clientObj.send({
-        type: "notification",
-        message: `Sent squad invite to ${target.nickname}!`,
-        style: "success",
-      });
-    } else if (msg.type === "squad_join") {
-      const res = squadManager.joinSquad(msg.squadId, clientObj.id);
-      if (res.success) {
-        const squad = squadManager.getSquadForPlayer(clientObj.id);
-        const squadMembers = Array.from(wss.clients)
-          .map((ws) => ws.clientObj)
-          .filter((c) => c && squad.memberIds.has(c.id));
-        for (const member of squadMembers) {
-          member.send({
-            type: "notification",
-            message: `${clientObj.nickname} joined the squad!`,
-            style: "success",
-          });
-          member.sendStats();
-        }
-      } else {
-        clientObj.send({
-          type: "notification",
-          message: res.reason,
-          style: "error",
-        });
-      }
-    } else if (msg.type === "squad_leave") {
-      const squad = squadManager.getSquadForPlayer(clientObj.id);
-      if (squad) {
-        const squadId = squad.id;
-        squadManager.leaveSquad(clientObj.id);
-        clientObj.send({
-          type: "notification",
-          message: "You left the squad.",
-          style: "info",
-        });
-        clientObj.sendStats();
-
-        const remainingMembers = Array.from(wss.clients)
-          .map((ws) => ws.clientObj)
-          .filter((c) => c && squadManager.getSquadId(c.id) === squadId);
-        for (const member of remainingMembers) {
-          member.send({
-            type: "notification",
-            message: `${clientObj.nickname} left the squad.`,
-            style: "info",
-          });
-          member.sendStats();
-        }
-      }
+    } else if (
+      msg.type === "squad_invite" ||
+      msg.type === "squad_join" ||
+      msg.type === "squad_leave"
+    ) {
+      handleSquadAction(clientObj, msg, wss, squadManager);
     } else if (msg.type === "port_redeem_vouchers") {
       handleVoucherRedeem(clientObj, room);
     } else if (msg.type === "mission_accept") {
@@ -1729,45 +1659,15 @@ wss.on("connection", (ws) => {
       handleWarpJump(clientObj, msg, room);
     } else if (msg.type === "boarding_action") {
       handleBoardingAction(clientObj, msg, room);
-    } else if (msg.type === "escort_command") {
-      handleEscortCommand(clientObj, msg, room);
-    } else if (msg.type === "escort_formation") {
-      let count = 0;
-      const formation = msg.formation || "orbit";
-      for (const ai of room.ais) {
-        if (ai.role === "escort" && ai.flagship === clientObj.ship) {
-          ai.formation = formation;
-          count++;
-        }
-      }
-      clientObj.send({
-        type: "notification",
-        message: `Wingmen ordered into [${formation.toUpperCase()}] formation (${count} ships)`,
-        style: "success",
-      });
+    } else if (
+      msg.type === "escort_command" ||
+      msg.type === "escort_formation"
+    ) {
+      handleEscortAction(clientObj, msg, room);
     } else if (msg.type === "distress_beacon") {
       handleDistressBeacon(clientObj, room);
     } else if (msg.type === "tutorial_complete") {
-      if (!clientObj.tutorialCompleted) {
-        clientObj.tutorialCompleted = true;
-        if (clientObj.ship) {
-          clientObj.ship.credits = (clientObj.ship.credits || 0) + 500;
-        }
-        clientObj.send({
-          type: "notification",
-          message: "ONBOARDING COMPLETE: +500 CR awarded!",
-          style: "success",
-        });
-        clientObj.sendStats();
-
-        // Immediately persist the completion state to disk
-        const activeRoom = clientObj.roomId
-          ? instances.get(clientObj.roomId)
-          : null;
-        if (activeRoom) {
-          persistenceManager.savePlayer(clientObj.id, clientObj, activeRoom.id);
-        }
-      }
+      handleTutorialComplete(clientObj, instances, persistenceManager);
     } else if (msg.type === "ping") {
       clientObj.send({
         type: "pong",

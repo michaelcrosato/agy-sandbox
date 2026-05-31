@@ -39,6 +39,18 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T22:20 · iter-0121 · GREEN · cycle-33-replenish-spec-127-128-129
+- **Baseline:** `cec3c59` on `feat/procedural-missions`; 1,175 Jest green.
+- **Move:** Perform Cycle 32 Phase R (Replenish) to promote backlog ideas and establish Wave v33 blueprints.
+- **Changed:**
+  - Formulated Wave v33 specifications on disk: SPEC-127 (Inbound Connection Flood Protection & Active IP Sentry), SPEC-128 (Configurable Event-Loop Adaptive Backpressure Sentinel), and SPEC-129 (Living Codex Epistemic Debt Cockpit Telemetry Meter).
+  - Promoted active security containment, adaptive resource throttle, and dynamic ontological debt visualization to active specs.
+  - Refreshed master execution progress records in `plan/PROGRESS.md`, moving Wave v32 to completed and claiming Wave v33.
+  - Updated Master Prioritization Table in `plan/ROADMAP.md` mapping scores and recommended start options.
+- **Decisions:** Prioritized active incoming socket ceilings per client IP and upgrade filter hardening (SPEC-127) as Phase 0 to defend V8 memory boundaries before starting adaptive telemetry control hooks.
+- **Validation:** Running `npm run agent:check` in the background succeeded, passing all eslint, prettier, tsc typecheck, and 1,175 unit and integration tests green.
+- **Next:** Claim and execute SPEC-127 (Inbound Connection Flood Protection & Active IP Sentry) under a dedicated branch.
+
 ## 2026-05-31T22:15 · iter-0120 · GREEN · cycle-32-spec-125-126-hot-config-reload-egress-dashboard
 - **Baseline:** `7f5116b` on `feat/procedural-missions`; 1,171 Jest green.
 - **Move:** Implement SPEC-125 (Zero-Downtime Hot Config Reloading Engine) and SPEC-126 (Egress Firewall Rules Cockpit Dashboard Card) to complete Wave v32.

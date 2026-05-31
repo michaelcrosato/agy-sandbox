@@ -28,7 +28,13 @@ _**v22 re-audit baseline (2026-05-31, ENTIRE v22 sandbox blueprint shipped): 979
 _**v23 re-audit baseline (2026-05-31, ENTIRE v23 blueprint shipped): 1,013 Jest tests / 91 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; Living Codex + Interactive Ontological Tree + Centralized Commodities Schema Registry + Emergent Faction Territory Control + Fittings Presets all DONE.**_
 _**v28 re-audit baseline (2026-05-31): 1,129 Jest tests / 102 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; all previous specs completed with perfect Living Codex coverage.**_
 
-## v32 — Sandbox Security & Self-Healing Telemetry Wave (TO DO) — see [`ROADMAP.md`](ROADMAP.md)
+## v33 — Advanced Guest Isolation, Adaptive Controls & Ontological Visualization Wave (TO DO) — see [`ROADMAP.md`](ROADMAP.md)
+
+- [ ] `127` Inbound Connection Flood Protection & Active IP Sentry (build connection floor sentinel capping concurrent sockets per remote IP address and intercepting raw HTTP upgrades)
+- [ ] `128` Configurable Event-Loop Adaptive Backpressure Sentinel (extend reloader and ResourceLimiter to support dynamically tunable adaptive latency thresholds without worker downtime)
+- [ ] `129` Living Codex Epistemic Debt Cockpit Telemetry Meter (enhance Codex Dashboard with premium golden-amber health panels and real-time SVG circular code documentation rings)
+
+## v32 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 - [x] `124` Automated Telemetry Anomaly Detector & Z-Score Sentry (build statistical rolling-window z-score anomalies monitor tracking active connections and latency metrics, logging warnings on deviations) — **done** (designed pure, modular `src/net/AnomalyDetector.js` polling connections, event-loop latency, and memory allocation rate spikes using Z-scores with rolling window limits, integrating it into the core metrics server flow, exposing metrics via `anomaly_triggers_total` and `anomaly_detector` on `/metrics`, and authoring high-fidelity ESM unit and integration tests in `AnomalyDetector.test.js` and `sandboxTelemetry.integration.test.js`)
 - [x] `125` Zero-Downtime Hot Config Reloading Engine (implement secure disk watcher polling plan/config.json, dynamically parsing and propagating safe rate limit parameters across workers) — **done** (designed modular reloader `src/net/ConfigWatcher.js` using asynchronous non-blocking disk watches on `plan/config.json`, performing structure-safety checks via zero-trust SchemaValidator wrappers, gracefully ignoring syntax/type errors without process terminations, propagating live adjustments to outbound API rate limits, egress firewall subnets, inbound WebSocket rate thresholds, and FactionRegistry standings options dynamically, and writing comprehensive Jest tests in `ConfigWatcher.test.js`)

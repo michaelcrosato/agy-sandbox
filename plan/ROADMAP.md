@@ -277,18 +277,33 @@ The memory leak sentry, cluster dashboard telemetry, and deterministic loop audi
 
 ---
 
-## EXECUTION WAVES (v32)
+## EXECUTION WAVES (v32) — Completed (DONE)
 
 The sandbox security and self-healing telemetry wave:
 
 ### Phase 0 — Statistical Observability — `124`
-- `124` Automated Telemetry Anomaly Detector & Z-Score Sentry (build statistical rolling-window z-score anomalies monitor tracking active connections and latency metrics, logging warnings on deviations).
+- `124` Automated Telemetry Anomaly Detector & Z-Score Sentry (build statistical rolling-window z-score anomalies monitor tracking active connections and latency metrics, logging warnings on deviations) — **done**.
 
 ### Phase 1 — Dynamic Configurations — `125`
-- `125` Zero-Downtime Hot Config Reloading Engine (implement secure disk watcher polling plan/config.json, dynamically parsing and propagating safe rate limit parameters across workers).
+- `125` Zero-Downtime Hot Config Reloading Engine (implement secure disk watcher polling plan/config.json, dynamically parsing and propagating safe rate limit parameters across workers) — **done**.
 
 ### Phase 2 — Defense Visualization — `126`
-- `126` Egress Firewall Rules Cockpit Dashboard Card (draw elegant glassmorphic defense dashboard panel displaying allowlisted domains and neon-red block meters on the Codex HUD).
+- `126` Egress Firewall Rules Cockpit Dashboard Card (draw elegant glassmorphic defense dashboard panel displaying allowlisted domains and neon-red block meters on the Codex HUD) — **done**.
+
+---
+
+## EXECUTION WAVES (v33)
+
+The advanced guest isolation, adaptive controls, and ontological visualization wave:
+
+### Phase 0 — Inbound Connection Sentry — `127`
+- `127` Inbound Connection Flood Protection & Active IP Sentry (build connection floor sentinel capping concurrent sockets per remote IP address and intercepting raw HTTP upgrades).
+
+### Phase 1 — Adaptive Thresholds — `128`
+- `128` Configurable Event-Loop Adaptive Backpressure Sentinel (extend reloader and ResourceLimiter to support dynamically tunable adaptive latency thresholds without worker downtime).
+
+### Phase 2 — Ontological Visualization — `129`
+- `129` Living Codex Epistemic Debt Cockpit Telemetry Meter (enhance Codex Dashboard with premium golden-amber health panels and real-time SVG circular code documentation rings).
 
 ---
 
@@ -298,11 +313,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 124 | Telemetry Anomaly Sentry | 0 | 5 | 5 | 5 | 5 | 20 |
-| 125 | Hot Config Reloading | 1 | 5 | 4 | 5 | 5 | 19 |
-| 126 | Firewall Dashboard Panel | 2 | 4 | 5 | 5 | 5 | 19 |
+| 127 | Connection Flood Sentry | 0 | 5 | 5 | 5 | 5 | 20 |
+| 128 | Adaptive Backpressure | 1 | 5 | 4 | 5 | 5 | 19 |
+| 129 | Epistemic Debt Meter | 2 | 4 | 5 | 5 | 5 | 19 |
 
-**Recommended start:** `124` (Σ20 — Telemetry Anomaly Sentry) immediately.
+**Recommended start:** `127` (Σ20 — Connection Flood Sentry) immediately.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

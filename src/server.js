@@ -16,12 +16,7 @@ import { interestFilter, buildSpatialGrid } from "./net/interest.js";
 import { encode as encodeFrame } from "./net/BinaryCodec.js";
 import { perMessageDeflateOption } from "./net/wsCompression.js";
 import { squadManager } from "./server/SquadManager.js";
-import {
-  matchRoom,
-  JoinQueue,
-  freeSlots,
-  roomMatches,
-} from "./server/matchmaking.js";
+import { JoinQueue, freeSlots, roomMatches } from "./server/matchmaking.js";
 import { JsonFileStore } from "./persistence/Store.js";
 import { PersistenceManager } from "./persistence/PersistenceManager.js";
 import { GalacticChronicle } from "./persistence/GalacticChronicle.js";
@@ -29,7 +24,7 @@ import {
   ApiRateLimiter,
   activateOutboundSentinel,
 } from "./net/ApiRateLimiter.js";
-import { applyGalaxy, applyPlayer } from "./persistence/serializers.js";
+import { applyGalaxy } from "./persistence/serializers.js";
 import { InMemoryPubSub } from "./net/PubSub.js";
 import { isAllowedOrigin } from "./net/originPolicy.js";
 import { selectDeadSockets, DEFAULT_HEARTBEAT_MS } from "./net/heartbeat.js";
@@ -67,6 +62,7 @@ import {
 import { handleSquadAction } from "./server/squadHandlers.js";
 import { handleEscortAction } from "./server/escortHandlers.js";
 import { handleTutorialComplete } from "./server/tutorialHandlers.js";
+import { handleConnectionAction } from "./server/connectionHandlers.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import { COMMODITIES_METADATA, SCHEMAS } from "./net/SchemaRegistry.js";
 import { validateMessage } from "./net/SchemaValidator.js";
@@ -1379,217 +1375,25 @@ wss.on("connection", (ws) => {
 
     const room = clientObj.roomId ? instances.get(clientObj.roomId) : null;
 
-    if (msg.type === "join") {
-      const token = msg.sessionToken;
-
-      if (token && !persistentSessions.has(token)) {
-        // First-touch after a server restart: the in-memory session map is
-        // empty even though the client carries a valid token from before.
-        // Try to revive them from disk; if no save exists, fall through to
-        // the lobby flow below.
-        persistenceManager
-          .loadPlayer(token)
-          .then((wrapped) => {
-            if (!wrapped || !wrapped.player) {
-              sendLobbyList(clientObj, instances);
-              return;
-            }
-            // Use the saved id so the engine entity (and future saves) keep
-            // the same stable identity. `applyPlayer` will also reapply this
-            // but joinRoom builds the ship from `clientObj.id` first.
-            if (typeof wrapped.player.id === "string" && wrapped.player.id) {
-              clientObj.id = wrapped.player.id;
-            }
-            const targetRoomId =
-              wrapped.roomId && instances.has(wrapped.roomId)
-                ? wrapped.roomId
-                : "public";
-            joinRoom(
-              clientObj,
-              targetRoomId,
-              wrapped.player.nickname || clientObj.nickname,
-            );
-            applyPlayer(clientObj, wrapped.player);
-            clientObj.send({
-              type: "notification",
-              message: `Welcome back, Commander ${clientObj.nickname}. State restored from last session.`,
-              style: "success",
-            });
-            clientObj.sendStats();
-          })
-          .catch(() => {
-            // The manager already logged; just route the client to the lobby.
-            sendLobbyList(clientObj, instances);
-          });
-        return;
-      }
-
-      if (token && persistentSessions.has(token)) {
-        const sessionClient = persistentSessions.get(token);
-
-        if (sessionClient.cleanupTimeout) {
-          clearTimeout(sessionClient.cleanupTimeout);
-          sessionClient.cleanupTimeout = null;
-        }
-
-        sessionClient.ws = ws;
-        clients.delete(ws);
-        clients.set(ws, sessionClient);
-
-        const currentRoom =
-          instances.get(sessionClient.roomId) || instances.get("public");
-        sessionClient.roomId = currentRoom.id;
-
-        // Clean up any stale WebSocket mapping for this client in the room to prevent double broadcasts
-        for (const [oldWs, cl] of currentRoom.clients.entries()) {
-          if (cl === sessionClient && oldWs !== ws) {
-            currentRoom.clients.delete(oldWs);
-          }
-        }
-        currentRoom.clients.set(ws, sessionClient);
-        // Reconnecting client needs a full keyframe — their local snapshot/seq
-        // has gone stale across the disconnect.
-        currentRoom.needsKeyframe = true;
-
-        if (sessionClient.ship) {
-          const existing = currentRoom.engine.entities.find(
-            (e) => e.id === sessionClient.id,
-          );
-          if (!existing) {
-            currentRoom.engine.addEntity(sessionClient.ship);
-          }
-        }
-
-        sessionClient.send({
-          type: "init",
-          playerId: sessionClient.id,
-          nickname: sessionClient.nickname,
-          sessionToken: token,
-          roomId: currentRoom.id,
-          roomName: currentRoom.name,
-          tutorialCompleted: !!sessionClient.tutorialCompleted,
-        });
-
-        sessionClient.send({
-          type: "notification",
-          message: `Neural link re-established! Welcome back, Commander ${sessionClient.nickname}.`,
-          style: "success",
-        });
-
-        currentRoom.broadcastNotification(
-          `Commander ${sessionClient.nickname} has re-established neural link!`,
-          "success",
-        );
-        sessionClient.sendStats();
-
-        const bulkMarkets = {};
-        for (const p of currentRoom.planets) {
-          bulkMarkets[p.name] = p.market;
-        }
-        sessionClient.send({
-          type: "market_bulk_sync",
-          markets: bulkMarkets,
-        });
-
-        sessionClient.send({
-          type: "event_sync",
-          event: currentRoom.activeSectorEvent
-            ? {
-                type: currentRoom.activeSectorEvent.type,
-                planetName: currentRoom.activeSectorEvent.planetName,
-              }
-            : null,
-        });
-
-        currentRoom.broadcastRosterUpdate();
-        if (sessionClient.fleetName) {
-          currentRoom.broadcastFleetUpdate(sessionClient.fleetName);
-        }
-      } else {
-        sendLobbyList(clientObj, instances);
-      }
-    } else if (msg.type === "quick_join") {
-      // spec 036: route the client into a room by criteria — join the fullest
-      // matching room with a free slot, create a new one if nothing matches, or
-      // tell the client to wait when every matching room is full.
-      const criteria = {
-        mode: msg.mode,
-        tags: Array.isArray(msg.tags) ? msg.tags : undefined,
-      };
-      const roomsMeta = [];
-      for (const r of instances.values()) roomsMeta.push(r.metadata());
-      const decision = matchRoom(roomsMeta, criteria);
-
-      if (decision.action === "join") {
-        joinRoom(clientObj, decision.roomId, msg.nickname);
-        broadcastLobbySync(instances, clients);
-      } else if (decision.action === "create") {
-        let qRoomId;
-        let qAttempts = 0;
-        do {
-          qRoomId = "room-" + Math.random().toString(36).substring(2, 9);
-          qAttempts++;
-        } while (
-          WORKERS > 1 &&
-          assignShard(qRoomId, WORKERS) !== SHARD_INDEX &&
-          qAttempts < 100
-        );
-        const created = new GameInstance(
-          qRoomId,
-          (msg.name || "Quick Match").trim().substring(0, 20) || "Quick Match",
-        );
-        created.chronicle = galacticChronicle;
-        if (typeof msg.mode === "string") created.mode = msg.mode;
-        if (Number.isFinite(msg.maxPlayers))
-          created.maxPlayers = msg.maxPlayers;
-        if (Array.isArray(msg.tags)) created.tags = msg.tags;
-        instances.set(qRoomId, created);
-        joinRoom(clientObj, qRoomId, msg.nickname);
-        broadcastLobbySync(instances, clients);
-      } else {
-        // Every matching sector is full — the client waits for a freed slot.
-        matchmakingQueue.enqueue({
-          clientObj,
-          criteria,
-          nickname: msg.nickname || clientObj.nickname,
-        });
-
-        clientObj.send({
-          type: "matchmaking_queued",
-          message: "All matching sectors are full. You are in the queue.",
-          criteria,
-        });
-      }
-    } else if (msg.type === "create_room") {
-      const name = (msg.name || "").trim().substring(0, 20);
-      if (!name) {
-        clientObj.send({
-          type: "notification",
-          message: "Invalid Sector Name!",
-          style: "error",
-        });
-        return;
-      }
-      let newRoomId;
-      let attempts = 0;
-      do {
-        newRoomId = "room-" + Math.random().toString(36).substring(2, 9);
-        attempts++;
-      } while (
-        WORKERS > 1 &&
-        assignShard(newRoomId, WORKERS) !== SHARD_INDEX &&
-        attempts < 100
-      );
-      const newRoomInstance = new GameInstance(newRoomId, name);
-      newRoomInstance.chronicle = galacticChronicle;
-      instances.set(newRoomId, newRoomInstance);
-      console.log(`🌌 Created custom sector: [${name}] (${newRoomId})`);
-
-      joinRoom(clientObj, newRoomId, msg.nickname);
-      broadcastLobbySync(instances, clients);
-    } else if (msg.type === "join_room") {
-      joinRoom(clientObj, msg.roomId || "public", msg.nickname);
-      broadcastLobbySync(instances, clients);
+    if (
+      msg.type === "join" ||
+      msg.type === "quick_join" ||
+      msg.type === "create_room" ||
+      msg.type === "join_room"
+    ) {
+      handleConnectionAction(clientObj, msg, ws, {
+        instances,
+        clients,
+        persistentSessions,
+        persistenceManager,
+        galacticChronicle,
+        WORKERS,
+        SHARD_INDEX,
+        matchmakingQueue,
+        joinRoom,
+        sendLobbyList,
+        broadcastLobbySync,
+      });
     } else if (msg.type === "controls") {
       handleControls(clientObj, msg);
     } else if (msg.type === "land") {

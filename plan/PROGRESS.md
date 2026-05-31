@@ -29,7 +29,7 @@ _**v23 re-audit baseline (2026-05-31, ENTIRE v23 blueprint shipped): 1,013 Jest 
 _**v27 re-audit baseline (2026-05-31): 1,122 Jest tests / 101 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; all previous specs completed with perfect Living Codex coverage.**_
 
 - [x] `110` Server.js Handler Extraction Round 5 — Squad, Escort & Tutorial Handlers (extract inline handlers for squad messaging, wingman/escort commands, and tutorial completion from `src/server.js` into tested modules under `src/server/`; reduce server.js LOC further) — **done** (extracted squadHandlers, escortHandlers, and tutorialHandlers into tested modules under `src/server/`, reducing `src/server.js` LOC by 115 lines)
-- [ ] `111` Lobby & Matchmaking Connection Decomposition (extract complex room joining, custom room creation, and matchmaking connection state logic from `src/server.js` into modular connections handler `src/server/connectionHandlers.js`)
+- [x] `111` Lobby & Matchmaking Connection Decomposition (extract complex room joining, custom room creation, and matchmaking connection state logic from `src/server.js` into modular connections handler `src/server/connectionHandlers.js`) — **done** (decoupled join, quick_join, create_room, and join_room message handlers into `src/server/connectionHandlers.js` with a robust 8-test unit suite, reducing `src/server.js` LOC by 196 lines)
 - [ ] `112` Visual Codex Ontology Enhancements & Automated Schema Generator (enhance the neon-cyan Living Codex Dashboard with an interactive command builder that dynamically loads `plan/codex.json` to generate client JS/JSON WebSocket payloads)
 
 ## v26 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)

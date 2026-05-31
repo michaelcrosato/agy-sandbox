@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T04:03:23.925Z",
+  "generatedAt": "2026-05-31T04:05:25.858Z",
   "stats": {
-    "totalSourceFiles": 79,
-    "totalTestFiles": 108,
+    "totalSourceFiles": 80,
+    "totalTestFiles": 109,
     "totalSpecFiles": 118,
-    "totalLoc": 17897,
-    "totalTests": 1503,
+    "totalLoc": 18125,
+    "totalTests": 1515,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -1967,6 +1967,25 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/server/connectionHandlers.js",
+      "loc": 228,
+      "classes": [],
+      "exports": [
+        {
+          "name": "handleConnectionAction",
+          "type": "function",
+          "jsdoc": "/**\n* Handles the \"join\", \"quick_join\", \"create_room\", and \"join_room\" WebSocket messages.\n*\n* @param {object} clientObj - The active client connection object.\n* @param {object} msg - The incoming action message payload.\n* @param {object} ws - The raw WebSocket connection.\n* @param {object} options - Unified singletons and callbacks from server context.\n*/",
+          "line": 14
+        }
+      ],
+      "testFile": "src/server/connectionHandlers.test.js",
+      "testCasesCount": 12,
+      "referencingSpecs": [
+        "plan/specs/111_connection_lifecycle_decomposition.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
       "path": "src/server/escortHandlers.js",
       "loc": 32,
       "classes": [],
@@ -3772,14 +3791,6 @@
   "epistemicDebt": {
     "untestedCoreFiles": [],
     "missingJsDocs": [],
-    "staleSpecReferences": [
-      {
-        "spec": "plan/specs/111_connection_lifecycle_decomposition.md",
-        "brokenFiles": [
-          "src/server/connectionHandlers.js",
-          "src/server/connectionHandlers.test.js"
-        ]
-      }
-    ]
+    "staleSpecReferences": []
   }
 }

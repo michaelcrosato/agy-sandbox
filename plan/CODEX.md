@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T04:03:23.925Z` · Baseline: `17,897 LOC` across `79 source files`
+> Generated: `2026-05-31T04:05:25.858Z` · Baseline: `18,125 LOC` across `80 source files`
 
 ---
 
@@ -9,10 +9,10 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `17,897 LOC` | 🟢 Healthy |
-| **Source Modules** | `79 files` | 🟢 Structured |
-| **Test Suites** | `108 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1503 cases` | 🟢 Deterministic |
+| **Total Code Volume** | `18,125 LOC` | 🟢 Healthy |
+| **Source Modules** | `80 files` | 🟢 Structured |
+| **Test Suites** | `109 test files` | 🟢 Integrated |
+| **Total Test Cases** | `1515 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `118 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `0 files` | 🟢 100% Covered |
 
@@ -115,6 +115,7 @@
 | --- | --- | --- | --- | --- |
 | [actionHandlers.js](file:///C:/dev/agy-sandbox/src/server/actionHandlers.js) | 425 | `function handleTrade`, `function handlePortService`, `function handleJettison`, `function handleWarpJump`, `function handleBoardingAction` | [actionHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/actionHandlers.test.js) | [`103_modularize_server_actions`](file:///C:/dev/agy-sandbox/plan/specs/103_modularize_server_actions.md) |
 | [chatHandler.js](file:///C:/dev/agy-sandbox/src/server/chatHandler.js) | 76 | _None_ | [chatHandler.test.js](file:///C:/dev/agy-sandbox/src/server/chatHandler.test.js) | [`109_server_handler_extraction_round4`](file:///C:/dev/agy-sandbox/plan/specs/109_server_handler_extraction_round4.md) |
+| [connectionHandlers.js](file:///C:/dev/agy-sandbox/src/server/connectionHandlers.js) | 228 | `function handleConnectionAction` | [connectionHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/connectionHandlers.test.js) | [`111_connection_lifecycle_decomposition`](file:///C:/dev/agy-sandbox/plan/specs/111_connection_lifecycle_decomposition.md) |
 | [escortHandlers.js](file:///C:/dev/agy-sandbox/src/server/escortHandlers.js) | 32 | `function handleEscortAction` | [escortHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/escortHandlers.test.js) | [`110_server_handler_extraction_round5`](file:///C:/dev/agy-sandbox/plan/specs/110_server_handler_extraction_round5.md) |
 | [fleetHandlers.js](file:///C:/dev/agy-sandbox/src/server/fleetHandlers.js) | 52 | `function handleFleetAction` | [fleetHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/fleetHandlers.test.js) | [`109_server_handler_extraction_round4`](file:///C:/dev/agy-sandbox/plan/specs/109_server_handler_extraction_round4.md) |
 | [galaxyTicker.js](file:///C:/dev/agy-sandbox/src/server/galaxyTicker.js) | 376 | `function runEconomyTickForRoom`, `function broadcastEventSyncForRoom`, `function runSectorEventTickForRoom`, `function runEconomyNormalizationForRoom`, `function runEconomyShortageInterval`, `function runEnvironmentalSiegeInterval`, `function runEconomyNormalizationInterval`, `function runGalaxyHeartbeatInterval` | [galaxyTicker.test.js](file:///C:/dev/agy-sandbox/src/server/galaxyTicker.test.js) | [`042_server_monolith_extraction_galaxy_ticker`](file:///C:/dev/agy-sandbox/plan/specs/042_server_monolith_extraction_galaxy_ticker.md)<br>[`078_reputation_decay_heartbeat`](file:///C:/dev/agy-sandbox/plan/specs/078_reputation_decay_heartbeat.md) |
@@ -136,8 +137,8 @@
 ### ⚠️ Untested Core Modules (0)
 _None! All core modules have associated test suites._
 
-### ⚠️ Stale Specification File References (1)
-- [ ] Spec [`111_connection_lifecycle_decomposition.md`](file:///C:/dev/agy-sandbox/plan/specs/111_connection_lifecycle_decomposition.md) references missing files: `src/server/connectionHandlers.js`, `src/server/connectionHandlers.test.js`
+### ⚠️ Stale Specification File References (0)
+_None! All specification file references correspond to real paths._
 
 ### ⚠️ Missing JSDoc Type Signatures (0 symbols)
 _None! All exported classes and functions have JSDoc type signatures._

@@ -3,6 +3,11 @@
 This is the machine-readable execution ledger for the autonomous-engineering loop in `agy-sandbox`.
 It records cycle transitions, key milestones, and precise next steps.
 
+## Cycle 27 (Iteration 2) — 2026-05-31
+- **Status:** GREEN
+- **Summary:** Successfully completed SPEC-111 (Lobby & Matchmaking Connection Decomposition). Decoupled and extracted the WebSocket connection lifecycle action handlers (`join`, `quick_join`, `create_room`, `join_room`) from `src/server.js` into `src/server/connectionHandlers.js`. Designed a comprehensive, mocked 8-test unit suite in `src/server/connectionHandlers.test.js` validating persistent session reconnection, background database profile loading, matchmaking queue admission, and custom sector instance sharding. This further reduced the server monolith LOC by 196 lines (from 2102 to 1905 LOC). All 1,129 tests pass green.
+- **Next Action:** Transition to SPEC-112 (Visual Codex Ontology Enhancements & Automated Schema Generator).
+
 ## Cycle 27 (Iteration 1) — 2026-05-31
 - **Status:** GREEN
 - **Summary:** Successfully initiated Cycle 27 and completed SPEC-110 (Server.js Handler Extraction Round 5 — Squad, Escort & Tutorial Handlers) under the role of AutoPrincipalEng. Decoupled and extracted remaining inline WebSocket gameplay handlers from the server monolith (`src/server.js`) into modular, JSDoc-annotated files: `squadHandlers.js` (squad messaging, invitation, join, leave), `escortHandlers.js` (wingmen formation order and escort commands), and `tutorialHandlers.js` (onboarding completion and starter credits award). Created independent unit test suites for each handler module, ensuring 100% green coverage. Successfully reduced server monolith LOC by an additional 115 lines. All 1,122 Jest unit/integration tests and linter checks pass 100% green.

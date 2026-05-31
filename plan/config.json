@@ -1,0 +1,46 @@
+{
+  "apiRateLimit": {
+    "maxPerMinute": 10,
+    "maxPerHour": 200,
+    "allowlistDomains": [
+      "google.com",
+      "api.google.com",
+      "openai.com",
+      "api.openai.com",
+      "localhost",
+      "127.0.0.1"
+    ]
+  },
+  "sandboxFirewall": {
+    "allowlistDomains": [
+      "google.com",
+      "api.google.com",
+      "openai.com",
+      "api.openai.com",
+      "localhost",
+      "127.0.0.1"
+    ]
+  },
+  "wsRateLimit": {
+    "maxPerSecond": 100
+  },
+  "standings": {
+    "hostileThreshold": -30,
+    "friendlyThreshold": 30,
+    "minStanding": -100,
+    "maxStanding": 100,
+    "allyPropagation": 0.5,
+    "enemyPropagation": 0.5,
+    "decayRate": 0.01,
+    "maxPriceSwing": 0.2
+  },
+  "connectionFlood": {
+    "maxConnectionsPerIp": 5
+  },
+  "resourceLimits": {
+    "softMemoryLimit": 536870912,
+    "hardMemoryLimit": 671088640,
+    "softLatencyLimit": 20,
+    "hardLatencyLimit": 100
+  }
+}

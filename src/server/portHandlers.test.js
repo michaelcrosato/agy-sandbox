@@ -1,14 +1,17 @@
 import {
   handleOutfitBuy,
   handleShipBuy,
-  handleMissionAccept,
-  handleMissionAbandon,
   handleEscortCommand,
   handleOutfitSell,
-  handlePresetSave,
-  handlePresetLoad,
+  handleOreRefine,
+  handleDistressBeacon,
 } from "./portHandlers.js";
+import {
+  handleMissionAccept,
+  handleMissionAbandon,
+} from "./spaceportMissionHandlers.js";
 import { DEFAULT_OUTFITS } from "../engine/outfitCatalog.js";
+import { Vector2D } from "../physics/Vector2D.js";
 
 describe("portHandlers.handleOutfitBuy (spec 046)", () => {
   let mockClient;
@@ -92,6 +95,18 @@ describe("portHandlers.handleOutfitBuy (spec 046)", () => {
     expect(mockClient.sentNotifications[0]).toEqual({
       type: "notification",
       message: "Insufficient credits for upgrade!",
+      style: "error",
+    });
+  });
+
+  test("rejects buy if purchase would exceed ship outfit mass limit", () => {
+    mockClient.ship.maxOutfitMass = 500;
+    handleOutfitBuy(mockClient, "Heavy Shields", mockPlanet);
+
+    expect(mockClient.ship.credits).toBe(10000);
+    expect(mockClient.sentNotifications[0]).toEqual({
+      type: "notification",
+      message: "Purchase exceeds ship outfit mass limit (500 kg)!",
       style: "error",
     });
   });
@@ -491,25 +506,53 @@ describe("portHandlers.handleOutfitSell (spec 058)", () => {
   });
 });
 
-describe("portHandlers.handlePresetSave & handlePresetLoad (spec 058)", () => {
+describe("portHandlers.handleOreRefine & Mining Laser Mass (spec 077)", () => {
   let mockClient;
   let mockPlanet;
+  let mockRoom;
 
   beforeEach(() => {
     mockClient = {
+      id: "player-1",
       isLanded: true,
-      presets: [null, null, null],
+      planetLandedOn: null,
       ship: {
-        credits: 10000,
-        outfits: ["Basic Laser", "Heavy Shields"],
-        maxShield: 450,
-        shield: 450,
-        outfitMass: 800,
+        credits: 1000,
+        cargo: { ore: 20, minerals: 0 },
+        cargoCapacity: 100,
+        outfits: [],
+        hullMass: 2000,
+        mass: 2000,
+        outfitMass: 0,
+        turnRate: 4.0,
+        getEffectiveTurnRate() {
+          if (this.mass <= 0) return this.turnRate;
+          return this.turnRate * (this.hullMass / this.mass);
+        },
         addOutfitMass(m) {
           this.outfitMass += m;
+          this.mass = this.hullMass + this.outfitMass;
         },
         removeOutfitMass(m) {
           this.outfitMass = Math.max(0, this.outfitMass - m);
+          this.mass = this.hullMass + this.outfitMass;
+        },
+        getCargoWeight() {
+          return Object.values(this.cargo).reduce((a, b) => a + b, 0);
+        },
+        removeCargo(item, amount) {
+          if (this.cargo[item] >= amount) {
+            this.cargo[item] -= amount;
+            return true;
+          }
+          return false;
+        },
+        addCargo(item, amount) {
+          if (this.getCargoWeight() + amount <= this.cargoCapacity) {
+            this.cargo[item] = (this.cargo[item] || 0) + amount;
+            return true;
+          }
+          return false;
         },
       },
       sentNotifications: [],
@@ -522,81 +565,166 @@ describe("portHandlers.handlePresetSave & handlePresetLoad (spec 058)", () => {
     };
 
     mockPlanet = {
+      name: "Valerie Prime",
       faction: "Federation",
-      outfitter: [
-        {
-          name: "Heavy Shields",
-          cost: 1200,
-          type: "shield",
-          value: 350,
-          mass: 800,
+      services: { refinery: true },
+    };
+    mockClient.planetLandedOn = mockPlanet;
+
+    mockRoom = {
+      factionRegistry: {
+        priceModifier: () => 1.0, // neutral tax
+        getStanding: () => 0, // neutral standing
+      },
+      engine: {
+        factionRegistry: null,
+      },
+    };
+    mockRoom.engine.factionRegistry = mockRoom.factionRegistry;
+  });
+
+  test("handleOreRefine successfully refines ore to minerals", () => {
+    handleOreRefine(mockClient, 20, "minerals", mockRoom);
+
+    expect(mockClient.ship.cargo.ore).toBe(0);
+    expect(mockClient.ship.cargo.minerals).toBe(10);
+    expect(mockClient.ship.credits).toBe(800); // 20 * 10 fee
+    expect(mockClient.sentNotifications[0].message).toContain(
+      "Refined 20 units of raw ore into 10 units of minerals",
+    );
+  });
+
+  test("handleOreRefine applies faction standings transaction tax / discount", () => {
+    // 20% discount on standing (discount rate 0.8)
+    mockRoom.factionRegistry.priceModifier = () => 0.8;
+
+    handleOreRefine(mockClient, 20, "minerals", mockRoom);
+
+    expect(mockClient.ship.credits).toBe(840); // 20 * 10 * 0.8 = 160 fee. 1000 - 160 = 840.
+  });
+
+  test("Mining Laser outfit mass impacts starship agility calculations dynamically", () => {
+    // Mining Laser has mass: 250
+    const miningLaser = DEFAULT_OUTFITS.find(
+      (o) => o.name === "Mining Laser",
+    ) || {
+      name: "Mining Laser",
+      cost: 2400,
+      type: "miner",
+      value: 1,
+      mass: 250,
+    };
+
+    // Initially, effective turn rate is 4.0
+    expect(mockClient.ship.getEffectiveTurnRate()).toBe(4.0);
+
+    // Equip Mining Laser
+    mockClient.ship.outfits.push("Mining Laser");
+    mockClient.ship.addOutfitMass(miningLaser.mass);
+
+    // Total mass becomes 2000 + 250 = 2250
+    expect(mockClient.ship.mass).toBe(2250);
+    // Agility (effective turn rate) should decrease: 4.0 * (2000 / 2250) = 3.555...
+    expect(mockClient.ship.getEffectiveTurnRate()).toBeLessThan(4.0);
+    expect(mockClient.ship.getEffectiveTurnRate()).toBeCloseTo(3.55555, 4);
+  });
+});
+
+describe("portHandlers.handleDistressBeacon (spec 084)", () => {
+  let mockClient;
+  let mockRoom;
+
+  beforeEach(() => {
+    mockClient = {
+      id: "cmdr-test",
+      nickname: "TestCmdr",
+      ship: {
+        id: "cmdr-test",
+        outfits: [],
+        position: new Vector2D(100, 100),
+      },
+      sentNotifications: [],
+      send(data) {
+        if (data.type === "notification") {
+          this.sentNotifications.push(data);
+        }
+      },
+      sendStats() {},
+    };
+
+    mockRoom = {
+      name: "Sol Prime",
+      planets: [{ name: "Sol", faction: "Federation" }],
+      factionRegistry: {
+        getStanding(_playerId, _faction) {
+          return 50; // friendly standing by default
         },
-        {
-          name: "Plasma Cannon",
-          cost: 1800,
-          type: "weapon",
-          value: 25,
-          mass: 300,
+        factionPolicy() {
+          return null;
         },
-      ],
+        standingPolicy() {
+          return null;
+        },
+      },
+      engine: {
+        entities: [],
+        addEntity(e) {
+          this.entities.push(e);
+        },
+      },
+      ais: [],
     };
   });
 
-  test("saves presets successfully", () => {
-    handlePresetSave(mockClient, 0);
+  test("rejects if distress beacon is not equipped", () => {
+    handleDistressBeacon(mockClient, mockRoom);
 
-    expect(mockClient.presets[0]).toEqual(["Basic Laser", "Heavy Shields"]);
-    expect(mockClient.sentNotifications[0].message).toContain(
-      "Saved Loadout Preset 1!",
-    );
+    expect(mockClient.sentNotifications[0]).toEqual({
+      type: "notification",
+      message: "No Emergency Distress Beacon installed!",
+      style: "error",
+    });
+    expect(mockRoom.engine.entities.length).toBe(0);
   });
 
-  test("loads presets successfully with net credit transactions", () => {
-    // Save current preset
-    mockClient.presets[0] = ["Basic Laser", "Plasma Cannon"];
+  test("successfully summons allied refuel tanker when standing is friendly/neutral", () => {
+    mockClient.ship.outfits.push("Emergency Distress Beacon");
 
-    // Current: ["Basic Laser", "Heavy Shields"]
-    // Target: ["Basic Laser", "Plasma Cannon"]
-    // Sell: Heavy Shields. Cost: 1200. Refund: 1080.
-    // Buy: Plasma Cannon. Cost: 1800.
-    // Net credit change: 1080 - 1800 = -720. Credits: 10000 - 720 = 9280.
-    handlePresetLoad(mockClient, 0, mockPlanet);
+    handleDistressBeacon(mockClient, mockRoom);
 
-    expect(mockClient.ship.outfits).toEqual(["Basic Laser", "Plasma Cannon"]);
-    expect(mockClient.ship.credits).toBe(9280);
     expect(mockClient.sentNotifications[0].message).toContain(
-      "Loaded Preset 1! Net Transaction: -720 CR",
+      "scrambled to your coordinates",
     );
+    expect(mockClient.sentNotifications[0].style).toBe("success");
+    expect(mockRoom.engine.entities.length).toBe(1);
+
+    const spawnedTanker = mockRoom.engine.entities[0];
+    expect(spawnedTanker.name).toBe("Federation Refuel Tanker");
+    expect(mockRoom.ais.length).toBe(1);
+
+    const tankerAi = mockRoom.ais[0];
+    expect(tankerAi.isRefuelTanker).toBe(true);
+    expect(tankerAi.refuelTargetId).toBe("cmdr-test");
+    expect(tankerAi.destination).toEqual({ x: 100, y: 100 });
   });
 
-  test("rejects preset load if index is invalid or preset not saved", () => {
-    handlePresetLoad(mockClient, 1, mockPlanet);
+  test("successfully summons pirate raider when standing is hostile", () => {
+    mockClient.ship.outfits.push("Emergency Distress Beacon");
+    mockRoom.factionRegistry.getStanding = () => -50; // hostile standing!
+
+    handleDistressBeacon(mockClient, mockRoom);
+
     expect(mockClient.sentNotifications[0].message).toContain(
-      "No preset saved in slot 2!",
+      "Hostile Rim Pirate Raider incoming!",
     );
-  });
+    expect(mockClient.sentNotifications[0].style).toBe("error");
+    expect(mockRoom.engine.entities.length).toBe(1);
 
-  test("rejects preset load if credits are insufficient", () => {
-    mockClient.presets[0] = ["Basic Laser", "Plasma Cannon"];
-    mockClient.ship.credits = 100; // not enough for net -720 CR
+    const spawnedPirate = mockRoom.engine.entities[0];
+    expect(spawnedPirate.name).toBe("Rim Pirate Raider");
+    expect(mockRoom.ais.length).toBe(1);
 
-    handlePresetLoad(mockClient, 0, mockPlanet);
-    expect(mockClient.ship.outfits).toEqual(["Basic Laser", "Heavy Shields"]); // unchanged
-    expect(mockClient.sentNotifications[0].message).toContain(
-      "Insufficient credits to load preset!",
-    );
-  });
-
-  test("rejects preset load if slot limits are exceeded in target preset", () => {
-    mockClient.presets[0] = [
-      "Basic Laser",
-      "Heavy Shields",
-      "Aegis Shield Matrix",
-    ]; // 2 shields (exceeds cap 1)
-
-    handlePresetLoad(mockClient, 0, mockPlanet);
-    expect(mockClient.sentNotifications[0].message).toContain(
-      "Preset exceeds Shield slot cap",
-    );
+    const pirateAi = mockRoom.ais[0];
+    expect(pirateAi.target).toBe(mockClient.ship);
   });
 });

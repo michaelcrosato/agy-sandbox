@@ -1,3 +1,5 @@
+import { COMMODITIES } from "../net/SchemaRegistry.js";
+
 /**
  * Bridges the background space physics engine variables with the HTML HUD dashboard elements.
  */
@@ -70,6 +72,21 @@ export class UIController {
     // Squad / Co-op Party Management Panel (SPEC-059)
     this.squadPanel = document.getElementById("squad-panel");
     this.squadMembersList = document.getElementById("squad-members-list");
+
+    // Wingman Telemetry Panel (SPEC-079)
+    this.wingmanPanel = document.getElementById("wingman-panel");
+    this.wingmanList = document.getElementById("wingman-list");
+
+    // Trade Route Advisor Panel (SPEC-082)
+    this.tradeAdvisorPanel = document.getElementById("trade-advisor-panel");
+    this.tradeRoutesList = document.getElementById("trade-routes-list");
+
+    // NAV-Computer Slide-Out Panel (SPEC-088)
+    this.navComputerPanel = document.getElementById("nav-computer-panel");
+    this.navComputerDest = document.getElementById("nav-computer-dest");
+    this.navComputerStatus = document.getElementById("nav-computer-status");
+    this.navComputerProgress = document.getElementById("nav-computer-progress");
+    this.navComputerRoute = document.getElementById("nav-computer-route");
   }
 
   /**
@@ -139,6 +156,8 @@ export class UIController {
    * @param {Array} [nebulae] - Nebula hazards active.
    * @param {Array} [entities] - Active physics engine entities for proximity checks.
    * @param {Array} [activeMissions] - Active missions list for bounty tracking.
+   * @param {string} [navTargetSector] - Target sector name.
+   * @param {Array} [navRoute] - Remaining jump path.
    */
   update(
     player,
@@ -147,6 +166,8 @@ export class UIController {
     nebulae = [],
     entities = [],
     activeMissions = [],
+    navTargetSector = null,
+    navRoute = [],
   ) {
     if (!player) return;
 
@@ -428,6 +449,371 @@ export class UIController {
             this.squadMembersList.appendChild(memberCard);
           }
         }
+      }
+    }
+
+    // 8. Update Wingman Telemetry HUD (SPEC-079)
+    if (this.wingmanPanel) {
+      // Find active wingmen (role is "escort" and flagshipId matches player.id)
+      const wingmen = entities.filter(
+        (ent) =>
+          ent &&
+          !ent.isDestroyed &&
+          (ent.role === "escort" ||
+            (ent.type === "ship" && ent.role === "escort")) &&
+          (ent.flagshipId === player.id || ent["flagshipId"] === player.id),
+      );
+
+      if (wingmen.length === 0) {
+        this.wingmanPanel.style.display = "none";
+      } else {
+        this.wingmanPanel.style.display = "block";
+        if (this.wingmanList) {
+          this.wingmanList.innerHTML = "";
+          for (const wm of wingmen) {
+            const card = document.createElement("div");
+            card.className = "fleet-member-card wingman-card";
+
+            const shieldRatio = Math.max(
+              0,
+              Math.min(100, ((wm.shield || 0) / (wm.maxShield || 1)) * 100),
+            );
+            const armorRatio = Math.max(
+              0,
+              Math.min(100, ((wm.armor || 0) / (wm.maxArmor || 1)) * 100),
+            );
+
+            // Get target information
+            let targetText = "NO TARGET";
+            if (wm.target) {
+              targetText = `TARGET: ${wm.target.name || wm.target.type || "UNKNOWN"}`;
+            } else if (wm.targetId) {
+              const locked = entities.find((e) => e.id === wm.targetId);
+              targetText = locked
+                ? `TARGET: ${locked.name || locked.type || "UNKNOWN"}`
+                : `TARGET: [ID ${wm.targetId}]`;
+            }
+
+            card.innerHTML = `
+              <div class="fleet-member-header">
+                <span class="fleet-member-name" style="color: var(--color-gold); text-shadow: 0 0 4px rgba(212, 175, 55, 0.4);">${wm.name || "Wingman Escort"}</span>
+                <span class="fleet-member-status" style="font-size: 8px; color: #a0a5b5;">ACTIVE ESCORT</span>
+              </div>
+              <div class="fleet-bars-container">
+                <div class="fleet-bar-row">
+                  <span class="fleet-bar-label">SHIELD</span>
+                  <div class="fleet-mini-bar">
+                    <div class="fleet-mini-bar-fill" style="width: ${shieldRatio}%; background: #00f2fe; box-shadow: 0 0 4px #00f2fe;"></div>
+                  </div>
+                </div>
+                <div class="fleet-bar-row">
+                  <span class="fleet-bar-label">ARMOR</span>
+                  <div class="fleet-mini-bar">
+                    <div class="fleet-mini-bar-fill" style="width: ${armorRatio}%; background: #ff3b30;"></div>
+                  </div>
+                </div>
+                <div class="wingman-target" style="font-size: 8px; color: var(--color-gold); margin-top: 2px; font-family: var(--font-display); text-transform: uppercase;">
+                  ${targetText}
+                </div>
+              </div>
+            `;
+            this.wingmanList.appendChild(card);
+          }
+        }
+      }
+    }
+
+    // 9. Update Trade Advisor HUD (SPEC-082)
+    if (this.tradeAdvisorPanel && this.tradeRoutesList) {
+      if (!planets || planets.length < 2) {
+        this.tradeRoutesList.innerHTML = `
+          <div style="color: rgba(255, 255, 255, 0.5); font-style: italic; font-size: 0.9em; text-align: center; padding: 4px 0;">No sector planets available</div>
+        `;
+      } else {
+        const getStanding = (faction) => {
+          if (!faction || !player.standings) return 0;
+          return player.standings[faction] || 0;
+        };
+
+        const getTaxRate = (faction) => {
+          if (!faction || faction === "Independents") return 0.0;
+          const standing = getStanding(faction);
+          if (standing >= 50) return 0.0;
+          if (standing <= -16) return 0.15;
+          return 0.05;
+        };
+
+        const getFactionPrice = (basePrice, faction, mode) => {
+          if (!faction || faction === "Independents") return basePrice;
+          const standing = getStanding(faction);
+          const t = Math.max(-1, Math.min(1, standing / 100));
+          const modifier = mode === "sell" ? 1 + t * 0.2 : 1 - t * 0.2;
+          return Math.max(1, Math.round(basePrice * modifier));
+        };
+
+        const routes = [];
+        const commodities = COMMODITIES;
+
+        for (let i = 0; i < planets.length; i++) {
+          const pA = planets[i];
+          for (let j = 0; j < planets.length; j++) {
+            if (i === j) continue;
+            const pB = planets[j];
+
+            for (const commodity of commodities) {
+              let baseBuyPrice = pA.market[commodity];
+              let baseSellPrice = pB.market[commodity];
+              if (baseBuyPrice === undefined || baseSellPrice === undefined)
+                continue;
+
+              // Black market premium for contraband
+              if (
+                commodity === "contraband" &&
+                pB.services &&
+                pB.services.blackMarket
+              ) {
+                baseSellPrice = Math.round(baseSellPrice * 1.5);
+              }
+
+              const buyPrice = getFactionPrice(baseBuyPrice, pA.faction, "buy");
+              const sellPrice = getFactionPrice(
+                baseSellPrice,
+                pB.faction,
+                "sell",
+              );
+              const taxRate = getTaxRate(pB.faction);
+              const netSellPrice = Math.max(
+                1,
+                Math.round(sellPrice * (1 - taxRate)),
+              );
+
+              const netProfit = netSellPrice - buyPrice;
+              if (netProfit > 0) {
+                routes.push({
+                  commodity,
+                  origin: pA.name,
+                  destination: pB.name,
+                  buyPrice,
+                  sellPrice: netSellPrice,
+                  netProfit,
+                });
+              }
+            }
+          }
+        }
+
+        routes.sort((a, b) => b.netProfit - a.netProfit);
+        const topRoutes = routes.slice(0, 3);
+
+        if (topRoutes.length === 0) {
+          this.tradeRoutesList.innerHTML = `
+            <div style="color: rgba(255, 255, 255, 0.5); font-style: italic; font-size: 0.9em; text-align: center; padding: 4px 0;">No profitable routes in sector</div>
+          `;
+        } else {
+          this.tradeRoutesList.innerHTML = "";
+          for (const route of topRoutes) {
+            const row = document.createElement("div");
+            row.style.background = "rgba(212, 175, 55, 0.05)";
+            row.style.border = "1px solid rgba(212, 175, 55, 0.2)";
+            row.style.borderRadius = "4px";
+            row.style.padding = "6px 8px";
+            row.style.display = "flex";
+            row.style.flexDirection = "column";
+            row.style.gap = "2px";
+
+            row.innerHTML = `
+              <div style="display: flex; justify-content: space-between; font-weight: bold; color: #ffffff;">
+                <span class="capitalize" style="color: var(--color-gold);">${route.commodity}</span>
+                <span style="color: var(--color-green);">+${route.netProfit} CR/t</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: rgba(255,255,255,0.7);">
+                <span>${route.origin} (${route.buyPrice} CR)</span>
+                <span>▶</span>
+                <span>${route.destination} (${route.sellPrice} CR)</span>
+              </div>
+            `;
+            this.tradeRoutesList.appendChild(row);
+          }
+        }
+      }
+    }
+
+    // 10. Update NAV-computer Slide-out Panel (SPEC-088)
+    if (this.navComputerPanel) {
+      const targetSector = navTargetSector || this.navTargetSector;
+      const route = navRoute || this.navRoute || [];
+
+      if (targetSector) {
+        this.navComputerPanel.classList.remove("hidden");
+        if (this.navComputerDest) {
+          this.navComputerDest.innerText = targetSector.toUpperCase();
+        }
+
+        let statusText = "EN ROUTE";
+        let progressPct;
+
+        if (route.length === 0) {
+          statusText = "ARRIVED";
+          progressPct = 100;
+        } else {
+          const totalJumps = 2; // Maximum hops in sector layout
+          const completed = Math.max(0, totalJumps - route.length);
+          progressPct = Math.round((completed / totalJumps) * 100);
+        }
+
+        if (this.navComputerStatus) {
+          this.navComputerStatus.innerText = statusText;
+          if (statusText === "ARRIVED") {
+            this.navComputerStatus.style.color = "var(--color-green)";
+          } else {
+            this.navComputerStatus.style.color = "#ffb300";
+          }
+        }
+
+        if (this.navComputerProgress) {
+          this.navComputerProgress.style.width = `${progressPct}%`;
+        }
+
+        if (this.navComputerRoute) {
+          if (route.length === 0) {
+            this.navComputerRoute.innerHTML = `
+              <div style="color: var(--color-green); font-weight: bold; text-align: center;">DESTINATION ARRIVED!</div>
+            `;
+          } else {
+            const getSectorFromPosition = (pos) => {
+              if (!pos) return "core";
+              if (pos.x > 10000 && pos.y > 10000) return "frontier";
+              if (pos.x < -10000 && pos.y < -10000) return "rim";
+              return "core";
+            };
+            const currentSectorName = getSectorFromPosition(player.position);
+            let pathHtml = `<span style="color: #ffb300;">[${currentSectorName.toUpperCase()}]</span>`;
+            for (let i = 0; i < route.length; i++) {
+              pathHtml += ` ➔ <span style="color: #ffffff;">${route[i].toUpperCase()}</span>`;
+            }
+            this.navComputerRoute.innerHTML = `
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <div style="font-weight: bold; margin-bottom: 2px;">PATH PLOTTED:</div>
+                <div style="font-size: 10px; line-height: 1.5;">${pathHtml}</div>
+                <div style="font-size: 8px; color: rgba(255, 179, 0, 0.6); margin-top: 4px; font-style: italic;">
+                  Immediate Jump: TO ${route[0].toUpperCase()}
+                </div>
+              </div>
+            `;
+          }
+        }
+      } else {
+        this.navComputerPanel.classList.add("hidden");
+      }
+    }
+
+    // Update Territory Control HUD Card
+    this.updateTerritoryControl(player);
+  }
+
+  /**
+   * Refreshes the territory control overlay and HUD panel cards (SPEC-098).
+   * @param {Ship} player
+   */
+  updateTerritoryControl(player) {
+    if (!this.territoryControlPanel) {
+      // Lazy load elements if they aren't bound in the constructor
+      this.territoryControlPanel = document.getElementById(
+        "territory-control-panel",
+      );
+      this.currentSectorOwner = document.getElementById("current-sector-owner");
+      this.currentSectorSecurity = document.getElementById(
+        "current-sector-security",
+      );
+      this.currentSectorTax = document.getElementById("current-sector-tax");
+      this.influenceBars = document.getElementById("influence-bars");
+    }
+
+    if (!this.territoryControlPanel) return;
+
+    // Determine current sector from player position
+    const getSectorFromPosition = (pos) => {
+      if (!pos) return "core";
+      if (pos.x > 10000 && pos.y > 10000) return "frontier";
+      if (pos.x < -10000 && pos.y < -10000) return "rim";
+      return "core";
+    };
+
+    const currentSector = getSectorFromPosition(player.position);
+
+    // Retrieve sector control data from NetworkHandler / window
+    const sectors = window.networkHandler
+      ? window.networkHandler.sectors
+      : null;
+    if (!sectors || !sectors[currentSector]) {
+      this.territoryControlPanel.style.display = "none";
+      return;
+    }
+
+    this.territoryControlPanel.style.display = "block";
+    const sectorData = sectors[currentSector];
+    const owner = sectorData.controllingFaction;
+
+    // Get security, tax based on owner
+    let security = "medium";
+    let taxRate = "8%";
+    let factionColor = "var(--color-gold)"; // Default Frontier League
+
+    if (owner === "Federation") {
+      security = "HIGH";
+      taxRate = "12%";
+      factionColor = "var(--color-cyan)";
+    } else if (owner === "Frontier League") {
+      security = "MEDIUM";
+      taxRate = "8%";
+      factionColor = "var(--color-gold)";
+    } else if (owner === "Pirates") {
+      security = "LAWLESS";
+      taxRate = "20%";
+      factionColor = "#ff3b30"; // Red
+    } else if (owner === "Independents") {
+      security = "LOW";
+      taxRate = "5%";
+      factionColor = "#a0a5b5"; // Muted Gray
+    }
+
+    if (this.currentSectorOwner) {
+      this.currentSectorOwner.innerText = owner.toUpperCase();
+      this.currentSectorOwner.style.color = factionColor;
+    }
+    if (this.currentSectorSecurity) {
+      this.currentSectorSecurity.innerText = security;
+      this.currentSectorSecurity.style.color = factionColor;
+    }
+    if (this.currentSectorTax) {
+      this.currentSectorTax.innerText = taxRate;
+      this.currentSectorTax.style.color = factionColor;
+    }
+
+    if (this.influenceBars) {
+      this.influenceBars.innerHTML = "";
+      for (const [faction, score] of Object.entries(sectorData.influence)) {
+        let fColor = "#a0a5b5";
+        if (faction === "Federation") fColor = "var(--color-cyan)";
+        else if (faction === "Frontier League") fColor = "var(--color-gold)";
+        else if (faction === "Pirates") fColor = "#ff3b30";
+
+        const row = document.createElement("div");
+        row.style.display = "flex";
+        row.style.flexDirection = "column";
+        row.style.gap = "2px";
+        row.style.fontSize = "0.75em";
+
+        row.innerHTML = `
+          <div style="display: flex; justify-content: space-between; color: rgba(255,255,255,0.7);">
+            <span>${faction.toUpperCase()}</span>
+            <span>${Math.round(score)}%</span>
+          </div>
+          <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+            <div style="width: ${score}%; height: 100%; background: ${fColor}; box-shadow: 0 0 4px ${fColor}; transition: width 0.3s ease-out;"></div>
+          </div>
+        `;
+        this.influenceBars.appendChild(row);
       }
     }
   }

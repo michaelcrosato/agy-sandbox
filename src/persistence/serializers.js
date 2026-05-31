@@ -86,6 +86,7 @@ export function serializeGalaxy(gameInstance) {
     ? gameInstance.planets.map((planet) => ({
         name: planet.name,
         market: planet.market ? { ...planet.market } : {},
+        faction: planet.faction || "Independents",
       }))
     : [];
 
@@ -114,6 +115,12 @@ export function serializeGalaxy(gameInstance) {
       ? gameInstance.factionRegistry.serialize()
       : null;
 
+  const territoryControl =
+    gameInstance.territoryControl &&
+    typeof gameInstance.territoryControl.save === "function"
+      ? gameInstance.territoryControl.save()
+      : null;
+
   return {
     version: SNAPSHOT_VERSION,
     planets,
@@ -122,6 +129,7 @@ export function serializeGalaxy(gameInstance) {
     activeSectorEvent,
     heartbeatPulses,
     factionRegistry,
+    territoryControl,
   };
 }
 
@@ -148,6 +156,9 @@ export function applyGalaxy(gameInstance, data) {
       if (!planet) continue;
       if (snapshot.market && typeof snapshot.market === "object") {
         planet.market = { ...snapshot.market };
+      }
+      if (snapshot.faction && typeof snapshot.faction === "string") {
+        planet.faction = snapshot.faction;
       }
     }
   }
@@ -188,6 +199,10 @@ export function applyGalaxy(gameInstance, data) {
         data.factionRegistry,
       );
     }
+  }
+
+  if (data.territoryControl && gameInstance.territoryControl) {
+    gameInstance.territoryControl.load(data.territoryControl);
   }
 }
 
@@ -244,6 +259,7 @@ export function serializePlayer(clientObj) {
     presets: Array.isArray(clientObj.presets) ? [...clientObj.presets] : [],
     ship: shipSnapshot,
     missions: missionSnapshot,
+    tutorialCompleted: !!clientObj.tutorialCompleted,
   };
 }
 
@@ -265,6 +281,10 @@ export function applyPlayer(clientObj, data) {
   if (typeof data.id === "string" && data.id) {
     clientObj.id = data.id;
   }
+  if (data.tutorialCompleted !== undefined) {
+    clientObj.tutorialCompleted = !!data.tutorialCompleted;
+  }
+
   if (Array.isArray(data.presets)) {
     clientObj.presets = [...data.presets];
   } else {

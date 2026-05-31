@@ -1,6 +1,7 @@
 import {
   runEconomyTickForRoom,
   runEconomyNormalizationForRoom,
+  runGalaxyHeartbeatInterval,
 } from "./galaxyTicker.js";
 
 describe("galaxyTicker module (Spec-042)", () => {
@@ -66,5 +67,68 @@ describe("galaxyTicker module (Spec-042)", () => {
 
     runEconomyNormalizationForRoom(mockRoom);
     expect(broadcastCount).toBe(1);
+  });
+
+  it("runGalaxyHeartbeatInterval periodic ticker decays active player standing toward zero", () => {
+    let decayCalled = false;
+    const mockRoom = {
+      planets: [],
+      galaxyHeartbeat: {
+        pulse() {
+          return [];
+        },
+      },
+      decayReputations() {
+        decayCalled = true;
+      },
+      broadcast() {},
+    };
+
+    const instances = new Map([["room-1", mockRoom]]);
+    runGalaxyHeartbeatInterval(instances);
+
+    expect(decayCalled).toBe(true);
+  });
+
+  it("runGalaxyHeartbeatInterval records standings decay changes in the GalacticChronicle", () => {
+    let decayCalled = false;
+    let chronicleEventRecorded = null;
+
+    const mockRoom = {
+      id: "room-1",
+      planets: [],
+      clients: new Map([["ws-p1", { id: "p1", nickname: "CommanderValeria" }]]),
+      galaxyHeartbeat: {
+        pulse() {
+          return [];
+        },
+      },
+      decayReputations() {
+        decayCalled = true;
+        return {
+          p1: {
+            "Rim Cartel": 12.5,
+          },
+        };
+      },
+      chronicle: {
+        recordEvent(event) {
+          chronicleEventRecorded = event;
+        },
+      },
+      broadcast() {},
+    };
+
+    const instances = new Map([["room-1", mockRoom]]);
+    runGalaxyHeartbeatInterval(instances);
+
+    expect(decayCalled).toBe(true);
+    expect(chronicleEventRecorded).toBeDefined();
+    expect(chronicleEventRecorded.category).toBe("system");
+    expect(chronicleEventRecorded.title).toBe(
+      "Standing Decay: CommanderValeria",
+    );
+    expect(chronicleEventRecorded.description).toContain("Rim Cartel");
+    expect(chronicleEventRecorded.description).toContain("12.5");
   });
 });

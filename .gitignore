@@ -44,3 +44,10 @@ night-queue/
 data/
 # Test-only persistence scratch dirs (RedisStore/multinode/restart integration)
 data-test-*/
+
+# Vitest browser visual testing attachments
+.vitest-attachments/
+
+# Persistent security audit json ledger and transient sandbox worktrees
+plan/security_audit.json
+.sandbox-worktrees-test/

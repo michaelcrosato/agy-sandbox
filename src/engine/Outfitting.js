@@ -72,6 +72,9 @@ export function applyOutfitStats(ship, outfit) {
     case "interdictor":
       // No direct ship stats to mutate, but recognized as a valid outfit type so mass is added
       break;
+    case "utility":
+      // No direct ship stats to mutate, but recognized as a valid outfit type so mass is added
+      break;
     default:
       applied = false;
   }
@@ -147,6 +150,8 @@ export function removeOutfitStats(ship, outfit) {
       break;
     case "interdictor":
       break;
+    case "utility":
+      break;
     default:
       applied = false;
   }
@@ -170,7 +175,8 @@ export function getOutfitCategory(type) {
     type === "tractor" ||
     type === "jammer" ||
     type === "radar" ||
-    type === "interdictor"
+    type === "interdictor" ||
+    type === "utility"
   ) {
     return "utility";
   }

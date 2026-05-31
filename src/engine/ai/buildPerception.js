@@ -204,6 +204,9 @@ export function defaultTradeProfit(ent, self, opts = {}) {
   );
   if (otherPlanets.length === 0) return 0.6;
 
+  const registry = opts.factionRegistry;
+  const shipId = self.id || "ship";
+
   const commodities = [
     "food",
     "electronics",
@@ -216,14 +219,64 @@ export function defaultTradeProfit(ent, self, opts = {}) {
   let maxSpread = 0;
 
   for (const item of commodities) {
-    const priceHere = ent.market[item];
-    if (typeof priceHere !== "number") continue;
+    const baseBuyPrice = ent.market[item];
+    if (typeof baseBuyPrice !== "number") continue;
+
+    // Apply standings price modifier on buy if registry is present
+    let buyPrice = baseBuyPrice;
+    if (
+      registry &&
+      ent.faction &&
+      typeof registry.priceModifier === "function"
+    ) {
+      const modifier = registry.priceModifier(shipId, ent.faction, "buy");
+      buyPrice = Math.max(1, Math.round(baseBuyPrice * modifier));
+    }
 
     for (const other of otherPlanets) {
-      const priceThere = other.market[item];
-      if (typeof priceThere !== "number") continue;
+      const baseSellPrice = other.market[item];
+      if (typeof baseSellPrice !== "number") continue;
 
-      const diff = Math.abs(priceHere - priceThere);
+      // Contraband 1.5x premium at black markets
+      let priceThere = baseSellPrice;
+      if (
+        item === "contraband" &&
+        other.services &&
+        other.services.blackMarket
+      ) {
+        priceThere = Math.round(baseSellPrice * 1.5);
+      }
+
+      // Apply standings price modifier on sell if registry is present
+      let sellPrice = priceThere;
+      if (
+        registry &&
+        other.faction &&
+        typeof registry.priceModifier === "function"
+      ) {
+        const modifier = registry.priceModifier(shipId, other.faction, "sell");
+        sellPrice = Math.max(1, Math.round(priceThere * modifier));
+      }
+
+      // Apply transaction tax rate deduction if registry is present
+      if (
+        registry &&
+        other.faction &&
+        typeof registry.getStanding === "function"
+      ) {
+        const standing = registry.getStanding(shipId, other.faction);
+        let taxRate = 0.05; // default neutral tax
+        if (other.faction === "Independents") {
+          taxRate = 0.0;
+        } else if (standing >= 50) {
+          taxRate = 0.0;
+        } else if (standing <= -16) {
+          taxRate = 0.15;
+        }
+        sellPrice = Math.max(1, Math.round(sellPrice * (1 - taxRate)));
+      }
+
+      const diff = sellPrice - buyPrice;
       if (diff > maxSpread) {
         maxSpread = diff;
       }
@@ -249,6 +302,40 @@ export const DEFAULT_PERCEPTION_OPTIONS = Object.freeze({
 });
 
 /**
+ * Helper to determine if a ship is targeted by security guards in its vicinity.
+ * @param {Object} ship - The perceiving ship.
+ * @param {Array<Object>} entities - All sector entities.
+ * @returns {boolean} True if a guard within 600 units is targeting/scanning the ship.
+ */
+export function isTargetedBySecurity(ship, entities) {
+  if (!ship || !ship.isSmuggler) return false;
+  if (!Array.isArray(entities)) return false;
+  for (const ent of entities) {
+    if (
+      ent &&
+      ent.type === "ship" &&
+      !ent.isDestroyed &&
+      ent.role === "guard"
+    ) {
+      if (ship.position && ent.position) {
+        const dist = ship.position.distance(ent.position);
+        if (dist <= 600) {
+          const isTargeting =
+            ent.target === ship ||
+            ent.targetId === ship.id ||
+            (ent.ship &&
+              (ent.ship.target === ship || ent.ship.targetId === ship.id));
+          if (isTargeting) {
+            return true;
+          }
+        }
+      }
+    }
+  }
+  return false;
+}
+
+/**
  * Builds a `UtilityAI` perception snapshot from live engine state.
  *
  * Scans `entities` once, keeping only those within `sensorRange` of `ship`, and
@@ -261,7 +348,8 @@ export const DEFAULT_PERCEPTION_OPTIONS = Object.freeze({
  * @param {Array<Object>} entities - Live entity list (ships, planets, …).
  * @param {Object} [options] - Overrides merged over `DEFAULT_PERCEPTION_OPTIONS`.
  * @returns {{self:Object, threats:Array<Object>,
- *   opportunities:{prey:Array<Object>, trades:Array<Object>}}}
+ *   opportunities:{prey:Array<Object>, trades:Array<Object>},
+ *   isTargetedBySecurity:boolean}}
  */
 export function buildPerception(ship, entities, options = {}) {
   const opts = { ...DEFAULT_PERCEPTION_OPTIONS, ...options };
@@ -274,6 +362,27 @@ export function buildPerception(ship, entities, options = {}) {
   const prey = [];
   const trades = [];
 
+  let activeSensorRange = opts.sensorRange;
+  if (ship && ship.position) {
+    for (const ent of list) {
+      if (
+        ent &&
+        ent.type === "cosmic_storm" &&
+        ent.hazardType === "radioactive_cloud" &&
+        ent.position &&
+        Number.isFinite(ent.radius)
+      ) {
+        const dx = ship.position.x - ent.position.x;
+        const dy = ship.position.y - ent.position.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist <= ent.radius) {
+          activeSensorRange *= 0.5;
+          break;
+        }
+      }
+    }
+  }
+
   if (ship && ship.position) {
     for (const ent of list) {
       if (!ent || ent === ship || !ent.position) continue;
@@ -281,7 +390,7 @@ export function buildPerception(ship, entities, options = {}) {
         continue;
       }
       const distance = ship.position.distance(ent.position);
-      if (!Number.isFinite(distance) || distance >= opts.sensorRange) continue;
+      if (!Number.isFinite(distance) || distance >= activeSensorRange) continue;
 
       if (opts.isThreat(ent, ship, opts)) {
         threats.push({
@@ -304,5 +413,12 @@ export function buildPerception(ship, entities, options = {}) {
     }
   }
 
-  return { self, threats, opportunities: { prey, trades } };
+  const targetedBySecurity = isTargetedBySecurity(ship, list);
+
+  return {
+    self,
+    threats,
+    opportunities: { prey, trades },
+    isTargetedBySecurity: targetedBySecurity,
+  };
 }

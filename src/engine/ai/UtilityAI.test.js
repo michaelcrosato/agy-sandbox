@@ -428,12 +428,14 @@ describe("UtilityAI helpers — selfStateFromShip and normalizeSelf", () => {
       armor: 0,
       energy: 0,
       cargoFill: 0,
+      isVengeanceHunter: false,
     });
     expect(selfStateFromShip({})).toEqual({
       shield: 0,
       armor: 0,
       energy: 0,
       cargoFill: 0,
+      isVengeanceHunter: false,
     });
   });
 });

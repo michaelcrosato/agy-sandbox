@@ -154,8 +154,8 @@ describe("GalaxyHeartbeat NaN hygiene (spec 006)", () => {
 
     // B must stay finite — A's NaN cannot be averaged into it.
     expect(Number.isFinite(b.market.food)).toBe(true);
-    // A's own NaN is left untouched by the heartbeat (EconomyManager self-heals it).
-    expect(Number.isFinite(a.market.food)).toBe(false);
+    // A's own NaN is healed by the heartbeat economic invariant sentry
+    expect(Number.isFinite(a.market.food)).toBe(true);
   });
 
   test("healthy systems still diffuse when an unrelated commodity is non-finite", () => {

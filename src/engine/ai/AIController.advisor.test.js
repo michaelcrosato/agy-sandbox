@@ -306,4 +306,26 @@ describe("AIController advisory layer (spec 017)", () => {
     expect(ai.currentGoal).toBe(Goals.ENGAGE);
     expect(ai.target.id).toBe("wounded-merchant");
   });
+
+  it("hardens buildPerception to gracefully bypass null, non-ship, or storm entities", () => {
+    const ship = makeShip();
+    const ai = new AIController(ship, "merchant", { useUtilityAdvisor: true });
+
+    // Simulate list containing invalid/incomplete entities
+    const entities = [
+      ship,
+      null,
+      undefined,
+      { type: "cargo_pod", position: pos(50, 50) },
+      { type: "cosmic_storm", hazardType: "radioactive_cloud", position: null }, // null position storm
+      {
+        type: "cosmic_storm",
+        hazardType: "radioactive_cloud",
+        position: pos(0, 0),
+        radius: undefined,
+      }, // undefined radius storm
+    ];
+
+    expect(() => ai.update(0.1, entities)).not.toThrow();
+  });
 });

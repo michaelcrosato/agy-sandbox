@@ -1,0 +1,4288 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>📖 Starfall Living Codex Telemetry Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --color-bg: #070913;
+        --color-card-bg: rgba(13, 17, 39, 0.45);
+        --color-border: rgba(0, 240, 255, 0.08);
+        --color-border-hover: rgba(0, 240, 255, 0.25);
+        --color-primary: #00f0ff;
+        --color-primary-glow: rgba(0, 240, 255, 0.4);
+        --color-secondary: #bd00ff;
+        --color-success: #39ff14;
+        --color-warning: #ffb700;
+        --color-danger: #ff0055;
+        --color-text: #e2e8f0;
+        --color-text-muted: #64748b;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background-color: var(--color-bg);
+        background-image:
+          radial-gradient(
+            at 0% 0%,
+            rgba(189, 0, 255, 0.05) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 0%,
+            rgba(0, 240, 255, 0.05) 0px,
+            transparent 50%
+          );
+        color: var(--color-text);
+        font-family: "Outfit", sans-serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+        padding: 2rem;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--color-border);
+        padding-bottom: 1.5rem;
+      }
+
+      .title-group h1 {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        letter-spacing: -0.05em;
+        text-transform: uppercase;
+        background: linear-gradient(
+          90deg,
+          var(--color-primary),
+          var(--color-secondary)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 40px rgba(0, 240, 255, 0.1);
+      }
+
+      .title-group p {
+        font-size: 0.95rem;
+        color: var(--color-text-muted);
+        margin-top: 0.25rem;
+      }
+
+      .server-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--color-border);
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--color-danger);
+        box-shadow: 0 0 10px var(--color-danger);
+        transition: all 0.3s ease;
+      }
+
+      .status-dot.online {
+        background: var(--color-success);
+        box-shadow: 0 0 10px var(--color-success);
+      }
+
+      /* Grid layout */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .card {
+        background: var(--color-card-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--color-border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        border-color: var(--color-border-hover);
+        box-shadow: 0 10px 30px rgba(0, 240, 255, 0.03);
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--color-primary),
+          transparent
+        );
+        transform: translateX(-100%);
+        transition: transform 0.5s ease;
+      }
+
+      .card:hover::before {
+        transform: translateX(100%);
+      }
+
+      .card-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--color-text-muted);
+        margin-bottom: 0.5rem;
+      }
+
+      .card-value {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .card-footer-text {
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+
+      /* Big double-column cards */
+      .dashboard-layout {
+        display: grid;
+        grid-template-columns: 2.5fr 1.5fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .pane {
+        background: var(--color-card-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--color-border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .pane-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        padding-bottom: 1rem;
+      }
+
+      .pane-title {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .search-bar {
+        background: rgba(255, 255, 255, 0.01);
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        color: #fff;
+        padding: 0.5rem 1rem;
+        font-family: inherit;
+        font-size: 0.9rem;
+        width: 250px;
+        outline: none;
+        transition: all 0.3s ease;
+      }
+
+      .search-bar:focus {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 10px rgba(0, 240, 255, 0.15);
+      }
+
+      /* Interactive Tree UI */
+      .tree-container {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+      }
+
+      /* Custom scrollbars */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.01);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--color-border-hover);
+        border-radius: 3px;
+      }
+
+      .tree-folder {
+        margin-bottom: 0.75rem;
+      }
+
+      .folder-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        padding: 0.4rem 0.6rem;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.02);
+        transition: all 0.2s ease;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      .folder-header:hover {
+        background: rgba(0, 240, 255, 0.03);
+        border-color: rgba(0, 240, 255, 0.1);
+      }
+
+      .folder-icon {
+        color: var(--color-primary);
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+      }
+
+      .folder-content {
+        margin-left: 1.5rem;
+        border-left: 1px dashed rgba(255, 255, 255, 0.05);
+        padding-left: 0.75rem;
+        margin-top: 0.25rem;
+      }
+
+      .file-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.35rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+      }
+
+      .file-item:hover {
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .file-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .file-name {
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 500;
+        color: var(--color-text);
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .file-name:hover {
+        color: var(--color-primary);
+        text-shadow: 0 0 10px var(--color-primary-glow);
+      }
+
+      .file-loc {
+        color: var(--color-text-muted);
+        font-size: 0.75rem;
+      }
+
+      .badge {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+        letter-spacing: 0.05em;
+      }
+
+      .badge-covered {
+        background: rgba(57, 255, 20, 0.1);
+        color: var(--color-success);
+        border: 1px solid rgba(57, 255, 20, 0.2);
+      }
+
+      .badge-missing-jsdoc {
+        background: rgba(255, 183, 0, 0.1);
+        color: var(--color-warning);
+        border: 1px solid rgba(255, 183, 0, 0.2);
+      }
+
+      .badge-untested {
+        background: rgba(255, 0, 85, 0.1);
+        color: var(--color-danger);
+        border: 1px solid rgba(255, 0, 85, 0.2);
+      }
+
+      /* Details Panel */
+      .details-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        color: var(--color-text-muted);
+        border: 1px dashed rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 1.5rem;
+      }
+
+      .details-title {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 0.5rem;
+      }
+
+      .details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        width: 100%;
+        margin-top: 1rem;
+        text-align: left;
+      }
+
+      .details-item {
+        background: rgba(255, 255, 255, 0.01);
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        padding: 0.75rem;
+      }
+
+      .details-item-label {
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+      }
+
+      .details-item-value {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #fff;
+        margin-top: 0.25rem;
+        word-break: break-all;
+      }
+
+      /* Epistemic Debt Table UI */
+      .debt-pane {
+        background: var(--color-card-bg);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--color-border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .debt-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+        text-align: left;
+      }
+
+      .debt-table th {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--color-text-muted);
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .debt-table td {
+        font-size: 0.85rem;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+      }
+
+      .debt-table tr:hover td {
+        background: rgba(255, 255, 255, 0.01);
+      }
+
+      .debt-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-weight: 700;
+      }
+
+      /* Tabs & WS Generator Styles */
+      .tab-btn {
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: var(--color-text-muted);
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        outline: none;
+      }
+
+      .tab-btn:hover {
+        color: var(--color-primary);
+        text-shadow: 0 0 8px var(--color-primary-glow);
+      }
+
+      .tab-btn.active {
+        color: var(--color-primary);
+        border-bottom-color: var(--color-primary);
+        text-shadow: 0 0 10px var(--color-primary-glow);
+      }
+
+      .tab-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: calc(100% - 40px); /* account for header */
+        overflow: hidden;
+      }
+
+      .generator-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        height: 100%;
+        overflow-y: auto;
+        padding-right: 0.25rem;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .form-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--color-text-muted);
+        font-weight: 600;
+      }
+
+      .custom-select {
+        background: #0d1127;
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        color: #fff;
+        padding: 0.6rem 1rem;
+        font-family: inherit;
+        font-size: 0.95rem;
+        outline: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .custom-select:focus {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+      }
+
+      .schema-field-card {
+        background: rgba(255, 255, 255, 0.01);
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        transition: all 0.2s ease;
+      }
+
+      .schema-field-card:hover {
+        border-color: var(--color-border-hover);
+        background: rgba(0, 240, 255, 0.01);
+      }
+
+      .schema-field-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.25rem;
+      }
+
+      .schema-field-name {
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .schema-field-meta {
+        display: flex;
+        gap: 0.35rem;
+      }
+
+      .schema-badge {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        font-weight: 800;
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+      }
+
+      .badge-req {
+        background: rgba(255, 0, 85, 0.15);
+        color: var(--color-danger);
+        border: 1px solid rgba(255, 0, 85, 0.3);
+      }
+
+      .badge-opt {
+        background: rgba(100, 116, 139, 0.15);
+        color: var(--color-text-muted);
+        border: 1px solid rgba(100, 116, 139, 0.3);
+      }
+
+      .badge-type {
+        background: rgba(189, 0, 255, 0.15);
+        color: #df80ff;
+        border: 1px solid rgba(189, 0, 255, 0.3);
+      }
+
+      .schema-field-constraints {
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+        margin-top: 0.25rem;
+      }
+
+      .code-preview-box {
+        position: relative;
+        background: #04060f;
+        border: 1px solid var(--color-border);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 0.5rem;
+        overflow: hidden;
+      }
+
+      .code-preview-text {
+        font-family: "Space Grotesk", monospace;
+        font-size: 0.85rem;
+        color: #39ff14;
+        white-space: pre-wrap;
+        word-break: break-all;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+
+      .copy-btn-group {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+      }
+
+      .action-btn {
+        flex: 1;
+        background: rgba(0, 240, 255, 0.05);
+        border: 1px solid var(--color-primary);
+        color: var(--color-primary);
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+        padding: 0.6rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .action-btn:hover {
+        background: var(--color-primary);
+        color: #070913;
+        box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+      }
+
+      .action-btn:active {
+        transform: scale(0.98);
+      }
+
+      .toast-notif {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(13, 17, 39, 0.9);
+        border: 1px solid var(--color-primary);
+        box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        color: #fff;
+        font-family: inherit;
+        font-size: 0.9rem;
+        font-weight: 600;
+        z-index: 9999;
+        transform: translateY(100px);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      .toast-notif.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="title-group">
+        <h1>📖 Starfall Living Codex</h1>
+        <p>
+          Self-Synchronizing Ontological Codebase Telemetry & Knowledge Graph
+          Dashboard
+        </p>
+      </div>
+      <div class="server-status">
+        <div id="status-dot" class="status-dot"></div>
+        <span id="status-text">Connecting</span>
+      </div>
+    </header>
+
+    <!-- High-level stats grid -->
+    <div class="grid">
+      <div class="card">
+        <div class="card-label">Total Code Volume</div>
+        <div id="metric-loc" class="card-value">-</div>
+        <div class="card-footer-text">Lines of Javascript</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Source Modules</div>
+        <div id="metric-files" class="card-value">-</div>
+        <div class="card-footer-text">Analyzed Components</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Total Test Cases</div>
+        <div id="metric-tests" class="card-value">-</div>
+        <div class="card-footer-text">Headless assertions</div>
+      </div>
+      <div class="card">
+        <div class="card-label">JSDoc Completeness</div>
+        <div id="metric-jsdoc" class="card-value">-</div>
+        <div class="card-footer-text">Type signature coverage</div>
+      </div>
+    </div>
+
+    <!-- SPEC-129: Epistemic Quality & Coverage Sentry Panel -->
+    <div
+      id="epistemic-sentry-panel"
+      class="card epistemic-sentry-card"
+      style="
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 183, 0, 0.2);
+        background: rgba(20, 16, 5, 0.35);
+        box-shadow: 0 0 25px rgba(255, 183, 0, 0.03);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        transition: all 0.3s ease;
+      "
+    >
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid rgba(255, 183, 0, 0.1);
+          padding-bottom: 0.75rem;
+        "
+      >
+        <h3
+          style="
+            font-family: &quot;Space Grotesk&quot;, sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #ffb700;
+            text-shadow: 0 0 15px rgba(255, 183, 0, 0.2);
+          "
+        >
+          ✨ Epistemic Quality & Coverage Sentry
+        </h3>
+        <div
+          style="
+            font-size: 0.8rem;
+            color: #ffb700;
+            opacity: 0.75;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          "
+        >
+          Ontological health telemetry active
+        </div>
+      </div>
+
+      <div
+        style="
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 2rem;
+          align-items: center;
+        "
+      >
+        <!-- Left Column: Circular SVG Progress Rings -->
+        <div
+          style="
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: 1rem;
+          "
+        >
+          <!-- Circle 1: JSDoc -->
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 0.75rem;
+            "
+          >
+            <svg
+              width="120"
+              height="120"
+              viewBox="0 0 120 120"
+              class="progress-ring"
+            >
+              <circle
+                stroke="rgba(255, 183, 0, 0.06)"
+                stroke-width="8"
+                fill="transparent"
+                r="50"
+                cx="60"
+                cy="60"
+              />
+              <circle
+                id="ring-jsdoc"
+                stroke="#ffb700"
+                stroke-width="8"
+                stroke-linecap="round"
+                fill="transparent"
+                r="50"
+                cx="60"
+                cy="60"
+                stroke-dasharray="314.16"
+                stroke-dashoffset="314.16"
+                style="
+                  transition: stroke-dashoffset 0.8s
+                    cubic-bezier(0.4, 0, 0.2, 1);
+                  transform: rotate(-90deg);
+                  transform-origin: 50% 50%;
+                  filter: drop-shadow(0 0 6px rgba(255, 183, 0, 0.3));
+                "
+              />
+              <text
+                x="50%"
+                y="52%"
+                dominant-baseline="middle"
+                text-anchor="middle"
+                fill="#fff"
+                font-family="'Space Grotesk', sans-serif"
+                font-size="1.4rem"
+                font-weight="700"
+                id="text-ring-jsdoc"
+              >
+                -%
+              </text>
+            </svg>
+            <span
+              style="
+                font-size: 0.8rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: var(--color-text-muted);
+              "
+              >JSDoc Documentation</span
+            >
+          </div>
+
+          <!-- Circle 2: Specs Alignment -->
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 0.75rem;
+            "
+          >
+            <svg
+              width="120"
+              height="120"
+              viewBox="0 0 120 120"
+              class="progress-ring"
+            >
+              <circle
+                stroke="rgba(255, 183, 0, 0.06)"
+                stroke-width="8"
+                fill="transparent"
+                r="50"
+                cx="60"
+                cy="60"
+              />
+              <circle
+                id="ring-specs"
+                stroke="#ffaa00"
+                stroke-width="8"
+                stroke-linecap="round"
+                fill="transparent"
+                r="50"
+                cx="60"
+                cy="60"
+                stroke-dasharray="314.16"
+                stroke-dashoffset="314.16"
+                style="
+                  transition: stroke-dashoffset 0.8s
+                    cubic-bezier(0.4, 0, 0.2, 1);
+                  transform: rotate(-90deg);
+                  transform-origin: 50% 50%;
+                  filter: drop-shadow(0 0 6px rgba(255, 170, 0, 0.3));
+                "
+              />
+              <text
+                x="50%"
+                y="52%"
+                dominant-baseline="middle"
+                text-anchor="middle"
+                fill="#fff"
+                font-family="'Space Grotesk', sans-serif"
+                font-size="1.4rem"
+                font-weight="700"
+                id="text-ring-specs"
+              >
+                -%
+              </text>
+            </svg>
+            <span
+              style="
+                font-size: 0.8rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: var(--color-text-muted);
+              "
+              >Spec Requirements Alignment</span
+            >
+          </div>
+        </div>
+
+        <!-- Right Column: Micro-Metrics Details -->
+        <div
+          style="
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            border-left: 1px solid rgba(255, 183, 0, 0.1);
+            padding-left: 2rem;
+          "
+        >
+          <div
+            style="
+              background: rgba(255, 183, 0, 0.02);
+              border: 1px solid rgba(255, 183, 0, 0.05);
+              border-radius: 8px;
+              padding: 0.75rem 1rem;
+            "
+          >
+            <div
+              style="
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                color: var(--color-text-muted);
+                font-weight: 600;
+              "
+            >
+              JSDoc Checked Symbols
+            </div>
+            <div
+              id="stat-jsdoc-symbols"
+              style="
+                font-family: &quot;Space Grotesk&quot;, sans-serif;
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #fff;
+                margin-top: 0.25rem;
+              "
+            >
+              -
+            </div>
+          </div>
+          <div
+            style="
+              background: rgba(255, 183, 0, 0.02);
+              border: 1px solid rgba(255, 183, 0, 0.05);
+              border-radius: 8px;
+              padding: 0.75rem 1rem;
+            "
+          >
+            <div
+              style="
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                color: var(--color-text-muted);
+                font-weight: 600;
+              "
+            >
+              Missing JSDocs Debt
+            </div>
+            <div
+              id="stat-jsdoc-missing"
+              style="
+                font-family: &quot;Space Grotesk&quot;, sans-serif;
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #fff;
+                margin-top: 0.25rem;
+              "
+            >
+              -
+            </div>
+          </div>
+          <div
+            style="
+              background: rgba(255, 183, 0, 0.02);
+              border: 1px solid rgba(255, 183, 0, 0.05);
+              border-radius: 8px;
+              padding: 0.75rem 1rem;
+            "
+          >
+            <div
+              style="
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                color: var(--color-text-muted);
+                font-weight: 600;
+              "
+            >
+              Spec-Aligned Files
+            </div>
+            <div
+              id="stat-spec-files"
+              style="
+                font-family: &quot;Space Grotesk&quot;, sans-serif;
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #fff;
+                margin-top: 0.25rem;
+              "
+            >
+              -
+            </div>
+          </div>
+          <div
+            style="
+              background: rgba(255, 183, 0, 0.02);
+              border: 1px solid rgba(255, 183, 0, 0.05);
+              border-radius: 8px;
+              padding: 0.75rem 1rem;
+            "
+          >
+            <div
+              style="
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                color: var(--color-text-muted);
+                font-weight: 600;
+              "
+            >
+              Untested Core Modules
+            </div>
+            <div
+              id="stat-untested-files"
+              style="
+                font-family: &quot;Space Grotesk&quot;, sans-serif;
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #fff;
+                margin-top: 0.25rem;
+              "
+            >
+              -
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Ontological Visualizer -->
+    <div class="dashboard-layout">
+      <div class="pane">
+        <div class="pane-header">
+          <div class="pane-title">🗺️ Repository Topology Map</div>
+          <input
+            type="text"
+            id="search-input"
+            class="search-bar"
+            placeholder="Search by name, spec, or symbol..."
+          />
+        </div>
+        <div id="tree-container" class="tree-container">
+          <!-- Dynamic folders and files -->
+        </div>
+      </div>
+
+      <div class="pane" style="display: flex; flex-direction: column">
+        <div
+          class="pane-header"
+          style="
+            justify-content: flex-start;
+            gap: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+          "
+        >
+          <button id="tab-inspector" class="tab-btn active">
+            🔍 Inspector
+          </button>
+          <button id="tab-generator" class="tab-btn">
+            ⚡ WS Payload Builder
+          </button>
+        </div>
+
+        <!-- Tab 1: Inspector -->
+        <div id="inspector-tab" class="tab-content">
+          <div id="details-container" class="details-panel">
+            <div class="details-title">Select a File</div>
+            <p>
+              Click on any file in the topology map to inspect its classes,
+              exported signatures, and specification links.
+            </p>
+          </div>
+        </div>
+
+        <!-- Tab 2: WS Generator -->
+        <div id="generator-tab" class="tab-content" style="display: none">
+          <div class="generator-layout">
+            <div class="form-group">
+              <label class="form-label" for="action-select"
+                >Select Message Action (msg.type)</label
+              >
+              <select id="action-select" class="custom-select">
+                <!-- Dynamically populated -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Schema Properties & Types</label>
+              <div
+                id="schema-fields-container"
+                style="
+                  max-height: 200px;
+                  overflow-y: auto;
+                  padding-right: 0.25rem;
+                "
+              >
+                <!-- Dynamic fields list -->
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Live Generated Payload</label>
+              <div class="code-preview-box">
+                <div id="code-preview" class="code-preview-text"></div>
+              </div>
+              <div class="copy-btn-group">
+                <button id="btn-copy-json" class="action-btn">
+                  <svg
+                    width="14"
+                    height="14"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <rect
+                      x="9"
+                      y="9"
+                      width="13"
+                      height="13"
+                      rx="2"
+                      ry="2"
+                    ></rect>
+                    <path
+                      d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                    ></path>
+                  </svg>
+                  Copy JSON
+                </button>
+                <button id="btn-copy-code" class="action-btn">
+                  <svg
+                    width="14"
+                    height="14"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <polyline points="16 18 22 12 16 6"></polyline>
+                    <polyline points="8 6 2 12 8 18"></polyline>
+                  </svg>
+                  Copy JS Code
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Real-Time Metrics & Security Telemetry (SPEC-117) -->
+    <div
+      class="card"
+      style="
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      "
+    >
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          padding-bottom: 0.75rem;
+        "
+      >
+        <h3
+          style="
+            font-family: &quot;Space Grotesk&quot;, sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--color-primary);
+          "
+        >
+          📊 Real-Time Sandbox Telemetry & Egress Security
+        </h3>
+        <div style="font-size: 0.8rem; color: var(--color-text-muted)">
+          Refreshes automatically every second
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 2.5fr 1.5fr; gap: 2rem">
+        <!-- Left: SVG Line Chart -->
+        <div
+          style="
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            padding: 1rem;
+            position: relative;
+          "
+        >
+          <div
+            style="
+              font-size: 0.85rem;
+              font-weight: 600;
+              margin-bottom: 0.75rem;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              color: var(--color-text-muted);
+            "
+          >
+            Active Connections & Rate-Limiting Triggers (60s window)
+          </div>
+          <svg
+            id="telemetry-chart"
+            width="100%"
+            height="220"
+            style="overflow: visible"
+          >
+            <!-- Grid lines -->
+            <g stroke="rgba(255,255,255,0.03)" stroke-width="1">
+              <line x1="50" y1="20" x2="100%" y2="20"></line>
+              <line x1="50" y1="70" x2="100%" y2="70"></line>
+              <line x1="50" y1="120" x2="100%" y2="120"></line>
+              <line x1="50" y1="170" x2="100%" y2="170"></line>
+            </g>
+            <!-- Y-axis labels -->
+            <text x="15" y="24" fill="var(--color-text-muted)" font-size="10">
+              100
+            </text>
+            <text x="15" y="74" fill="var(--color-text-muted)" font-size="10">
+              50
+            </text>
+            <text x="15" y="124" fill="var(--color-text-muted)" font-size="10">
+              10
+            </text>
+            <text x="15" y="174" fill="var(--color-text-muted)" font-size="10">
+              0
+            </text>
+
+            <!-- Connection Line Path (Neon Cyan) -->
+            <path
+              id="path-connections"
+              fill="none"
+              stroke="var(--color-primary)"
+              stroke-width="2"
+              filter="drop-shadow(0px 0px 4px rgba(0,240,255,0.3))"
+            ></path>
+
+            <!-- Rate Limit Line Path (Neon Pink/Red) -->
+            <path
+              id="path-ratelimits"
+              fill="none"
+              stroke="var(--color-danger)"
+              stroke-width="2"
+              filter="drop-shadow(0px 0px 4px rgba(255,0,85,0.3))"
+            ></path>
+          </svg>
+          <!-- Legend -->
+          <div
+            style="
+              display: flex;
+              gap: 1.5rem;
+              justify-content: flex-end;
+              margin-top: 0.5rem;
+              font-size: 0.8rem;
+            "
+          >
+            <div style="display: flex; align-items: center; gap: 0.4rem">
+              <div
+                style="
+                  width: 12px;
+                  height: 3px;
+                  background: var(--color-primary);
+                  border-radius: 99px;
+                "
+              ></div>
+              <span style="color: var(--color-text)">Active Connections</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.4rem">
+              <div
+                style="
+                  width: 12px;
+                  height: 3px;
+                  background: var(--color-danger);
+                  border-radius: 99px;
+                "
+              ></div>
+              <span style="color: var(--color-text)">Rate Limits Blocked</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Real-time Telemetry Stats Panel -->
+        <div style="display: flex; flex-direction: column; gap: 1rem">
+          <div
+            style="
+              background: rgba(255, 255, 255, 0.01);
+              border: 1px solid rgba(255, 255, 255, 0.02);
+              border-radius: 8px;
+              padding: 1rem;
+            "
+          >
+            <div
+              style="
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                color: var(--color-text-muted);
+                margin-bottom: 0.25rem;
+              "
+            >
+              Active Connections
+            </div>
+            <div
+              id="chart-val-connections"
+              style="
+                font-family: &quot;Space Grotesk&quot;, sans-serif;
+                font-size: 1.8rem;
+                font-weight: 700;
+                color: var(--color-primary);
+              "
+            >
+              0
+            </div>
+          </div>
+          <div
+            style="
+              background: rgba(255, 255, 255, 0.01);
+              border: 1px solid rgba(255, 255, 255, 0.02);
+              border-radius: 8px;
+              padding: 1rem;
+            "
+          >
+            <div
+              style="
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                color: var(--color-text-muted);
+                margin-bottom: 0.25rem;
+              "
+            >
+              Total Rate Limits Triggered
+            </div>
+            <div
+              id="chart-val-ratelimits"
+              style="
+                font-family: &quot;Space Grotesk&quot;, sans-serif;
+                font-size: 1.8rem;
+                font-weight: 700;
+                color: var(--color-danger);
+              "
+            >
+              0
+            </div>
+          </div>
+          <div
+            style="
+              background: rgba(255, 255, 255, 0.01);
+              border: 1px solid rgba(255, 255, 255, 0.02);
+              border-radius: 8px;
+              padding: 1rem;
+            "
+          >
+            <div
+              style="
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                color: var(--color-text-muted);
+                margin-bottom: 0.25rem;
+              "
+            >
+              Event Loop Delay
+            </div>
+            <div
+              id="chart-val-latency"
+              style="
+                font-family: &quot;Space Grotesk&quot;, sans-serif;
+                font-size: 1.8rem;
+                font-weight: 700;
+                color: var(--color-success);
+              "
+            >
+              0 ms
+            </div>
+          </div>
+          <div
+            style="
+              background: rgba(255, 255, 255, 0.01);
+              border: 1px solid rgba(255, 255, 255, 0.02);
+              border-radius: 8px;
+              padding: 1rem;
+            "
+          >
+            <div
+              style="
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                color: var(--color-text-muted);
+                margin-bottom: 0.25rem;
+              "
+            >
+              Cluster Peak Memory
+            </div>
+            <div
+              id="chart-val-memory"
+              style="
+                font-family: &quot;Space Grotesk&quot;, sans-serif;
+                font-size: 1.8rem;
+                font-weight: 700;
+                color: #f59e0b;
+              "
+            >
+              0 MB
+            </div>
+          </div>
+
+          <!-- SPEC-126: Sandbox Egress & Defense Sentry Gold-Glassmorphic Panel -->
+          <div
+            id="firewall-rules-panel"
+            style="
+              background: rgba(251, 191, 36, 0.02);
+              border: 1px solid rgba(251, 191, 36, 0.15);
+              border-radius: 8px;
+              padding: 1.25rem;
+              box-shadow: 0 0 15px rgba(251, 191, 36, 0.05);
+            "
+          >
+            <div
+              style="
+                font-family: &quot;Space Grotesk&quot;, sans-serif;
+                font-size: 0.85rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #fbbf24;
+                margin-bottom: 0.75rem;
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+              "
+            >
+              🛡️ Sandbox Egress & Defense Sentry
+            </div>
+
+            <!-- Allowlisted Egress Domains -->
+            <div
+              style="
+                font-size: 0.75rem;
+                color: var(--color-text-muted);
+                margin-bottom: 0.5rem;
+              "
+            >
+              Allowlisted Domains:
+            </div>
+            <div
+              id="firewall-domains-list"
+              style="
+                font-family: monospace;
+                font-size: 0.75rem;
+                color: var(--color-text);
+                background: rgba(0, 0, 0, 0.2);
+                padding: 0.5rem;
+                border-radius: 4px;
+                margin-bottom: 0.75rem;
+                max-height: 80px;
+                overflow-y: auto;
+                border: 1px solid rgba(255, 255, 255, 0.02);
+              "
+            >
+              Loading...
+            </div>
+
+            <!-- Egress Firewall Blocks -->
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                font-size: 0.75rem;
+                margin-bottom: 0.25rem;
+              "
+            >
+              <span style="color: var(--color-text-muted)"
+                >Firewall Blocks:</span
+              >
+              <span
+                id="firewall-block-count"
+                style="font-weight: 700; color: #ef4444"
+                >0</span
+              >
+            </div>
+            <!-- Block Meter (Neon Red) -->
+            <div
+              style="
+                width: 100%;
+                height: 6px;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 3px;
+                overflow: hidden;
+                margin-bottom: 0.75rem;
+              "
+            >
+              <div
+                id="firewall-block-meter"
+                style="
+                  width: 0%;
+                  height: 100%;
+                  background: #ef4444;
+                  box-shadow: 0 0 8px #ef4444;
+                  transition: width 0.3s ease;
+                "
+              ></div>
+            </div>
+
+            <!-- SPEC-137: Dynamic Egress Sentry Admin Controls -->
+            <div
+              style="
+                margin-top: 0.75rem;
+                padding-top: 0.75rem;
+                border-top: 1px dashed rgba(251, 191, 36, 0.15);
+              "
+            >
+              <div
+                style="
+                  font-size: 0.75rem;
+                  color: var(--color-text-muted);
+                  margin-bottom: 0.4rem;
+                "
+              >
+                Egress Sentry Admin:
+              </div>
+              <input
+                type="text"
+                id="firewall-domain-input"
+                placeholder="e.g., evil-domain.com"
+                style="
+                  width: 100%;
+                  box-sizing: border-box;
+                  background: rgba(0, 0, 0, 0.4);
+                  border: 1px solid rgba(251, 191, 36, 0.3);
+                  border-radius: 4px;
+                  padding: 0.35rem 0.5rem;
+                  color: #fff;
+                  font-size: 0.75rem;
+                  font-family: monospace;
+                  margin-bottom: 0.5rem;
+                  outline: none;
+                "
+              />
+              <div style="display: flex; gap: 0.5rem;">
+                <button
+                  id="btn-firewall-allow"
+                  style="
+                    flex: 1;
+                    background: rgba(251, 191, 36, 0.12);
+                    border: 1px solid #fbbf24;
+                    border-radius: 4px;
+                    padding: 0.35rem;
+                    color: #fbbf24;
+                    font-size: 0.7rem;
+                    font-weight: 700;
+                    cursor: pointer;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.25rem;
+                    transition: background 0.2s, transform 0.1s;
+                  "
+                  onmouseover="this.style.background='rgba(251, 191, 36, 0.25)'"
+                  onmouseout="this.style.background='rgba(251, 191, 36, 0.12)'"
+                >
+                  ➕ Whitelist
+                </button>
+                <button
+                  id="btn-firewall-block"
+                  style="
+                    flex: 1;
+                    background: rgba(239, 68, 68, 0.12);
+                    border: 1px solid #ef4444;
+                    border-radius: 4px;
+                    padding: 0.35rem;
+                    color: #ef4444;
+                    font-size: 0.7rem;
+                    font-weight: 700;
+                    cursor: pointer;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.25rem;
+                    transition: background 0.2s, transform 0.1s;
+                  "
+                  onmouseover="this.style.background='rgba(239, 68, 68, 0.25)'"
+                  onmouseout="this.style.background='rgba(239, 68, 68, 0.12)'"
+                >
+                  ❌ Block
+                </button>
+              </div>
+              <div
+                id="firewall-admin-status"
+                style="
+                  font-size: 0.7rem;
+                  margin-top: 0.4rem;
+                  min-height: 1rem;
+                  display: none;
+                  font-family: monospace;
+                "
+              ></div>
+            </div>
+
+            <!-- API Rate Limit Slider / Metrics -->
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                font-size: 0.75rem;
+                margin-bottom: 0.25rem;
+              "
+            >
+              <span style="color: var(--color-text-muted)"
+                >API Outbound Rate:</span
+              >
+              <span
+                id="api-rate-display"
+                style="font-weight: 700; color: #fbbf24"
+                >0/min</span
+              >
+            </div>
+            <!-- Outbound Rate Meter (Neon Gold/Amber) -->
+            <div
+              style="
+                width: 100%;
+                height: 6px;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 3px;
+                overflow: hidden;
+                margin-bottom: 0.75rem;
+              "
+            >
+              <div
+                id="api-rate-meter"
+                style="
+                  width: 0%;
+                  height: 100%;
+                  background: #f59e0b;
+                  box-shadow: 0 0 8px #f59e0b;
+                  transition: width 0.3s ease;
+                "
+              ></div>
+            </div>
+
+            <!-- Memory Leak Sentry Alert Status -->
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                font-size: 0.75rem;
+              "
+            >
+              <span style="color: var(--color-text-muted)"
+                >Memory Leak Alerts:</span
+              >
+              <span
+                id="memory-leak-alerts-display"
+                style="font-weight: 700; color: #10b981"
+                >CLEAN</span
+              >
+            </div>
+          </div>
+
+          <!-- SPEC-135: CPU Watchdog & Tamper Alert Sentry Gold-Glassmorphic Panel -->
+          <div
+            id="cpu-tamper-panel"
+            style="
+              background: rgba(251, 191, 36, 0.02);
+              border: 1px solid rgba(251, 191, 36, 0.15);
+              border-radius: 8px;
+              padding: 1.25rem;
+              box-shadow: 0 0 15px rgba(251, 191, 36, 0.05);
+              margin-top: 1rem;
+            "
+          >
+            <div
+              style="
+                font-family: &quot;Space Grotesk&quot;, sans-serif;
+                font-size: 0.85rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #fbbf24;
+                margin-bottom: 0.75rem;
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+              "
+            >
+              ⚡ CPU Watchdog & Tamper Sentry
+            </div>
+
+            <!-- SVG Event Loop Latency Radial/Linear Gauge -->
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 0.5rem;
+              "
+            >
+              <div style="font-size: 0.75rem; color: var(--color-text-muted)">
+                Event Loop Latency:
+              </div>
+              <div
+                id="cpu-latency-value"
+                style="
+                  font-family: monospace;
+                  font-size: 0.85rem;
+                  font-weight: 700;
+                  color: #10b981;
+                "
+              >
+                0.0 ms
+              </div>
+            </div>
+            <!-- Latency Meter Bar -->
+            <div
+              style="
+                width: 100%;
+                height: 6px;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 3px;
+                overflow: hidden;
+                margin-bottom: 1rem;
+              "
+            >
+              <div
+                id="cpu-latency-meter"
+                style="
+                  width: 0%;
+                  height: 100%;
+                  background: #10b981;
+                  box-shadow: 0 0 8px #10b981;
+                  transition:
+                    width 0.3s ease,
+                    background-color 0.3s ease,
+                    box-shadow 0.3s ease;
+                "
+              ></div>
+            </div>
+
+            <!-- Prototype Tamper Alert indicator -->
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                font-size: 0.75rem;
+                margin-bottom: 0.5rem;
+                padding: 0.4rem;
+                border-radius: 4px;
+                background: rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.02);
+              "
+            >
+              <span style="color: var(--color-text-muted)">Prototype Sentry:</span>
+              <span
+                id="prototype-sentry-status"
+                style="
+                  font-weight: 700;
+                  color: #10b981;
+                  text-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
+                  transition:
+                    color 0.3s ease,
+                    text-shadow 0.3s ease;
+                "
+              >
+                SECURED
+              </span>
+            </div>
+
+            <!-- Global Scope Pollution indicator -->
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                font-size: 0.75rem;
+                padding: 0.4rem;
+                border-radius: 4px;
+                background: rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.02);
+              "
+            >
+              <span style="color: var(--color-text-muted)">Global Scope Pollution:</span>
+              <span
+                id="global-pollution-status"
+                style="
+                  font-weight: 700;
+                  color: #10b981;
+                  text-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
+                  transition:
+                    color 0.3s ease,
+                    text-shadow 0.3s ease;
+                "
+              >
+                CLEAN
+              </span>
+            </div>
+          </div>
+
+          <!-- SPEC-142: Guest Sandbox Footprint HUD Gauge Card -->
+          <div
+            id="guest-sandbox-panel"
+            style="
+              background: rgba(251, 191, 36, 0.02);
+              border: 1px solid rgba(251, 191, 36, 0.15);
+              border-radius: 8px;
+              padding: 1.25rem;
+              box-shadow: 0 0 15px rgba(251, 191, 36, 0.05);
+              margin-top: 1rem;
+            "
+          >
+            <div
+              style="
+                font-family: &quot;Space Grotesk&quot;, sans-serif;
+                font-size: 0.85rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #fbbf24;
+                margin-bottom: 1rem;
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+              "
+            >
+              🛡️ Guest Sentry Resources Monitor
+            </div>
+
+            <!-- Two SVG Circular Progress Rings side by side -->
+            <div style="display: flex; justify-content: space-around; align-items: center; margin-bottom: 1rem;">
+              
+              <!-- Memory Allocation Ring -->
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                <div style="position: relative; width: 80px; height: 80px;">
+                  <svg width="80" height="80" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="32" stroke="rgba(255,255,255,0.05)" stroke-width="6" fill="transparent" />
+                    <circle
+                      id="ring-guest-memory"
+                      cx="40"
+                      cy="40"
+                      r="32"
+                      stroke="#fbbf24"
+                      stroke-width="6"
+                      fill="transparent"
+                      stroke-dasharray="201"
+                      stroke-dashoffset="201"
+                      stroke-linecap="round"
+                      transform="rotate(-90 40 40)"
+                      style="transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease; filter: drop-shadow(0 0 4px rgba(251,191,36,0.4));"
+                    />
+                  </svg>
+                  <div
+                    id="guest-memory-text"
+                    style="
+                      position: absolute;
+                      top: 50%;
+                      left: 50%;
+                      transform: translate(-50%, -50%);
+                      font-family: monospace;
+                      font-size: 0.75rem;
+                      font-weight: 700;
+                      color: #fff;
+                    "
+                  >
+                    0%
+                  </div>
+                </div>
+                <div style="font-size: 0.7rem; color: var(--color-text-muted); font-weight: 700; text-transform: uppercase;">
+                  Memory (V8)
+                </div>
+              </div>
+
+              <!-- CPU Budget Ring -->
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                <div style="position: relative; width: 80px; height: 80px;">
+                  <svg width="80" height="80" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="32" stroke="rgba(255,255,255,0.05)" stroke-width="6" fill="transparent" />
+                    <circle
+                      id="ring-guest-cpu"
+                      cx="40"
+                      cy="40"
+                      r="32"
+                      stroke="#fbbf24"
+                      stroke-width="6"
+                      fill="transparent"
+                      stroke-dasharray="201"
+                      stroke-dashoffset="201"
+                      stroke-linecap="round"
+                      transform="rotate(-90 40 40)"
+                      style="transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease; filter: drop-shadow(0 0 4px rgba(251,191,36,0.4));"
+                    />
+                  </svg>
+                  <div
+                    id="guest-cpu-text"
+                    style="
+                      position: absolute;
+                      top: 50%;
+                      left: 50%;
+                      transform: translate(-50%, -50%);
+                      font-family: monospace;
+                      font-size: 0.75rem;
+                      font-weight: 700;
+                      color: #fff;
+                    "
+                  >
+                    0%
+                  </div>
+                </div>
+                <div style="font-size: 0.7rem; color: var(--color-text-muted); font-weight: 700; text-transform: uppercase;">
+                  CPU Budget
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Active / Recent Guest Info details -->
+            <div
+              id="guest-status-details"
+              style="
+                padding: 0.5rem;
+                background: rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.02);
+                border-radius: 4px;
+                font-size: 0.7rem;
+                font-family: monospace;
+                color: var(--color-text-muted);
+              "
+            >
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                <span>Active runs:</span>
+                <span id="guest-active-count" style="color: #fbbf24; font-weight: 700;">0</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                <span>V8 Heap Used:</span>
+                <span id="guest-heap-display" style="color: #fff;">0.00 MB / 128 MB</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                <span>CPU Time:</span>
+                <span id="guest-cpu-display" style="color: #fff;">0 ms / 2000 ms</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.25rem; margin-top: 0.25rem;">
+                <span>Last Script:</span>
+                <span id="guest-last-script" style="color: #6b7280; font-weight: 700;">none</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>Last Status:</span>
+                <span id="guest-last-status" style="color: #6b7280; font-weight: 700; text-transform: uppercase;">none</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SPEC-147: Guest RPC & Workspace Drift HUD Card -->
+          <div
+            id="guest-rpc-panel"
+            style="
+              background: rgba(251, 191, 36, 0.02);
+              border: 1px solid rgba(251, 191, 36, 0.15);
+              border-radius: 8px;
+              padding: 1.25rem;
+              box-shadow: 0 0 15px rgba(251, 191, 36, 0.05);
+              margin-top: 1rem;
+            "
+          >
+            <div
+              style="
+                font-family: &quot;Space Grotesk&quot;, sans-serif;
+                font-size: 0.85rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #fbbf24;
+                margin-bottom: 1rem;
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+              "
+            >
+              🔒 Guest RPC & Integrity Sentry
+            </div>
+
+            <!-- Self-Healing Circular HUD SVG Meter -->
+            <div style="display: flex; justify-content: space-around; align-items: center; margin-bottom: 1rem;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                <div style="position: relative; width: 80px; height: 80px;">
+                  <svg width="80" height="80" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="32" stroke="rgba(255,255,255,0.05)" stroke-width="6" fill="transparent" />
+                    <circle
+                      id="ring-integrity-status"
+                      cx="40"
+                      cy="40"
+                      r="32"
+                      stroke="#10b981"
+                      stroke-width="6"
+                      fill="transparent"
+                      stroke-dasharray="201"
+                      stroke-dashoffset="0"
+                      stroke-linecap="round"
+                      transform="rotate(-90 40 40)"
+                      style="transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease; filter: drop-shadow(0 0 4px rgba(16,185,129,0.4));"
+                    />
+                  </svg>
+                  <div
+                    id="integrity-health-text"
+                    style="
+                      position: absolute;
+                      top: 50%;
+                      left: 50%;
+                      transform: translate(-50%, -50%);
+                      font-family: monospace;
+                      font-size: 0.75rem;
+                      font-weight: 700;
+                      color: #10b981;
+                    "
+                  >
+                    100%
+                  </div>
+                </div>
+                <div style="font-size: 0.7rem; color: var(--color-text-muted); font-weight: 700; text-transform: uppercase;">
+                  Workspace Purity
+                </div>
+              </div>
+            </div>
+
+            <!-- Sentry stats panel -->
+            <div
+              style="
+                padding: 0.5rem;
+                background: rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.02);
+                border-radius: 4px;
+                font-size: 0.7rem;
+                font-family: monospace;
+                color: var(--color-text-muted);
+                margin-bottom: 0.75rem;
+              "
+            >
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                <span>RPC Total Requests:</span>
+                <span id="rpc-total-requests" style="color: #fff; font-weight: 700;">0</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                <span>RPC Blocked Requests:</span>
+                <span id="rpc-blocked-requests" style="color: #ef4444; font-weight: 700;">0</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                <span>Self-Heal Cleanups:</span>
+                <span id="drift-self-heals" style="color: #10b981; font-weight: 700;">0</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>Files Restored/Purged:</span>
+                <span id="drift-files-healed" style="color: #10b981; font-weight: 700;">0</span>
+              </div>
+            </div>
+
+            <!-- RPC Query Live Ticker Feed -->
+            <div style="font-size: 0.7rem; text-transform: uppercase; color: #fbbf24; font-weight: 700; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.25rem;">
+              <span>📟</span> Live RPC Channel Feed
+            </div>
+            <div
+              id="rpc-feed-ticker"
+              style="
+                height: 85px;
+                overflow-y: auto;
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 4px;
+                padding: 0.35rem;
+                font-family: monospace;
+                font-size: 0.65rem;
+                color: #e5e7eb;
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+              "
+            >
+              <div style="color: #6b7280; text-align: center; margin-top: 1.5rem;">Waiting for RPC events...</div>
+            </div>
+          </div>
+
+          <!-- SPEC-153: Interactive Golden-Glassmorphic Codex Guest CLI Sandbox Terminal HUD Card -->
+          <div
+            id="guest-cli-panel"
+            style="
+              background: rgba(251, 191, 36, 0.02);
+              border: 1px solid rgba(251, 191, 36, 0.15);
+              border-radius: 8px;
+              padding: 1.25rem;
+              box-shadow: 0 0 15px rgba(251, 191, 36, 0.05);
+              margin-top: 1rem;
+            "
+          >
+            <div
+              style="
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 0.85rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #fbbf24;
+                margin-bottom: 0.75rem;
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+              "
+            >
+              💻 Interactive Guest CLI Terminal HUD
+            </div>
+
+            <!-- Terminal Output console body -->
+            <div
+              id="cli-terminal-body"
+              style="
+                height: 140px;
+                overflow-y: auto;
+                background: rgba(0, 0, 0, 0.4);
+                border: 1px solid rgba(251, 191, 36, 0.15);
+                border-radius: 4px;
+                padding: 0.5rem;
+                font-family: monospace;
+                font-size: 0.7rem;
+                color: #10b981;
+                margin-bottom: 0.75rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+                box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+              "
+            >
+              <div style="color: #fbbf24; font-weight: bold;">[SYSTEM] Antigravity Sandbox Secure CLI pre-activated.</div>
+              <div style="color: #6b7280;">Enter JavaScript commands to execute in the guest environment...</div>
+            </div>
+
+            <!-- Input area for terminal commands -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <input
+                id="cli-input-field"
+                type="text"
+                placeholder="console.log('hello world');"
+                style="
+                  flex: 1;
+                  background: rgba(0, 0, 0, 0.4);
+                  border: 1px solid rgba(255, 255, 255, 0.1);
+                  border-radius: 4px;
+                  padding: 0.4rem 0.6rem;
+                  font-family: monospace;
+                  font-size: 0.7rem;
+                  color: #fff;
+                  outline: none;
+                  transition: border-color 0.3s ease;
+                "
+                onfocus="this.style.borderColor='rgba(251, 191, 36, 0.5)'"
+                onblur="this.style.borderColor='rgba(255, 255, 255, 0.1)'"
+              />
+              <button
+                id="cli-send-btn"
+                onclick="dispatchCliCommand()"
+                style="
+                  background: rgba(251, 191, 36, 0.1);
+                  border: 1px solid rgba(251, 191, 36, 0.4);
+                  border-radius: 4px;
+                  color: #fbbf24;
+                  font-family: 'Space Grotesk', sans-serif;
+                  font-size: 0.7rem;
+                  font-weight: 700;
+                  padding: 0.4rem 0.8rem;
+                  cursor: pointer;
+                  text-transform: uppercase;
+                  transition: background 0.3s ease, border-color 0.3s ease;
+                "
+                onmouseover="this.style.background='rgba(251, 191, 36, 0.25)'"
+                onmouseout="this.style.background='rgba(251, 191, 36, 0.1)'"
+              >
+                Run
+              </button>
+            </div>
+
+            <!-- RSS Allocation Indicator & Active process kill trigger -->
+            <div
+              style="
+                padding: 0.4rem;
+                background: rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.02);
+                border-radius: 4px;
+                font-size: 0.65rem;
+                font-family: monospace;
+                color: var(--color-text-muted);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
+            >
+              <div style="display: flex; align-items: center; gap: 0.3rem;">
+                <span style="color: #fbbf24;">⚡</span> V8 Memory Indicator:
+                <span id="cli-rss-indicator" style="color: #fff; font-weight: bold;">0.0 MB</span>
+              </div>
+              <button
+                id="cli-kill-btn"
+                onclick="killActiveProcess()"
+                disabled
+                style="
+                  background: rgba(239, 68, 68, 0.1);
+                  border: 1px solid rgba(239, 68, 68, 0.3);
+                  border-radius: 3px;
+                  color: #ef4444;
+                  font-size: 0.6rem;
+                  font-weight: 700;
+                  padding: 0.2rem 0.5rem;
+                  cursor: not-allowed;
+                  opacity: 0.5;
+                  text-transform: uppercase;
+                  transition: background 0.3s ease;
+                "
+              >
+                Kill PID: <span id="cli-active-pid">None</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast-notif">Copied to Clipboard!</div>
+
+    <!-- SPEC-132: Golden-Glassmorphic Containment Breaches Console -->
+    <div
+      class="breach-pane"
+      id="containment-breach-console"
+      style="
+        margin-bottom: 2rem;
+        background: rgba(239, 68, 68, 0.02);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.05);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+      "
+    >
+      <div
+        style="
+          font-family: 'Space Grotesk', sans-serif;
+          font-size: 1.2rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: #f87171;
+          margin-bottom: 1rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        "
+      >
+        <span>🚨 Sandbox Containment Breaches & Security Console</span>
+        <span
+          style="
+            font-family: monospace;
+            font-size: 0.8rem;
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+          "
+          id="breach-active-indicator"
+          >SYSTEM CONTAINER: SECURE</span
+        >
+      </div>
+
+      <div
+        style="
+          font-family: monospace;
+          font-size: 0.8rem;
+          background: rgba(0, 0, 0, 0.4);
+          border: 1px solid rgba(255, 255, 255, 0.03);
+          border-radius: 8px;
+          padding: 1rem;
+          max-height: 250px;
+          overflow-y: auto;
+          color: #e2e8f0;
+        "
+        id="breach-log-list"
+      >
+        <div style="color: #64748b; text-align: center; padding: 1rem;">
+          No containment breaches logged. Security boundaries operating at
+          nominal capacity.
+        </div>
+      </div>
+    </div>
+
+    <!-- Epistemic Debt Section -->
+    <div class="debt-pane">
+      <div class="pane-title">⚠️ Codebase Epistemic Debt & Static Gaps</div>
+      <table class="debt-table">
+        <thead>
+          <tr>
+            <th>Module Path</th>
+            <th>Static Gaps / Stale Logic Detected</th>
+            <th>Severity</th>
+          </tr>
+        </thead>
+        <tbody id="debt-table-body">
+          <!-- Dynamic items -->
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      let codexData = null;
+      let schemaData = null;
+
+      // Connect to server or load simulated mock fallback if offline
+      async function init() {
+        const elStatusDot = document.getElementById("status-dot");
+        const elStatusText = document.getElementById("status-text");
+
+        try {
+          const res = await fetch("/codex");
+          if (!res.ok) throw new Error("Server metrics not ready");
+          codexData = await res.json();
+
+          try {
+            const resSchema = await fetch("/schema");
+            if (resSchema.ok) {
+              schemaData = await resSchema.json();
+            } else {
+              schemaData = { schemas: FALLBACK_SCHEMAS };
+            }
+          } catch (e) {
+            schemaData = { schemas: FALLBACK_SCHEMAS };
+          }
+
+          elStatusDot.classList.add("online");
+          elStatusText.innerText = "Online";
+          renderDashboard(codexData);
+          initGenerator();
+        } catch (err) {
+          console.warn(
+            "⚠️ Local telemetry endpoint offline. Activating dynamic simulation baseline.",
+          );
+          elStatusDot.classList.remove("online");
+          elStatusText.innerText = "Offline (Simulation)";
+
+          // Dynamic offline mock sandbox compilation matching real agy-sandbox scope
+          codexData = generateMockCodex();
+          schemaData = { schemas: FALLBACK_SCHEMAS };
+          renderDashboard(codexData);
+          initGenerator();
+        }
+      }
+
+      function renderDashboard(data) {
+        // 1. Populate Metrics
+        document.getElementById("metric-loc").innerText =
+          data.stats.totalLoc.toLocaleString();
+        document.getElementById("metric-files").innerText =
+          `${data.stats.totalSourceFiles} Files`;
+        document.getElementById("metric-tests").innerText =
+          `${data.stats.totalTests} Tests`;
+
+        const totalJsDocItems = data.files.reduce(
+          (sum, f) => sum + f.classes.length + f.exports.length,
+          0,
+        );
+        const missingJsDocsCount = data.epistemicDebt.missingJsDocs.reduce(
+          (sum, f) => sum + f.symbols.length,
+          0,
+        );
+        const jsDocPercent =
+          totalJsDocItems > 0
+            ? (
+                ((totalJsDocItems - missingJsDocsCount) / totalJsDocItems) *
+                100
+              ).toFixed(0)
+            : "100";
+        document.getElementById("metric-jsdoc").innerText = `${jsDocPercent}%`;
+
+        // Update Epistemic Sentry metrics
+        const specAlignedCount = data.files.filter(
+          (f) => f.referencingSpecs && f.referencingSpecs.length > 0,
+        ).length;
+        const specAlignmentPercent =
+          data.files.length > 0
+            ? Math.round((specAlignedCount / data.files.length) * 100)
+            : 100;
+
+        document.getElementById("stat-jsdoc-symbols").innerText =
+          totalJsDocItems;
+        document.getElementById("stat-jsdoc-missing").innerText =
+          missingJsDocsCount;
+        document.getElementById("stat-spec-files").innerText =
+          `${specAlignedCount} / ${data.files.length}`;
+        document.getElementById("stat-untested-files").innerText =
+          data.stats.untestedCoreFilesCount;
+
+        // Circular progress SVG logic
+        const circleJsdoc = document.getElementById("ring-jsdoc");
+        const circleSpecs = document.getElementById("ring-specs");
+        const textJsdoc = document.getElementById("text-ring-jsdoc");
+        const textSpecs = document.getElementById("text-ring-specs");
+
+        if (circleJsdoc && textJsdoc) {
+          const val = Number(jsDocPercent) || 0;
+          textJsdoc.innerText = `${val}%`;
+          const offset = 314.16 - (val / 100) * 314.16;
+          circleJsdoc.style.strokeDashoffset = offset;
+        }
+
+        if (circleSpecs && textSpecs) {
+          textSpecs.innerText = `${specAlignmentPercent}%`;
+          const offset = 314.16 - (specAlignmentPercent / 100) * 314.16;
+          circleSpecs.style.strokeDashoffset = offset;
+        }
+
+        // 2. Render Folder Tree Map
+        renderTreeMap(data.files, "");
+
+        // 3. Render Epistemic Debt Table
+        renderDebtTable(data);
+
+        // 4. Wire Search/Filter Input
+        const searchInput = document.getElementById("search-input");
+        searchInput.addEventListener("input", (e) => {
+          const query = e.target.value.toLowerCase().trim();
+          if (query === "") {
+            renderTreeMap(data.files, "");
+          } else {
+            const filtered = data.files.filter((f) => {
+              const hasClass = f.classes.some((c) =>
+                c.name.toLowerCase().includes(query),
+              );
+              const hasExport = f.exports.some((ex) =>
+                ex.name.toLowerCase().includes(query),
+              );
+              const matchesPath = f.path.toLowerCase().includes(query);
+              const matchesSpec = f.referencingSpecs.some((spec) =>
+                spec.toLowerCase().includes(query),
+              );
+              return hasClass || hasExport || matchesPath || matchesSpec;
+            });
+            renderTreeMap(filtered, query);
+          }
+        });
+      }
+
+      function renderTreeMap(files, highlightQuery) {
+        const container = document.getElementById("tree-container");
+        container.innerHTML = "";
+
+        // Group files by directory
+        const directories = {};
+        for (const f of files) {
+          const dir = f.path.split("/").slice(0, -1).join("/") || "root";
+          if (!directories[dir]) directories[dir] = [];
+          directories[dir].push(f);
+        }
+
+        for (const [dir, dirFiles] of Object.entries(directories)) {
+          const elFolder = document.createElement("div");
+          elFolder.className = "tree-folder";
+
+          const elHeader = document.createElement("div");
+          elHeader.className = "folder-header";
+          elHeader.innerHTML = `
+          <svg class="folder-icon" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/></svg>
+          <span>${dir}/</span>
+        `;
+
+          const elContent = document.createElement("div");
+          elContent.className = "folder-content";
+
+          for (const f of dirFiles) {
+            const elFile = document.createElement("div");
+            elFile.className = "file-item";
+
+            let badgeClass = "badge-covered";
+            let badgeLabel = "Green";
+
+            if (!f.testFile) {
+              badgeClass = "badge-untested";
+              badgeLabel = "Untested";
+            } else if (
+              f.missingJsDocSymbols &&
+              f.missingJsDocSymbols.length > 0
+            ) {
+              badgeClass = "badge-missing-jsdoc";
+              badgeLabel = "JSDoc Gaps";
+            }
+
+            elFile.innerHTML = `
+            <div class="file-info">
+              <span class="file-name" data-path="${f.path}">${f.path.split("/").pop()}</span>
+              <span class="file-loc">${f.loc} LOC</span>
+            </div>
+            <span class="badge ${badgeClass}">${badgeLabel}</span>
+          `;
+
+            // Wire file click inspector
+            elFile.querySelector(".file-name").addEventListener("click", () => {
+              inspectFile(f);
+            });
+
+            elContent.appendChild(elFile);
+          }
+
+          // Collapse/Expand toggle
+          elHeader.addEventListener("click", () => {
+            elContent.style.display =
+              elContent.style.display === "none" ? "block" : "none";
+          });
+
+          elFolder.appendChild(elHeader);
+          elFolder.appendChild(elContent);
+          container.appendChild(elFolder);
+        }
+      }
+
+      function inspectFile(file) {
+        const container = document.getElementById("details-container");
+        container.className = "pane-header"; // resets layout
+        container.style.border = "none";
+        container.style.textAlign = "left";
+        container.style.display = "block";
+        container.style.height = "100%";
+        container.style.overflowY = "auto";
+
+        const classesHtml =
+          file.classes
+            .map(
+              (c) => `
+        <div class="details-item">
+          <div class="details-item-label">Class</div>
+          <div class="details-item-value">${c.name}</div>
+        </div>
+      `,
+            )
+            .join("") ||
+          `<div style="font-size:0.85rem;color:var(--color-text-muted)">None</div>`;
+
+        const exportsHtml =
+          file.exports
+            .map(
+              (ex) => `
+        <div class="details-item">
+          <div class="details-item-label">Export (${ex.type})</div>
+          <div class="details-item-value">${ex.name}</div>
+        </div>
+      `,
+            )
+            .join("") ||
+          `<div style="font-size:0.85rem;color:var(--color-text-muted)">None</div>`;
+
+        const specsHtml =
+          file.referencingSpecs
+            .map(
+              (s) => `
+        <div class="details-item" style="border-color: var(--color-primary-glow);">
+          <div class="details-item-label">Spec alignment</div>
+          <div class="details-item-value">${s.split("/").pop()}</div>
+        </div>
+      `,
+            )
+            .join("") ||
+          `<div style="font-size:0.85rem;color:var(--color-text-muted)">None</div>`;
+
+        container.innerHTML = `
+        <div class="details-title" style="font-size:1.4rem;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:0.5rem;margin-bottom:1rem;">
+          📄 ${file.path.split("/").pop()}
+        </div>
+        <div style="font-size:0.85rem;color:var(--color-text-muted);margin-bottom:1rem;">Full Path: ${file.path}</div>
+        
+        <div style="font-weight:600;margin-bottom:0.5rem;text-transform:uppercase;font-size:0.8rem;letter-spacing:0.05em;">Classes defined</div>
+        <div style="display:grid;grid-template-columns:1fr;gap:0.5rem;margin-bottom:1.5rem;">${classesHtml}</div>
+
+        <div style="font-weight:600;margin-bottom:0.5rem;text-transform:uppercase;font-size:0.8rem;letter-spacing:0.05em;">Exported signatures</div>
+        <div style="display:grid;grid-template-columns:1fr;gap:0.5rem;margin-bottom:1.5rem;">${exportsHtml}</div>
+
+        <div style="font-weight:600;margin-bottom:0.5rem;text-transform:uppercase;font-size:0.8rem;letter-spacing:0.05em;">Referencing Specifications</div>
+        <div style="display:grid;grid-template-columns:1fr;gap:0.5rem;margin-bottom:1.5rem;">${specsHtml}</div>
+
+        <div style="font-weight:600;margin-bottom:0.5rem;text-transform:uppercase;font-size:0.8rem;letter-spacing:0.05em;">Unit Test correlation</div>
+        <div class="details-item">
+          <div class="details-item-label">Test file</div>
+          <div class="details-item-value">${file.testFile ? file.testFile.split("/").pop() : "❌ Untested"}</div>
+        </div>
+      `;
+      }
+
+      function renderDebtTable(data) {
+        const tbody = document.getElementById("debt-table-body");
+        tbody.innerHTML = "";
+
+        let debtItems = [];
+
+        // 1. Untested Core Files
+        for (const f of data.epistemicDebt.untestedCoreFiles) {
+          debtItems.push({
+            path: f,
+            issue:
+              "Module is completely missing an associated unit test suite.",
+            severity: "Crimson (High)",
+            style: "color:var(--color-danger);",
+          });
+        }
+
+        // 2. Broken Spec references
+        for (const s of data.epistemicDebt.staleSpecReferences) {
+          debtItems.push({
+            path: s.spec,
+            issue: `Spec references missing files: ${s.brokenFiles.join(", ")}`,
+            severity: "Crimson (High)",
+            style: "color:var(--color-danger);",
+          });
+        }
+
+        // 3. Missing JSDocs
+        for (const m of data.epistemicDebt.missingJsDocs) {
+          for (const sym of m.symbols) {
+            debtItems.push({
+              path: m.path,
+              issue: `Line ${sym.line}: Missing JSDoc type signature for ${sym.type} '${sym.name}'.`,
+              severity: "Amber (Low)",
+              style: "color:var(--color-warning);",
+            });
+          }
+        }
+
+        if (debtItems.length === 0) {
+          tbody.innerHTML = `
+          <tr>
+            <td colspan="3" style="text-align:center;color:var(--color-text-muted);">
+              🎉 Clean slate! Zero epistemic debt or static gaps detected in active sandbox.
+            </td>
+          </tr>
+        `;
+          return;
+        }
+
+        for (const d of debtItems) {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+          <td><strong>${d.path}</strong></td>
+          <td>${d.issue}</td>
+          <td><span class="debt-status" style="${d.style}">${d.severity}</span></td>
+        `;
+          tbody.appendChild(row);
+        }
+      }
+
+      // Dynamic offline mock fallback compilation matching real agy-sandbox scope
+      function generateMockCodex() {
+        return {
+          generatedAt: new Date().toISOString(),
+          stats: {
+            totalSourceFiles: 67,
+            totalTestFiles: 93,
+            totalSpecFiles: 107,
+            totalLoc: 15601,
+            totalTests: 1309,
+            untestedCoreFilesCount: 0,
+          },
+          files: [
+            {
+              path: "src/net/ApiRateLimiter.js",
+              loc: 312,
+              classes: [{ name: "ApiRateLimiter", line: 11 }],
+              exports: [
+                {
+                  name: "activateOutboundSentinel",
+                  type: "function",
+                  line: 122,
+                },
+              ],
+              testFile: "src/net/ApiRateLimiter.test.js",
+              testCasesCount: 11,
+              referencingSpecs: [
+                "plan/specs/097_guest_isolation_api_rate_limiter.md",
+              ],
+              missingJsDocSymbols: [],
+            },
+            {
+              path: "src/persistence/GalacticChronicle.js",
+              loc: 118,
+              classes: [{ name: "GalacticChronicle", line: 15 }],
+              exports: [],
+              testFile: "src/persistence/GalacticChronicle.test.js",
+              testCasesCount: 7,
+              referencingSpecs: [
+                "plan/specs/096_galactic_chronicle_observability.md",
+              ],
+              missingJsDocSymbols: [],
+            },
+            {
+              path: "src/engine/ai/UtilityAI.js",
+              loc: 398,
+              classes: [],
+              exports: [{ name: "evaluateGoals", type: "function", line: 15 }],
+              testFile: "src/engine/ai/UtilityAI.test.js",
+              testCasesCount: 16,
+              referencingSpecs: [],
+              missingJsDocSymbols: [],
+            },
+          ],
+          epistemicDebt: {
+            untestedCoreFiles: [],
+            missingJsDocs: [
+              {
+                path: "src/engine/ai/UtilityAI.js",
+                symbols: [{ name: "scoreTrade", type: "function", line: 89 }],
+              },
+            ],
+            staleSpecReferences: [],
+          },
+        };
+      }
+
+      const FALLBACK_SCHEMAS = {
+        join: {
+          sessionToken: { type: "string", optional: true },
+          nickname: { type: "string", optional: true, maxLength: 20 },
+        },
+        quick_join: {
+          mode: { type: "string", optional: true },
+          tags: { type: "array", optional: true, itemType: "string" },
+        },
+        create_room: {
+          roomName: { type: "string", required: true, maxLength: 50 },
+          mode: { type: "string", optional: true },
+          tags: { type: "array", optional: true, itemType: "string" },
+        },
+        join_room: {
+          roomId: { type: "string", required: true },
+          nickname: { type: "string", optional: true, maxLength: 20 },
+        },
+        controls: {
+          keys: { type: "object", optional: true },
+          heading: { type: "number", optional: true, finite: true },
+          warp: { type: "boolean", optional: true },
+        },
+        land: {
+          planetName: { type: "string", required: true },
+        },
+        launch: {},
+        trade: {
+          planetName: { type: "string", required: true },
+          commodity: { type: "string", required: true },
+          amount: { type: "integer", required: true, min: 0 },
+          buy: { type: "boolean", required: true },
+        },
+        port_service: {
+          service: { type: "string", required: true },
+        },
+        port_refine: {},
+        ore_refine: {},
+        jettison: {
+          commodity: { type: "string", required: true },
+          amount: { type: "integer", required: true, min: 1 },
+        },
+        outfit_buy: {
+          outfitKey: { type: "string", required: true },
+        },
+        outfit_sell: {
+          outfitKey: { type: "string", required: true },
+        },
+        preset_save: {
+          presetIndex: { type: "integer", optional: true, min: 0 },
+          presetName: { type: "string", optional: true, maxLength: 30 },
+        },
+        preset_load: {
+          presetIndex: { type: "integer", optional: true, min: 0 },
+        },
+        ship_buy: {
+          hullKey: { type: "string", required: true },
+        },
+        squad_invite: {
+          targetPlayerId: { type: "string", required: true },
+        },
+        squad_join: {
+          squadId: { type: "string", required: true },
+        },
+        squad_leave: {},
+        port_redeem_vouchers: {},
+        mission_accept: {
+          missionId: { type: "string", required: true },
+        },
+        mission_abandon: {
+          missionId: { type: "string", required: true },
+        },
+        fleet_create: {
+          fleetName: { type: "string", required: true, maxLength: 30 },
+        },
+        fleet_join: {
+          fleetName: { type: "string", required: true, maxLength: 30 },
+        },
+        fleet_leave: {},
+        chat: {
+          text: { type: "string", required: true, maxLength: 100 },
+          channel: { type: "string", optional: true },
+        },
+        warp_jump: {
+          stargateId: { type: "string", required: true },
+        },
+        boarding_action: {
+          targetId: { type: "string", required: true },
+        },
+        escort_command: {
+          command: { type: "string", required: true },
+        },
+        escort_formation: {
+          formation: { type: "string", required: true },
+        },
+        distress_beacon: {},
+        ping: {},
+        tutorial_complete: {},
+      };
+
+      function showToast(message) {
+        const toast = document.getElementById("toast");
+        toast.innerText = message;
+        toast.classList.add("show");
+        setTimeout(() => {
+          toast.classList.remove("show");
+        }, 2500);
+      }
+
+      function generateDefaultValueForField(fieldName, fieldDef) {
+        if (fieldName === "planetName") return "Sol";
+        if (fieldName === "commodity") return "electronics";
+        if (fieldName === "stargateId") return "sg-sol-polaris";
+        if (fieldName === "roomId") return "room-public";
+        if (fieldName === "squadId") return "squad-alpha";
+        if (fieldName === "fleetName") return "Vanguard Fleet";
+        if (fieldName === "targetPlayerId" || fieldName === "targetId")
+          return "pilot-123";
+        if (fieldName === "missionId") return "mission-abc";
+        if (fieldName === "outfitKey") return "laser_1";
+        if (fieldName === "hullKey") return "scout";
+        if (fieldName === "command") return "intercept";
+        if (fieldName === "formation") return "delta";
+        if (fieldName === "text") return "Hello Starfall Commanders!";
+        if (fieldName === "sessionToken") return "token-xyz-789";
+        if (fieldName === "nickname") return "CommanderValerie";
+        if (fieldName === "channel") return "global";
+        if (fieldName === "service") return "repair";
+
+        if (fieldDef.type === "string") return "value";
+        if (fieldDef.type === "integer" || fieldDef.type === "number")
+          return fieldDef.min !== undefined ? fieldDef.min : 5;
+        if (fieldDef.type === "boolean") return true;
+        if (fieldDef.type === "array") return ["val1", "val2"];
+        if (fieldDef.type === "object") return { active: true };
+        return null;
+      }
+
+      function renderSchemaFields(action, schema) {
+        const container = document.getElementById("schema-fields-container");
+        container.innerHTML = "";
+
+        const fields = Object.entries(schema);
+        if (fields.length === 0) {
+          container.innerHTML = `<div style="font-size:0.85rem;color:var(--color-text-muted);padding:0.5rem 0;">No parameters required for this message type.</div>`;
+          return;
+        }
+
+        for (const [name, def] of fields) {
+          const isReq = def.required === true;
+          const card = document.createElement("div");
+          card.className = "schema-field-card";
+
+          let constraintsHtml = [];
+          if (def.maxLength !== undefined)
+            constraintsHtml.push(`max-length: ${def.maxLength}`);
+          if (def.min !== undefined) constraintsHtml.push(`min: ${def.min}`);
+          if (def.max !== undefined) constraintsHtml.push(`max: ${def.max}`);
+          if (def.itemType !== undefined)
+            constraintsHtml.push(`items: ${def.itemType}`);
+
+          const constraintsText =
+            constraintsHtml.length > 0 ? `(${constraintsHtml.join(", ")})` : "";
+
+          card.innerHTML = `
+          <div class="schema-field-header">
+            <span class="schema-field-name">${name}</span>
+            <div class="schema-field-meta">
+              <span class="schema-badge ${isReq ? "badge-req" : "badge-opt"}">${isReq ? "required" : "optional"}</span>
+              <span class="schema-badge badge-type">${def.type}</span>
+            </div>
+          </div>
+          <div class="schema-field-constraints">${constraintsText}</div>
+        `;
+          container.appendChild(card);
+        }
+      }
+
+      function updateCodePreview(action, schema) {
+        const previewEl = document.getElementById("code-preview");
+
+        const payload = { type: action };
+        for (const [name, def] of Object.entries(schema)) {
+          payload[name] = generateDefaultValueForField(name, def);
+        }
+
+        const jsonStr = JSON.stringify(payload, null, 2);
+        previewEl.innerText = jsonStr;
+      }
+
+      function initGenerator() {
+        const select = document.getElementById("action-select");
+        select.innerHTML = "";
+
+        const schemas =
+          schemaData && schemaData.schemas
+            ? schemaData.schemas
+            : FALLBACK_SCHEMAS;
+
+        for (const actionName of Object.keys(schemas)) {
+          const opt = document.createElement("option");
+          opt.value = actionName;
+          opt.innerText = actionName;
+          select.appendChild(opt);
+        }
+
+        // Initial render
+        if (select.value) {
+          renderSchemaFields(select.value, schemas[select.value]);
+          updateCodePreview(select.value, schemas[select.value]);
+        }
+
+        select.addEventListener("change", (e) => {
+          const action = e.target.value;
+          renderSchemaFields(action, schemas[action]);
+          updateCodePreview(action, schemas[action]);
+        });
+
+        // Tab switching wire-up
+        const tabInspector = document.getElementById("tab-inspector");
+        const tabGenerator = document.getElementById("tab-generator");
+        const inspectorTab = document.getElementById("inspector-tab");
+        const generatorTab = document.getElementById("generator-tab");
+
+        tabInspector.addEventListener("click", () => {
+          tabInspector.classList.add("active");
+          tabGenerator.classList.remove("active");
+          inspectorTab.style.display = "block";
+          generatorTab.style.display = "none";
+        });
+
+        tabGenerator.addEventListener("click", () => {
+          tabGenerator.classList.add("active");
+          tabInspector.classList.remove("active");
+          inspectorTab.style.display = "none";
+          generatorTab.style.display = "block";
+        });
+
+        // Clipboard wire-up
+        document
+          .getElementById("btn-copy-json")
+          .addEventListener("click", () => {
+            const text = document.getElementById("code-preview").innerText;
+            navigator.clipboard
+              .writeText(text)
+              .then(() => {
+                showToast("⚡ JSON Payload copied to clipboard!");
+              })
+              .catch((err) => {
+                console.error("Clipboard copy failed", err);
+              });
+          });
+
+        document
+          .getElementById("btn-copy-code")
+          .addEventListener("click", () => {
+            const jsonText = document.getElementById("code-preview").innerText;
+            const jsCode = `ws.send(JSON.stringify(${jsonText}));`;
+            navigator.clipboard
+              .writeText(jsCode)
+              .then(() => {
+                showToast("💻 JavaScript Code snippet copied!");
+              })
+              .catch((err) => {
+                console.error("Clipboard copy failed", err);
+              });
+          });
+      }
+
+      // Telemetry Real-Time SVG charting (SPEC-117)
+      let historyConnections = Array(60).fill(0);
+      let historyRateLimits = Array(60).fill(0);
+      let lastCumulativeRateLimits = null;
+
+      async function updateTelemetry() {
+        let connections = 0;
+        let rateLimits = 0;
+        let latency = 0;
+        let memoryUsed = 0;
+
+        try {
+          const res = await fetch("/metrics");
+          if (res.ok) {
+            const data = await res.json();
+            const ports = data.cluster_worker_ports || [];
+
+            if (ports.length === 0) {
+              connections = data.clients_active ?? 0;
+              latency = data.event_loop_latency_ms ?? 0;
+              const primaryHeap = data.sandbox_telemetry?.memory?.heapUsed ?? 0;
+              memoryUsed = primaryHeap / (1024 * 1024);
+
+              const cumulativeLimits =
+                data.counters?.rate_limits_triggered ?? 0;
+              if (lastCumulativeRateLimits !== null) {
+                rateLimits = Math.max(
+                  0,
+                  cumulativeLimits - lastCumulativeRateLimits,
+                );
+              }
+              lastCumulativeRateLimits = cumulativeLimits;
+            } else {
+              const protocol = window.location.protocol || "http:";
+              const hostname = window.location.hostname || "localhost";
+
+              const metricsPromises = ports.map(async (port) => {
+                try {
+                  const portUrl = `${protocol}//${hostname}:${port}/metrics`;
+                  const r = await fetch(portUrl);
+                  if (r.ok) {
+                    return await r.json();
+                  }
+                } catch (e) {
+                  console.warn(`Worker port ${port} unreachable:`, e);
+                }
+                return null;
+              });
+
+              const allMetrics = await Promise.all(metricsPromises);
+
+              let totalConnections = 0;
+              let worstLatency = 0;
+              let totalMemoryBytes = 0;
+              let totalRateLimitsTriggered = 0;
+
+              allMetrics.forEach((workerData) => {
+                if (workerData) {
+                  totalConnections += workerData.clients_active ?? 0;
+                  worstLatency = Math.max(
+                    worstLatency,
+                    workerData.event_loop_latency_ms ?? 0,
+                  );
+                  totalMemoryBytes +=
+                    workerData.sandbox_telemetry?.memory?.heapUsed ?? 0;
+                  totalRateLimitsTriggered +=
+                    workerData.counters?.rate_limits_triggered ?? 0;
+                }
+              });
+
+              connections = totalConnections;
+              latency = worstLatency;
+              memoryUsed = totalMemoryBytes / (1024 * 1024);
+
+              if (lastCumulativeRateLimits !== null) {
+                rateLimits = Math.max(
+                  0,
+                  totalRateLimitsTriggered - lastCumulativeRateLimits,
+                );
+              }
+              lastCumulativeRateLimits = totalRateLimitsTriggered;
+            }
+
+            document.getElementById("chart-val-connections").innerText =
+              connections;
+            document.getElementById("chart-val-ratelimits").innerText =
+              lastCumulativeRateLimits ?? 0;
+            document.getElementById("chart-val-latency").innerText =
+              `${latency.toFixed(1)} ms`;
+
+            const memoryEl = document.getElementById("chart-val-memory");
+            if (memoryEl) {
+              memoryEl.innerText = `${memoryUsed.toFixed(1)} MB`;
+            }
+
+            // SPEC-126 Egress status card updates
+            const firewall = data.sandbox_firewall || {
+              block_count: 0,
+              blocked_events: [],
+              allowlist_domains: [],
+            };
+            const apiLimiter = data.api_limiter || {
+              block_count: 0,
+              expended_tokens: 0,
+              max_per_minute: 10,
+              max_per_hour: 200,
+              allowlist_domains: [],
+            };
+            const memoryLeak = data.memory_leak_alerts || {
+              leakDetectionsTotal: 0,
+              diagnostics: { lastLeakRate: 0 },
+            };
+
+            // 1. Domains list
+            const firewallDomains = firewall.allowlist_domains || [
+              "google.com",
+              "openai.com",
+              "localhost",
+            ];
+            const domainsListEl = document.getElementById(
+              "firewall-domains-list",
+            );
+            if (domainsListEl) {
+              domainsListEl.innerText = firewallDomains.join("\n");
+            }
+
+            // 2. Firewall blocks count and meter
+            const blockCountEl = document.getElementById(
+              "firewall-block-count",
+            );
+            if (blockCountEl) {
+              blockCountEl.innerText = firewall.block_count;
+            }
+            const blockMeterEl = document.getElementById(
+              "firewall-block-meter",
+            );
+            if (blockMeterEl) {
+              const pct = Math.min(100, (firewall.block_count / 20) * 100);
+              blockMeterEl.style.width = `${pct}%`;
+            }
+
+            // 3. API Outbound Rate display and meter
+            const apiRateDisplayEl =
+              document.getElementById("api-rate-display");
+            if (apiRateDisplayEl) {
+              apiRateDisplayEl.innerText = `${apiLimiter.block_count} blocked / ${apiLimiter.max_per_minute}/min`;
+            }
+            const apiRateMeterEl = document.getElementById("api-rate-meter");
+            if (apiRateMeterEl) {
+              const pct = Math.min(
+                100,
+                (apiLimiter.block_count / apiLimiter.max_per_minute) * 100,
+              );
+              apiRateMeterEl.style.width = `${pct}%`;
+            }
+
+            // 4. Memory Leak Alerts Status
+            const leakAlertsEl = document.getElementById(
+              "memory-leak-alerts-display",
+            );
+            if (leakAlertsEl) {
+              const count = memoryLeak.leakDetectionsTotal || 0;
+              if (count > 0) {
+                leakAlertsEl.innerText = `${count} ALERTS`;
+                leakAlertsEl.style.color = "#ef4444";
+              } else {
+                leakAlertsEl.innerText = "CLEAN";
+                leakAlertsEl.style.color = "#10b981";
+              }
+            }
+
+            // SPEC-135: CPU Watchdog & Tamper Sentry Gauge Card Update
+            const latencyValueEl = document.getElementById("cpu-latency-value");
+            if (latencyValueEl) {
+              latencyValueEl.innerText = `${latency.toFixed(1)} ms`;
+              if (latency > 50) {
+                latencyValueEl.style.color = "#ef4444";
+              } else if (latency > 15) {
+                latencyValueEl.style.color = "#f59e0b";
+              } else {
+                latencyValueEl.style.color = "#10b981";
+              }
+            }
+
+            const latencyMeterEl = document.getElementById("cpu-latency-meter");
+            if (latencyMeterEl) {
+              const pct = Math.min(100, (latency / 100) * 100);
+              latencyMeterEl.style.width = `${pct}%`;
+              if (latency > 50) {
+                latencyMeterEl.style.background = "#ef4444";
+                latencyMeterEl.style.boxShadow = "0 0 8px #ef4444";
+              } else if (latency > 15) {
+                latencyMeterEl.style.background = "#f59e0b";
+                latencyMeterEl.style.boxShadow = "0 0 8px #f59e0b";
+              } else {
+                latencyMeterEl.style.background = "#10b981";
+                latencyMeterEl.style.boxShadow = "0 0 8px #10b981";
+              }
+            }
+
+            const protoStatusEl = document.getElementById("prototype-sentry-status");
+            if (protoStatusEl) {
+              const hasRecentTamper = security.recent_violations?.some(
+                (v) => v.category === "integrity" && v.action === "prototype_tamper",
+              );
+              if (hasRecentTamper) {
+                protoStatusEl.innerText = "VIOLATION DETECTED";
+                protoStatusEl.style.color = "#ef4444";
+                protoStatusEl.style.textShadow = "0 0 8px rgba(239, 68, 68, 0.6)";
+              } else {
+                protoStatusEl.innerText = "SECURED";
+                protoStatusEl.style.color = "#10b981";
+                protoStatusEl.style.textShadow = "0 0 4px rgba(16, 185, 129, 0.4)";
+              }
+            }
+
+            const pollutionStatusEl = document.getElementById(
+              "global-pollution-status",
+            );
+            if (pollutionStatusEl) {
+              const hasRecentPollution = security.recent_violations?.some(
+                (v) => v.category === "integrity" && v.action === "global_pollution",
+              );
+              if (hasRecentPollution) {
+                pollutionStatusEl.innerText = "TAMPER ATTEMPT";
+                pollutionStatusEl.style.color = "#ef4444";
+                pollutionStatusEl.style.textShadow = "0 0 8px rgba(239, 68, 68, 0.6)";
+              } else {
+                pollutionStatusEl.innerText = "CLEAN";
+                pollutionStatusEl.style.color = "#10b981";
+                pollutionStatusEl.style.textShadow = "0 0 4px rgba(16, 185, 129, 0.4)";
+              }
+            }
+
+            // SPEC-142: Guest Sandbox Footprint HUD Gauge Card Update
+            const guestSandbox = data.guest_sandbox || { active_runs: [], recent_runs: [] };
+            
+            const activeCountEl = document.getElementById("guest-active-count");
+            if (activeCountEl) {
+              activeCountEl.innerText = guestSandbox.active_runs.length;
+            }
+
+            let activeMemUsed = 0;
+            let activeMemLimit = 128; // MB
+            let activeCpuUsed = 0;
+            let activeCpuBudget = 2000; // ms
+            let lastScript = "none";
+            let lastStatus = "none";
+
+            if (guestSandbox.active_runs.length > 0) {
+              const run = guestSandbox.active_runs[0];
+              activeMemUsed = (run.heapUsedBytes || 0) / (1024 * 1024); // to MB
+              activeMemLimit = run.maxMemoryMb || 128;
+              activeCpuUsed = run.cpuTimeMs || 0;
+              activeCpuBudget = run.cpuTimeBudgetMs || 2000;
+              lastScript = run.script;
+              lastStatus = run.status;
+            } else if (guestSandbox.recent_runs.length > 0) {
+              const run = guestSandbox.recent_runs[0];
+              activeMemUsed = (run.heapUsedBytes || 0) / (1024 * 1024);
+              activeMemLimit = run.maxMemoryMb || 128;
+              activeCpuUsed = run.cpuTimeMs || 0;
+              activeCpuBudget = run.cpuTimeBudgetMs || 2000;
+              lastScript = run.script;
+              lastStatus = run.status;
+            }
+
+            // Memory Ring & text update
+            const ringMemoryEl = document.getElementById("ring-guest-memory");
+            const memoryTextEl = document.getElementById("guest-memory-text");
+            const heapDisplayEl = document.getElementById("guest-heap-display");
+            
+            const memPct = Math.min(100, Math.max(0, (activeMemUsed / activeMemLimit) * 100));
+            if (memoryTextEl) {
+              memoryTextEl.innerText = `${Math.round(memPct)}%`;
+            }
+            if (ringMemoryEl) {
+              // Circumference is 201
+              const offset = 201 - (201 * memPct) / 100;
+              ringMemoryEl.setAttribute("stroke-dashoffset", offset);
+              if (memPct > 80) {
+                ringMemoryEl.setAttribute("stroke", "#ef4444");
+              } else if (memPct > 50) {
+                ringMemoryEl.setAttribute("stroke", "#f59e0b");
+              } else {
+                ringMemoryEl.setAttribute("stroke", "#fbbf24");
+              }
+            }
+            if (heapDisplayEl) {
+              heapDisplayEl.innerText = `${activeMemUsed.toFixed(2)} MB / ${activeMemLimit} MB`;
+            }
+
+            // CPU Ring & text update
+            const ringCpuEl = document.getElementById("ring-guest-cpu");
+            const cpuTextEl = document.getElementById("guest-cpu-text");
+            const cpuDisplayEl = document.getElementById("guest-cpu-display");
+
+            const cpuPct = Math.min(100, Math.max(0, (activeCpuUsed / activeCpuBudget) * 100));
+            if (cpuTextEl) {
+              cpuTextEl.innerText = `${Math.round(cpuPct)}%`;
+            }
+            if (ringCpuEl) {
+              const offset = 201 - (201 * cpuPct) / 100;
+              ringCpuEl.setAttribute("stroke-dashoffset", offset);
+              if (cpuPct > 80) {
+                ringCpuEl.setAttribute("stroke", "#ef4444");
+              } else if (cpuPct > 50) {
+                ringCpuEl.setAttribute("stroke", "#f59e0b");
+              } else {
+                ringCpuEl.setAttribute("stroke", "#fbbf24");
+              }
+            }
+            if (cpuDisplayEl) {
+              cpuDisplayEl.innerText = `${Math.round(activeCpuUsed)} ms / ${activeCpuBudget} ms`;
+            }
+
+            // Info details update
+            const lastScriptEl = document.getElementById("guest-last-script");
+            if (lastScriptEl) {
+              lastScriptEl.innerText = lastScript;
+              lastScriptEl.style.color = lastScript !== "none" ? "#fff" : "#6b7280";
+            }
+            const lastStatusEl = document.getElementById("guest-last-status");
+            if (lastStatusEl) {
+              lastStatusEl.innerText = lastStatus;
+              if (lastStatus === "success") {
+                lastStatusEl.style.color = "#10b981";
+              } else if (lastStatus === "running") {
+                lastStatusEl.style.color = "#3b82f6";
+              } else if (lastStatus !== "none") {
+                lastStatusEl.style.color = "#ef4444";
+              } else {
+                lastStatusEl.style.color = "#6b7280";
+              }
+            }
+
+            // SPEC-147: Guest RPC & Workspace Drift HUD Card Update
+            const totalRequestsEl = document.getElementById("rpc-total-requests");
+            if (totalRequestsEl) {
+              totalRequestsEl.innerText = guestSandbox.rpc_total_requests || 0;
+            }
+            const blockedRequestsEl = document.getElementById("rpc-blocked-requests");
+            if (blockedRequestsEl) {
+              blockedRequestsEl.innerText = guestSandbox.rpc_blocked_requests || 0;
+            }
+            const selfHealsEl = document.getElementById("drift-self-heals");
+            if (selfHealsEl) {
+              selfHealsEl.innerText = guestSandbox.drift_total_self_heals || 0;
+            }
+            const filesHealedEl = document.getElementById("drift-files-healed");
+            if (filesHealedEl) {
+              filesHealedEl.innerText = guestSandbox.drift_total_files_restored_or_purged || 0;
+            }
+
+            // Update workspace purity circle offset based on self-healing count
+            const ringIntegrityEl = document.getElementById("ring-integrity-status");
+            const integrityHealthTextEl = document.getElementById("integrity-health-text");
+            if (ringIntegrityEl && integrityHealthTextEl) {
+              const driftCount = guestSandbox.drift_total_self_heals || 0;
+              if (driftCount > 0) {
+                ringIntegrityEl.setAttribute("stroke", "#f59e0b");
+                ringIntegrityEl.style.filter = "drop-shadow(0 0 4px rgba(245,158,11,0.4))";
+                integrityHealthTextEl.innerText = "HEALED";
+                integrityHealthTextEl.style.color = "#f59e0b";
+              } else {
+                ringIntegrityEl.setAttribute("stroke", "#10b981");
+                ringIntegrityEl.style.filter = "drop-shadow(0 0 4px rgba(16,185,129,0.4))";
+                integrityHealthTextEl.innerText = "100%";
+                integrityHealthTextEl.style.color = "#10b981";
+              }
+            }
+
+            // Populate the Live RPC ticker feed based on recent_violations matching "guest_rpc_block"
+            // and security violations, plus public allowlisted successes if any
+            const rpcFeedEl = document.getElementById("rpc-feed-ticker");
+            const securityDataForRpc = data.sandbox_security || { recent_violations: [] };
+            if (rpcFeedEl && securityDataForRpc.recent_violations) {
+              const rpcEvents = [];
+              
+              const rpcViolations = securityDataForRpc.recent_violations.filter(
+                (v) => v.action === "guest_rpc_block" || v.action === "workspace_drift"
+              );
+              for (const v of rpcViolations) {
+                const timeStr = new Date(v.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                if (v.action === "guest_rpc_block") {
+                  rpcEvents.push({
+                    time: timeStr,
+                    type: "BLOCKED",
+                    text: `RPC DENIED: ${v.details.action} (${v.details.reason || "Invalid parameters"})`,
+                    color: "#ef4444"
+                  });
+                } else if (v.action === "workspace_drift") {
+                  rpcEvents.push({
+                    time: timeStr,
+                    type: "INTEGRITY",
+                    text: `HEALED DRIFT: Restored ${v.details.selfHealCount} file(s) in sandbox!`,
+                    color: "#f59e0b"
+                  });
+                }
+              }
+
+              const successCount = (guestSandbox.rpc_total_requests || 0) - (guestSandbox.rpc_blocked_requests || 0);
+              if (successCount > 0 && rpcEvents.length === 0) {
+                rpcEvents.push({
+                  time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                  type: "SUCCESS",
+                  text: `RPC PERMITTED: GET_SECTOR_STATE { sectorId: "sol" }`,
+                  color: "#10b981"
+                });
+              }
+
+              if (rpcEvents.length > 0) {
+                rpcFeedEl.innerHTML = rpcEvents
+                  .map(
+                    (ev) =>
+                      `<div style="display: flex; gap: 0.35rem; line-height: 1.2;">
+                        <span style="color: #6b7280; flex-shrink: 0;">[${ev.time}]</span>
+                        <span style="color: ${ev.color}; font-weight: 700; flex-shrink: 0;">[${ev.type}]</span>
+                        <span style="word-break: break-all;">${ev.text}</span>
+                      </div>`
+                  )
+                  .join("");
+              } else {
+                rpcFeedEl.innerHTML = `<div style="color: #6b7280; text-align: center; margin-top: 1.5rem;">No active RPC queries logged.</div>`;
+              }
+            }
+
+            // SPEC-132: Render Containment Breaches Logs in Sentry Console
+            const security = data.sandbox_security || {
+              security_violations_total: 0,
+              security_violations_by_category: { total: 0 },
+              recent_violations: [],
+            };
+            const breachIndicator = document.getElementById(
+              "breach-active-indicator",
+            );
+            if (breachIndicator) {
+              if (security.security_violations_total > 0) {
+                breachIndicator.innerText = `CONTAINMENT BREACHES: ${security.security_violations_total}`;
+                breachIndicator.style.background = "rgba(239, 68, 68, 0.25)";
+                breachIndicator.style.color = "#ef4444";
+                breachIndicator.style.borderColor = "#ef4444";
+              } else {
+                breachIndicator.innerText = "SYSTEM CONTAINER: SECURE";
+                breachIndicator.style.background = "rgba(16, 185, 129, 0.15)";
+                breachIndicator.style.color = "#10b981";
+                breachIndicator.style.borderColor = "rgba(16, 185, 129, 0.3)";
+              }
+            }
+
+            const breachLogList = document.getElementById("breach-log-list");
+            if (breachLogList) {
+              if (security.recent_violations.length > 0) {
+                const violations = [...security.recent_violations].reverse();
+                breachLogList.innerHTML = violations
+                  .map((v) => {
+                    let badgeColor = "#ef4444";
+                    let badgeBg = "rgba(239, 68, 68, 0.15)";
+                    let badgeBorder = "rgba(239, 68, 68, 0.3)";
+
+                    if (v.category === "firewall") {
+                      badgeColor = "#f59e0b";
+                      badgeBg = "rgba(245, 158, 11, 0.15)";
+                      badgeBorder = "rgba(245, 158, 11, 0.3)";
+                    } else if (v.category === "rate_limit") {
+                      badgeColor = "#fbbf24";
+                      badgeBg = "rgba(251, 191, 36, 0.15)";
+                      badgeBorder = "rgba(251, 191, 36, 0.3)";
+                    } else if (v.category === "process") {
+                      badgeColor = "#bd00ff";
+                      badgeBg = "rgba(189, 0, 255, 0.15)";
+                      badgeBorder = "rgba(189, 0, 255, 0.3)";
+                    }
+
+                    const stackMarkup = v.stack
+                      ? `<details style="margin-top: 0.25rem;">
+                          <summary style="font-size: 0.7rem; color: #64748b; cursor: pointer; user-select: none;">Show Callstack</summary>
+                          <pre style="
+                            font-size: 0.65rem;
+                            color: #94a3b8;
+                            background: rgba(0,0,0,0.3);
+                            padding: 0.5rem;
+                            border-radius: 4px;
+                            max-height: 80px;
+                            overflow: auto;
+                            white-space: pre-wrap;
+                            margin-top: 0.25rem;
+                            border: 1px solid rgba(255,255,255,0.02);
+                          ">${v.stack}</pre>
+                        </details>`
+                      : "";
+
+                    return `
+                      <div style="
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 0.75rem;
+                        padding: 0.5rem 0;
+                        border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+                      ">
+                        <span style="
+                          font-size: 0.7rem;
+                          font-weight: 700;
+                          padding: 0.15rem 0.4rem;
+                          border-radius: 3px;
+                          color: ${badgeColor};
+                          background: ${badgeBg};
+                          border: 1px solid ${badgeBorder};
+                          min-width: 90px;
+                          text-align: center;
+                          text-transform: uppercase;
+                        ">${v.category}</span>
+                        
+                        <span style="color: #64748b; font-size: 0.75rem;">${v.timestampIso.substring(11, 19)}</span>
+                        
+                        <div style="flex: 1;">
+                          <strong style="color: #e2e8f0; font-size: 0.75rem;">${v.action}</strong>
+                          <span style="color: #cbd5e1; font-size: 0.75rem; margin-left: 0.5rem;">${v.details?.reason || v.details?.path || v.details?.host || v.details?.url || ""}</span>
+                          ${stackMarkup}
+                        </div>
+                      </div>
+                    `;
+                  })
+                  .join("");
+              } else {
+                breachLogList.innerHTML = `<div style="color: #64748b; text-align: center; padding: 1rem;">No containment breaches logged. Security boundaries operating at nominal capacity.</div>`;
+              }
+            }
+
+            // SPEC-153: Update Interactive Sandbox CLI Terminal HUD memory and PID indicators
+            const cliRssEl = document.getElementById("cli-rss-indicator");
+            const cliPidEl = document.getElementById("cli-active-pid");
+            const cliKillBtn = document.getElementById("cli-kill-btn");
+
+            if (guestSandbox && guestSandbox.active_runs && guestSandbox.active_runs.length > 0) {
+              const activeRun = guestSandbox.active_runs[0];
+              const activeRss = (activeRun.rssBytes || 0) / (1024 * 1024);
+              if (cliRssEl) cliRssEl.innerText = `${activeRss.toFixed(1)} MB`;
+              if (cliPidEl) cliPidEl.innerText = activeRun.pid;
+              if (cliKillBtn) {
+                cliKillBtn.disabled = false;
+                cliKillBtn.style.opacity = "1";
+                cliKillBtn.style.cursor = "pointer";
+                cliKillBtn.style.background = "rgba(239, 68, 68, 0.25)";
+              }
+            } else {
+              if (cliRssEl) cliRssEl.innerText = "0.0 MB";
+              if (cliPidEl) cliPidEl.innerText = "None";
+              if (cliKillBtn) {
+                cliKillBtn.disabled = true;
+                cliKillBtn.style.opacity = "0.5";
+                cliKillBtn.style.cursor = "not-allowed";
+                cliKillBtn.style.background = "rgba(239, 68, 68, 0.1)";
+              }
+            }
+          }
+        } catch (err) {
+          // Fallback simulation when offline
+          connections = Math.floor(Math.random() * 5) + 2;
+          rateLimits =
+            Math.random() > 0.85 ? Math.floor(Math.random() * 8) + 1 : 0;
+          latency = Math.random() * 4 + 1;
+          memoryUsed = Math.random() * 20 + 80;
+
+          const cumulativeSpan = document.getElementById(
+            "chart-val-ratelimits",
+          );
+          const prevCumulative = parseInt(cumulativeSpan.innerText) || 0;
+
+          document.getElementById("chart-val-connections").innerText =
+            connections;
+          cumulativeSpan.innerText = prevCumulative + rateLimits;
+          document.getElementById("chart-val-latency").innerText =
+            `${latency.toFixed(1)} ms`;
+
+          const memoryEl = document.getElementById("chart-val-memory");
+          if (memoryEl) {
+            memoryEl.innerText = `${memoryUsed.toFixed(1)} MB`;
+          }
+
+          // SPEC-126 Egress status card offline simulation fallback
+          const firewallDomains = ["google.com", "openai.com", "localhost"];
+          const domainsListEl = document.getElementById(
+            "firewall-domains-list",
+          );
+          if (domainsListEl) {
+            domainsListEl.innerText = firewallDomains.join("\n");
+          }
+
+          const blockCountEl = document.getElementById("firewall-block-count");
+          if (blockCountEl) {
+            blockCountEl.innerText = "0";
+          }
+          const blockMeterEl = document.getElementById("firewall-block-meter");
+          if (blockMeterEl) {
+            blockMeterEl.style.width = "0%";
+          }
+
+          const apiRateDisplayEl = document.getElementById("api-rate-display");
+          if (apiRateDisplayEl) {
+            apiRateDisplayEl.innerText = "0 blocked / 10/min";
+          }
+          const apiRateMeterEl = document.getElementById("api-rate-meter");
+          if (apiRateMeterEl) {
+            apiRateMeterEl.style.width = "0%";
+          }
+
+          const leakAlertsEl = document.getElementById(
+            "memory-leak-alerts-display",
+          );
+          if (leakAlertsEl) {
+            leakAlertsEl.innerText = "CLEAN";
+            leakAlertsEl.style.color = "#10b981";
+          }
+
+          // SPEC-135: Simulated CPU Watchdog & Tamper Sentry updates
+          const latencyValueEl = document.getElementById("cpu-latency-value");
+          if (latencyValueEl) {
+            latencyValueEl.innerText = `${latency.toFixed(1)} ms`;
+            if (latency > 50) {
+              latencyValueEl.style.color = "#ef4444";
+            } else if (latency > 15) {
+              latencyValueEl.style.color = "#f59e0b";
+            } else {
+              latencyValueEl.style.color = "#10b981";
+            }
+          }
+
+          const latencyMeterEl = document.getElementById("cpu-latency-meter");
+          if (latencyMeterEl) {
+            const pct = Math.min(100, (latency / 100) * 100);
+            latencyMeterEl.style.width = `${pct}%`;
+            if (latency > 50) {
+              latencyMeterEl.style.background = "#ef4444";
+              latencyMeterEl.style.boxShadow = "0 0 8px #ef4444";
+            } else if (latency > 15) {
+              latencyMeterEl.style.background = "#f59e0b";
+              latencyMeterEl.style.boxShadow = "0 0 8px #f59e0b";
+            } else {
+              latencyMeterEl.style.background = "#10b981";
+              latencyMeterEl.style.boxShadow = "0 0 8px #10b981";
+            }
+          }
+
+          const protoStatusEl = document.getElementById("prototype-sentry-status");
+          if (protoStatusEl) {
+            const showSimulatedViolation = Math.random() > 0.95;
+            if (showSimulatedViolation) {
+              protoStatusEl.innerText = "VIOLATION DETECTED";
+              protoStatusEl.style.color = "#ef4444";
+              protoStatusEl.style.textShadow = "0 0 8px rgba(239, 68, 68, 0.6)";
+            } else {
+              protoStatusEl.innerText = "SECURED";
+              protoStatusEl.style.color = "#10b981";
+              protoStatusEl.style.textShadow = "0 0 4px rgba(16, 185, 129, 0.4)";
+            }
+          }
+
+          const pollutionStatusEl = document.getElementById(
+            "global-pollution-status",
+          );
+          if (pollutionStatusEl) {
+            const showSimulatedPollution = Math.random() > 0.95;
+            if (showSimulatedPollution) {
+              pollutionStatusEl.innerText = "TAMPER ATTEMPT";
+              pollutionStatusEl.style.color = "#ef4444";
+              pollutionStatusEl.style.textShadow = "0 0 8px rgba(239, 68, 68, 0.6)";
+            } else {
+              pollutionStatusEl.innerText = "CLEAN";
+              pollutionStatusEl.style.color = "#10b981";
+              pollutionStatusEl.style.textShadow = "0 0 4px rgba(16, 185, 129, 0.4)";
+            }
+          }
+
+          // SPEC-142: Simulated Guest Sandbox Footprint HUD Gauge updates
+          const activeCountEl = document.getElementById("guest-active-count");
+          if (activeCountEl) {
+            const hasActiveSim = Math.random() > 0.6;
+            activeCountEl.innerText = hasActiveSim ? "1" : "0";
+
+            let activeMemUsed = 0;
+            let activeMemLimit = 128;
+            let activeCpuUsed = 0;
+            let activeCpuBudget = 2000;
+            let lastScript = "none";
+            let lastStatus = "none";
+
+            if (hasActiveSim) {
+              activeMemUsed = 10 + Math.random() * 40; // 10-50 MB
+              activeCpuUsed = Math.random() * 800; // 0-800 ms
+              lastScript = "sandbox_sim_agent.js";
+              lastStatus = "running";
+            } else if (Math.random() > 0.5) {
+              activeMemUsed = 42.5;
+              activeCpuUsed = 1240;
+              lastScript = "legacy_worker_run.js";
+              lastStatus = "success";
+            }
+
+            const ringMemoryEl = document.getElementById("ring-guest-memory");
+            const memoryTextEl = document.getElementById("guest-memory-text");
+            const heapDisplayEl = document.getElementById("guest-heap-display");
+            
+            const memPct = Math.min(100, Math.max(0, (activeMemUsed / activeMemLimit) * 100));
+            if (memoryTextEl) {
+              memoryTextEl.innerText = `${Math.round(memPct)}%`;
+            }
+            if (ringMemoryEl) {
+              const offset = 201 - (201 * memPct) / 100;
+              ringMemoryEl.setAttribute("stroke-dashoffset", offset);
+              if (memPct > 80) {
+                ringMemoryEl.setAttribute("stroke", "#ef4444");
+              } else if (memPct > 50) {
+                ringMemoryEl.setAttribute("stroke", "#f59e0b");
+              } else {
+                ringMemoryEl.setAttribute("stroke", "#fbbf24");
+              }
+            }
+            if (heapDisplayEl) {
+              heapDisplayEl.innerText = `${activeMemUsed.toFixed(2)} MB / ${activeMemLimit} MB`;
+            }
+
+            const ringCpuEl = document.getElementById("ring-guest-cpu");
+            const cpuTextEl = document.getElementById("guest-cpu-text");
+            const cpuDisplayEl = document.getElementById("guest-cpu-display");
+
+            const cpuPct = Math.min(100, Math.max(0, (activeCpuUsed / activeCpuBudget) * 100));
+            if (cpuTextEl) {
+              cpuTextEl.innerText = `${Math.round(cpuPct)}%`;
+            }
+            if (ringCpuEl) {
+              const offset = 201 - (201 * cpuPct) / 100;
+              ringCpuEl.setAttribute("stroke-dashoffset", offset);
+              if (cpuPct > 80) {
+                ringCpuEl.setAttribute("stroke", "#ef4444");
+              } else if (cpuPct > 50) {
+                ringCpuEl.setAttribute("stroke", "#f59e0b");
+              } else {
+                ringCpuEl.setAttribute("stroke", "#fbbf24");
+              }
+            }
+            if (cpuDisplayEl) {
+              cpuDisplayEl.innerText = `${Math.round(activeCpuUsed)} ms / ${activeCpuBudget} ms`;
+            }
+
+            const lastScriptEl = document.getElementById("guest-last-script");
+            if (lastScriptEl) {
+              lastScriptEl.innerText = lastScript;
+              lastScriptEl.style.color = lastScript !== "none" ? "#fff" : "#6b7280";
+            }
+            const lastStatusEl = document.getElementById("guest-last-status");
+            if (lastStatusEl) {
+              lastStatusEl.innerText = lastStatus;
+              if (lastStatus === "success") {
+                lastStatusEl.style.color = "#10b981";
+              } else if (lastStatus === "running") {
+                lastStatusEl.style.color = "#3b82f6";
+              } else if (lastStatus !== "none") {
+                lastStatusEl.style.color = "#ef4444";
+              } else {
+                lastStatusEl.style.color = "#6b7280";
+              }
+            }
+          }
+
+          // SPEC-147: Simulated Guest RPC & Workspace Drift updates
+          const simTotalRequestsEl = document.getElementById("rpc-total-requests");
+          if (simTotalRequestsEl) {
+            if (window.simRpcTotal === undefined) {
+              window.simRpcTotal = 24;
+              window.simRpcBlocked = 2;
+              window.simSelfHeals = 1;
+              window.simFilesHealed = 3;
+              window.simRpcLogs = [
+                { time: new Date(Date.now() - 300000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }), type: "SUCCESS", text: "RPC PERMITTED: GET_SECTOR_STATE { sectorId: \"sol\" }", color: "#10b981" },
+                { time: new Date(Date.now() - 200000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }), type: "BLOCKED", text: "RPC DENIED: DELETE_DATABASE (Action is not authorized)", color: "#ef4444" },
+                { time: new Date(Date.now() - 100000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }), type: "INTEGRITY", text: "HEALED DRIFT: Restored 3 file(s) in sandbox!", color: "#f59e0b" },
+              ];
+            }
+
+            if (Math.random() > 0.8) {
+              window.simRpcTotal++;
+              const rand = Math.random();
+              const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+              
+              if (rand > 0.85) {
+                window.simSelfHeals++;
+                const count = Math.floor(Math.random() * 3) + 1;
+                window.simFilesHealed += count;
+                window.simRpcLogs.unshift({
+                  time: timeStr,
+                  type: "INTEGRITY",
+                  text: `HEALED DRIFT: Restored ${count} file(s) in sandbox!`,
+                  color: "#f59e0b"
+                });
+                
+                const ringIntegrityEl = document.getElementById("ring-integrity-status");
+                const integrityHealthTextEl = document.getElementById("integrity-health-text");
+                if (ringIntegrityEl && integrityHealthTextEl) {
+                  ringIntegrityEl.setAttribute("stroke", "#f59e0b");
+                  ringIntegrityEl.style.filter = "drop-shadow(0 0 4px rgba(245,158,11,0.4))";
+                  integrityHealthTextEl.innerText = "HEALED";
+                  integrityHealthTextEl.style.color = "#f59e0b";
+                  
+                  setTimeout(() => {
+                    ringIntegrityEl.setAttribute("stroke", "#10b981");
+                    ringIntegrityEl.style.filter = "drop-shadow(0 0 4px rgba(16,185,129,0.4))";
+                    integrityHealthTextEl.innerText = "100%";
+                    integrityHealthTextEl.style.color = "#10b981";
+                  }, 2000);
+                }
+              } else if (rand > 0.6) {
+                window.simRpcBlocked++;
+                const maliciousActions = ["DELETE_DATABASE", "SHUTDOWN_SERVER", "EVAL_CODE"];
+                const action = maliciousActions[Math.floor(Math.random() * maliciousActions.length)];
+                window.simRpcLogs.unshift({
+                  time: timeStr,
+                  type: "BLOCKED",
+                  text: `RPC DENIED: ${action} (Action is not authorized)`,
+                  color: "#ef4444"
+                });
+              } else {
+                window.simRpcLogs.unshift({
+                  time: timeStr,
+                  type: "SUCCESS",
+                  text: "RPC PERMITTED: GET_FACTION_STANDINGS { playerId: \"player-123\" }",
+                  color: "#10b981"
+                });
+              }
+              
+              if (window.simRpcLogs.length > 10) {
+                window.simRpcLogs.pop();
+              }
+            }
+
+            simTotalRequestsEl.innerText = window.simRpcTotal;
+            const blockedRequestsEl = document.getElementById("rpc-blocked-requests");
+            if (blockedRequestsEl) blockedRequestsEl.innerText = window.simRpcBlocked;
+            const selfHealsEl = document.getElementById("drift-self-heals");
+            if (selfHealsEl) selfHealsEl.innerText = window.simSelfHeals;
+            const filesHealedEl = document.getElementById("drift-files-healed");
+            if (filesHealedEl) filesHealedEl.innerText = window.simFilesHealed;
+
+            const rpcFeedEl = document.getElementById("rpc-feed-ticker");
+            if (rpcFeedEl) {
+              rpcFeedEl.innerHTML = window.simRpcLogs
+                .map(
+                  (ev) =>
+                    `<div style="display: flex; gap: 0.35rem; line-height: 1.2;">
+                      <span style="color: #6b7280; flex-shrink: 0;">[${ev.time}]</span>
+                      <span style="color: ${ev.color}; font-weight: 700; flex-shrink: 0;">[${ev.type}]</span>
+                      <span style="word-break: break-all;">${ev.text}</span>
+                    </div>`
+                )
+                .join("");
+            }
+          }
+
+          // SPEC-132: Render offline simulated Containment Breaches Logs in Sentry Console
+          const breachIndicator = document.getElementById(
+            "breach-active-indicator",
+          );
+          const breachLogList = document.getElementById("breach-log-list");
+          if (breachIndicator && breachLogList) {
+            const hasBreach = Math.random() > 0.85;
+            if (hasBreach) {
+              const categories = [
+                "filesystem",
+                "firewall",
+                "rate_limit",
+                "process",
+              ];
+              const cat =
+                categories[Math.floor(Math.random() * categories.length)];
+              let action = "fs_access";
+              let payload = "/etc/hosts";
+              if (cat === "firewall") {
+                action = "connect";
+                payload = "unauthorized-tracker.net";
+              } else if (cat === "rate_limit") {
+                action = "api_call";
+                payload = "https://api.openai.com/v1/chat/completions";
+              } else if (cat === "process") {
+                action = "curl";
+                payload = "Binary [curl] is not in the whitelist";
+              }
+
+              const mockEvent = {
+                timestamp: Date.now(),
+                timestampIso: new Date().toISOString(),
+                category: cat,
+                action: action,
+                details: {
+                  reason: `SIMULATED: Isolation block triggered for [${payload}]`,
+                },
+                stack: `Error: Simulated exploit blocked\n    at guestSandbox (${cat === "filesystem" ? "ProcessSentinel.js:69" : "SandboxFirewall.js:125"})`,
+              };
+
+              if (!window.simulatedBreaches) window.simulatedBreaches = [];
+              window.simulatedBreaches.push(mockEvent);
+              if (window.simulatedBreaches.length > 5) {
+                window.simulatedBreaches.shift();
+              }
+
+              breachIndicator.innerText = `CONTAINMENT BREACHES: ${window.simulatedBreaches.length}`;
+              breachIndicator.style.background = "rgba(239, 68, 68, 0.25)";
+              breachIndicator.style.color = "#ef4444";
+              breachIndicator.style.borderColor = "#ef4444";
+
+              const violations = [...window.simulatedBreaches].reverse();
+              breachLogList.innerHTML = violations
+                .map((v) => {
+                  let badgeColor = "#ef4444";
+                  let badgeBg = "rgba(239, 68, 68, 0.15)";
+                  let badgeBorder = "rgba(239, 68, 68, 0.3)";
+
+                  if (v.category === "firewall") {
+                    badgeColor = "#f59e0b";
+                    badgeBg = "rgba(245, 158, 11, 0.15)";
+                    badgeBorder = "rgba(245, 158, 11, 0.3)";
+                  } else if (v.category === "rate_limit") {
+                    badgeColor = "#fbbf24";
+                    badgeBg = "rgba(251, 191, 36, 0.15)";
+                    badgeBorder = "rgba(251, 191, 36, 0.3)";
+                  } else if (v.category === "process") {
+                    badgeColor = "#bd00ff";
+                    badgeBg = "rgba(189, 0, 255, 0.15)";
+                    badgeBorder = "rgba(189, 0, 255, 0.3)";
+                  }
+
+                  return `
+                    <div style="
+                      display: flex;
+                      align-items: flex-start;
+                      gap: 0.75rem;
+                      padding: 0.5rem 0;
+                      border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+                    ">
+                      <span style="
+                        font-size: 0.7rem;
+                        font-weight: 700;
+                        padding: 0.15rem 0.4rem;
+                        border-radius: 3px;
+                        color: ${badgeColor};
+                        background: ${badgeBg};
+                        border: 1px solid ${badgeBorder};
+                        min-width: 90px;
+                        text-align: center;
+                        text-transform: uppercase;
+                      ">${v.category}</span>
+                      
+                      <span style="color: #64748b; font-size: 0.75rem;">${v.timestampIso.substring(11, 19)}</span>
+                      
+                      <div style="flex: 1;">
+                        <strong style="color: #e2e8f0; font-size: 0.75rem;">${v.action}</strong>
+                        <span style="color: #cbd5e1; font-size: 0.75rem; margin-left: 0.5rem;">${v.details?.reason}</span>
+                        <details style="margin-top: 0.25rem;">
+                          <summary style="font-size: 0.7rem; color: #64748b; cursor: pointer; user-select: none;">Show Callstack</summary>
+                          <pre style="
+                            font-size: 0.65rem;
+                            color: #94a3b8;
+                            background: rgba(0,0,0,0.3);
+                            padding: 0.5rem;
+                            border-radius: 4px;
+                            max-height: 80px;
+                            overflow: auto;
+                            white-space: pre-wrap;
+                            margin-top: 0.25rem;
+                            border: 1px solid rgba(255,255,255,0.02);
+                          ">${v.stack}</pre>
+                        </details>
+                      </div>
+                    </div>
+                  `;
+                })
+                .join("");
+            } else if (
+              !window.simulatedBreaches ||
+              window.simulatedBreaches.length === 0
+            ) {
+              breachIndicator.innerText = "SYSTEM CONTAINER: SECURE";
+              breachIndicator.style.background = "rgba(16, 185, 129, 0.15)";
+              breachIndicator.style.color = "#10b981";
+              breachIndicator.style.borderColor = "rgba(16, 185, 129, 0.3)";
+              breachLogList.innerHTML = `<div style="color: #64748b; text-align: center; padding: 1rem;">No containment breaches logged. Security boundaries operating at nominal capacity.</div>`;
+            }
+          }
+
+          // SPEC-153: Update simulated Sandbox CLI Terminal indicator when offline
+          const cliRssEl = document.getElementById("cli-rss-indicator");
+          const cliPidEl = document.getElementById("cli-active-pid");
+          const cliKillBtn = document.getElementById("cli-kill-btn");
+          if (cliRssEl) cliRssEl.innerText = "0.0 MB";
+          if (cliPidEl) cliPidEl.innerText = "None";
+          if (cliKillBtn) {
+            cliKillBtn.disabled = true;
+            cliKillBtn.style.opacity = "0.5";
+            cliKillBtn.style.cursor = "not-allowed";
+            cliKillBtn.style.background = "rgba(239, 68, 68, 0.1)";
+          }
+        }
+
+        historyConnections.push(connections);
+        historyConnections.shift();
+        historyRateLimits.push(rateLimits);
+        historyRateLimits.shift();
+
+        renderSvgChart();
+      }
+
+      function renderSvgChart() {
+        const svg = document.getElementById("telemetry-chart");
+        if (!svg) return;
+        const width = svg.clientWidth || 600;
+
+        const maxVal = Math.max(
+          10,
+          ...historyConnections,
+          ...historyRateLimits,
+        );
+
+        const label100 = svg.querySelector("text[y='24']");
+        const label50 = svg.querySelector("text[y='74']");
+        const label10 = svg.querySelector("text[y='124']");
+        if (label100) label100.textContent = Math.round(maxVal);
+        if (label50) label50.textContent = Math.round(maxVal / 2);
+        if (label10) label10.textContent = Math.round(maxVal / 10);
+
+        const buildPath = (history) => {
+          let pathPoints = [];
+          for (let i = 0; i < history.length; i++) {
+            const x = 50 + (i * (width - 60)) / 59;
+            const y = 170 - (history[i] / maxVal) * 150;
+            pathPoints.push(`${x},${y}`);
+          }
+          return "M " + pathPoints.join(" L ");
+        };
+
+        const pathConnections = document.getElementById("path-connections");
+        const pathRateLimits = document.getElementById("path-ratelimits");
+
+        if (pathConnections)
+          pathConnections.setAttribute("d", buildPath(historyConnections));
+        if (pathRateLimits)
+          pathRateLimits.setAttribute("d", buildPath(historyRateLimits));
+      }
+
+      function initFirewallAdmin() {
+        const inputEl = document.getElementById("firewall-domain-input");
+        const btnAllow = document.getElementById("btn-firewall-allow");
+        const btnBlock = document.getElementById("btn-firewall-block");
+        const statusEl = document.getElementById("firewall-admin-status");
+
+        if (!inputEl || !btnAllow || !btnBlock || !statusEl) return;
+
+        async function submitRule(action) {
+          const domain = inputEl.value.trim();
+          if (!domain) {
+            showStatus("⚠️ Please enter a domain name.", "#fbbf24");
+            return;
+          }
+
+          // Simple regex verification on the client side too
+          const domainRegex = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+          if (!domainRegex.test(domain)) {
+            showStatus("⚠️ Invalid domain name format.", "#ef4444");
+            return;
+          }
+
+          showStatus("⏳ Updating firewall rules...", "#fbbf24");
+
+          try {
+            const res = await fetch("/api/firewall/rules", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action, domain }),
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+              const actionWord = action === "allow" ? "Whitelisted" : "Blocked";
+              showStatus(`✅ Successfully ${actionWord}: ${domain}`, "#fbbf24");
+              inputEl.value = "";
+              // Trigger an immediate telemetry pull to show updated list
+              if (typeof updateTelemetry === "function") {
+                updateTelemetry();
+              }
+            } else {
+              showStatus(`❌ Error: ${data.error || "Request failed"}`, "#ef4444");
+            }
+          } catch (err) {
+            showStatus(`❌ Connection error: ${err.message}`, "#ef4444");
+          }
+        }
+
+        function showStatus(text, color) {
+          statusEl.style.display = "block";
+          statusEl.style.color = color;
+          statusEl.innerText = text;
+          // Auto-hide status after 4 seconds
+          if (window.firewallStatusTimeout) {
+            clearTimeout(window.firewallStatusTimeout);
+          }
+          window.firewallStatusTimeout = setTimeout(() => {
+            statusEl.style.display = "none";
+          }, 4000);
+        }
+
+        btnAllow.addEventListener("click", () => submitRule("allow"));
+        btnBlock.addEventListener("click", () => submitRule("block"));
+
+        // Allow pressing Enter in the input field
+        inputEl.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            submitRule("allow");
+          }
+        });
+      }
+
+      // SPEC-153: Secure Interactive Sandbox CLI dispatching client controller
+      async function dispatchCliCommand() {
+        const inputEl = document.getElementById("cli-input-field");
+        const termBody = document.getElementById("cli-terminal-body");
+        const runBtn = document.getElementById("cli-send-btn");
+
+        if (!inputEl || !termBody || !runBtn) return;
+
+        const code = inputEl.value.trim();
+        if (!code) return;
+
+        // Log entry to terminal output
+        const userLine = document.createElement("div");
+        userLine.style.color = "#fff";
+        userLine.innerHTML = `<span style="color: #fbbf24;">&gt;</span> ${escapeHtml(code)}`;
+        termBody.appendChild(userLine);
+        termBody.scrollTop = termBody.scrollHeight;
+
+        inputEl.value = "";
+        runBtn.disabled = true;
+        runBtn.style.opacity = "0.5";
+
+        try {
+          const res = await fetch("/api/sandbox/execute", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code }),
+          });
+
+          const data = await res.json();
+          if (res.ok) {
+            const outLine = document.createElement("div");
+            if (data.status === "success") {
+              outLine.style.color = "#10b981";
+              let text = data.stdout || "[Success: No stdout]";
+              outLine.innerHTML = escapeHtml(text).replace(/\n/g, "<br/>");
+            } else {
+              outLine.style.color = "#ef4444";
+              let errText = `[CRASH] Status: ${data.status}`;
+              if (data.error) errText += ` - ${data.error}`;
+              if (data.stderr) errText += `\nStderr: ${data.stderr}`;
+              outLine.innerHTML = escapeHtml(errText).replace(/\n/g, "<br/>");
+            }
+            termBody.appendChild(outLine);
+          } else {
+            const errLine = document.createElement("div");
+            errLine.style.color = "#ef4444";
+            errLine.innerText = `[ERROR] HTTP ${res.status}: ${data.error || "Execution failed"}`;
+            termBody.appendChild(errLine);
+          }
+        } catch (err) {
+          const errLine = document.createElement("div");
+          errLine.style.color = "#ef4444";
+          errLine.innerText = `[CONNECTION ERROR] ${err.message}`;
+          termBody.appendChild(errLine);
+        } finally {
+          runBtn.disabled = false;
+          runBtn.style.opacity = "1";
+          termBody.scrollTop = termBody.scrollHeight;
+          if (typeof updateTelemetry === "function") {
+            updateTelemetry();
+          }
+        }
+      }
+
+      async function killActiveProcess() {
+        const pidEl = document.getElementById("cli-active-pid");
+        const termBody = document.getElementById("cli-terminal-body");
+        if (!pidEl || !termBody) return;
+
+        const pid = parseInt(pidEl.innerText, 10);
+        if (isNaN(pid) || pid <= 0) return;
+
+        const logLine = document.createElement("div");
+        logLine.style.color = "#fbbf24";
+        logLine.innerText = `⏳ Dispatched SIGKILL for active PID ${pid}...`;
+        termBody.appendChild(logLine);
+        termBody.scrollTop = termBody.scrollHeight;
+
+        try {
+          const res = await fetch("/api/sandbox/kill", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ pid }),
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            const successLine = document.createElement("div");
+            successLine.style.color = "#ef4444";
+            successLine.innerText = `💀 PID ${pid} forcefully reaped and killed.`;
+            termBody.appendChild(successLine);
+          } else {
+            const errLine = document.createElement("div");
+            errLine.style.color = "#ef4444";
+            errLine.innerText = `❌ Failed to reap PID ${pid}: ${data.error || "Request failed"}`;
+            termBody.appendChild(errLine);
+          }
+        } catch (err) {
+          const errLine = document.createElement("div");
+          errLine.style.color = "#ef4444";
+          errLine.innerText = `❌ Reap connection error: ${err.message}`;
+          termBody.appendChild(errLine);
+        } finally {
+          termBody.scrollTop = termBody.scrollHeight;
+          if (typeof updateTelemetry === "function") {
+            updateTelemetry();
+          }
+        }
+      }
+
+      function escapeHtml(text) {
+        return text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function initCliTerminal() {
+        const cliInput = document.getElementById("cli-input-field");
+        if (cliInput) {
+          cliInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+              dispatchCliCommand();
+            }
+          });
+        }
+      }
+
+      // Start
+      initFirewallAdmin();
+      initCliTerminal();
+      init();
+      updateTelemetry();
+      setInterval(updateTelemetry, 1000);
+    </script>
+  </body>
+</html>

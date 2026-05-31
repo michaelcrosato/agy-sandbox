@@ -11,6 +11,8 @@ import { SpaceportUI } from "./client/SpaceportUI.js";
 import { MissionManager } from "./engine/MissionManager.js";
 import { NetworkHandler } from "./client/NetworkHandler.js";
 import { NEBULAE } from "./engine/Nebulae.js";
+import { EntityInterpolator } from "./client/Interpolator.js";
+import { TutorialManager } from "./client/TutorialManager.js";
 
 // Global game variables
 let isLanded = false;
@@ -18,6 +20,7 @@ let playerTarget = null;
 const ais = [];
 const planets = [];
 let eventCheckTimer = 0;
+const interpolator = new EntityInterpolator();
 let empTimer = 0;
 let activeSectorEvent = null;
 let activeGalaxyEvent = null;
@@ -860,6 +863,19 @@ inputHandler.onTargetPressed = () => {
   }
 
   uiController.notify(`Scanners locked: ${playerTarget.name}`, "info");
+
+  // Track target lock during tutorial
+  if (
+    playerTarget &&
+    playerTarget.name === "Training Drone" &&
+    window.tutorialManager &&
+    window.tutorialManager.isActive &&
+    window.tutorialManager.currentStep === "lock_target"
+  ) {
+    if (window.network && window.network.connected) {
+      window.network.send({ type: "tutorial_progress", step: "destroy_drone" });
+    }
+  }
 };
 
 inputHandler.onHostilePressed = () => {
@@ -1087,6 +1103,16 @@ function triggerRandomSpaceEvent() {
 const network = new NetworkHandler();
 window.network = network;
 
+const tutorialManager = new TutorialManager({
+  player,
+  uiController,
+  inputHandler,
+  spaceportUI,
+  renderer,
+  network,
+});
+window.tutorialManager = tutorialManager;
+
 // Keep client physics entities completely in sync with authoritative server coordinates
 function syncEntitiesFromServer(serverEntities) {
   const localId = (network && network.playerId) || "player";
@@ -1107,6 +1133,7 @@ function syncEntitiesFromServer(serverEntities) {
 
   for (const ent of toRemove) {
     engine.removeEntity(ent);
+    interpolator.remove(ent.id);
     if (
       ent.type === "ship" ||
       ent.type === "generic" ||
@@ -1120,6 +1147,9 @@ function syncEntitiesFromServer(serverEntities) {
 
   // 2. Synchronize current properties or instantiate brand new ones
   for (const ent of serverEntities) {
+    if (ent.id !== localId) {
+      interpolator.push(ent.id, Date.now(), ent.x, ent.y, ent.heading);
+    }
     let localEnt = engine.entities.find((e) => e.id === ent.id);
 
     if (localEnt) {
@@ -1268,6 +1298,8 @@ function syncEntitiesFromServer(serverEntities) {
 network.onInit = (msg) => {
   player.id = msg.playerId;
   player.name = msg.nickname;
+  network.tutorialCompleted = !!msg.tutorialCompleted;
+  interpolator.clear();
 
   if (msg.roomId) {
     // Dismiss lobby overlay with smooth fade-out animation
@@ -1275,6 +1307,10 @@ network.onInit = (msg) => {
     setTimeout(() => {
       welcomeScreen.classList.remove("visible");
       welcomeScreen.classList.remove("fade-out");
+
+      if (window.tutorialManager) {
+        window.tutorialManager.checkOnboarding();
+      }
     }, 500);
 
     uiController.notify(
@@ -1413,6 +1449,14 @@ network.onStatsReceived = (msg) => {
   player.thrustPower = msg.thrustPower;
   player.maxSpeed = msg.maxSpeed;
   player.name = msg.nickname;
+  player.hullMass = msg.hullMass;
+  player.outfitMass = msg.outfitMass;
+  player.mass = msg.mass;
+  player.maxOutfitMass = msg.maxOutfitMass;
+  player.effectiveTurnRate = msg.effectiveTurnRate;
+  player.effectiveMaxSpeed = msg.effectiveMaxSpeed;
+  player.thrustToMass = msg.thrustToMass;
+  player.chargeDuration = msg.chargeDuration;
 
   // Endless Sky variables mapping
   player.energy = msg.energy;
@@ -1436,6 +1480,8 @@ network.onStatsReceived = (msg) => {
     NEBULAE,
     engine.entities,
     missionManager ? missionManager.activeMissions : [],
+    navTargetSector,
+    navRoute,
   );
   spaceportUI.refreshActiveTab();
 };
@@ -1482,6 +1528,7 @@ network.onWarpSuccess = (msg) => {
   renderer.isWarping = true;
   renderer.warpTimer = 0;
   renderer.warpTunnelStars = [];
+  interpolator.clear();
 
   // Disable user input and autopilot
   player.clearControls();
@@ -1579,6 +1626,12 @@ network.onProjectileFired = (msg) => {
 
 network.onNotification = (msg) => {
   uiController.notify(msg.message, msg.style || "info");
+};
+
+network.onTutorialState = (msg) => {
+  if (window.tutorialManager) {
+    window.tutorialManager.handleServerState(msg);
+  }
 };
 
 network.onCargoPickup = (msg) => {
@@ -1850,8 +1903,15 @@ function gameLoop(time) {
   let dt = (time - lastTime) / 1000;
   lastTime = time;
 
+  // Prune stale entities from interpolator
+  interpolator.prune(Date.now() - 5000);
+
   // Cap delta time to prevent massive position skipping on browser tab sleeps
   if (dt > 0.1) dt = 0.1;
+
+  if (window.tutorialManager) {
+    window.tutorialManager.update(dt);
+  }
 
   if (activeGalaxyEvent) {
     activeGalaxyEvent.duration -= dt;
@@ -2067,6 +2127,26 @@ function gameLoop(time) {
   }
 
   // 5. Render stellar parallax, engine trails, ship vectors, target corner brackets, HUD pointer arrows
+  const originalStates = new Map();
+  const nowMs = Date.now();
+  const localId = (network && network.playerId) || "player";
+
+  for (const ent of engine.entities) {
+    if (ent.id === localId || ent.type === "planet") continue;
+
+    const interp = interpolator.getInterpolated(ent.id, nowMs);
+    if (interp) {
+      originalStates.set(ent.id, {
+        x: ent.position.x,
+        y: ent.position.y,
+        heading: ent.heading,
+      });
+      ent.position.x = interp.x;
+      ent.position.y = interp.y;
+      ent.heading = interp.heading;
+    }
+  }
+
   renderer.draw(
     dt,
     player,
@@ -2078,6 +2158,16 @@ function gameLoop(time) {
     activeSectorEvent,
   );
 
+  // Restore original coordinates/headings so that local client-side physics, target locked distances, and interactions use authentic values
+  for (const [id, orig] of originalStates.entries()) {
+    const ent = engine.entities.find((e) => e.id === id);
+    if (ent) {
+      ent.position.x = orig.x;
+      ent.position.y = orig.y;
+      ent.heading = orig.heading;
+    }
+  }
+
   // 5. Synchronize dynamic health bars and targeting dials with overlay DOM dashboard
   uiController.update(
     player,
@@ -2086,6 +2176,8 @@ function gameLoop(time) {
     NEBULAE,
     engine.entities,
     missionManager ? missionManager.activeMissions : [],
+    navTargetSector,
+    navRoute,
   );
 
   requestAnimationFrame(gameLoop);
@@ -2191,6 +2283,18 @@ window.addEventListener("keydown", (e) => {
     // Attack targeted ship command
     if (network && network.connected) {
       network.send({ type: "escort_command", command: "attack" });
+    }
+  } else if (e.code === "F2") {
+    // Delta wing formation
+    e.preventDefault();
+    if (network && network.connected) {
+      network.send({ type: "escort_formation", formation: "delta" });
+    }
+  } else if (e.code === "F3") {
+    // Defensive orbit formation
+    e.preventDefault();
+    if (network && network.connected) {
+      network.send({ type: "escort_formation", formation: "orbit" });
     }
   }
 });

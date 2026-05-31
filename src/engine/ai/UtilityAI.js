@@ -49,6 +49,7 @@
  * rather than scattering string literals.
  */
 export const Goals = Object.freeze({
+  ESCAPE_SECURITY: "ESCAPE_SECURITY",
   ENGAGE: "ENGAGE",
   FLEE: "FLEE",
   TRADE: "TRADE",
@@ -61,6 +62,7 @@ export const Goals = Object.freeze({
  * and when breaking ties in `selectGoal`. Earlier entries win ties.
  */
 export const GOAL_ORDER = Object.freeze([
+  Goals.ESCAPE_SECURITY,
   Goals.ENGAGE,
   Goals.FLEE,
   Goals.TRADE,
@@ -220,7 +222,13 @@ export function scoreEngage(self, opportunities, threatPressure, options) {
   if (bestPrey <= 0) return 0;
   const readiness = combatReadiness(self, options);
   const threatPenalty = 1 - options.engageThreatPenalty * threatPressure;
-  return clamp01(bestPrey * readiness * threatPenalty * options.engageBoost);
+  let score = clamp01(
+    bestPrey * readiness * threatPenalty * options.engageBoost,
+  );
+  if (self.isVengeanceHunter) {
+    score = Math.max(0.8, score); // highly aggressive combat bias
+  }
+  return score;
 }
 
 /**
@@ -240,7 +248,11 @@ export function scoreFlee(self, threatPressure, options) {
   const threatTerm =
     threatPressure *
     (options.fleeThreatBase + options.fleeThreatArmorWeight * armorPanic);
-  return clamp01(armorTerm + threatTerm);
+  let score = clamp01(armorTerm + threatTerm);
+  if (self.isVengeanceHunter) {
+    score /= 5; // fearless discipline
+  }
+  return score;
 }
 
 /**
@@ -330,7 +342,9 @@ export function evaluateGoals(perception, options = DEFAULT_UTILITY_OPTIONS) {
   const threats = (perception && perception.threats) || [];
   const opps = (perception && perception.opportunities) || {};
   const threatPressure = maxThreatPressure(threats, merged.sensorRange);
+  const isEscapeSecurity = !!(perception && perception.isTargetedBySecurity);
   return {
+    [Goals.ESCAPE_SECURITY]: isEscapeSecurity ? 1.0 : 0.0,
     [Goals.ENGAGE]: scoreEngage(self, opps, threatPressure, merged),
     [Goals.FLEE]: scoreFlee(self, threatPressure, merged),
     [Goals.TRADE]: scoreTrade(self, opps, threatPressure, merged),
@@ -369,10 +383,17 @@ export function selectGoal(perception, options = DEFAULT_UTILITY_OPTIONS) {
  * the scoring functions themselves accept any duck-typed snapshot.
  *
  * @param {Object} ship - Ship-like with shield/armor/energy/cargo fields.
- * @returns {{shield:number,armor:number,energy:number,cargoFill:number}}
+ * @returns {{shield:number,armor:number,energy:number,cargoFill:number,isVengeanceHunter:boolean}}
  */
 export function selfStateFromShip(ship) {
-  if (!ship) return { shield: 0, armor: 0, energy: 0, cargoFill: 0 };
+  if (!ship)
+    return {
+      shield: 0,
+      armor: 0,
+      energy: 0,
+      cargoFill: 0,
+      isVengeanceHunter: false,
+    };
   const safeFrac = (cur, max) => {
     if (!Number.isFinite(cur) || !Number.isFinite(max) || max <= 0) return 0;
     return clamp01(cur / max);
@@ -389,5 +410,6 @@ export function selfStateFromShip(ship) {
     armor: safeFrac(ship.armor, ship.maxArmor),
     energy: safeFrac(ship.energy, ship.maxEnergy),
     cargoFill: safeFrac(cargoUsed, ship.cargoCapacity),
+    isVengeanceHunter: !!ship.isVengeanceHunter,
   };
 }

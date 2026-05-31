@@ -222,4 +222,39 @@ describe("Hyperdrive (EW3)", () => {
       expect(res.ok).toBe(true);
     });
   });
+
+  describe("SPEC-155 Mass-Scaled Stargate Jump Costs", () => {
+    test("canJump and consumeJump scale fuel cost based on ship totalMass to hullMass ratio", () => {
+      const ship = { hyperFuel: 50, mass: 4000, hullMass: 2000 };
+      expect(canJump(ship, 20)).toBe(true);
+      expect(canJump(ship, 30)).toBe(false);
+
+      const copy = { ...ship };
+      expect(consumeJump(copy, 20)).toBe(true);
+      expect(copy.hyperFuel).toBe(10);
+    });
+
+    test("validateWarpJump fails with dynamic mass-scaled cost message", () => {
+      const pos = (x, y) => ({
+        x,
+        y,
+        distance(o) {
+          return Math.hypot(this.x - o.x, this.y - o.y);
+        },
+      });
+      const ship = {
+        hyperFuel: 30,
+        mass: 4000,
+        hullMass: 2000,
+        position: pos(0, 0),
+      };
+      const gate = { type: "warp_gate", position: pos(10, 0) };
+
+      const res = validateWarpJump(ship, gate, 20);
+      expect(res.ok).toBe(false);
+      expect(res.reason).toContain(
+        "Insufficient Hyper-Fuel! Requires 40 units",
+      );
+    });
+  });
 });

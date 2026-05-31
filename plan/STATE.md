@@ -2,11 +2,10 @@
 
 `plan/PROGRESS.md` is the canonical live queue. This file is only a compact pointer for loop launchers and must not contradict `PROGRESS.md`.
 
-- **CYCLE:** A0 Safety & Truth overlay + v9 product wave
-- **CURRENT_TASK:** Reconcile autonomous control plane and gate after autonomy review
-- **SPEC_FILE:** `plan/specs/060_autonomy_safety_truth_sync.md`
-- **STATUS:** IN_PROGRESS
-- **CANONICAL_QUEUE:** `plan/PROGRESS.md` + `plan/specs/`
-- **VERIFY_COMMAND:** `npm run agent:check`
-- **LAST_VERIFIED:** Not verified in this connector-only update; run the full gate locally or in CI before claiming green.
-- **IMMEDIATE_OBJECTIVE:** Finish A0 safety/truth work: log rotation, generated repo map/metrics, spec-template lint, and any remaining queue/doc consolidation.
+- **CYCLE:** Cycle 45
+- **CURRENT_TASK:** REPLENISH
+- **SPEC_FILE:** plan/specs/160_sandbox_containment_teardown.md
+- **STATUS:** Completed SPEC-160 in Wave v44.
+- **VERIFY_COMMAND:** npm run agent:check
+- **LAST_VERIFIED:** 1,270 Jest tests green, linter 0 errors, Prettier verified.
+- **IMMEDIATE_OBJECTIVE:** Replenish the backlog, execute codebase audits, formulate new specifications for Wave v45 under Cycle 45.

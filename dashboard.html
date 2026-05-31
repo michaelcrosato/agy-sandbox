@@ -227,6 +227,7 @@
     .card-purple:hover::before { background: var(--color-purple); }
     .card-emerald:hover::before { background: var(--color-emerald); }
     .card-amber:hover::before { background: var(--color-amber); }
+    .card-crimson:hover::before { background: var(--color-crimson); }
 
     .card-header {
       display: flex;
@@ -299,14 +300,19 @@
       transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* Sub-Layout: Matchmaking & Shard details */
     .detail-grid {
       display: grid;
-      grid-template-columns: 2fr 1fr;
+      grid-template-columns: 1.5fr 1fr 1fr;
       gap: 1.5rem;
     }
 
-    @media (max-width: 1024px) {
+    @media (max-width: 1200px) {
+      .detail-grid {
+        grid-template-columns: 1.5fr 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
       .detail-grid {
         grid-template-columns: 1fr;
       }
@@ -513,6 +519,88 @@
       padding: 2rem;
       font-style: italic;
     }
+
+    /* Galactic Chronicle Neon-Gold Glassmorphic Styling */
+    .panel-gold {
+      border: 1px solid rgba(255, 159, 26, 0.25) !important;
+      background: rgba(15, 12, 5, 0.4) !important;
+      box-shadow: 0 8px 32px 0 rgba(255, 159, 26, 0.05), inset 0 0 15px rgba(255, 159, 26, 0.02) !important;
+    }
+    
+    .chronicle-feed {
+      max-height: 480px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding-right: 4px;
+    }
+    
+    .chronicle-item {
+      display: flex;
+      gap: 0.75rem;
+      padding: 0.75rem 0.5rem;
+      border-bottom: 1px solid rgba(255, 159, 26, 0.06);
+      font-size: 0.85rem;
+      border-radius: 8px;
+      transition: background-color 0.2s;
+    }
+    
+    .chronicle-item:hover {
+      background-color: rgba(255, 159, 26, 0.03);
+    }
+    
+    .chronicle-icon {
+      flex-shrink: 0;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 159, 26, 0.1);
+      border: 1px solid rgba(255, 159, 26, 0.2);
+      color: var(--color-amber);
+      box-shadow: 0 0 8px rgba(255, 159, 26, 0.2);
+    }
+    
+    .chronicle-content {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    
+    .chronicle-title {
+      font-weight: 600;
+      color: #fef08a;
+    }
+    
+    .chronicle-desc {
+      color: #cbd5e1;
+      line-height: 1.35;
+    }
+    
+    .chronicle-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 0.25rem;
+    }
+    
+    .chronicle-badge {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 159, 26, 0.08);
+      border: 1px solid rgba(255, 159, 26, 0.15);
+      color: var(--color-amber);
+      text-transform: uppercase;
+      font-weight: bold;
+      letter-spacing: 0.05em;
+    }
   </style>
 </head>
 <body>
@@ -596,6 +684,7 @@
           </div>
         </div>
         <div class="card-value" id="val-tick">0.00 <span style="font-size: 1rem; color: #64748b;">ms</span></div>
+        <canvas id="sparkline-tick" width="280" height="40" style="width: 100%; height: 40px; border-radius: 4px; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.03); margin-top: 0.5rem;"></canvas>
         <div class="performance-bar-bg">
           <div class="performance-bar-fill" id="tick-fill"></div>
         </div>
@@ -615,8 +704,52 @@
           </div>
         </div>
         <div class="card-value" id="val-bandwidth">0.00 <span style="font-size: 1rem; color: #64748b;">KB</span></div>
+        <canvas id="sparkline-bandwidth" width="280" height="40" style="width: 100%; height: 40px; border-radius: 4px; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.03); margin-top: 0.5rem;"></canvas>
         <div class="card-footer">
           <span>Broadcast state egress volume</span>
+        </div>
+      </div>
+
+      <!-- Matchmaking Queue Card -->
+      <div class="card card-purple" id="card-queue">
+        <div class="card-header">
+          <span class="card-title">Matchmaking Queue</span>
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-purple)" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+        </div>
+        <div class="card-value" id="val-queue">0</div>
+        <canvas id="sparkline-queue" width="280" height="40" style="width: 100%; height: 40px; border-radius: 4px; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.03); margin-top: 0.5rem;"></canvas>
+        <div class="card-footer">
+          <span>Pilots waiting in queue</span>
+        </div>
+      </div>
+
+      <!-- Sandbox Containment & Telemetry Card (SPEC-094) -->
+      <div class="card card-crimson" id="card-sandbox">
+        <div class="card-header">
+          <span class="card-title">Sandbox Containment</span>
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-crimson)" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <path d="M9 3v18M15 3v18M3 9h18M3 15h18"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="card-value" id="val-sandbox-mem">0.00 <span style="font-size: 1rem; color: #64748b;">MB</span></div>
+        <div style="font-size: 0.85rem; color: #94a3b8; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 0.5rem; margin-bottom: 0.25rem;">
+          <div>CPU: <strong id="val-sandbox-cpu">0.0%</strong></div>
+          <div>Disk: <strong id="val-sandbox-disk">0.0 MB</strong></div>
+          <div>Peak: <strong id="val-sandbox-peak">0.0 MB</strong></div>
+          <div>Leak: <strong id="val-sandbox-leak">0 B/m</strong></div>
+          <div>API Blocks: <strong id="val-limiter-blocks" style="color: var(--color-amber);">0</strong></div>
+          <div>Tokens Burned: <strong id="val-limiter-tokens" style="color: var(--color-purple);">0</strong></div>
+        </div>
+        <canvas id="sparkline-sandbox" width="280" height="40" style="width: 100%; height: 40px; border-radius: 4px; background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.03); margin-top: 0.5rem;"></canvas>
+        <div class="card-footer">
+          <span>Containment telemetry: <span id="val-sandbox-uptime">0s</span> uptime</span>
         </div>
       </div>
     </section>
@@ -676,6 +809,22 @@
           </div>
         </div>
       </div>
+
+      <!-- Galactic Chronicle Sidebar Panel (SPEC-096) -->
+      <div class="panel panel-gold" id="panel-chronicle">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title" style="color: var(--color-amber); text-shadow: 0 0 10px rgba(255, 159, 26, 0.3);">Galactic Chronicle</h2>
+            <p class="panel-subtitle">Macro-simulation event ledger & history</p>
+          </div>
+        </div>
+
+        <div class="activity-feed chronicle-feed" id="chronicle-feed">
+          <div class="feed-item empty-state">
+            No chronicle records found. Loading space history...
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -683,6 +832,13 @@
     // Live Telemetry Engine Logic
     let pollInterval = null;
     let fallbackCounter = 0;
+
+    // Rolling History Logs for Vector Sparklines (max 50 points, spec 073)
+    const maxHistoryPoints = 50;
+    const tickHistory = [];
+    const bandwidthHistory = [];
+    const queueHistory = [];
+    const sandboxHistory = [];
     
     // UI Elements mapping
     const elConnections = document.getElementById("val-connections");
@@ -690,6 +846,7 @@
     const elTick = document.getElementById("val-tick");
     const elTickFill = document.getElementById("tick-fill");
     const elBandwidth = document.getElementById("val-bandwidth");
+    const elQueue = document.getElementById("val-queue");
     const elRoomsTable = document.getElementById("rooms-table-body");
     const elEventFeed = document.getElementById("event-feed");
     const elRefreshRate = document.getElementById("refresh-rate");
@@ -700,6 +857,90 @@
     // Initialize Connection Timestamp
     document.getElementById("connect-time").innerText = new Date().toLocaleTimeString();
 
+    // Galactic Chronicle Rendering & Fetching (SPEC-096)
+    async function fetchChronicle() {
+      try {
+        const response = await fetch('/chronicle');
+        if (!response.ok) throw new Error("HTTP error " + response.status);
+        const events = await response.json();
+        renderChronicle(events);
+      } catch (err) {
+        console.warn("Could not load chronicle metrics.", err.message);
+      }
+    }
+
+    function renderChronicle(events) {
+      const elChronicleFeed = document.getElementById("chronicle-feed");
+      if (!elChronicleFeed) return;
+
+      if (!Array.isArray(events) || events.length === 0) {
+        elChronicleFeed.innerHTML = `
+          <div class="feed-item empty-state">
+            No chronicle records found. Space is quiet.
+          </div>
+        `;
+        return;
+      }
+
+      elChronicleFeed.innerHTML = events.map(e => {
+        const timeStr = new Date(e.timestamp).toLocaleTimeString();
+        let iconMarkup = "";
+        
+        switch (e.category) {
+          case "economy":
+            iconMarkup = `
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-amber)" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+            `;
+            break;
+          case "combat":
+            iconMarkup = `
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-crimson)" stroke-width="2">
+                <path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l2 2 3-3-2-2"></path>
+                <path d="M8.5 14.5L19 4V1h-3L5.5 11.5"></path>
+              </svg>
+            `;
+            break;
+          case "stargate":
+            iconMarkup = `
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-cyan)" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="6"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+              </svg>
+            `;
+            break;
+          default:
+            iconMarkup = `
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            `;
+        }
+
+        return `
+          <div class="chronicle-item">
+            <div class="chronicle-icon">
+              \${iconMarkup}
+            </div>
+            <div class="chronicle-content">
+              <div class="chronicle-title">\${e.title}</div>
+              <div class="chronicle-desc">\${e.description}</div>
+              <div class="chronicle-meta">
+                <span class="chronicle-badge">\${e.category}</span>
+                <span>Sector: <strong>\${e.sector}</strong></span>
+                <span>\${timeStr}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
     // Fetch and Process System Metrics
     async function fetchTelemetry() {
       try {
@@ -708,6 +949,9 @@
         
         const data = await response.json();
         renderTelemetry(data);
+        
+        // Load Galactic Chronicle (SPEC-096)
+        await fetchChronicle();
         
         // System is alive and responsive
         elPulseDot.style.backgroundColor = "var(--color-emerald)";
@@ -723,14 +967,16 @@
     // Render Real Telemetry
     function renderTelemetry(data) {
       // Basic values
-      const connections = data.clients_active ?? 0;
-      const rooms = data.rooms_active ?? 0;
-      const avgTickTime = data.tick_ms_avg ?? data.tick_ms ?? 0;
-      const broadcastBytes = data.broadcast_bytes_total ?? 0;
+      const connections = data.clients_active ?? data.gauges?.clients ?? 0;
+      const rooms = data.rooms_active ?? data.gauges?.rooms ?? 0;
+      const avgTickTime = data.tick_ms_avg ?? data.tick_ms ?? data.observations?.tick_ms?.avg ?? 0;
+      const broadcastBytes = data.broadcast_bytes_total ?? data.counters?.broadcast_bytes ?? 0;
+      const queueVal = data.matchmaking_queue_size ?? data.gauges?.matchmaking_queue ?? 0;
 
       elConnections.innerText = connections;
       elRooms.innerText = rooms;
       elTick.innerHTML = `${avgTickTime.toFixed(2)} <span style="font-size: 1rem; color: #64748b;">ms</span>`;
+      if (elQueue) elQueue.innerText = queueVal;
 
       // Tick gauge color based on latency
       const maxTickTarget = 33.3;
@@ -748,6 +994,55 @@
       // Bandwidth KB calculation
       const kb = (broadcastBytes / 1024);
       elBandwidth.innerHTML = `${kb.toFixed(2)} <span style="font-size: 1rem; color: #64748b;">KB</span>`;
+
+      // Update Sparkline Rolling History Logs
+      tickHistory.push(avgTickTime);
+      if (tickHistory.length > maxHistoryPoints) tickHistory.shift();
+
+      bandwidthHistory.push(kb);
+      if (bandwidthHistory.length > maxHistoryPoints) bandwidthHistory.shift();
+
+      queueHistory.push(queueVal);
+      if (queueHistory.length > maxHistoryPoints) queueHistory.shift();
+
+      // Render Vector Sparklines
+      drawSparkline("sparkline-tick", tickHistory, "var(--color-emerald)");
+      drawSparkline("sparkline-bandwidth", bandwidthHistory, "var(--color-amber)");
+      drawSparkline("sparkline-queue", queueHistory, "var(--color-purple)");
+
+      // Sandbox Telemetry live update
+      if (data.sandbox_telemetry) {
+        const tele = data.sandbox_telemetry;
+        const heapMb = tele.memory.heapUsed / 1024 / 1024;
+        const peakMb = tele.memory.peakHeapUsed / 1024 / 1024;
+        const diskMb = tele.disk.repositorySizeBytes / 1024 / 1024;
+        
+        const elSandboxMem = document.getElementById("val-sandbox-mem");
+        const elSandboxCpu = document.getElementById("val-sandbox-cpu");
+        const elSandboxDisk = document.getElementById("val-sandbox-disk");
+        const elSandboxPeak = document.getElementById("val-sandbox-peak");
+        const elSandboxLeak = document.getElementById("val-sandbox-leak");
+        const elSandboxUptime = document.getElementById("val-sandbox-uptime");
+
+        if (elSandboxMem) elSandboxMem.innerHTML = `${heapMb.toFixed(2)} <span style="font-size: 1rem; color: #64748b;">MB</span>`;
+        if (elSandboxCpu) elSandboxCpu.innerText = `${tele.cpu_percent.toFixed(1)}%`;
+        if (elSandboxDisk) elSandboxDisk.innerText = `${diskMb.toFixed(1)} MB`;
+        if (elSandboxPeak) elSandboxPeak.innerText = `${peakMb.toFixed(1)} MB`;
+        if (elSandboxLeak) elSandboxLeak.innerText = `${tele.memory.leakRateBytesPerMin.toFixed(0)} B/m`;
+        if (elSandboxUptime) elSandboxUptime.innerText = `${tele.uptimeSeconds}s`;
+
+        // API Limiter live updates (SPEC-097)
+        const elLimiterBlocks = document.getElementById("val-limiter-blocks");
+        const elLimiterTokens = document.getElementById("val-limiter-tokens");
+        if (data.api_limiter) {
+          if (elLimiterBlocks) elLimiterBlocks.innerText = data.api_limiter.block_count ?? 0;
+          if (elLimiterTokens) elLimiterTokens.innerText = data.api_limiter.expended_tokens ?? 0;
+        }
+
+        sandboxHistory.push(heapMb);
+        if (sandboxHistory.length > maxHistoryPoints) sandboxHistory.shift();
+        drawSparkline("sparkline-sandbox", sandboxHistory, "var(--color-crimson)");
+      }
 
       // Build active rooms table
       if (data.rooms && data.rooms.length > 0) {
@@ -810,16 +1105,88 @@
       const mockRooms = Math.max(1, Math.floor(mockConns / 4) + 1);
       const mockTick = 4.25 + Math.random() * 0.8;
       const mockBandwidth = 25.4 + Math.sin(fallbackCounter / 5) * 5;
+      const mockQueue = Math.max(0, Math.floor(Math.sin(fallbackCounter / 4) * 3 + 3));
 
       elConnections.innerText = Math.max(0, mockConns);
       elRooms.innerText = mockRooms;
       elTick.innerHTML = `${mockTick.toFixed(2)} <span style="font-size: 1rem; color: #64748b;">ms</span>`;
+      if (elQueue) elQueue.innerText = mockQueue;
       
       const percent = (mockTick / 33.3) * 100;
       elTickFill.style.width = `${percent}%`;
       elTickFill.style.background = "linear-gradient(90deg, var(--color-cyan), var(--color-blue))";
 
       elBandwidth.innerHTML = `${mockBandwidth.toFixed(2)} <span style="font-size: 1rem; color: #64748b;">KB</span>`;
+
+      // Sim histories
+      tickHistory.push(mockTick);
+      if (tickHistory.length > maxHistoryPoints) tickHistory.shift();
+
+      bandwidthHistory.push(mockBandwidth);
+      if (bandwidthHistory.length > maxHistoryPoints) bandwidthHistory.shift();
+
+      queueHistory.push(mockQueue);
+      if (queueHistory.length > maxHistoryPoints) queueHistory.shift();
+
+      // Render mock sparklines
+      drawSparkline("sparkline-tick", tickHistory, "var(--color-emerald)");
+      drawSparkline("sparkline-bandwidth", bandwidthHistory, "var(--color-amber)");
+      drawSparkline("sparkline-queue", queueHistory, "var(--color-purple)");
+
+      // Simulated Sandbox Telemetry
+      const mockMem = 35.4 + Math.sin(fallbackCounter / 20) * 1.5;
+      const mockCpu = 1.2 + Math.random() * 0.5;
+      const mockDisk = 124.5;
+      const mockPeak = 38.2;
+      const mockLeak = 0;
+      
+      const elSandboxMem = document.getElementById("val-sandbox-mem");
+      const elSandboxCpu = document.getElementById("val-sandbox-cpu");
+      const elSandboxDisk = document.getElementById("val-sandbox-disk");
+      const elSandboxPeak = document.getElementById("val-sandbox-peak");
+      const elSandboxLeak = document.getElementById("val-sandbox-leak");
+      const elSandboxUptime = document.getElementById("val-sandbox-uptime");
+
+      if (elSandboxMem) elSandboxMem.innerHTML = `${mockMem.toFixed(2)} <span style="font-size: 1rem; color: #64748b;">MB</span>`;
+      if (elSandboxCpu) elSandboxCpu.innerText = `${mockCpu.toFixed(1)}%`;
+      if (elSandboxDisk) elSandboxDisk.innerText = `${mockDisk.toFixed(1)} MB`;
+      if (elSandboxPeak) elSandboxPeak.innerText = `${mockPeak.toFixed(1)} MB`;
+      if (elSandboxLeak) elSandboxLeak.innerText = `${mockLeak.toFixed(0)} B/m`;
+      if (elSandboxUptime) elSandboxUptime.innerText = `${fallbackCounter}s`;
+
+      const elLimiterBlocks = document.getElementById("val-limiter-blocks");
+      const elLimiterTokens = document.getElementById("val-limiter-tokens");
+      if (elLimiterBlocks) elLimiterBlocks.innerText = Math.floor(fallbackCounter / 15);
+      if (elLimiterTokens) elLimiterTokens.innerText = fallbackCounter * 12000;
+
+      sandboxHistory.push(mockMem);
+      if (sandboxHistory.length > maxHistoryPoints) sandboxHistory.shift();
+      drawSparkline("sparkline-sandbox", sandboxHistory, "var(--color-crimson)");
+
+      // Render simulated mock chronicle logs (SPEC-096)
+      renderChronicle([
+        {
+          timestamp: Date.now() - 5000,
+          sector: "public",
+          category: "economy",
+          title: "Shortage: food",
+          description: "MARKET ALERT: Sol reports severe FOOD shortage! Prices soared to 180 CR!",
+        },
+        {
+          timestamp: Date.now() - 25000,
+          sector: "room-2",
+          category: "combat",
+          title: "Faction Conflict Triggered",
+          description: "War fleets from Federation and Pirates have clashed in sector Sector room-2! Sector is now an active combat zone.",
+        },
+        {
+          timestamp: Date.now() - 55000,
+          sector: "public",
+          category: "stargate",
+          title: "Elite Hunter Dispatched",
+          description: "An elite Federation Hunter carrying a Stargate Interdictor Matrix has been scrambled to intercept player Pilot-A!",
+        }
+      ]);
 
       // Render custom mock rooms table
       elRoomsTable.innerHTML = `
@@ -874,6 +1241,87 @@
       if (elEventFeed.children.length > 6) {
         elEventFeed.removeChild(elEventFeed.lastChild);
       }
+    }
+
+    // drawSparkline (spec 073) — vector canvas lightweight graph renderer
+    function drawSparkline(canvasId, dataPoints, colorCode) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const width = canvas.width;
+      const height = canvas.height;
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, width, height);
+
+      if (dataPoints.length < 2) return;
+
+      // Find min & max for scaling
+      let min = Math.min(...dataPoints);
+      let max = Math.max(...dataPoints);
+      
+      // If min and max are equal, pad them
+      if (min === max) {
+        min = Math.max(0, min - 1);
+        max = max + 1;
+      }
+      
+      const range = max - min;
+
+      ctx.beginPath();
+      ctx.strokeStyle = colorCode;
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      // Enable glow effect!
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = colorCode;
+
+      // Draw path
+      for (let i = 0; i < dataPoints.length; i++) {
+        const x = (i / (maxHistoryPoints - 1)) * width;
+        // Normalize y to [0, 1] then scale to canvas height, with a 4px padding at top and bottom
+        const ratio = (dataPoints[i] - min) / range;
+        const y = height - (ratio * (height - 8) + 4);
+        
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.stroke();
+
+      // Reset shadow for subsequent draws
+      ctx.shadowBlur = 0;
+
+      // Draw subtle gradient fill underneath the sparkline for a premium finish!
+      ctx.beginPath();
+      ctx.moveTo(0, height);
+      for (let i = 0; i < dataPoints.length; i++) {
+        const x = (i / (maxHistoryPoints - 1)) * width;
+        const ratio = (dataPoints[i] - min) / range;
+        const y = height - (ratio * (height - 8) + 4);
+        ctx.lineTo(x, y);
+      }
+      const lastX = ((dataPoints.length - 1) / (maxHistoryPoints - 1)) * width;
+      ctx.lineTo(lastX, height);
+      ctx.closePath();
+
+      // Create gradient
+      const grad = ctx.createLinearGradient(0, 0, 0, height);
+      let rgbaColor = "rgba(0, 242, 254, 0.08)";
+      if (colorCode.includes("emerald")) rgbaColor = "rgba(5, 196, 107, 0.08)";
+      if (colorCode.includes("amber")) rgbaColor = "rgba(255, 159, 26, 0.08)";
+      if (colorCode.includes("purple")) rgbaColor = "rgba(161, 140, 209, 0.08)";
+      
+      grad.addColorStop(0, rgbaColor);
+      grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = grad;
+      ctx.fill();
     }
 
     // Polling Setup

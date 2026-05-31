@@ -111,4 +111,52 @@ describe("Persistence kill→restart→rejoin integration (spec 008)", () => {
       roomB.destroy();
     }
   });
+
+  test("tutorialCompleted and navalMerits survive the restart lifecycle", async () => {
+    const pmA = new PersistenceManager({
+      store: new JsonFileStore({ dir }),
+      logger: () => {},
+    });
+    const roomA = new GameInstance("public", "Public Arena");
+    const playerA = makeClient("player-42", "Orion");
+
+    try {
+      // Mark tutorial completed and add some naval merit progress
+      playerA.tutorialCompleted = true;
+      playerA.ship.credits = 7500;
+      playerA.ship.navalMerits = { Federation: 120, Syndicate: 45 };
+
+      expect(await pmA.saveGalaxy("public", roomA)).toBe(true);
+      expect(await pmA.savePlayer("player-42", playerA, "public")).toBe(true);
+    } finally {
+      roomA.destroy();
+    }
+
+    // --- Restart ---
+    const pmB = new PersistenceManager({
+      store: new JsonFileStore({ dir }),
+      logger: () => {},
+    });
+    const roomB = new GameInstance("public", "Public Arena");
+    const playerB = makeClient("player-blank2", "Blank2");
+
+    try {
+      const snapshot = await pmB.loadGalaxy("public");
+      expect(snapshot).not.toBeNull();
+      applyGalaxy(roomB, snapshot);
+
+      const wrapped = await pmB.loadPlayer("player-42");
+      expect(wrapped).not.toBeNull();
+      applyPlayer(playerB, wrapped.player);
+
+      expect(playerB.tutorialCompleted).toBe(true);
+      expect(playerB.ship.credits).toBe(7500);
+      expect(playerB.ship.navalMerits).toEqual({
+        Federation: 120,
+        Syndicate: 45,
+      });
+    } finally {
+      roomB.destroy();
+    }
+  });
 });

@@ -1,6 +1,18 @@
 import { Vector2D } from "../physics/Vector2D.js";
 import { Ship } from "../engine/Ship.js";
 import { AIController } from "../engine/ai/AIController.js";
+import { InvariantVerifier } from "../engine/InvariantVerifier.js";
+import { createLogger } from "../net/logger.js";
+
+const envLogLevel = process.env.LOG_LEVEL;
+const logLevel =
+  envLogLevel === "error" ||
+  envLogLevel === "debug" ||
+  envLogLevel === "info" ||
+  envLogLevel === "warn"
+    ? envLogLevel
+    : "info";
+const logger = createLogger({ level: logLevel });
 
 /**
  * Executes the economy tick (shortage/surplus events) for a room.
@@ -12,6 +24,16 @@ export function runEconomyTickForRoom(room) {
     // 30% probability of triggering a dynamic economic event
     if (Math.random() < 0.3) {
       const ev = room.galaxyEventsManager.triggerEvent();
+
+      if (room.chronicle) {
+        room.chronicle.recordEvent({
+          sector: room.id,
+          category: "economy",
+          title: `Dynamic Shock: ${ev.name}`,
+          description: ev.description,
+          impactMetrics: ev.priceModifiers,
+        });
+      }
 
       // Save pre-event market prices so we can restore them exactly upon expiration
       for (const p of room.planets) {
@@ -90,6 +112,22 @@ export function runEconomyTickForRoom(room) {
     formattedMsg,
     event.isShortage ? "error" : "success",
   );
+
+  if (room.chronicle) {
+    room.chronicle.recordEvent({
+      sector: room.id,
+      category: "economy",
+      title: event.isShortage
+        ? `Shortage: ${event.commodity}`
+        : `Surplus: ${event.commodity}`,
+      description: formattedMsg,
+      impactMetrics: {
+        planet: event.planetName,
+        commodity: event.commodity,
+        price: event.newPrice,
+      },
+    });
+  }
 
   const chatPayload = {
     type: "chat",
@@ -310,8 +348,38 @@ export function runEconomyNormalizationInterval(instances) {
  */
 export function runGalaxyHeartbeatInterval(instances) {
   for (const room of instances.values()) {
-    const changedNames = room.galaxyHeartbeat.pulse();
-    room.decayReputations();
+    // Audit-Driven Invariant Verification and Self-Healing (SPEC-091)
+    InvariantVerifier.verify(room, logger);
+
+    const entities = room.engine ? room.engine.entities : [];
+    const changedNames = room.galaxyHeartbeat.pulse(entities);
+    const decayChanges = room.decayReputations();
+
+    if (
+      decayChanges &&
+      Object.keys(decayChanges).length > 0 &&
+      room.chronicle
+    ) {
+      for (const [playerId, factions] of Object.entries(decayChanges)) {
+        if (Object.keys(factions).length === 0) continue;
+        const nickname = findNicknameForPlayer(room, playerId);
+        for (const [faction, val] of Object.entries(factions)) {
+          const description = `Commander ${nickname}'s standing with ${faction} drifted toward neutral (${val}) due to inactive standings decay.`;
+          room.chronicle.recordEvent({
+            sector: room.id,
+            category: "system",
+            title: `Standing Decay: ${nickname}`,
+            description: description,
+            impactMetrics: {
+              playerId: playerId,
+              faction: faction,
+              standing: val,
+            },
+          });
+        }
+      }
+    }
+
     for (const name of changedNames) {
       const planet = room.planets.find((p) => p.name === name);
       if (planet) {
@@ -322,5 +390,37 @@ export function runGalaxyHeartbeatInterval(instances) {
         });
       }
     }
+
+    if (room.territoryControl) {
+      room.territoryControl.decayInfluence(15);
+      room.broadcast({
+        type: "territory_sync",
+        sectors: room.territoryControl.sectors,
+      });
+    }
   }
+}
+
+/**
+ * Resolves a player's nickname from playerId by searching room clients or entities.
+ * @param {Object} room
+ * @param {string} playerId
+ * @returns {string} The resolved nickname or the original playerId.
+ */
+function findNicknameForPlayer(room, playerId) {
+  if (room && room.clients) {
+    for (const client of room.clients.values()) {
+      if (client.id === playerId) {
+        return client.nickname;
+      }
+    }
+  }
+  if (room && room.engine && room.engine.entities) {
+    const ent = room.engine.entities.find((e) => e.id === playerId);
+    if (ent) {
+      if (ent.nickname) return ent.nickname;
+      if (ent.name) return ent.name;
+    }
+  }
+  return playerId;
 }

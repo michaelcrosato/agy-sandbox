@@ -16,58 +16,77 @@ import { interestFilter, buildSpatialGrid } from "./net/interest.js";
 import { encode as encodeFrame } from "./net/BinaryCodec.js";
 import { perMessageDeflateOption } from "./net/wsCompression.js";
 import { squadManager } from "./server/SquadManager.js";
-import {
-  matchRoom,
-  JoinQueue,
-  freeSlots,
-  roomMatches,
-} from "./server/matchmaking.js";
+import { JoinQueue, freeSlots, roomMatches } from "./server/matchmaking.js";
 import { JsonFileStore } from "./persistence/Store.js";
 import { PersistenceManager } from "./persistence/PersistenceManager.js";
-import { applyGalaxy, applyPlayer } from "./persistence/serializers.js";
+import { GalacticChronicle } from "./persistence/GalacticChronicle.js";
+import {
+  ApiRateLimiter,
+  activateOutboundSentinel,
+} from "./net/ApiRateLimiter.js";
+import { SandboxFirewall, activateFirewall } from "./net/SandboxFirewall.js";
+import { applyGalaxy } from "./persistence/serializers.js";
 import { InMemoryPubSub } from "./net/PubSub.js";
-import {
-  applyRepair,
-  applyRefuel,
-  applyRefine,
-} from "./engine/PortServices.js";
-import {
-  consumeJump,
-  DEFAULT_HYPERDRIVE_OPTIONS,
-  validateWarpJump,
-  getWarpToll,
-} from "./engine/Hyperdrive.js";
-
-import {
-  plunder,
-  boardRepair,
-  boardSalvage,
-  boardCapture,
-} from "./engine/Boarding.js";
 import { isAllowedOrigin } from "./net/originPolicy.js";
 import { selectDeadSockets, DEFAULT_HEARTBEAT_MS } from "./net/heartbeat.js";
 import { sendDecision } from "./net/backpressure.js";
 import { createRegistry } from "./net/metrics.js";
 import { createLogger } from "./net/logger.js";
-import { applyOutfitStats } from "./engine/Outfitting.js";
-import { DEFAULT_OUTFITS } from "./engine/outfitCatalog.js";
+import { LatencyMonitor } from "./net/LatencyMonitor.js";
+import { SandboxTelemetry } from "./net/SandboxTelemetry.js";
+import { ResourceLimiter } from "./net/ResourceLimiter.js";
+import { MemoryLeakSentry } from "./net/MemoryLeakSentry.js";
+import { AnomalyDetector } from "./net/AnomalyDetector.js";
+import { ConfigWatcher } from "./net/ConfigWatcher.js";
+import { ConnectionFloodSentry } from "./net/ConnectionFloodSentry.js";
+import { SandboxSecurityRegistry } from "./net/SandboxSecurityRegistry.js";
+import { GuestRunner } from "./net/GuestRunner.js";
+import { GuestRpcSentry } from "./net/GuestRpcSentry.js";
+import { WorkspaceDriftSentry } from "./net/WorkspaceDriftSentry.js";
+import { ProcessReaper } from "./net/ProcessReaper.js";
+import { ProcessSentinel } from "./net/ProcessSentinel.js";
 import {
   handleOutfitBuy,
   handleShipBuy,
-  handleMissionAccept,
-  handleMissionAbandon,
-  handleEscortCommand,
   handleVoucherRedeem,
   handleOutfitSell,
-  handlePresetSave,
-  handlePresetLoad,
+  handleOreRefine,
+  handleDistressBeacon,
 } from "./server/portHandlers.js";
 import {
-  tradeOne,
-  factionPrice,
-  getTransactionTaxRate,
-} from "./engine/Trading.js";
+  handlePresetSave,
+  handlePresetLoad,
+  handlePresetDelete,
+} from "./server/outfittingPresetHandlers.js";
+import {
+  handleMissionAccept,
+  handleMissionAbandon,
+} from "./server/spaceportMissionHandlers.js";
+import {
+  handleTrade,
+  handlePortService,
+  handleJettison,
+  handleWarpJump,
+  handleBoardingAction,
+} from "./server/actionHandlers.js";
+import { handleChat } from "./server/chatHandler.js";
+import { handleFleetAction } from "./server/fleetHandlers.js";
+import {
+  handleControls,
+  handleLand,
+  handleLaunch,
+} from "./server/gameplayHandlers.js";
+import { handleSquadAction } from "./server/squadHandlers.js";
+import { handleEscortAction } from "./server/escortHandlers.js";
+import {
+  handleTutorialStart,
+  handleTutorialProgress,
+  handleTutorialComplete,
+} from "./server/tutorialHandlers.js";
+import { handleConnectionAction } from "./server/connectionHandlers.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
+import { COMMODITIES_METADATA, SCHEMAS } from "./net/SchemaRegistry.js";
+import { validateMessage } from "./net/SchemaValidator.js";
 import { sanitizeNickname } from "./server/roomLifecycle.js";
 import {
   runEconomyShortageInterval,
@@ -76,14 +95,16 @@ import {
   runGalaxyHeartbeatInterval,
 } from "./server/galaxyTicker.js";
 import { runGcSweep } from "./server/roomGc.js";
-import { broadcastLobbySync, sendLobbyList } from "./server/lobbySync.js";
+import {
+  broadcastLobbySync,
+  sendLobbyList,
+  buildLobbyRoomsList,
+} from "./server/lobbySync.js";
 import {
   assignShard,
   RoomRegistry,
   routeConnection,
 } from "./net/roomRouter.js";
-
-const JUMP_FUEL_COST = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost;
 
 // Interest management (spec 014): per-client area-of-interest filtering of the
 // world-state broadcast — a client receives only entities near its ship (plus
@@ -103,6 +124,52 @@ const BINARY_PROTOCOL = process.env.BINARY_PROTOCOL !== "0";
 // GET /metrics, plus a leveled JSON logger for structured events.
 const metrics = createRegistry();
 const logger = createLogger({ level: process.env.LOG_LEVEL || "info" });
+const latencyMonitor = new LatencyMonitor();
+latencyMonitor.start();
+const sandboxTelemetry = new SandboxTelemetry();
+sandboxTelemetry.start();
+
+const memoryLeakSentry = new MemoryLeakSentry({
+  sandboxTelemetry,
+  isActiveLoad: () => {
+    try {
+      return (
+        typeof wss !== "undefined" && wss && wss.clients && wss.clients.size > 0
+      );
+    } catch (_err) {
+      return false;
+    }
+  },
+});
+memoryLeakSentry.start();
+
+const anomalyDetector = new AnomalyDetector(60, 3.0);
+const anomalyInterval = setInterval(() => {
+  try {
+    const clients =
+      typeof wss !== "undefined" && wss && wss.clients ? wss.clients.size : 0;
+    const latency = latencyMonitor.getLatency();
+    const heapUsed = process.memoryUsage().heapUsed;
+    anomalyDetector.observe(clients, latency, heapUsed);
+  } catch (_e) {
+    // safe catch-all
+  }
+}, 1000);
+const resourceLimiter = new ResourceLimiter({
+  onHardLimit: () => {
+    if (process.env.NODE_ENV === "test") {
+      console.log(
+        "⚠️ [RESOURCE LIMITER] Hard limit crossed but ignored in test environment",
+      );
+      return;
+    }
+    console.error(
+      "🚨 [RESOURCE LIMITER] Hard limit crossed! Triggering server shutdown.",
+    );
+    shutdown();
+  },
+});
+resourceLimiter.start();
 
 // ws inbound hardening (spec 002): cap inbound frame size to blunt memory-DoS,
 // and accept only same-origin upgrades + an optional ALLOWED_ORIGINS allowlist
@@ -144,11 +211,437 @@ const SHARD_INDEX = Number(process.env.SHARD_INDEX) || 0;
 const server = http.createServer((req, res) => {
   let safeUrl = req.url.split("?")[0];
 
+  // Test only: Induce event loop lag to test backpressure shedding (SPEC-095)
+  if (process.env.NODE_ENV === "test" && safeUrl === "/test/induce-lag") {
+    const ms = Number(req.url.split("ms=")[1] || "60");
+    const start = Date.now();
+    while (Date.now() - start < ms) {
+      // CPU busy-wait
+    }
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ induced: ms }));
+    return;
+  }
+
   // Observability endpoint (spec 010): read-only runtime metrics snapshot.
   if (safeUrl === "/metrics" || safeUrl === "/healthz") {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify(metrics.snapshot()));
+    res.writeHead(200, {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    });
+    const snap = metrics.snapshot();
+    let totalDrifts = 0;
+    for (const inst of instances.values()) {
+      if (inst.determinismSentry) {
+        totalDrifts += inst.determinismSentry.getDriftAlertsTotal();
+      }
+    }
+    const augmented = {
+      ...snap,
+      cluster_worker_ports: Array.from(
+        { length: WORKERS },
+        (_, i) => PORT - SHARD_INDEX + i,
+      ),
+      shard_index: SHARD_INDEX,
+      workers_total: WORKERS,
+      clients_active: wss.clients.size,
+      rooms_active: instances.size,
+      determinism_drift_alerts_total: totalDrifts,
+      tick_ms_avg: snap.observations.tick_ms?.avg ?? 0,
+      broadcast_bytes_total: snap.counters.broadcast_bytes ?? 0,
+      matchmaking_queue_size: matchmakingQueue.size,
+      event_loop_latency_ms: latencyMonitor.getLatency(),
+      event_loop_status: latencyMonitor.getStatus(),
+      sandbox_telemetry: sandboxTelemetry.getMetrics(),
+      api_limiter: {
+        block_count: apiRateLimiter.blockCount,
+        expended_tokens: apiRateLimiter.expendedTokens,
+        max_per_minute: apiRateLimiter.maxPerMinute,
+        max_per_hour: apiRateLimiter.maxPerHour,
+        allowlist_domains: apiRateLimiter.allowlistDomains,
+      },
+      sandbox_firewall: {
+        block_count: sandboxFirewall.blockCount,
+        blocked_events: sandboxFirewall.blockedEvents,
+        allowlist_domains: sandboxFirewall.allowlistDomains,
+      },
+      memory_leak_alerts: memoryLeakSentry.getDiagnostics(),
+      anomaly_triggers_total: anomalyDetector.anomalyTriggersTotal,
+      anomaly_detector: anomalyDetector.getDiagnostics(),
+      sandbox_security: SandboxSecurityRegistry.getMetrics(),
+      process_reaper: {
+        active_processes: ProcessReaper.getProcessCount(),
+        active_workers: ProcessReaper.getWorkerCount(),
+      },
+      process_sentinel: ProcessSentinel.getStats(),
+      guest_sandbox: {
+        active_runs: Array.from(GuestRunner.activeRuns.values()),
+        recent_runs: GuestRunner.recentRuns,
+        rpc_total_requests: GuestRpcSentry.totalRequests,
+        rpc_blocked_requests: GuestRpcSentry.blockedRequests,
+        drift_total_self_heals: WorkspaceDriftSentry.totalSelfHeals,
+        drift_total_files_restored_or_purged:
+          WorkspaceDriftSentry.totalFilesRestoredOrPurged,
+      },
+      rooms: buildLobbyRoomsList(instances).map((r) => ({
+        ...r,
+        players: r.playersCount,
+        shardIndex: SHARD_INDEX,
+      })),
+    };
+    res.end(JSON.stringify(augmented));
     return;
+  }
+
+  // Observability: The Galactic Chronicle & Dynamic Event Ledger (SPEC-096)
+  if (safeUrl === "/chronicle") {
+    res.writeHead(200, {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    });
+    res.end(JSON.stringify(galacticChronicle.getEvents()));
+    return;
+  }
+
+  // SPEC-099: Centralized Commodities & Unified Schema Registry HTTP Endpoint
+  if (safeUrl === "/schema") {
+    res.writeHead(200, {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    });
+    res.end(
+      JSON.stringify({
+        commodities: COMMODITIES_METADATA,
+        schemas: SCHEMAS,
+      }),
+    );
+    return;
+  }
+
+  // SPEC-102: Serve Codebase Living Codex JSON Data & friendly visual redirect
+  if (safeUrl === "/codex") {
+    const codexPath = path.resolve("plan/codex.json");
+    if (fs.existsSync(codexPath)) {
+      res.writeHead(200, {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      });
+      res.end(fs.readFileSync(codexPath, "utf8"));
+    } else {
+      res.writeHead(404, { "Content-Type": "text/plain" });
+      res.end("Living Codex data not found. Please run codex:generate first.");
+    }
+    return;
+  }
+
+  // Handle CORS OPTIONS preflight
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    });
+    res.end();
+    return;
+  }
+
+  // SPEC-137: Dynamic Egress Firewall Admin rules modification endpoint
+  if (req.method === "POST" && safeUrl === "/api/firewall/rules") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk;
+    });
+    req.on("end", () => {
+      try {
+        const payload = JSON.parse(body);
+        if (!payload || typeof payload !== "object") {
+          res.writeHead(400, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(JSON.stringify({ error: "Invalid JSON payload" }));
+          return;
+        }
+
+        const { action, domain } = payload;
+        if (action !== "allow" && action !== "block") {
+          res.writeHead(400, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(
+            JSON.stringify({ error: "Action must be 'allow' or 'block'" }),
+          );
+          return;
+        }
+
+        if (typeof domain !== "string" || !domain.trim()) {
+          res.writeHead(400, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(
+            JSON.stringify({
+              error:
+                "Domain parameter is required and must be a non-empty string",
+            }),
+          );
+          return;
+        }
+
+        // Domain validation: simple regex check for safety (alphanumeric, dashes, dots)
+        const domainRegex = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!domainRegex.test(domain)) {
+          res.writeHead(400, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(JSON.stringify({ error: "Invalid domain name format" }));
+          return;
+        }
+
+        const targetDomain = domain.trim().toLowerCase();
+        const configPath = path.resolve(ROOT_DIR, "plan/config.json");
+        const configContent = fs.readFileSync(configPath, "utf-8");
+        const config = JSON.parse(configContent);
+
+        if (!config.sandboxFirewall) {
+          config.sandboxFirewall = { allowlistDomains: [] };
+        }
+        if (!Array.isArray(config.sandboxFirewall.allowlistDomains)) {
+          config.sandboxFirewall.allowlistDomains = [];
+        }
+
+        const originalList = config.sandboxFirewall.allowlistDomains.map((d) =>
+          d.toLowerCase(),
+        );
+        let updatedList = [...originalList];
+
+        if (action === "allow") {
+          if (!updatedList.includes(targetDomain)) {
+            updatedList.push(targetDomain);
+          }
+        } else if (action === "block") {
+          updatedList = updatedList.filter((d) => d !== targetDomain);
+        }
+
+        config.sandboxFirewall.allowlistDomains = updatedList;
+
+        // Run validation against schemas before writing to config.json
+        const val = validateMessage({
+          type: "sandboxFirewallConfig",
+          ...config.sandboxFirewall,
+        });
+        if (!val.valid) {
+          res.writeHead(400, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(
+            JSON.stringify({
+              error: `Schema validation failed: ${val.error}`,
+            }),
+          );
+          return;
+        }
+
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2), "utf-8");
+
+        res.writeHead(200, {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        });
+        res.end(
+          JSON.stringify({
+            success: true,
+            allowlistDomains: config.sandboxFirewall.allowlistDomains,
+          }),
+        );
+      } catch (err) {
+        res.writeHead(500, {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+  // SPEC-155: Dynamic outfitting metrics API endpoint
+  if (req.method === "GET" && safeUrl === "/api/outfitting/metrics") {
+    const metrics = [];
+    for (const client of clients.values()) {
+      if (client.ship) {
+        metrics.push({
+          playerId: client.id,
+          name: client.ship.name,
+          hullMass:
+            client.ship.hullMass !== undefined ? client.ship.hullMass : 2000,
+          outfitMass:
+            client.ship.outfitMass !== undefined ? client.ship.outfitMass : 0,
+          totalMass: client.ship.mass !== undefined ? client.ship.mass : 2000,
+          maxOutfitMass:
+            client.ship.maxOutfitMass !== undefined
+              ? client.ship.maxOutfitMass
+              : 3000,
+          effectiveTurnRate:
+            typeof client.ship.getEffectiveTurnRate === "function"
+              ? client.ship.getEffectiveTurnRate()
+              : client.ship.turnRate || 2.5,
+          effectiveMaxSpeed:
+            typeof client.ship.getEffectiveMaxSpeed === "function"
+              ? client.ship.getEffectiveMaxSpeed()
+              : client.ship.maxSpeed || 300,
+          thrustToMass:
+            typeof client.ship.getThrustToMassRatio === "function"
+              ? client.ship.getThrustToMassRatio()
+              : client.ship.thrustPower / (client.ship.mass || 2000),
+          chargeDuration:
+            typeof client.ship.getEffectiveHyperdriveChargeDuration ===
+            "function"
+              ? client.ship.getEffectiveHyperdriveChargeDuration()
+              : 5,
+          outfits: client.ship.outfits || [],
+        });
+      }
+    }
+    res.writeHead(200, {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    });
+    res.end(JSON.stringify({ ok: true, metrics }));
+    return;
+  }
+
+  // SPEC-153: Secure Interactive Codex CLI sandbox command dispatcher
+  if (req.method === "POST" && safeUrl === "/api/sandbox/execute") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk;
+    });
+    req.on("end", async () => {
+      let tempFile = null;
+      try {
+        const payload = JSON.parse(body);
+        if (!payload || typeof payload !== "object") {
+          res.writeHead(400, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(JSON.stringify({ error: "Invalid JSON payload" }));
+          return;
+        }
+
+        const { code } = payload;
+        if (typeof code !== "string" || !code.trim()) {
+          res.writeHead(400, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(JSON.stringify({ error: "Code parameter is required" }));
+          return;
+        }
+
+        // Generate temporary script inside the network modules directory
+        const randId = Math.random().toString(36).substring(2, 7);
+        const tempFilename = `temp_cli_${Date.now()}_${randId}.js`;
+        const tempDir = path.join(ROOT_DIR, "src/net");
+        tempFile = path.join(tempDir, tempFilename);
+
+        fs.writeFileSync(tempFile, code, "utf-8");
+
+        const result = await GuestRunner.runScript(tempFile, {
+          timeoutMs: 5000,
+        });
+
+        res.writeHead(200, {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        });
+        res.end(
+          JSON.stringify({
+            status: result.status,
+            stdout: result.stdout,
+            stderr: result.stderr,
+            exitCode: result.exitCode,
+            error: result.error || null,
+          }),
+        );
+      } catch (err) {
+        res.writeHead(500, {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        });
+        res.end(JSON.stringify({ error: err.message }));
+      } finally {
+        if (tempFile && fs.existsSync(tempFile)) {
+          try {
+            fs.unlinkSync(tempFile);
+          } catch {
+            // ignore cleanup failure
+          }
+        }
+      }
+    });
+    return;
+  }
+
+  // SPEC-153: Secure Interactive Codex CLI sandbox process reaper termination trigger
+  if (req.method === "POST" && safeUrl === "/api/sandbox/kill") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk;
+    });
+    req.on("end", async () => {
+      try {
+        const payload = JSON.parse(body);
+        if (!payload || typeof payload !== "object") {
+          res.writeHead(400, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(JSON.stringify({ error: "Invalid JSON payload" }));
+          return;
+        }
+
+        const { pid } = payload;
+        const numericPid = parseInt(String(pid), 10);
+        if (isNaN(numericPid) || numericPid <= 0) {
+          res.writeHead(400, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(JSON.stringify({ error: "Valid PID parameter is required" }));
+          return;
+        }
+
+        // Call the ProcessReaper to kill the child and its grandchildren
+        await ProcessReaper.reap(numericPid);
+
+        res.writeHead(200, {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        });
+        res.end(
+          JSON.stringify({
+            success: true,
+            message: `Process tree for PID ${numericPid} forcefully reaped.`,
+          }),
+        );
+      } catch (err) {
+        res.writeHead(500, {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+  if (safeUrl === "/dashboard-codex") {
+    safeUrl = "/dashboard-codex.html";
   }
 
   if (safeUrl === "/" || safeUrl === "") {
@@ -263,6 +756,66 @@ const persistenceManager = new PersistenceManager({
   },
 });
 
+const galacticChronicle = new GalacticChronicle({
+  store: {
+    async save(key, obj) {
+      return storeInstance.save(key, obj);
+    },
+    async load(key) {
+      return storeInstance.load(key);
+    },
+    async has(key) {
+      return storeInstance.has(key);
+    },
+  },
+});
+await galacticChronicle.load();
+
+const apiRateLimiter = new ApiRateLimiter({
+  maxPerMinute: Number(process.env.API_LIMIT_MINUTE) || 10,
+  maxPerHour: Number(process.env.API_LIMIT_HOUR) || 200,
+  allowlistDomains: [
+    "google.com",
+    "api.google.com",
+    "openai.com",
+    "api.openai.com",
+    "localhost",
+    "127.0.0.1",
+  ],
+});
+activateOutboundSentinel(apiRateLimiter);
+
+const sandboxFirewall = new SandboxFirewall({
+  allowlistDomains: [
+    "google.com",
+    "api.google.com",
+    "openai.com",
+    "api.openai.com",
+    "localhost",
+    "127.0.0.1",
+  ],
+});
+activateFirewall(sandboxFirewall);
+
+export const wsRateLimitConfig = {
+  maxPerSecond: 100,
+};
+
+export const connectionFloodSentry = new ConnectionFloodSentry({
+  maxConnectionsPerIp: 5,
+});
+
+let configWatcher = null;
+configWatcher = new ConfigWatcher("plan/config.json", {
+  apiRateLimiter,
+  sandboxFirewall,
+  wsRateLimitConfig,
+  instances,
+  connectionFloodSentry,
+  resourceLimiter,
+});
+configWatcher.start();
+
 // Setup multi-room ticker loops
 const TICK_RATE = 30;
 const dt = 1 / TICK_RATE;
@@ -280,6 +833,46 @@ const physicsInterval = setInterval(() => {
 
     for (const ai of room.ais) {
       if (ai.ship.isDestroyed) continue;
+
+      if (ai.isRefuelTanker && ai.refuelTargetId) {
+        const targetClient = room.clients.get(ai.refuelTargetId);
+        if (
+          targetClient &&
+          targetClient.ship &&
+          !targetClient.ship.isDestroyed
+        ) {
+          ai.destination = targetClient.ship.position.clone();
+
+          const dist = ai.ship.position.distance(targetClient.ship.position);
+          if (dist < 90) {
+            targetClient.ship.hyperFuel = targetClient.ship.maxHyperFuel;
+            targetClient.send({
+              type: "notification",
+              message:
+                "Rescue Caravan: Allied Refuel Tanker transferred maximum hyperFuel!",
+              style: "success",
+            });
+            targetClient.sendStats();
+
+            const alertMsg = `RESCUE: ${targetClient.nickname} has been refueled by an allied Refuel Tanker.`;
+            room.broadcastNotification(alertMsg, "info");
+            room.broadcast({
+              type: "chat",
+              channel: "global",
+              sender: "GALAXY-NEWS",
+              text: alertMsg,
+            });
+
+            ai.ship.isDestroyed = true;
+            room.engine.removeEntity(ai.ship.id);
+            continue;
+          }
+        } else {
+          ai.ship.isDestroyed = true;
+          room.engine.removeEntity(ai.ship.id);
+          continue;
+        }
+      }
 
       if (ai.role === "merchant" && !ai.destination) {
         const potentialHubs = room.planets.filter(
@@ -307,6 +900,7 @@ const physicsInterval = setInterval(() => {
 
     // B. Apply Solar EMP Events Shield Regen nerfing
     const originalRegens = new Map();
+    const originalCooldowns = new Map();
     if (room.activeSectorEvent && room.activeSectorEvent.type === "emp") {
       const empPlanet = room.planets.find(
         (p) => p.name === room.activeSectorEvent.planetName,
@@ -353,6 +947,35 @@ const physicsInterval = setInterval(() => {
           if (ship.type === "ship" && !ship.isDestroyed) {
             const dist = ship.position.distance(pod.position);
             if (dist <= ship.radius + pod.radius) {
+              if (pod.isTrainingSalvage) {
+                podsToRemove.push(pod);
+                const client = Array.from(room.clients.values()).find(
+                  (c) => c.ship === ship,
+                );
+                if (client) {
+                  client.tutorialStep = "dock_at_port";
+                  client.send({
+                    type: "notification",
+                    message:
+                      "Salvage harvested! Return to the spaceport and land [L] to complete onboarding.",
+                    style: "success",
+                  });
+                  client.send({
+                    type: "tutorial_state",
+                    step: "dock_at_port",
+                  });
+                  client.send({
+                    type: "cargo_pickup",
+                    resourceType: pod.resourceType,
+                    amount: pod.amount,
+                    x: pod.position.x,
+                    y: pod.position.y,
+                  });
+                  client.sendStats();
+                }
+                break;
+              }
+
               const success = ship.addCargo(pod.resourceType, pod.amount);
               if (success) {
                 podsToRemove.push(pod);
@@ -436,16 +1059,55 @@ const physicsInterval = setInterval(() => {
       }
     }
 
+    // E2. Apply Authoritative Cosmic Storm Hazards
+    for (const ent of room.engine.entities) {
+      if (ent.type === "ship" && !ent.isDestroyed) {
+        for (const storm of room.engine.entities) {
+          if (storm.type === "cosmic_storm") {
+            const dx = ent.position.x - storm.position.x;
+            const dy = ent.position.y - storm.position.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist <= storm.radius) {
+              if (storm.hazardType === "emp_storm") {
+                // Drain ship energy reserves (-15 energy/sec)
+                ent.energy = Math.max(0, ent.energy - 15 * dt);
+                // Double weapon cooldown delay
+                if (!originalCooldowns.has(ent)) {
+                  originalCooldowns.set(ent, ent.weaponCooldown);
+                }
+                ent.weaponCooldown = originalCooldowns.get(ent) * 2.0;
+              } else if (storm.hazardType === "radioactive_cloud") {
+                // Deals slow, direct armor decay if shields are depleted (-5 armor/sec)
+                if (ent.shield <= 0) {
+                  ent.armor = Math.max(0, ent.armor - 5 * dt);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     // F. Scramble aggressive interceptor patrols for hostile players
     room.checkReputationPatrolSpawns(dt);
+    room.checkEliteHunterSpawns(dt);
+    room.checkEscortAmbushSpawns(dt);
     room.checkContrabandSpaceScans(dt);
 
     // G. Update local room physical kinematics
     room.engine.update(dt);
 
-    // G. Restore shield regens
+    // Audit physics loop determinism (SPEC-123)
+    if (room.determinismSentry) {
+      room.determinismSentry.audit(room);
+    }
+
+    // G. Restore shield regens and weapon cooldowns
     for (const [ship, origRegen] of originalRegens.entries()) {
       ship.shieldRegen = origRegen;
+    }
+    for (const [ship, origCooldown] of originalCooldowns.entries()) {
+      ship.weaponCooldown = origCooldown;
     }
 
     // H. Replenish Asteroids
@@ -541,7 +1203,7 @@ const physicsInterval = setInterval(() => {
         }
       }
 
-      const visible =
+      let visible =
         INTEREST_ENABLED && viewer && viewer.position
           ? interestFilter(
               allEntities,
@@ -554,6 +1216,13 @@ const physicsInterval = setInterval(() => {
               },
             )
           : allEntities;
+
+      // Event-Loop Latency Backpressure load-shedding (SPEC-090):
+      if (latencyMonitor.shouldShed("optional")) {
+        visible = visible.filter(
+          (ent) => ent.type !== "asteroid" && ent.type !== "projectile",
+        );
+      }
 
       const frame = nextFrame({
         entities: visible,
@@ -590,6 +1259,15 @@ const physicsInterval = setInterval(() => {
   metrics.observe("tick_ms", Date.now() - now);
   metrics.gauge("rooms", instances.size);
   metrics.gauge("clients", wss.clients.size);
+  metrics.gauge("matchmaking_queue", matchmakingQueue.size);
+
+  let totalEconomyDrifts = 0;
+  for (const room of instances.values()) {
+    if (room.galaxyHeartbeat && room.galaxyHeartbeat.economyDriftsTotal) {
+      totalEconomyDrifts += room.galaxyHeartbeat.economyDriftsTotal;
+    }
+  }
+  metrics.gauge("economy_drift_violations", totalEconomyDrifts);
 }, 1000 / TICK_RATE);
 
 // 2. Room Economy Shortage/Surplus events loops (45 seconds)
@@ -610,6 +1288,9 @@ const economyNormalizationInterval = setInterval(() => {
 // 4b. Galaxy Heartbeat: age the economy and diffuse prices across trade lanes
 // even when nobody is in the sector (8 seconds).
 const galaxyHeartbeatInterval = setInterval(() => {
+  if (latencyMonitor.shouldShed("cosmetic")) {
+    return; // Pause cosmetic/non-essential heartbeat updates when loop is degraded/critical
+  }
   runGalaxyHeartbeatInterval(instances);
 }, 8000);
 
@@ -756,6 +1437,7 @@ async function joinRoom(clientObj, roomId, nickname) {
     );
     if (ownerNodeId === `node-${SHARD_INDEX}`) {
       room = new GameInstance(roomId, `Sector ${roomId}`);
+      room.chronicle = galacticChronicle;
       instances.set(roomId, room);
       console.log(
         `🌌 Dynamically instantiated custom sector on owning shard: [${room.name}] (${roomId})`,
@@ -850,6 +1532,7 @@ async function joinRoom(clientObj, roomId, nickname) {
     sessionToken: sessionToken,
     roomId: room.id,
     roomName: room.name,
+    tutorialCompleted: !!clientObj.tutorialCompleted,
   });
 
   clientObj.send({
@@ -880,6 +1563,13 @@ async function joinRoom(clientObj, roomId, nickname) {
       : null,
   });
 
+  if (room.territoryControl) {
+    clientObj.send({
+      type: "territory_sync",
+      sectors: room.territoryControl.sectors,
+    });
+  }
+
   if (room.galaxyEventsManager && room.galaxyEventsManager.activeEvent) {
     clientObj.send({
       type: "galaxy_event_announcement",
@@ -890,23 +1580,67 @@ async function joinRoom(clientObj, roomId, nickname) {
   room.broadcastRosterUpdate();
 }
 
+export function verifyWebSocketClient(info, cb) {
+  const req = info.req;
+
+  // 1. Raw upgrade URI length validation (>2048)
+  if (req && req.url && req.url.length > 2048) {
+    console.warn(
+      `[ws] rejected upgrade: request URI length (${req.url.length}) exceeds maximum limit (2048)`,
+    );
+    return cb(false, 414, "URI Too Long");
+  }
+
+  // 2. Raw Content-Length validation (>4096)
+  if (req && req.headers) {
+    const contentLengthHeader = req.headers["content-length"];
+    if (contentLengthHeader) {
+      const contentLength = parseInt(contentLengthHeader, 10);
+      if (!isNaN(contentLength) && contentLength > 4096) {
+        console.warn(
+          `[ws] rejected upgrade: request Content-Length (${contentLength}) exceeds maximum limit (4096)`,
+        );
+        return cb(false, 413, "Payload Too Large");
+      }
+    }
+  }
+
+  // 3. Origin checking
+  const allowed = isAllowedOrigin(info.origin, {
+    host: req && req.headers ? req.headers.host : "",
+    allow: ALLOWED_ORIGINS,
+  });
+  if (!allowed) {
+    console.warn(
+      `[ws] rejected upgrade from disallowed origin: ${info.origin}`,
+    );
+    return cb(false, 403, "Forbidden");
+  }
+
+  // 4. Inbound Connection Flood Protection & Active IP Sentry
+  const ip = req
+    ? req.headers["x-forwarded-for"]
+      ? req.headers["x-forwarded-for"].split(",")[0].trim()
+      : req.socket
+        ? req.socket.remoteAddress
+        : "unknown"
+    : "unknown";
+
+  const floodCheck = connectionFloodSentry.register(ip);
+  if (!floodCheck.allowed) {
+    console.warn(`[ws] rejected upgrade from ${ip}: ${floodCheck.reason}`);
+    return cb(false, 429, "Too Many Requests");
+  }
+
+  cb(true);
+}
+
 // 6. WebSockets Server Core Implementation
 const wss = new WebSocketServer({
   server,
   maxPayload: WS_MAX_PAYLOAD,
   perMessageDeflate: perMessageDeflateOption(WS_COMPRESSION),
-  verifyClient: (info) => {
-    const allowed = isAllowedOrigin(info.origin, {
-      host: info.req && info.req.headers ? info.req.headers.host : "",
-      allow: ALLOWED_ORIGINS,
-    });
-    if (!allowed) {
-      console.warn(
-        `[ws] rejected upgrade from disallowed origin: ${info.origin}`,
-      );
-    }
-    return allowed;
-  },
+  verifyClient: verifyWebSocketClient,
 });
 
 // Liveness heartbeat (spec 003): ping every socket each interval; any socket that
@@ -930,7 +1664,7 @@ const heartbeatInterval = setInterval(() => {
 }, DEFAULT_HEARTBEAT_MS);
 heartbeatInterval.unref();
 
-wss.on("connection", (ws) => {
+wss.on("connection", (ws, req) => {
   ws.isAlive = true;
   ws.on("pong", () => {
     ws.isAlive = true;
@@ -938,21 +1672,45 @@ wss.on("connection", (ws) => {
   metrics.inc("connections_total");
   logger.info("client_connected", { clients: wss.clients.size });
 
+  const clientIp =
+    req && req.headers
+      ? req.headers["x-forwarded-for"]
+        ? req.headers["x-forwarded-for"].split(",")[0].trim()
+        : req.socket
+          ? req.socket.remoteAddress
+          : "unknown"
+      : "unknown";
+
   const clientId = "player-" + Math.random().toString(36).substring(2, 9);
 
   const clientObj = {
     ws,
     id: clientId,
     nickname: "Pilot",
+    ip: clientIp,
     ship: null,
     missionManager: new MissionManager(),
     isLanded: false,
     planetLandedOn: null,
     fleetName: null,
     roomId: null,
+    rateLimitTokens: 100,
+    rateLimitLastRefill: Date.now(),
     send(data) {
-      if (ws.readyState === ws.OPEN) {
-        ws.send(JSON.stringify(data));
+      if (this.ws && this.ws.readyState === this.ws.OPEN) {
+        // Dynamic Load-Shedding (SPEC-090):
+        if (data) {
+          if (data.type === "chat" && latencyMonitor.shouldShed("chat")) {
+            return; // Drop non-essential chat message
+          }
+          if (
+            data.type === "notification" &&
+            latencyMonitor.shouldShed("chat")
+          ) {
+            return; // Drop verbose system notifications
+          }
+        }
+        this.ws.send(JSON.stringify(data));
       }
     },
     sendStats() {
@@ -1022,6 +1780,12 @@ wss.on("connection", (ws) => {
 
     const controller = new AIController(bossShip, "pirate", {
       useUtilityAdvisor: true,
+      factionPolicy: room.factionRegistry
+        ? room.factionRegistry.factionPolicy()
+        : null,
+      standingPolicy: room.factionRegistry
+        ? room.factionRegistry.standingPolicy()
+        : null,
     });
     room.engine.addEntity(bossShip);
     room.ais.push(controller);
@@ -1062,6 +1826,12 @@ wss.on("connection", (ws) => {
 
     const controller = new AIController(bossShip, "pirate", {
       useUtilityAdvisor: true,
+      factionPolicy: room.factionRegistry
+        ? room.factionRegistry.factionPolicy()
+        : null,
+      standingPolicy: room.factionRegistry
+        ? room.factionRegistry.standingPolicy()
+        : null,
     });
     room.engine.addEntity(bossShip);
     room.ais.push(controller);
@@ -1073,602 +1843,173 @@ wss.on("connection", (ws) => {
     });
   };
 
+  clientObj.missionManager.onEscortAccepted = (mission) => {
+    const room = instances.get(clientObj.roomId);
+    if (!room) return;
+    const originPlanet = room.planets.find((p) => p.name === mission.origin);
+    if (!originPlanet) return;
+
+    const spawnAngle = Math.random() * Math.PI * 2;
+    const spawnDist = originPlanet.landingRadius + 180;
+    const spawnPos = originPlanet.position.add(
+      new Vector2D(
+        Math.cos(spawnAngle) * spawnDist,
+        Math.sin(spawnAngle) * spawnDist,
+      ),
+    );
+
+    const transportShip = new Ship({
+      name: "Diplomatic Transport",
+      position: spawnPos,
+      velocity: new Vector2D(0, 0),
+      maxShield: 400,
+      maxArmor: 300,
+      thrustPower: 12000,
+      turnRate: 2.0,
+      weaponDamage: 10,
+      weaponCooldown: 0.5,
+    });
+    transportShip.role = "escort";
+    transportShip.faction = mission.faction;
+
+    const controller = new AIController(transportShip, "escort", {
+      useUtilityAdvisor: true,
+      factionPolicy: room.factionRegistry.factionPolicy(),
+      standingPolicy: room.factionRegistry.standingPolicy(),
+    });
+    controller.flagship = clientObj.ship;
+    controller.escortMode = "follow";
+
+    room.engine.addEntity(transportShip);
+    room.ais.push(controller);
+
+    clientObj.send({
+      type: "notification",
+      message:
+        "ESCORT ACTIVE: Keep the Diplomatic Transport safe on the way to destination!",
+      style: "success",
+    });
+  };
+
   clients.set(ws, clientObj);
 
   ws.on("message", async (msgStr) => {
-    let msg;
+    // SPEC-117: Zero-Trust WebSocket connection rate limiter (cap dynamic messages/sec)
+    const now = Date.now();
+    const elapsed = (now - clientObj.rateLimitLastRefill) / 1000;
+    clientObj.rateLimitLastRefill = now;
+    const maxRate = wsRateLimitConfig.maxPerSecond;
+    clientObj.rateLimitTokens = Math.min(
+      maxRate,
+      clientObj.rateLimitTokens + elapsed * maxRate,
+    );
+
+    if (clientObj.rateLimitTokens < 1) {
+      metrics.inc("rate_limits_triggered");
+      try {
+        clientObj.send({
+          type: "rate_limit_exceeded",
+          message: `Too many requests. WebSocket message rate limit exceeded (Max ${maxRate}/sec).`,
+        });
+      } catch (err) {
+        // ignore send errors
+      }
+      return;
+    }
+    clientObj.rateLimitTokens -= 1;
+
+    if (
+      resourceLimiter.isBackpressureActive &&
+      process.env.NODE_ENV !== "test"
+    ) {
+      if (typeof ws.pause === "function") {
+        ws.pause();
+        setTimeout(() => {
+          try {
+            if (typeof ws.resume === "function") {
+              ws.resume();
+            }
+          } catch (err) {
+            // ignore socket resume errors
+          }
+        }, 200);
+      }
+      try {
+        clientObj.send({
+          type: "notification",
+          message:
+            "Server is experiencing transient high resource load. Throttling messages...",
+          style: "warning",
+        });
+      } catch (err) {
+        // ignore socket send errors
+      }
+      return;
+    }
+
+    let rawMsg;
     try {
-      msg = JSON.parse(msgStr);
+      rawMsg = JSON.parse(msgStr);
     } catch {
       return;
     }
 
+    const validation = validateMessage(rawMsg);
+    if (!validation.valid) {
+      clientObj.send({
+        type: "notification",
+        message: "Invalid network payload: " + validation.error,
+        style: "error",
+      });
+      return;
+    }
+
+    const msg = validation.sanitized;
+
     const room = clientObj.roomId ? instances.get(clientObj.roomId) : null;
 
-    if (msg.type === "join") {
-      const token = msg.sessionToken;
-
-      if (token && !persistentSessions.has(token)) {
-        // First-touch after a server restart: the in-memory session map is
-        // empty even though the client carries a valid token from before.
-        // Try to revive them from disk; if no save exists, fall through to
-        // the lobby flow below.
-        persistenceManager
-          .loadPlayer(token)
-          .then((wrapped) => {
-            if (!wrapped || !wrapped.player) {
-              sendLobbyList(clientObj, instances);
-              return;
-            }
-            // Use the saved id so the engine entity (and future saves) keep
-            // the same stable identity. `applyPlayer` will also reapply this
-            // but joinRoom builds the ship from `clientObj.id` first.
-            if (typeof wrapped.player.id === "string" && wrapped.player.id) {
-              clientObj.id = wrapped.player.id;
-            }
-            const targetRoomId =
-              wrapped.roomId && instances.has(wrapped.roomId)
-                ? wrapped.roomId
-                : "public";
-            joinRoom(
-              clientObj,
-              targetRoomId,
-              wrapped.player.nickname || clientObj.nickname,
-            );
-            applyPlayer(clientObj, wrapped.player);
-            clientObj.send({
-              type: "notification",
-              message: `Welcome back, Commander ${clientObj.nickname}. State restored from last session.`,
-              style: "success",
-            });
-            clientObj.sendStats();
-          })
-          .catch(() => {
-            // The manager already logged; just route the client to the lobby.
-            sendLobbyList(clientObj, instances);
-          });
-        return;
-      }
-
-      if (token && persistentSessions.has(token)) {
-        const sessionClient = persistentSessions.get(token);
-
-        if (sessionClient.cleanupTimeout) {
-          clearTimeout(sessionClient.cleanupTimeout);
-          sessionClient.cleanupTimeout = null;
-        }
-
-        sessionClient.ws = ws;
-        clients.delete(ws);
-        clients.set(ws, sessionClient);
-
-        const currentRoom =
-          instances.get(sessionClient.roomId) || instances.get("public");
-        sessionClient.roomId = currentRoom.id;
-
-        // Clean up any stale WebSocket mapping for this client in the room to prevent double broadcasts
-        for (const [oldWs, cl] of currentRoom.clients.entries()) {
-          if (cl === sessionClient && oldWs !== ws) {
-            currentRoom.clients.delete(oldWs);
-          }
-        }
-        currentRoom.clients.set(ws, sessionClient);
-        // Reconnecting client needs a full keyframe — their local snapshot/seq
-        // has gone stale across the disconnect.
-        currentRoom.needsKeyframe = true;
-
-        if (sessionClient.ship) {
-          const existing = currentRoom.engine.entities.find(
-            (e) => e.id === sessionClient.id,
-          );
-          if (!existing) {
-            currentRoom.engine.addEntity(sessionClient.ship);
-          }
-        }
-
-        sessionClient.send({
-          type: "init",
-          playerId: sessionClient.id,
-          nickname: sessionClient.nickname,
-          sessionToken: token,
-          roomId: currentRoom.id,
-          roomName: currentRoom.name,
-        });
-
-        sessionClient.send({
-          type: "notification",
-          message: `Neural link re-established! Welcome back, Commander ${sessionClient.nickname}.`,
-          style: "success",
-        });
-
-        currentRoom.broadcastNotification(
-          `Commander ${sessionClient.nickname} has re-established neural link!`,
-          "success",
-        );
-        sessionClient.sendStats();
-
-        const bulkMarkets = {};
-        for (const p of currentRoom.planets) {
-          bulkMarkets[p.name] = p.market;
-        }
-        sessionClient.send({
-          type: "market_bulk_sync",
-          markets: bulkMarkets,
-        });
-
-        sessionClient.send({
-          type: "event_sync",
-          event: currentRoom.activeSectorEvent
-            ? {
-                type: currentRoom.activeSectorEvent.type,
-                planetName: currentRoom.activeSectorEvent.planetName,
-              }
-            : null,
-        });
-
-        currentRoom.broadcastRosterUpdate();
-        if (sessionClient.fleetName) {
-          currentRoom.broadcastFleetUpdate(sessionClient.fleetName);
-        }
-      } else {
-        sendLobbyList(clientObj, instances);
-      }
-    } else if (msg.type === "quick_join") {
-      // spec 036: route the client into a room by criteria — join the fullest
-      // matching room with a free slot, create a new one if nothing matches, or
-      // tell the client to wait when every matching room is full.
-      const criteria = {
-        mode: msg.mode,
-        tags: Array.isArray(msg.tags) ? msg.tags : undefined,
-      };
-      const roomsMeta = [];
-      for (const r of instances.values()) roomsMeta.push(r.metadata());
-      const decision = matchRoom(roomsMeta, criteria);
-
-      if (decision.action === "join") {
-        joinRoom(clientObj, decision.roomId, msg.nickname);
-        broadcastLobbySync(instances, clients);
-      } else if (decision.action === "create") {
-        let qRoomId;
-        let qAttempts = 0;
-        do {
-          qRoomId = "room-" + Math.random().toString(36).substring(2, 9);
-          qAttempts++;
-        } while (
-          WORKERS > 1 &&
-          assignShard(qRoomId, WORKERS) !== SHARD_INDEX &&
-          qAttempts < 100
-        );
-        const created = new GameInstance(
-          qRoomId,
-          (msg.name || "Quick Match").trim().substring(0, 20) || "Quick Match",
-        );
-        if (typeof msg.mode === "string") created.mode = msg.mode;
-        if (Number.isFinite(msg.maxPlayers))
-          created.maxPlayers = msg.maxPlayers;
-        if (Array.isArray(msg.tags)) created.tags = msg.tags;
-        instances.set(qRoomId, created);
-        joinRoom(clientObj, qRoomId, msg.nickname);
-        broadcastLobbySync(instances, clients);
-      } else {
-        // Every matching sector is full — the client waits for a freed slot.
-        matchmakingQueue.enqueue({
-          clientObj,
-          criteria,
-          nickname: msg.nickname || clientObj.nickname,
-        });
-
-        clientObj.send({
-          type: "matchmaking_queued",
-          message: "All matching sectors are full. You are in the queue.",
-          criteria,
-        });
-      }
-    } else if (msg.type === "create_room") {
-      const name = (msg.name || "").trim().substring(0, 20);
-      if (!name) {
-        clientObj.send({
-          type: "notification",
-          message: "Invalid Sector Name!",
-          style: "error",
-        });
-        return;
-      }
-      let newRoomId;
-      let attempts = 0;
-      do {
-        newRoomId = "room-" + Math.random().toString(36).substring(2, 9);
-        attempts++;
-      } while (
-        WORKERS > 1 &&
-        assignShard(newRoomId, WORKERS) !== SHARD_INDEX &&
-        attempts < 100
-      );
-      const newRoomInstance = new GameInstance(newRoomId, name);
-      instances.set(newRoomId, newRoomInstance);
-      console.log(`🌌 Created custom sector: [${name}] (${newRoomId})`);
-
-      joinRoom(clientObj, newRoomId, msg.nickname);
-      broadcastLobbySync(instances, clients);
-    } else if (msg.type === "join_room") {
-      joinRoom(clientObj, msg.roomId || "public", msg.nickname);
-      broadcastLobbySync(instances, clients);
+    if (
+      msg.type === "join" ||
+      msg.type === "quick_join" ||
+      msg.type === "create_room" ||
+      msg.type === "join_room"
+    ) {
+      handleConnectionAction(clientObj, msg, ws, {
+        instances,
+        clients,
+        persistentSessions,
+        persistenceManager,
+        galacticChronicle,
+        WORKERS,
+        SHARD_INDEX,
+        matchmakingQueue,
+        joinRoom,
+        sendLobbyList,
+        broadcastLobbySync,
+      });
     } else if (msg.type === "controls") {
-      if (
-        clientObj.ship &&
-        !clientObj.isLanded &&
-        !clientObj.ship.isDestroyed
-      ) {
-        clientObj.ship.setControls(msg.controls);
-        clientObj.ship.heading = msg.heading;
-      }
+      handleControls(clientObj, msg);
     } else if (msg.type === "land") {
-      if (
-        clientObj.ship &&
-        !clientObj.isLanded &&
-        !clientObj.ship.isDestroyed &&
-        room
-      ) {
-        const targetPlanet = room.planets.find((p) =>
-          p.canLand(clientObj.ship),
+      if (clientObj.tutorialStep === "dock_at_port") {
+        await handleTutorialComplete(
+          clientObj,
+          instances,
+          persistenceManager,
+          joinRoom,
         );
-        if (targetPlanet) {
-          // spec 016: refuse docking when the player's standing with the
-          // planet's controlling faction is hostile.
-          if (
-            room.factionRegistry &&
-            targetPlanet.faction &&
-            !room.factionRegistry.dockingPermitted(
-              clientObj.id,
-              targetPlanet.faction,
-            )
-          ) {
-            clientObj.send({
-              type: "notification",
-              message: `Docking refused at ${targetPlanet.name}: ${targetPlanet.faction} considers you hostile.`,
-              style: "error",
-            });
-            return;
-          }
-          const completed = clientObj.missionManager.checkArrivalCompletions(
-            targetPlanet.name,
-            clientObj.ship,
-            room,
-          );
-          for (const m of completed) {
-            if (m.promotionMessage) {
-              clientObj.send({
-                type: "notification",
-                message: m.promotionMessage,
-                style: "success",
-              });
-            }
-            if (clientObj.fleetName) {
-              const fleetSet = room.fleets.get(clientObj.fleetName);
-              if (fleetSet && fleetSet.size > 1) {
-                const share = Math.floor(m.reward / fleetSet.size);
-                clientObj.ship.credits -= m.reward;
-                for (const member of fleetSet) {
-                  if (member.ship) {
-                    member.ship.credits += share;
-                    member.send({
-                      type: "notification",
-                      message: `Fleet Contract Completed: ${m.title} by ${clientObj.nickname}! Share: +${share.toLocaleString()} CR`,
-                      style: "success",
-                    });
-                    member.sendStats();
-                  }
-                }
-                continue;
-              }
-            }
-
-            clientObj.send({
-              type: "notification",
-              message: `Contract Completed: ${m.title}! Received +${m.reward.toLocaleString()} CR`,
-              style: "success",
-            });
-          }
-
-          if (
-            targetPlanet.name !== "Rogue's Hollow" &&
-            clientObj.ship.cargo.contraband > 0
-          ) {
-            let bestJammerValue = 0;
-            if (clientObj.ship.outfits) {
-              for (const outfitName of clientObj.ship.outfits) {
-                const spec = DEFAULT_OUTFITS.find((o) => o.name === outfitName);
-                if (spec && spec.type === "jammer") {
-                  if (spec.value > bestJammerValue) {
-                    bestJammerValue = spec.value;
-                  }
-                }
-              }
-            }
-
-            let scanDetected = true;
-            if (bestJammerValue > 0) {
-              const rng = clientObj.ship.rng || Math.random;
-              if (rng() < bestJammerValue) {
-                scanDetected = false;
-              }
-            }
-
-            if (scanDetected) {
-              clientObj.ship.cargo.contraband = 0;
-              clientObj.ship.credits = Math.max(
-                0,
-                clientObj.ship.credits - 1500,
-              );
-              clientObj.send({
-                type: "notification",
-                message:
-                  "Security Scan: Contraband detected! Confiscated and fined 1,500 CR.",
-                style: "error",
-              });
-            } else {
-              clientObj.send({
-                type: "notification",
-                message:
-                  "Security Scan: Contraband jamming successful! Scan bypassed.",
-                style: "success",
-              });
-            }
-          }
-
-          clientObj.isLanded = true;
-          clientObj.planetLandedOn = targetPlanet;
-          clientObj.ship.velocity = new Vector2D(0, 0);
-          clientObj.ship.clearControls();
-          clientObj.ship.hyperFuel = clientObj.ship.maxHyperFuel;
-          room.engine.removeEntity(clientObj.id);
-
-          // Generate available missions authoritatively on the server
-          if (!clientObj.missionManager.availableMissions[targetPlanet.name]) {
-            clientObj.missionManager.generateMissionsForPlanet(
-              targetPlanet.name,
-              room.planets,
-              room.factionRegistry,
-              clientObj.id,
-            );
-          }
-          const available =
-            clientObj.missionManager.availableMissions[targetPlanet.name];
-
-          clientObj.send({
-            type: "landed",
-            planetName: targetPlanet.name,
-            availableMissions: available,
-          });
-          clientObj.send({
-            type: "notification",
-            message: `Landed safely on ${targetPlanet.name}. Ship systems secured.`,
-            style: "success",
-          });
-          clientObj.sendStats();
-          room.broadcastRosterUpdate();
-
-          // Docking is a natural save-point: state is stable and trades have
-          // just happened. Fire-and-forget; errors are swallowed by the manager.
-          persistenceManager.savePlayer(clientObj.id, clientObj, room.id);
-        } else {
-          clientObj.send({
-            type: "notification",
-            message:
-              "Cannot land here. Travel within trigger radius at low speed (< 80 u/s).",
-            style: "error",
-          });
-        }
+      } else {
+        handleLand(clientObj, room, persistenceManager);
       }
     } else if (msg.type === "launch") {
-      if (clientObj.ship && clientObj.isLanded && room) {
-        const p = clientObj.planetLandedOn;
-        clientObj.isLanded = false;
-        clientObj.planetLandedOn = null;
-
-        clientObj.ship.position = p.position.add(
-          new Vector2D(0, p.landingRadius + 40),
-        );
-        clientObj.ship.velocity = new Vector2D(0, 0);
-        clientObj.ship.clearControls();
-        room.engine.addEntity(clientObj.ship);
-
-        clientObj.send({ type: "launched" });
-        clientObj.send({
-          type: "notification",
-          message: "Launch sequence completed! Thrusters online.",
-          style: "success",
-        });
-        clientObj.sendStats();
-        room.broadcastRosterUpdate();
-      }
+      handleLaunch(clientObj, room);
     } else if (msg.type === "trade") {
-      if (
-        clientObj.ship &&
-        clientObj.isLanded &&
-        clientObj.planetLandedOn &&
-        room
-      ) {
-        const p = clientObj.planetLandedOn;
-        const basePrice = p.market[msg.item];
-        if (basePrice === undefined) return;
-        // spec 016: friendly standing discounts buys / lifts sells at a faction
-        // dock; hostile standing does the inverse. No-op without a faction.
-        const price = factionPrice(
-          basePrice,
-          room.factionRegistry,
-          clientObj.id,
-          p.faction,
-          msg.action,
-        );
-
-        const taxRate = getTransactionTaxRate(
-          room.factionRegistry,
-          clientObj.id,
-          p.faction,
-        );
-        const finalPrice =
-          msg.action === "buy"
-            ? Math.round(price * (1 + taxRate))
-            : Math.max(1, Math.round(price * (1 - taxRate)));
-
-        const result = tradeOne(
-          clientObj.ship,
-          msg.item,
-          msg.action,
-          finalPrice,
-        );
-        if (result.ok) {
-          if (msg.action === "buy") {
-            room.economyManager.registerBuy(p.name, msg.item);
-          } else {
-            room.economyManager.registerSell(p.name, msg.item);
-          }
-
-          // spec 032: successful trading at a faction-controlled port nudges standing
-          if (room.factionRegistry && p.faction) {
-            const TRADE_STANDING_NUDGE = 0.5;
-            room.factionRegistry.adjustStanding(
-              clientObj.id,
-              p.faction,
-              TRADE_STANDING_NUDGE,
-            );
-          }
-          clientObj.send({
-            type: "notification",
-            message:
-              result.reason === "bought"
-                ? `Purchased 1 ton of ${msg.item} for ${finalPrice} CR`
-                : `Sold 1 ton of ${msg.item} for ${finalPrice} CR`,
-            style: "success",
-          });
-          clientObj.sendStats();
-          room.broadcast({
-            type: "market_sync",
-            planetName: p.name,
-            market: p.market,
-          });
-        } else if (result.reason !== "unknown_action") {
-          clientObj.send({
-            type: "notification",
-            message:
-              result.reason === "insufficient_credits"
-                ? "Insufficient credits!"
-                : result.reason === "cargo_full"
-                  ? "Cargo hold is full!"
-                  : `No ${msg.item} in cargo bay!`,
-            style: "error",
-          });
-        }
-      }
+      handleTrade(clientObj, msg, room);
     } else if (msg.type === "port_service") {
-      if (
-        clientObj.ship &&
-        clientObj.isLanded &&
-        clientObj.planetLandedOn &&
-        room
-      ) {
-        const services = clientObj.planetLandedOn.services || {};
-        if (msg.service === "repair" && services.repair) {
-          const r = applyRepair(clientObj.ship);
-          clientObj.send({
-            type: "notification",
-            message: r.ok
-              ? `Hull repaired (+${r.repaired} armor) for ${r.cost} CR.`
-              : r.cost > 0
-                ? "Insufficient credits to repair hull."
-                : "Hull is already at full integrity.",
-            style: r.ok ? "success" : "error",
-          });
-          if (r.ok) clientObj.sendStats();
-        } else if (msg.service === "refuel" && services.refuel) {
-          const r = applyRefuel(clientObj.ship);
-          clientObj.send({
-            type: "notification",
-            message: r.ok
-              ? `Hyperdrive refueled (+${r.refueled}) for ${r.cost} CR.`
-              : r.cost > 0
-                ? "Insufficient credits to refuel."
-                : "Hyperdrive fuel is already full.",
-            style: r.ok ? "success" : "error",
-          });
-          if (r.ok) clientObj.sendStats();
-        }
-      }
-    } else if (msg.type === "port_refine") {
-      if (
-        clientObj.ship &&
-        clientObj.isLanded &&
-        clientObj.planetLandedOn &&
-        room
-      ) {
-        const qty = parseInt(msg.quantity, 10);
-        const targetComm = msg.targetCommodity || "minerals";
-        const registry = room.engine.factionRegistry || null;
-
-        const r = applyRefine(
-          clientObj.ship,
-          clientObj.planetLandedOn,
-          qty,
-          {},
-          registry,
-          clientObj.ship.id,
-          targetComm,
-        );
-
-        if (r.ok) {
-          clientObj.send({
-            type: "notification",
-            message: `Refined ${r.refined} units of raw ore into ${r.produced} units of ${targetComm} for ${r.cost} CR.`,
-            style: "success",
-          });
-          clientObj.sendStats();
-        } else {
-          let errorMsg = "Refining failed.";
-          if (r.reason === "no_refinery_services") {
-            errorMsg = "This planet does not possess refinery services.";
-          } else if (r.reason === "invalid_target_commodity") {
-            errorMsg = "Invalid target commodity for refining.";
-          } else if (r.reason === "invalid_quantity") {
-            errorMsg = "Invalid refine quantity specified.";
-          } else if (r.reason.startsWith("quantity_must_be_multiple_of")) {
-            errorMsg = r.reason.replace(/_/g, " ");
-          } else if (r.reason === "insufficient_ore") {
-            errorMsg = "You do not possess enough raw ore in your cargo.";
-          } else if (r.reason === "insufficient_credits") {
-            errorMsg = `Insufficient credits! Needs ${r.cost} CR.`;
-          } else if (r.reason === "cargo_full") {
-            errorMsg = "Cargo hold is full!";
-          }
-          clientObj.send({
-            type: "notification",
-            message: errorMsg,
-            style: "error",
-          });
-        }
-      }
+      handlePortService(clientObj, msg);
+    } else if (msg.type === "port_refine" || msg.type === "ore_refine") {
+      handleOreRefine(clientObj, msg.quantity, msg.targetCommodity, room);
     } else if (msg.type === "jettison") {
-      if (clientObj.ship && room) {
-        const pod = room.jettisonFromShip(
-          clientObj.ship,
-          msg.item,
-          Number(msg.amount) || 1,
-        );
-        if (pod) {
-          clientObj.send({
-            type: "notification",
-            message: `Jettisoned ${pod.amount} ton(s) of ${pod.resourceType}.`,
-            style: "info",
-          });
-          clientObj.sendStats();
-        } else {
-          clientObj.send({
-            type: "notification",
-            message: "Nothing to jettison.",
-            style: "error",
-          });
-        }
-      }
+      handleJettison(clientObj, msg, room);
     } else if (msg.type === "outfit_buy") {
       handleOutfitBuy(
         clientObj,
@@ -1684,7 +2025,7 @@ wss.on("connection", (ws) => {
         room,
       );
     } else if (msg.type === "preset_save") {
-      handlePresetSave(clientObj, msg.presetIndex);
+      handlePresetSave(clientObj, msg.presetIndex, msg.presetName);
     } else if (msg.type === "preset_load") {
       handlePresetLoad(
         clientObj,
@@ -1692,86 +2033,16 @@ wss.on("connection", (ws) => {
         clientObj.planetLandedOn,
         room,
       );
+    } else if (msg.type === "preset_delete") {
+      handlePresetDelete(clientObj, msg.presetIndex);
     } else if (msg.type === "ship_buy") {
       handleShipBuy(clientObj, msg.shipName, clientObj.planetLandedOn, room);
-    } else if (msg.type === "squad_invite") {
-      const target = Array.from(wss.clients)
-        .map((ws) => ws.clientObj)
-        .find(
-          (c) =>
-            c &&
-            (c.id === msg.targetId ||
-              (msg.targetNickname && c.nickname === msg.targetNickname)),
-        );
-      if (!target) {
-        clientObj.send({
-          type: "notification",
-          message: "Target player not found!",
-          style: "error",
-        });
-        return;
-      }
-      let squad = squadManager.getSquadForPlayer(clientObj.id);
-      if (!squad) {
-        squad = squadManager.createSquad(clientObj.id);
-      }
-      target.send({
-        type: "squad_invite_received",
-        senderId: clientObj.id,
-        senderNickname: clientObj.nickname,
-        squadId: squad.id,
-      });
-      clientObj.send({
-        type: "notification",
-        message: `Sent squad invite to ${target.nickname}!`,
-        style: "success",
-      });
-    } else if (msg.type === "squad_join") {
-      const res = squadManager.joinSquad(msg.squadId, clientObj.id);
-      if (res.success) {
-        const squad = squadManager.getSquadForPlayer(clientObj.id);
-        const squadMembers = Array.from(wss.clients)
-          .map((ws) => ws.clientObj)
-          .filter((c) => c && squad.memberIds.has(c.id));
-        for (const member of squadMembers) {
-          member.send({
-            type: "notification",
-            message: `${clientObj.nickname} joined the squad!`,
-            style: "success",
-          });
-          member.sendStats();
-        }
-      } else {
-        clientObj.send({
-          type: "notification",
-          message: res.reason,
-          style: "error",
-        });
-      }
-    } else if (msg.type === "squad_leave") {
-      const squad = squadManager.getSquadForPlayer(clientObj.id);
-      if (squad) {
-        const squadId = squad.id;
-        squadManager.leaveSquad(clientObj.id);
-        clientObj.send({
-          type: "notification",
-          message: "You left the squad.",
-          style: "info",
-        });
-        clientObj.sendStats();
-
-        const remainingMembers = Array.from(wss.clients)
-          .map((ws) => ws.clientObj)
-          .filter((c) => c && squadManager.getSquadId(c.id) === squadId);
-        for (const member of remainingMembers) {
-          member.send({
-            type: "notification",
-            message: `${clientObj.nickname} left the squad.`,
-            style: "info",
-          });
-          member.sendStats();
-        }
-      }
+    } else if (
+      msg.type === "squad_invite" ||
+      msg.type === "squad_join" ||
+      msg.type === "squad_leave"
+    ) {
+      handleSquadAction(clientObj, msg, wss, squadManager);
     } else if (msg.type === "port_redeem_vouchers") {
       handleVoucherRedeem(clientObj, room);
     } else if (msg.type === "mission_accept") {
@@ -1784,306 +2055,31 @@ wss.on("connection", (ws) => {
       );
     } else if (msg.type === "mission_abandon") {
       handleMissionAbandon(clientObj, msg.missionId);
-    } else if (msg.type === "fleet_create" || msg.type === "fleet_join") {
-      const code = (msg.fleetName || "").toUpperCase().trim().substring(0, 10);
-      if (!code) {
-        clientObj.send({
-          type: "notification",
-          message: "Invalid Fleet Code!",
-          style: "error",
-        });
-        return;
-      }
-
-      if (room) {
-        room.leaveCurrentFleet(clientObj);
-        clientObj.fleetName = code;
-        if (!room.fleets.has(code)) {
-          room.fleets.set(code, new Set());
-        }
-        room.fleets.get(code).add(clientObj);
-
-        clientObj.send({
-          type: "notification",
-          message: `Joined fleet: ${code}`,
-          style: "success",
-        });
-
-        room.broadcastFleetUpdate(code);
-        room.broadcastRosterUpdate();
-      }
-    } else if (msg.type === "fleet_leave") {
-      if (clientObj.fleetName && room) {
-        const oldCode = clientObj.fleetName;
-        room.leaveCurrentFleet(clientObj);
-        clientObj.send({
-          type: "notification",
-          message: `Left fleet: ${oldCode}`,
-          style: "info",
-        });
-        room.broadcastRosterUpdate();
-      }
+    } else if (
+      msg.type === "fleet_create" ||
+      msg.type === "fleet_join" ||
+      msg.type === "fleet_leave"
+    ) {
+      handleFleetAction(clientObj, msg, room);
     } else if (msg.type === "chat") {
-      const channel = msg.channel || "global";
-      const text = (msg.text || "").trim().substring(0, 100);
-      if (!text) return;
-
-      let isSquadMsg = channel === "squad";
-      let squadText = text;
-      if (text.startsWith("/squad ")) {
-        isSquadMsg = true;
-        squadText = text.substring(7).trim();
-      }
-
-      if (isSquadMsg) {
-        const squad = squadManager.getSquadForPlayer(clientObj.id);
-        if (!squad) {
-          clientObj.send({
-            type: "notification",
-            message:
-              "You are not in a squad! Invite someone using /squad invite or join a squad.",
-            style: "error",
-          });
-          return;
-        }
-
-        const chatPayload = {
-          type: "chat",
-          channel: "squad",
-          sender: clientObj.nickname,
-          text: squadText,
-          squadId: squad.id,
-        };
-
-        await pubsub.publish("chat:squad", chatPayload);
-      } else if (channel === "fleet" && room) {
-        if (!clientObj.fleetName) {
-          clientObj.send({
-            type: "notification",
-            message: "You are not in a fleet! Join a fleet to use Fleet comms.",
-            style: "error",
-          });
-          return;
-        }
-
-        const fleetSet = room.fleets.get(clientObj.fleetName);
-        if (fleetSet) {
-          const chatPayload = {
-            type: "chat",
-            channel: "fleet",
-            sender: clientObj.nickname,
-            text: text,
-          };
-          for (const member of fleetSet) {
-            member.send(chatPayload);
-          }
-        }
-      } else if (room) {
-        const chatPayload = {
-          type: "chat",
-          channel: "global",
-          sender: clientObj.nickname,
-          text: text,
-        };
-        await pubsub.publish("chat:global", chatPayload);
-      }
+      await handleChat(clientObj, msg, room, pubsub, squadManager);
     } else if (msg.type === "warp_jump") {
-      if (room) {
-        const gate = room.engine.getEntity(msg.gateId);
-        const governingFaction = room.getGoverningFaction();
-        const val = validateWarpJump(
-          clientObj.ship,
-          gate,
-          JUMP_FUEL_COST,
-          room.factionRegistry,
-          governingFaction,
-          room.engine.entities,
-        );
-        if (!val.ok) {
-          clientObj.send({
-            type: "notification",
-            message: val.reason,
-            style: "error",
-          });
-          return;
-        }
-
-        const toll = getWarpToll(
-          clientObj.ship,
-          room.factionRegistry,
-          governingFaction,
-        );
-        consumeJump(clientObj.ship, JUMP_FUEL_COST);
-        if (toll > 0) {
-          clientObj.ship.credits = Math.max(0, clientObj.ship.credits - toll);
-        }
-        clientObj.ship.position = gate.targetPosition.clone();
-        clientObj.ship.velocity.set(0, 0);
-
-        clientObj.send({
-          type: "warp_success",
-          targetSector: gate.targetSector,
-          position: { x: gate.targetPosition.x, y: gate.targetPosition.y },
-          hyperFuel: clientObj.ship.hyperFuel,
-        });
-
-        clientObj.send({
-          type: "notification",
-          message: `Hyperspace drive engaged! Warp transition to ${gate.targetSector.toUpperCase()} Sector completed.`,
-          style: "success",
-        });
-
-        let escortCount = 0;
-        for (const ai of room.ais) {
-          if (ai.role === "escort" && ai.flagship === clientObj.ship) {
-            ai.ship.position = gate.targetPosition.add(
-              new Vector2D(
-                (Math.random() - 0.5) * 100,
-                (Math.random() - 0.5) * 100,
-              ),
-            );
-            ai.ship.velocity.set(0, 0);
-            escortCount++;
-          }
-        }
-        if (escortCount > 0) {
-          clientObj.send({
-            type: "notification",
-            message: `${escortCount} AI escorts made the hyperspace jump with you.`,
-            style: "info",
-          });
-        }
-
-        clientObj.sendStats();
-        room.broadcastRosterUpdate();
-      }
+      handleWarpJump(clientObj, msg, room);
     } else if (msg.type === "boarding_action") {
-      if (room) {
-        const target = room.engine.getEntity(msg.targetId);
-        if (!target || target.type !== "ship" || !target.isDisabled) {
-          clientObj.send({
-            type: "notification",
-            message: "Target invalid or not disabled!",
-            style: "error",
-          });
-          return;
-        }
-        const dist = clientObj.ship.position.distance(target.position);
-        if (dist > 250) {
-          clientObj.send({
-            type: "notification",
-            message: "Target too far for boarding! Move within 250u.",
-            style: "error",
-          });
-          return;
-        }
-
-        if (msg.action === "plunder") {
-          const result = plunder(clientObj.ship, target, {
-            boardRange: 250,
-            maxBoardSpeed: Number.POSITIVE_INFINITY,
-          });
-          if (result.ok) {
-            const tons = Object.values(result.cargo).reduce((a, b) => a + b, 0);
-            clientObj.send({
-              type: "notification",
-              message: `Plundered ${tons} ton(s) of cargo and ${result.credits.toLocaleString()} CR.`,
-              style: "success",
-            });
-            clientObj.sendStats();
-          } else {
-            clientObj.send({
-              type: "notification",
-              message:
-                "Nothing to plunder — this hulk has already been stripped.",
-              style: "info",
-            });
-          }
-        } else if (msg.action === "repair") {
-          const result = boardRepair(clientObj.ship, target, {
-            boardRange: 250,
-            maxBoardSpeed: Number.POSITIVE_INFINITY,
-          });
-          if (result.ok) {
-            clientObj.send({
-              type: "notification",
-              message: `Boarding repair complete: restored ${result.repaired} armor and revived the ship.`,
-              style: "success",
-            });
-          } else {
-            clientObj.send({
-              type: "notification",
-              message: "Cannot repair: target is not boardable.",
-              style: "error",
-            });
-          }
-        } else if (msg.action === "salvage") {
-          const result = boardSalvage(clientObj.ship, target);
-          if (result.ok) {
-            if (result.salvaged) {
-              const match = DEFAULT_OUTFITS.find(
-                (o) => o.name === result.salvaged,
-              );
-              if (match) applyOutfitStats(clientObj.ship, match);
-
-              clientObj.send({
-                type: "notification",
-                message: `Hull Component Salvaged! Equipped: ${result.salvaged}`,
-                style: "success",
-              });
-            } else {
-              clientObj.send({
-                type: "notification",
-                message: `No new modules found. Salvaged scrap for +${result.credits} CR.`,
-                style: "info",
-              });
-            }
-            clientObj.sendStats();
-          }
-        } else if (msg.action === "capture") {
-          const result = boardCapture(clientObj.ship, target, 1500);
-          if (!result.ok) {
-            clientObj.send({
-              type: "notification",
-              message: result.reason,
-              style: "error",
-            });
-            return;
-          }
-
-          target.name = `${clientObj.nickname}'s Escort`;
-
-          const controller = new AIController(target, "escort", {
-            useUtilityAdvisor: true,
-          });
-          controller.flagship = clientObj.ship;
-          room.ais.push(controller);
-
-          clientObj.send({
-            type: "notification",
-            message: `Neural Command Link Established! Escort active.`,
-            style: "success",
-          });
-          clientObj.sendStats();
-        } else if (msg.action === "scuttle") {
-          const scrapReward = Math.floor(
-            target.maxArmor * 4 + Math.random() * 200,
-          );
-          clientObj.ship.credits += scrapReward;
-          room.engine.removeEntity(target.id);
-
-          clientObj.send({
-            type: "notification",
-            message: `Hull scuttled. Salvaged scrap for +${scrapReward} CR`,
-            style: "success",
-          });
-          clientObj.sendStats();
-        }
-
-        room.broadcastRosterUpdate();
-      }
-    } else if (msg.type === "escort_command") {
-      handleEscortCommand(clientObj, msg, room);
+      handleBoardingAction(clientObj, msg, room);
+    } else if (
+      msg.type === "escort_command" ||
+      msg.type === "escort_formation"
+    ) {
+      handleEscortAction(clientObj, msg, room);
+    } else if (msg.type === "distress_beacon") {
+      handleDistressBeacon(clientObj, room);
+    } else if (msg.type === "tutorial_start") {
+      await handleTutorialStart(clientObj, instances, joinRoom);
+    } else if (msg.type === "tutorial_progress") {
+      handleTutorialProgress(clientObj, msg);
+    } else if (msg.type === "tutorial_complete") {
+      handleTutorialComplete(clientObj, instances, persistenceManager);
     } else if (msg.type === "ping") {
       clientObj.send({
         type: "pong",
@@ -2094,6 +2090,9 @@ wss.on("connection", (ws) => {
 
   ws.on("close", () => {
     const activeClient = clients.get(ws) || clientObj;
+    if (activeClient && activeClient.ip) {
+      connectionFloodSentry.deregister(activeClient.ip);
+    }
 
     // Prune this client from the matchmaking queue immediately on disconnect
     matchmakingQueue.remove(activeClient);
@@ -2164,6 +2163,18 @@ let activeTunnel = null;
 
 const shutdown = async () => {
   console.log("\n🔌 Shutting down server gracefully...");
+  latencyMonitor.stop();
+  sandboxTelemetry.stop();
+  memoryLeakSentry.stop();
+  resourceLimiter.stop();
+  if (configWatcher) {
+    try {
+      configWatcher.stop();
+      console.log("🛑 Configuration watcher closed.");
+    } catch (e) {
+      console.error("Error stopping config watcher:", e.message);
+    }
+  }
 
   // Clear all heartbeat and simulation intervals immediately to prevent race conditions during teardown (spec 019f)
   clearInterval(physicsInterval);
@@ -2177,6 +2188,7 @@ const shutdown = async () => {
     clearInterval(registryHeartbeatInterval);
   }
   clearInterval(heartbeatInterval);
+  clearInterval(anomalyInterval);
 
   // Graceful Drain (spec 019f)
   if (WORKERS > 1) {
@@ -2369,6 +2381,7 @@ export async function startServer({
   // 2. Create Default permanent Public Arena Room ONLY if this shard owns it
   if (workers === 1 || assignShard("public", workers) === shardIndex) {
     const publicInstance = new GameInstance("public", "Public Arena");
+    publicInstance.chronicle = galacticChronicle;
     instances.set("public", publicInstance);
 
     // Restore any saved galaxy state
@@ -2395,7 +2408,40 @@ export async function startServer({
   );
 
   // 4. Start HTTP/WS listening
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    server.on("error", async (err) => {
+      if (err.code === "EADDRINUSE") {
+        console.warn(
+          `[SERVER BOOT] Port [${port}] is occupied. Initiating Port Conflict Self-Healer...`,
+        );
+        try {
+          const { reclaimPort } = await import("./net/PortReclaimer.js");
+          const reclaimed = await reclaimPort(port);
+          if (reclaimed) {
+            console.log(
+              `[SERVER BOOT] Port [${port}] successfully reclaimed! Retrying listen...`,
+            );
+            server.listen(port);
+          } else {
+            console.error(
+              `[SERVER BOOT] Port reclamation failed for port [${port}]. Exiting.`,
+            );
+            reject(err);
+          }
+        } catch (reclaimErr) {
+          console.error(
+            `[SERVER BOOT] Port reclaimer encountered error: ${reclaimErr.message}`,
+          );
+          reject(err);
+        }
+      } else {
+        console.error(
+          `[SERVER BOOT] HTTP server encountered an error: ${err.message}`,
+        );
+        reject(err);
+      }
+    });
+
     server.listen(port, async () => {
       console.log(
         `================================================================`,

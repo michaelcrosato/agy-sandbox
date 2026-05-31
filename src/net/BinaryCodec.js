@@ -22,6 +22,11 @@
  * buffer so the wire format can migrate without ambiguity.
  */
 
+/**
+ * The current wire protocol version header for binary schema validations.
+ * Leads every serialized buffer frame to allow format migrations.
+ * @type {number}
+ */
 export const BINARY_PROTOCOL_VERSION = 1;
 
 // Value type tags.

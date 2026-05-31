@@ -1,6 +1,6 @@
 # TICKET016 — Kill-Restart-Rejoin Persistence Integration Test
 
-- **Status:** OPEN
+- **Status:** DONE (2026-05-31) — proven by `src/persistence/restart.integration.test.js` (spec 008 + SPEC-108 expansion covering tutorialCompleted/navalMerits)
 - **Priority:** P1 (high)
 
 ## Goal

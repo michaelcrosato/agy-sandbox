@@ -74,19 +74,36 @@ export function factionPrice(
  * @param {string|null} faction - Faction name.
  * @returns {number} The tax rate (0.0, 0.05, or 0.15).
  */
-export function getTransactionTaxRate(registry, playerId, faction) {
+export function getTransactionTaxRate(
+  registry,
+  playerId,
+  faction,
+  sectorId = null,
+) {
+  let baseTax = 0.0;
   if (
-    !registry ||
-    !faction ||
-    faction === "Independents" ||
-    typeof registry.getStanding !== "function"
+    registry &&
+    faction &&
+    faction !== "Independents" &&
+    typeof registry.getStanding === "function"
   ) {
-    return 0.0;
+    const standing = registry.getStanding(playerId, faction);
+    if (standing >= 50)
+      baseTax = 0.0; // Allied/Friendly
+    else if (standing <= -16)
+      baseTax = 0.15; // Hostile
+    else baseTax = 0.05; // Neutral
   }
-  const standing = registry.getStanding(playerId, faction);
-  if (standing >= 50) return 0.0; // Allied/Friendly
-  if (standing <= -16) return 0.15; // Hostile
-  return 0.05; // Neutral
+
+  // Apply dynamic sector surcharge if sectorId and territoryControl exist
+  if (registry && registry.territoryControl && sectorId) {
+    const params = registry.territoryControl.getSectorParameters(sectorId);
+    if (params && typeof params.taxRate === "number") {
+      baseTax += params.taxRate;
+    }
+  }
+
+  return baseTax;
 }
 
 /**
@@ -141,4 +158,90 @@ export function applyHullPurchase(ship, hull, costOverride = null) {
   ship.turnRate = hull.turnRate;
   ship.cargo = makeEmptyCargo();
   return { ok: true, reason: "purchased" };
+}
+
+/**
+ * Finds the top 3 most profitable trade routes among a list of planets,
+ * factoring in player faction standings price modifiers and transaction taxes.
+ * @param {Array<Object>} planets - List of docked planets in the active sector.
+ * @param {Object|null} registry - FactionRegistry instance.
+ * @param {string} playerId - Player ID.
+ * @returns {Array<{commodity: string, origin: string, destination: string, buyPrice: number, sellPrice: number, netProfit: number}>}
+ */
+export function findBestTradeRoutes(planets, registry, playerId) {
+  if (!Array.isArray(planets) || planets.length < 2) return [];
+  const routes = [];
+  const commodities = [
+    "food",
+    "electronics",
+    "minerals",
+    "luxuries",
+    "contraband",
+    "machinery",
+    "ore",
+  ];
+
+  for (let i = 0; i < planets.length; i++) {
+    const pA = planets[i];
+    for (let j = 0; j < planets.length; j++) {
+      if (i === j) continue;
+      const pB = planets[j];
+
+      for (const commodity of commodities) {
+        let baseBuyPrice = pA.market[commodity];
+        let baseSellPrice = pB.market[commodity];
+        if (baseBuyPrice === undefined || baseSellPrice === undefined) continue;
+
+        // Apply black market sell premium for contraband if applicable
+        if (
+          commodity === "contraband" &&
+          pB.services &&
+          pB.services.blackMarket
+        ) {
+          baseSellPrice = Math.round(baseSellPrice * 1.5);
+        }
+
+        // Apply standings price modifiers
+        const buyPrice = factionPrice(
+          baseBuyPrice,
+          registry,
+          playerId,
+          pA.faction,
+          "buy",
+        );
+        const sellPrice = factionPrice(
+          baseSellPrice,
+          registry,
+          playerId,
+          pB.faction,
+          "sell",
+        );
+
+        // Deduct transaction tax from sale
+        const taxRate = getTransactionTaxRate(
+          registry,
+          playerId,
+          pB.faction,
+          pB.sector,
+        );
+        const netSellPrice = Math.max(1, Math.round(sellPrice * (1 - taxRate)));
+
+        const netProfit = netSellPrice - buyPrice;
+        if (netProfit > 0) {
+          routes.push({
+            commodity,
+            origin: pA.name,
+            destination: pB.name,
+            buyPrice,
+            sellPrice: netSellPrice,
+            netProfit,
+          });
+        }
+      }
+    }
+  }
+
+  // Sort routes by net profit descending
+  routes.sort((a, b) => b.netProfit - a.netProfit);
+  return routes.slice(0, 3);
 }

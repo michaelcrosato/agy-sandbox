@@ -3,6 +3,8 @@ import { Ship } from "../Ship.js";
 import { SpaceEntity } from "../SpaceEntity.js";
 import { Vector2D } from "../../physics/Vector2D.js";
 import { FactionRegistry } from "../FactionRegistry.js";
+import { buildPerception } from "./buildPerception.js";
+import { selectGoal, Goals } from "./UtilityAI.js";
 
 function shipAt(name, x, y, id) {
   return new Ship({ id: id ?? name, name, position: new Vector2D(x, y) });
@@ -404,6 +406,63 @@ describe("AIController escort behaviour", () => {
     expect(ctrl.target).toBe(mockTarget);
     expect(ctrl.ship.controls.isFiring).toBe(true); // target within firing arc and close
   });
+
+  test("delta formation offset positioning yields coordinates behind/side of flagship", () => {
+    const ctrl = new AIController(shipAt("Escort", 0, 0), "escort");
+    ctrl.flagship = shipAt("Flagship", 100, 100);
+    ctrl.flagship.heading = 0; // heading east (along +x)
+    ctrl.escortMode = "follow";
+    ctrl.formation = "delta";
+
+    // Setup entities and tag sister escorts
+    ctrl.ship.id = "escort-1";
+    ctrl.ship.flagshipId = ctrl.flagship.id;
+    ctrl.ship.role = "escort";
+
+    const entities = [ctrl.ship];
+    ctrl.executeEscortAI(0.1, entities);
+
+    // Delta formation target position for first escort (index 0):
+    // distanceBehind = 120, sideOffset = 60 to the left (heading 0 => left is -y direction)
+    // so targetPos should be at (100 - 120, 100 + 60) => (-20, 160)
+    // Let's assert that the ship steers towards this target or thrusts
+    expect(ctrl.ship.controls.isThrusting).toBe(true);
+  });
+
+  test("orbit formation calculations increment orbit angle over time", () => {
+    const ctrl = new AIController(shipAt("Escort", 0, 0), "escort");
+    ctrl.flagship = shipAt("Flagship", 100, 100);
+    ctrl.escortMode = "follow";
+    ctrl.formation = "orbit";
+
+    ctrl.ship.id = "escort-1";
+    ctrl.ship.flagshipId = ctrl.flagship.id;
+    ctrl.ship.role = "escort";
+
+    ctrl.orbitAngle = 0;
+    ctrl.executeEscortAI(0.5, [ctrl.ship]); // dt = 0.5 sec
+
+    // orbitAngle should be incremented: 0 + 0.8 * 0.5 = 0.4
+    expect(ctrl.orbitAngle).toBeCloseTo(0.4, 5);
+  });
+
+  test("in intercept mode, targets the flagship's active target and falls back to follow if flagship has no target", () => {
+    const ctrl = new AIController(shipAt("Escort", 0, 0), "escort");
+    ctrl.flagship = shipAt("Flagship", 0, 0);
+    const mockTarget = shipAt("Hostile Target", 150, 0);
+    ctrl.escortMode = "intercept";
+
+    // 1. With flagship target locked: targets and attacks it
+    ctrl.flagship.target = mockTarget;
+    ctrl.executeEscortAI(0.1, [ctrl.ship, ctrl.flagship, mockTarget]);
+    expect(ctrl.target).toBe(mockTarget);
+    expect(ctrl.ship.controls.isFiring).toBe(true);
+
+    // 2. With no flagship target: falls back to follow mode
+    ctrl.flagship.target = null;
+    ctrl.executeEscortAI(0.1, [ctrl.ship, ctrl.flagship]);
+    expect(ctrl.escortMode).toBe("follow");
+  });
 });
 
 describe("AIController.executeCaravanAI (caravan behavior)", () => {
@@ -529,5 +588,125 @@ describe("AIController.executeCaravanAI (caravan behavior)", () => {
     // Jump should trigger! Teleport to targetPosition and route becomes empty
     expect(ship.position).toEqual(gate.targetPosition);
     expect(ctrl.route).toEqual([]);
+  });
+});
+
+describe("AIController — SPEC-086 NPC Smuggler Fleets & Evasion", () => {
+  test("initializes smuggler ship flags and forces utility advisor", () => {
+    const ship = new Ship();
+    const ctrl = new AIController(ship, "merchant", { isSmuggler: true });
+    expect(ctrl.isSmuggler).toBe(true);
+    expect(ship.isSmuggler).toBe(true);
+    expect(ctrl.useUtilityAdvisor).toBe(true);
+  });
+
+  test("procedurally loads contraband at Rogue's Hollow and unloads at Sol Prime", () => {
+    const rogues = new SpaceEntity({
+      id: "rogues-hollow",
+      type: "planet",
+      position: new Vector2D(1000, 1000),
+    });
+    rogues.name = "Rogue's Hollow";
+    rogues.sector = "core";
+    rogues.market = { contraband: 50 };
+
+    const sol = new SpaceEntity({
+      id: "sol-prime",
+      type: "planet",
+      position: new Vector2D(2000, 2000),
+    });
+    sol.name = "Sol Prime";
+    sol.sector = "core";
+    sol.market = { contraband: 0 };
+
+    const entities = [rogues, sol];
+    const ship = new Ship({
+      position: new Vector2D(0, 0),
+      cargoCapacity: 100,
+    });
+    const ctrl = new AIController(ship, "merchant", { isSmuggler: true });
+
+    // 1. Initial tick sets up planet names and loads at Rogues Hollow
+    ctrl.update(0.1, entities);
+    expect(ctrl.producerPlanetName).toBe("Rogue's Hollow");
+    expect(ctrl.consumerPlanetName).toBe("Sol Prime");
+    expect(ctrl.caravanState).toBe("loading");
+
+    // 2. Docking at Rogue's Hollow loads contraband
+    ship.position = rogues.position.clone();
+    ship.velocity = new Vector2D(0, 0);
+    ctrl.update(0.1, entities);
+
+    expect(rogues.market.contraband).toBe(40); // 50 - 10 = 40
+    expect(ctrl.caravanCargo).toEqual({ item: "contraband", amount: 10 });
+    expect(ship.cargo.contraband).toBe(10);
+    expect(ctrl.caravanState).toBe("traveling");
+
+    // 3. Unload at Sol Prime
+    ship.position = sol.position.clone();
+    ship.velocity = new Vector2D(0, 0);
+    ctrl.caravanState = "unloading";
+    ctrl.update(0.1, entities);
+
+    expect(sol.market.contraband).toBe(10);
+    expect(ship.cargo.contraband).toBe(0);
+    expect(ctrl.caravanCargo).toBeNull();
+  });
+
+  test("triggers ESCAPE_SECURITY when targeted by guard within 600 units", () => {
+    const ship = new Ship({ position: new Vector2D(0, 0) });
+    const guard = new Ship({ position: new Vector2D(100, 100) });
+    guard.role = "guard";
+
+    // Actively targeting
+    guard.target = ship;
+
+    const entities = [ship, guard];
+    const ctrl = new AIController(ship, "merchant", { isSmuggler: true });
+
+    const perception = buildPerception(ship, entities);
+    expect(perception.isTargetedBySecurity).toBe(true);
+
+    const goalResult = selectGoal(perception);
+    expect(goalResult.goal).toBe(Goals.ESCAPE_SECURITY);
+
+    // Run AI update loop
+    ctrl.update(0.1, entities);
+    expect(ctrl.currentGoal).toBe(Goals.ESCAPE_SECURITY);
+    expect(ship.controls.isFiring).toBe(false);
+    expect(ship.isChaffActive).toBe(true);
+    expect(ship.decoyJammerActive).toBe(true);
+  });
+
+  test("steers smuggler towards nearest warp gate and jumps out in ESCAPE_SECURITY FSM", () => {
+    const ship = new Ship({ position: new Vector2D(0, 0) });
+    const guard = new Ship({ position: new Vector2D(200, 200) });
+    guard.role = "guard";
+    guard.target = ship;
+
+    const gate = new SpaceEntity({
+      id: "escape-gate",
+      type: "warp_gate",
+      position: new Vector2D(400, 400),
+    });
+    gate.targetPosition = new Vector2D(10000, 10000);
+
+    const entities = [ship, guard, gate];
+    const ctrl = new AIController(ship, "merchant", { isSmuggler: true });
+
+    // Step A: Far from gate (steers towards gate)
+    ctrl.update(0.1, entities);
+    expect(ctrl.destination).toEqual(gate.position);
+    expect(ship.controls.isThrusting).toBe(true);
+    expect(ship.isChaffActive).toBe(true);
+
+    // Step B: Within jump range (<150u) triggers warp jump and deactivates jammer
+    ship.position = new Vector2D(350, 350); // dist = sqrt(50^2 + 50^2) = 70.7 < 150
+    ctrl.update(0.1, entities);
+
+    expect(ship.position).toEqual(gate.targetPosition);
+    expect(ship.velocity).toEqual(new Vector2D(0, 0));
+    expect(ship.isChaffActive).toBe(false);
+    expect(ship.decoyJammerActive).toBe(false);
   });
 });

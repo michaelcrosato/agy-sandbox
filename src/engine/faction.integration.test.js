@@ -15,6 +15,7 @@ import {
 } from "./PortServices.js";
 import { Vector2D } from "../physics/Vector2D.js";
 import { validateWarpJump, getWarpToll } from "./Hyperdrive.js";
+import { Ship } from "./Ship.js";
 
 // Spec 016 — faction runtime wiring. The pure FactionRegistry math is covered
 // in FactionRegistry.test.js; these assert the LIVE wiring: a GameInstance owns
@@ -1034,6 +1035,571 @@ describe("mission + trade faction standings (spec 032)", () => {
       expect(lockoutShipCmdAllowed.allowed).toBe(true);
 
       room.destroy();
+    });
+  });
+
+  describe("SPEC-064 Reputation Milestones: Escort ambassador & Elite hunters", () => {
+    test("Allied standing (>60) generates elite escort contracts", () => {
+      const room = new GameInstance("room-test-allied", "Allied Sector");
+      try {
+        const playerId = "allied-cmdr";
+        room.factionRegistry.adjustStanding(playerId, "Federation", 80);
+
+        // Generate missions for a Federation planet (e.g. Sol)
+        const sol = room.planets.find((p) => p.name === "Sol");
+        expect(sol.faction).toBe("Federation");
+
+        const mm = new MissionManager();
+        mm.generateMissionsForPlanet(
+          "Sol",
+          room.planets,
+          room.factionRegistry,
+          playerId,
+        );
+
+        const available = mm.availableMissions["Sol"] || [];
+        const escortMission = available.find(
+          (m) => m.type === "escort_ambassador",
+        );
+
+        expect(escortMission).toBeDefined();
+        expect(escortMission.reward).toBe(8000);
+        expect(escortMission.standingRequired).toBe(60);
+        expect(escortMission.faction).toBe("Federation");
+      } finally {
+        room.destroy();
+      }
+    });
+
+    test("Accepting escort mission spawns companion Diplomatic Transport", () => {
+      const room = new GameInstance(
+        "room-test-escort-spawn",
+        "Escort Spawning",
+      );
+      try {
+        const playerId = "escort-cmdr";
+        const playerShip = {
+          id: playerId,
+          type: "ship",
+          position: new Vector2D(0, 0),
+          outfits: [],
+          cargo: {},
+          getCargoWeight: () => 0,
+        };
+        const clientObj = {
+          id: playerId,
+          ship: playerShip,
+          roomId: room.id,
+          send: () => {},
+        };
+        room.clients.set(playerId, clientObj);
+
+        // Set up the onEscortAccepted callback on this client's missionManager
+        clientObj.missionManager = new MissionManager();
+        clientObj.missionManager.onEscortAccepted = (mission) => {
+          const spawnAngle = 0;
+          const spawnDist = 100;
+          const transportShip = {
+            id: "diplomatic-transport-test",
+            name: "Diplomatic Transport",
+            position: new Vector2D(100, 0),
+            velocity: new Vector2D(0, 0),
+            role: "escort",
+            faction: mission.faction,
+            type: "ship",
+          };
+          room.engine.addEntity(transportShip);
+          const controller = {
+            ship: transportShip,
+            role: "escort",
+            flagship: playerShip,
+            escortMode: "follow",
+          };
+          room.ais.push(controller);
+        };
+
+        const escortMission = {
+          id: "escort-amb-1",
+          type: "escort_ambassador",
+          title: "Elite Escort",
+          reward: 8000,
+          origin: "Sol",
+          destination: "Valkyrie Depot",
+          faction: "Federation",
+          isAccepted: false,
+          isCompleted: false,
+        };
+        clientObj.missionManager.availableMissions["Sol"] = [escortMission];
+
+        const res = clientObj.missionManager.acceptMission(
+          "Sol",
+          "escort-amb-1",
+          playerShip,
+        );
+        expect(res.success).toBe(true);
+
+        const transport = room.engine.entities.find(
+          (e) => e.name === "Diplomatic Transport",
+        );
+        expect(transport).toBeDefined();
+        expect(
+          room.ais.some(
+            (ai) => ai.ship === transport && ai.flagship === playerShip,
+          ),
+        ).toBe(true);
+      } finally {
+        room.destroy();
+      }
+    });
+
+    test("Nadir standing (<= -60) spawns elite faction hunter", () => {
+      const room = new GameInstance("room-test-hunter", "Nadir Sector");
+      try {
+        const playerId = "nadir-cmdr";
+        const playerShip = {
+          id: playerId,
+          type: "ship",
+          position: new Vector2D(0, 0),
+          velocity: new Vector2D(0, 0),
+          outfits: [],
+        };
+        room.engine.addEntity(playerShip);
+
+        const clientObj = {
+          id: playerId,
+          ship: playerShip,
+          roomId: room.id,
+          send: () => {},
+          ws: {
+            readyState: 1, // OPEN
+            OPEN: 1,
+            send: () => {},
+          },
+        };
+        room.clients.set(playerId, clientObj);
+
+        // Wrong the Federation to nadir standing
+        room.factionRegistry.adjustStanding(playerId, "Federation", -80);
+
+        // Run checkEliteHunterSpawns loop
+        room.checkEliteHunterSpawns(15);
+
+        const hunter = room.engine.entities.find(
+          (e) => e.name === "Federation Hunter Elite",
+        );
+        expect(hunter).toBeDefined();
+        expect(hunter.outfits.includes("Interdictor Matrix")).toBe(true);
+        expect(hunter.faction).toBe("Federation");
+
+        const ai = room.ais.find((a) => a.ship === hunter);
+        expect(ai).toBeDefined();
+        expect(ai.target).toBe(playerShip);
+      } finally {
+        room.destroy();
+      }
+    });
+  });
+
+  describe("SPEC-065 Procedural Mission Completions & Standing Decay", () => {
+    test("Generated delivery mission completes on arrival and triggers consequences", () => {
+      const room = new GameInstance("room-test-delivery", "Delivery Sector");
+      try {
+        const playerId = "delivery-cmdr";
+        const playerShip = new Ship({
+          id: playerId,
+          position: new Vector2D(0, 0),
+          cargo: { ore: 10 },
+          credits: 1000,
+        });
+        const clientObj = {
+          id: playerId,
+          ship: playerShip,
+          roomId: room.id,
+          send: () => {},
+          missionManager: new MissionManager(),
+        };
+        room.clients.set(playerId, clientObj);
+
+        const deliveryMission = {
+          id: "delivery-1",
+          type: "delivery",
+          title: "Ore Relief",
+          reward: 2000,
+          origin: "Sol",
+          destination: "Valkyrie Depot",
+          cargoItem: "ore",
+          cargoAmount: 10,
+          generated: true,
+          faction: "Federation",
+          isAccepted: true,
+          isCompleted: false,
+          consequences: {
+            marketRelief: {
+              planetName: "Valkyrie Depot",
+              commodity: "ore",
+              priceDelta: 50,
+            },
+            factionDeltas: [
+              {
+                playerId,
+                faction: "Federation",
+                delta: 10,
+              },
+            ],
+          },
+        };
+        clientObj.missionManager.activeMissions = [deliveryMission];
+
+        // Land on Valkyrie Depot
+        const valkyrieDepot = room.planets.find(
+          (p) => p.name === "Valkyrie Depot",
+        );
+        expect(valkyrieDepot).toBeDefined();
+        valkyrieDepot.market = { ore: 200 };
+        room.baseMarkets["Valkyrie Depot"] = { ore: 10 };
+
+        const completed = clientObj.missionManager.checkArrivalCompletions(
+          "Valkyrie Depot",
+          playerShip,
+          room,
+        );
+
+        expect(completed.length).toBe(1);
+        expect(completed[0].isCompleted).toBe(true);
+        expect(playerShip.credits).toBe(3000); // 1000 + 2000
+        expect(playerShip.cargo.ore).toBe(0); // ore removed
+
+        // Standing adjusted
+        expect(room.factionRegistry.getStanding(playerId, "Federation")).toBe(
+          10,
+        );
+        // Market price updated (marketRelief applied: 200 - 50 = 150)
+        expect(valkyrieDepot.market.ore).toBe(150);
+      } finally {
+        room.destroy();
+      }
+    });
+
+    test("Generated hunt mission completes on target ship destruction and triggers consequences", () => {
+      const room = new GameInstance("room-test-hunt", "Hunt Sector");
+      try {
+        const playerId = "hunt-cmdr";
+        const playerShip = new Ship({
+          id: playerId,
+          position: new Vector2D(0, 0),
+          credits: 1000,
+        });
+        const clientObj = {
+          id: playerId,
+          ship: playerShip,
+          roomId: room.id,
+          send: () => {},
+          sendStats: () => {},
+          ws: {
+            readyState: 1, // OPEN
+            OPEN: 1,
+            send: () => {},
+          },
+          missionManager: new MissionManager(),
+        };
+        room.clients.set(playerId, clientObj);
+
+        const huntMission = {
+          id: "hunt-1",
+          type: "hunt",
+          title: "Wanted Outlaw",
+          reward: 3000,
+          targetName: "Outlaw Boss",
+          generated: true,
+          isAccepted: true,
+          isCompleted: false,
+          consequences: {
+            factionDeltas: [
+              {
+                playerId,
+                faction: "Federation",
+                delta: 15,
+              },
+            ],
+          },
+        };
+        clientObj.missionManager.activeMissions = [huntMission];
+
+        // Target ship destroyed
+        const targetShip = new Ship({
+          name: "Outlaw Boss",
+          position: new Vector2D(100, 100),
+        });
+        targetShip.destroyedBy = playerId;
+        targetShip.faction = "Pirates";
+
+        room.handleEntityDestroyed(targetShip);
+
+        // Hunt mission completed and standing adjusted
+        expect(huntMission.isCompleted).toBe(true);
+        expect(playerShip.credits).toBe(4000); // 1000 + 3000
+        expect(room.factionRegistry.getStanding(playerId, "Federation")).toBe(
+          17.5,
+        );
+      } finally {
+        room.destroy();
+      }
+    });
+
+    test("Generated hunt mission in a fleet splits credits and still triggers standing and broadcasts", () => {
+      const room = new GameInstance(
+        "room-test-fleet-hunt",
+        "Fleet Hunt Sector",
+      );
+      try {
+        const playerId1 = "fleet-cmdr-1";
+        const playerId2 = "fleet-cmdr-2";
+        const ship1 = new Ship({
+          id: playerId1,
+          position: new Vector2D(0, 0),
+          credits: 1000,
+        });
+        const ship2 = new Ship({
+          id: playerId2,
+          position: new Vector2D(0, 0),
+          credits: 1000,
+        });
+
+        const sentNotifications1 = [];
+        const sentNotifications2 = [];
+        let broadcastedNews = false;
+
+        const clientObj1 = {
+          id: playerId1,
+          nickname: "PlayerOne",
+          ship: ship1,
+          roomId: room.id,
+          fleetName: "alpha-fleet",
+          send(data) {
+            if (data.type === "notification") {
+              sentNotifications1.push(data.message);
+            }
+          },
+          sendStats() {},
+          ws: {
+            readyState: 1,
+            OPEN: 1,
+            send: () => {},
+          },
+        };
+
+        const clientObj2 = {
+          id: playerId2,
+          nickname: "PlayerTwo",
+          ship: ship2,
+          roomId: room.id,
+          fleetName: "alpha-fleet",
+          send(data) {
+            if (data.type === "notification") {
+              sentNotifications2.push(data.message);
+            }
+          },
+          sendStats() {},
+          ws: {
+            readyState: 1,
+            OPEN: 1,
+            send: () => {},
+          },
+        };
+
+        room.clients.set(playerId1, clientObj1);
+        room.clients.set(playerId2, clientObj2);
+        room.fleets.set("alpha-fleet", new Set([clientObj1, clientObj2]));
+
+        // Override broadcast on room to check for GALAXY-NEWS
+        const originalBroadcast = room.broadcast;
+        room.broadcast = (data) => {
+          if (data && data.sender === "GALAXY-NEWS") {
+            broadcastedNews = true;
+          }
+          originalBroadcast.call(room, data);
+        };
+
+        const huntMission = {
+          id: "hunt-fleet-1",
+          type: "hunt",
+          title: "Wanted Outlaw",
+          reward: 4000,
+          targetName: "Outlaw Boss",
+          generated: true,
+          isAccepted: true,
+          isCompleted: false,
+          consequences: {
+            factionDeltas: [
+              {
+                playerId: playerId1,
+                faction: "Federation",
+                delta: 20,
+              },
+            ],
+          },
+        };
+        clientObj1.missionManager = new MissionManager();
+        clientObj1.missionManager.activeMissions = [huntMission];
+        clientObj2.missionManager = new MissionManager();
+
+        // Target ship destroyed by playerId1
+        const targetShip = new Ship({
+          name: "Outlaw Boss",
+          position: new Vector2D(100, 100),
+        });
+        targetShip.destroyedBy = playerId1;
+        targetShip.faction = "Pirates";
+
+        room.handleEntityDestroyed(targetShip);
+
+        // Asserts
+        expect(huntMission.isCompleted).toBe(true);
+        // Credits split: 1000 + 4000 / 2 = 3000
+        expect(ship1.credits).toBe(3000);
+        expect(ship2.credits).toBe(3000);
+
+        // Standing correctly adjusted for playerId1
+        expect(room.factionRegistry.getStanding(playerId1, "Federation")).toBe(
+          22.5,
+        );
+
+        // Notifications sent to clientObj1
+        expect(
+          sentNotifications1.some((m) =>
+            m.includes("Standing with Federation: +20.0 merits"),
+          ),
+        ).toBe(true);
+
+        // GALAXY NEWS broadcasted
+        expect(broadcastedNews).toBe(true);
+      } finally {
+        room.destroy();
+      }
+    });
+
+    test("DecayReputations slowly drifts active player standing towards zero", () => {
+      const room = new GameInstance("room-test-decay", "Decay Sector");
+      try {
+        const playerId = "decay-cmdr";
+        room.factionRegistry.adjustStanding(playerId, "Federation", 50);
+
+        // Run room decay
+        room.decayReputations(); // default rate is 0.05%
+        let fedStanding = room.factionRegistry.getStanding(
+          playerId,
+          "Federation",
+        );
+
+        expect(fedStanding).toBeLessThan(50);
+        expect(fedStanding).toBeGreaterThan(0);
+      } finally {
+        room.destroy();
+      }
+    });
+
+    test("SPEC-081: Rogue's Hollow outlaw planet has blackMarket services enabled", () => {
+      const room = new GameInstance(
+        "room-test-blackmarket-1",
+        "Black Market Sector",
+      );
+      try {
+        const hollow = room.planets.find((p) => p.name === "Rogue's Hollow");
+        expect(hollow).toBeDefined();
+        expect(hollow.services).toBeDefined();
+        expect(hollow.services.blackMarket).toBe(true);
+        expect(hollow.faction).toBe("Pirates");
+      } finally {
+        room.destroy();
+      }
+    });
+
+    test("SPEC-085: Underworld Smuggling Contracts generation and completion standing propagation", () => {
+      const room = new GameInstance("room-test-smuggling", "Smuggling Sector");
+      try {
+        const playerId = "smuggler-1";
+        const mm = new MissionManager();
+
+        // Generate missions at Rogue's Hollow
+        mm.generateMissionsForPlanet(
+          "Rogue's Hollow",
+          room.planets,
+          room.factionRegistry,
+          playerId,
+        );
+        const available = mm.availableMissions["Rogue's Hollow"];
+
+        // Verify we generated underworld smuggling missions
+        const smuggles = available.filter(
+          (m) => m.type === "smuggle" && m.id.startsWith("underworld-smuggle"),
+        );
+        expect(smuggles.length).toBeGreaterThanOrEqual(2);
+
+        const mission = smuggles[0];
+        expect(mission.title).toContain("Underworld Contraband Smuggling");
+        expect(mission.consequences).toBeDefined();
+        expect(mission.consequences.factionDeltas).toEqual(
+          expect.arrayContaining([
+            { playerId, faction: "Pirates", delta: 15.0 },
+            { playerId, faction: "Federation", delta: -12.0 },
+            { playerId, faction: "Frontier League", delta: -8.0 },
+          ]),
+        );
+
+        // Accept the mission
+        const player = new Ship({ id: playerId, type: "ship" });
+        player.credits = 1000;
+
+        const acceptRes = mm.acceptMission(
+          "Rogue's Hollow",
+          mission.id,
+          player,
+        );
+        expect(acceptRes.success).toBe(true);
+        expect(mm.activeMissions.length).toBe(1);
+        expect(player.getCargoWeight()).toBe(mission.cargoAmount);
+
+        // Complete the mission by landing at the destination planet
+        const completed = mm.checkArrivalCompletions(
+          mission.destination,
+          player,
+          room,
+        );
+        expect(completed.length).toBe(1);
+        expect(completed[0].id).toBe(mission.id);
+
+        // Check rewards and cargo removal
+        expect(player.credits).toBe(1000 + mission.reward);
+        expect(player.getCargoWeight()).toBe(0);
+
+        // Check standings changes in room's faction registry
+        const piratesStanding = room.factionRegistry.getStanding(
+          playerId,
+          "Pirates",
+        );
+        const fedStanding = room.factionRegistry.getStanding(
+          playerId,
+          "Federation",
+        );
+        const leagueStanding = room.factionRegistry.getStanding(
+          playerId,
+          "Frontier League",
+        );
+
+        // Expected standing changes factoring in base changes + pairwise propagation:
+        // Adjusting Pirates by +15: Federation -7.5 (enemy), Frontier League -7.5 (enemy), Independents +0.0
+        // Adjusting Federation by -12: Pirates +6.0 (enemy), Frontier League +0.0, Independents -6.0 (ally)
+        // Adjusting Frontier League by -8: Pirates +4.0 (enemy), Federation +0.0, Independents +0.0
+        // Total change expected:
+        // Pirates: +15 (base) + 6.0 (from Fed enemy loss) + 4.0 (from League enemy loss) = +25.0
+        // Federation: -12 (base) - 7.5 (from Pirate ally/enemy propagation) = -19.5
+        // Frontier League: -8 (base) - 7.5 = -15.5
+        expect(piratesStanding).toBe(25);
+        expect(fedStanding).toBe(-19.5);
+        expect(leagueStanding).toBe(-15.5);
+      } finally {
+        room.destroy();
+      }
     });
   });
 });

@@ -598,3 +598,27 @@ describe("Ship cargo jettison (EW6)", () => {
     expect(s.jettison("minerals", 1)).toBeNull();
   });
 });
+
+describe("Ship SPEC-155 outfitting mass agility & speed cap scaling", () => {
+  test("effective turn rate, max speed, thrust ratio, and hyperdrive charge duration scale with outfitting mass ratios", () => {
+    const s = new Ship({ mass: 2000, maxSpeed: 300, thrustPower: 8000 });
+    expect(s.getEffectiveMaxSpeed()).toBe(300);
+    expect(s.getThrustToMassRatio()).toBe(4);
+    expect(s.getEffectiveHyperdriveChargeDuration()).toBe(5);
+
+    s.addOutfitMass(2000); // doubles total mass
+    expect(s.getEffectiveMaxSpeed()).toBe(150);
+    expect(s.getThrustToMassRatio()).toBe(2);
+    expect(s.getEffectiveHyperdriveChargeDuration()).toBe(10);
+  });
+
+  test("ship velocity update cap is limited by getEffectiveMaxSpeed", () => {
+    const s = new Ship({ mass: 2000, maxSpeed: 300 });
+    s.addOutfitMass(2000); // mass ratio is 2, so effective max speed is 150
+    s.velocity.x = 200;
+    s.velocity.y = 0;
+    s.update(0.1);
+    const speed = s.velocity.magnitude();
+    expect(speed).toBeCloseTo(150, 6);
+  });
+});

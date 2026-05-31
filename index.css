@@ -20,6 +20,8 @@
   --color-green-glow: rgba(0, 255, 136, 0.4);
   --color-gold: #ffb300;
   --color-gold-glow: rgba(255, 179, 0, 0.4);
+  --color-cyan: #00f2fe;
+  --color-cyan-glow: rgba(0, 242, 254, 0.4);
   
   --color-text-primary: #f0f2fa;
   --color-text-secondary: #8a90a6;
@@ -1843,5 +1845,101 @@ h1, h2, h3, h4 {
   text-shadow: 0 0 5px var(--color-gold-glow);
 }
 
+/* SPEC-082 & SPEC-079 HUD Panels */
+#trade-advisor-panel {
+  position: absolute;
+  top: 250px;
+  right: 20px;
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  max-height: 250px;
+  z-index: 15;
+  pointer-events: auto;
+}
 
+#wingman-panel {
+  position: absolute;
+  top: 550px;
+  left: 20px;
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  max-height: 250px;
+  z-index: 15;
+  pointer-events: auto;
+}
 
+/* Gold glassmorphism for Nav-Computer Panel (Spec 088) */
+#nav-computer-panel {
+  position: absolute;
+  top: 250px;
+  left: 20px;
+  width: 240px;
+  background: rgba(30, 20, 5, 0.4);
+  border: 1px solid rgba(255, 179, 0, 0.35);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), 0 0 15px rgba(255, 179, 0, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 10px;
+  color: #f7e1b5;
+  font-family: 'Orbitron', 'Inter', sans-serif;
+  padding: 12px;
+  pointer-events: auto;
+  transition: all 0.3s ease;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+#nav-computer-panel.hidden {
+  opacity: 0;
+  transform: translateX(-40px);
+  pointer-events: none;
+}
+.gold-glow-text {
+  color: #ffb300;
+  text-shadow: 0 0 8px rgba(255, 179, 0, 0.6);
+}
+.gold-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 179, 0, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.gold-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: #ffb300;
+  box-shadow: 0 0 8px #ffb300;
+  transition: width 0.3s;
+}
+
+/* ==========================================================================
+   INTERACTIVE ONBOARDING HUD HIGHLIGHT GLOWS (SPEC-105)
+   ========================================================================== */
+.hud-highlight-glow {
+  position: relative !important;
+  outline: 2px solid var(--color-cyan) !important;
+  box-shadow: 0 0 20px var(--color-cyan-glow), var(--shadow-premium) !important;
+  animation: hudHighlightPulse 1.5s infinite ease-in-out !important;
+  z-index: 999 !important;
+  transition: all 0.3s ease-in-out;
+}
+
+@keyframes hudHighlightPulse {
+  0% {
+    box-shadow: 0 0 8px rgba(0, 242, 254, 0.3), var(--shadow-premium);
+    outline-color: rgba(0, 242, 254, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(0, 242, 254, 0.95), var(--shadow-premium);
+    outline-color: rgba(0, 242, 254, 1);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(0, 242, 254, 0.3), var(--shadow-premium);
+    outline-color: rgba(0, 242, 254, 0.3);
+  }
+}

@@ -37,16 +37,22 @@ export class Ship extends SpaceEntity {
     miningYieldMultiplier = 1,
     outfits = ["Basic Laser"],
     bountyVouchers = [],
+    maxOutfitMass = 3000,
     ...parentParams
   } = {}) {
     super({ type: "ship", mass: 2000, radius: 15, ...parentParams });
 
     this.name = name;
+    this.maxOutfitMass = maxOutfitMass;
     // Optional faction tag (e.g. "Federation", "Pirates"). When set, the AI
     // can resolve disposition against other faction-tagged ships via a
     // pairwise faction policy; absent or null defaults to legacy name-based
     // behaviour so existing fleets remain unaffected.
     this.faction = faction;
+    /** @type {boolean} */
+    this.isVengeanceHunter = false;
+    /** @type {boolean} */
+    this.needsShieldCoordination = false;
     this.thrustPower = thrustPower;
     this.brakePower = brakePower;
     this.turnRate = turnRate;
@@ -87,6 +93,9 @@ export class Ship extends SpaceEntity {
     // Status states
     this.isOverheated = false;
     this.isDisabled = false;
+    this.isSmuggler = false;
+    this.isChaffActive = false;
+    this.decoyJammerActive = false;
 
     // Trading & Economy Systems
     this.credits = credits;
@@ -192,6 +201,36 @@ export class Ship extends SpaceEntity {
   getEffectiveTurnRate() {
     if (this.mass <= 0) return this.turnRate;
     return this.turnRate * (this.hullMass / this.mass);
+  }
+
+  /**
+   * Returns the effective maximum speed (units/s) after outfitting mass scaling.
+   * As the ship gets heavier, the maximum velocity cap decreases proportionally.
+   * @returns {number} Effective maximum speed.
+   */
+  getEffectiveMaxSpeed() {
+    if (this.mass <= 0 || !this.hullMass) return this.maxSpeed;
+    return this.maxSpeed * (this.hullMass / this.mass);
+  }
+
+  /**
+   * Returns the thrust-to-mass ratio of the ship.
+   * @returns {number} thrustPower / totalMass
+   */
+  getThrustToMassRatio() {
+    if (this.mass <= 0) return 0;
+    return this.thrustPower / this.mass;
+  }
+
+  /**
+   * Returns the effective hyperdrive charge duration in seconds.
+   * Heavier ship outfitting mass ratios slow down warp core spin-up times.
+   * @returns {number} Charge duration in seconds.
+   */
+  getEffectiveHyperdriveChargeDuration() {
+    const baseDuration = 5; // seconds
+    if (this.mass <= 0 || !this.hullMass) return baseDuration;
+    return baseDuration * (this.mass / this.hullMass);
   }
 
   /**
@@ -457,7 +496,7 @@ export class Ship extends SpaceEntity {
 
     // Apply terminal speed limit cap
     const currentSpeed = this.velocity.magnitude();
-    let speedCap = this.maxSpeed;
+    let speedCap = this.getEffectiveMaxSpeed();
     if (this.isOverheated) {
       speedCap *= 0.5; // nerf max speed by 50% during reactor meltdown
     } else if (this.controls.isBoosting && this.controls.isThrusting) {

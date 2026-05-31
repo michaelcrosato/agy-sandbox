@@ -22,10 +22,12 @@ export const DEFAULT_HYPERDRIVE_OPTIONS = Object.freeze({
  */
 export function canJump(ship, cost = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost) {
   if (!ship) return false;
-  const need = Number.isFinite(cost)
+  const baseCost = Number.isFinite(cost)
     ? cost
     : DEFAULT_HYPERDRIVE_OPTIONS.jumpCost;
-  return Number.isFinite(ship.hyperFuel) && ship.hyperFuel >= need;
+  const massRatio = ship.mass && ship.hullMass ? ship.mass / ship.hullMass : 1;
+  const effectiveCost = Math.round(baseCost * massRatio);
+  return Number.isFinite(ship.hyperFuel) && ship.hyperFuel >= effectiveCost;
 }
 
 /**
@@ -35,11 +37,13 @@ export function canJump(ship, cost = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost) {
  * @returns {boolean} True if the jump was paid for; false (no mutation) otherwise.
  */
 export function consumeJump(ship, cost = DEFAULT_HYPERDRIVE_OPTIONS.jumpCost) {
-  const need = Number.isFinite(cost)
+  const baseCost = Number.isFinite(cost)
     ? cost
     : DEFAULT_HYPERDRIVE_OPTIONS.jumpCost;
-  if (!canJump(ship, need)) return false;
-  ship.hyperFuel = Math.max(0, ship.hyperFuel - need);
+  if (!canJump(ship, baseCost)) return false;
+  const massRatio = ship.mass && ship.hullMass ? ship.mass / ship.hullMass : 1;
+  const effectiveCost = Math.round(baseCost * massRatio);
+  ship.hyperFuel = Math.max(0, ship.hyperFuel - effectiveCost);
   return true;
 }
 
@@ -192,9 +196,12 @@ export function validateWarpJump(
     };
   }
   if (!canJump(ship, jumpCost)) {
+    const massRatio =
+      ship.mass && ship.hullMass ? ship.mass / ship.hullMass : 1;
+    const effectiveCost = Math.round(jumpCost * massRatio);
     return {
       ok: false,
-      reason: `Insufficient Hyper-Fuel! Requires ${jumpCost} units. Land on a planet to refuel.`,
+      reason: `Insufficient Hyper-Fuel! Requires ${effectiveCost} units. Land on a planet to refuel.`,
     };
   }
 

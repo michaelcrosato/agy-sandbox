@@ -2,102 +2,54 @@ import { Vector2D } from "../physics/Vector2D.js";
 import { Ship } from "./Ship.js";
 import { Planet } from "./Planet.js";
 import { SpaceEngine } from "./SpaceEngine.js";
+import { TerritoryControl } from "./TerritoryControl.js";
 import { SpaceEntity } from "./SpaceEntity.js";
 import { AIController } from "./ai/AIController.js";
 import { DEFAULT_OUTFITS } from "./outfitCatalog.js";
 import { CargoPod } from "./CargoPod.js";
+import { CosmicStorm } from "./CosmicStorm.js";
 import { EconomyManager } from "./EconomyManager.js";
 import { GalaxyEventsManager } from "./GalaxyEventsManager.js";
 import { FactionRegistry } from "./FactionRegistry.js";
 import { GalaxyHeartbeat } from "./GalaxyHeartbeat.js";
+import { DeterminismSentry } from "./DeterminismSentry.js";
 import { PLANET_PROFILES } from "./ProductionModel.js";
 import { recordKill, shipBountyValue } from "./CombatRating.js";
 import { mineYield } from "./Mining.js";
 import { shipName, createSeededRng } from "./NameGenerator.js";
 import { squadManager } from "../server/SquadManager.js";
+import { SandboxSecurityRegistry } from "../net/SandboxSecurityRegistry.js";
 
-// Which sectors share trade routes (warp-gate connected) for economic diffusion.
+/**
+ * Map defining which sectors share direct warp-gate trade route adjacency links.
+ * Used for simulated economic and price diffusion.
+ * @type {Record<string, Array<string>>}
+ */
 export const SECTOR_ADJACENCY = {
   core: ["frontier"],
   frontier: ["core", "rim"],
   rim: ["frontier"],
 };
 
-export const BASE_MARKETS = {
-  Sol: {
-    food: 100,
-    electronics: 300,
-    minerals: 150,
-    luxuries: 600,
-    contraband: 250,
-    machinery: 100,
-    ore: 90,
-  },
-  "New Polaris": {
-    food: 220,
-    electronics: 320,
-    minerals: 50,
-    luxuries: 650,
-    contraband: 300,
-    machinery: 220,
-    ore: 55,
-  },
-  "Sigma Draconis": {
-    food: 120,
-    electronics: 120,
-    minerals: 250,
-    luxuries: 500,
-    contraband: 200,
-    machinery: 160,
-    ore: 130,
-  },
-  "Kaelis Colony": {
-    food: 40,
-    electronics: 420,
-    minerals: 180,
-    luxuries: 550,
-    contraband: 280,
-    machinery: 190,
-    ore: 85,
-  },
-  "Aurelia Mining Hub": {
-    food: 150,
-    electronics: 290,
-    minerals: 70,
-    luxuries: 580,
-    contraband: 260,
-    machinery: 150,
-    ore: 50,
-  },
-  "Tenebris Prime": {
-    food: 160,
-    electronics: 450,
-    minerals: 200,
-    luxuries: 220,
-    contraband: 400,
-    machinery: 240,
-    ore: 95,
-  },
-  "Valkyrie Depot": {
-    food: 110,
-    electronics: 380,
-    minerals: 190,
-    luxuries: 520,
-    contraband: 220,
-    machinery: 80,
-    ore: 125,
-  },
-  "Rogue's Hollow": {
-    food: 250,
-    electronics: 220,
-    minerals: 160,
-    luxuries: 450,
-    contraband: 60,
-    machinery: 180,
-    ore: 80,
-  },
-};
+import { BASE_MARKETS } from "../net/SchemaRegistry.js";
+export { BASE_MARKETS };
 
+/**
+ * Utility helper to identify a sector ID from 2D vector coordinate bounds.
+ * @param {object} pos Coordinate point containing x and y coordinates.
+ * @returns {string} The sector name identifier.
+ */
+export function getSectorFromPosition(pos) {
+  if (!pos) return "core";
+  if (pos.x > 10000 && pos.y > 10000) return "frontier";
+  if (pos.x < -10000 && pos.y < -10000) return "rim";
+  return "core";
+}
+
+/**
+ * Authoritative sandbox game instance simulator managing sectors, entities,
+ * economies, and dynamic galactic factions.
+ */
 export class GameInstance {
   constructor(id, name) {
     this.id = id;
@@ -109,6 +61,7 @@ export class GameInstance {
     this.tags = [];
     this.engine = new SpaceEngine({ globalDrag: 0.1, restitution: 0.4 });
     this.planets = [];
+    this.cosmicStorms = [];
     this.ais = [];
     this.fleets = new Map(); // fleetName -> Set<clientObj>
     this.clients = new Map(); // ws -> clientObj
@@ -120,6 +73,8 @@ export class GameInstance {
     this.conflictFactionA = null;
     this.conflictFactionB = null;
     this.galaxyEventsManager = new GalaxyEventsManager();
+    this.chronicle = null;
+    this.determinismSentry = new DeterminismSentry();
 
     // Set up engine event handlers
     this.engine.onProjectileFired = (proj, ship) => {
@@ -142,7 +97,13 @@ export class GameInstance {
     // before seedGalaxy so NPC spawns can hand their controllers the policy
     // views (faction relations + per-player standings) for disposition targeting.
     this.factionRegistry = new FactionRegistry();
-    this.baseMarkets = BASE_MARKETS;
+    this.baseMarkets = { ...BASE_MARKETS };
+
+    this.territoryControl = new TerritoryControl();
+    this.factionRegistry.territoryControl = this.territoryControl;
+    this.territoryControl.onControlShift = (sectorId, oldOwner, newOwner) => {
+      this.handleControlShift(sectorId, oldOwner, newOwner);
+    };
 
     // Seed initial entities
     this.seedGalaxy();
@@ -273,6 +234,7 @@ export class GameInstance {
       radius: 52,
       market: { ...BASE_MARKETS["Rogue's Hollow"] },
       sector: "rim",
+      services: { repair: true, refuel: true, blackMarket: true },
     });
     this.planets.push(roguesPlanet);
     this.engine.addEntity(roguesPlanet);
@@ -374,6 +336,9 @@ export class GameInstance {
       mShip.faction = "Independents";
       const controller = new AIController(mShip, "merchant", {
         useUtilityAdvisor: true,
+        factionPolicy: this.factionRegistry.factionPolicy(),
+        standingPolicy: this.factionRegistry.standingPolicy(),
+        factionRegistry: this.factionRegistry,
       });
       this.engine.addEntity(mShip);
       this.ais.push(controller);
@@ -415,15 +380,49 @@ export class GameInstance {
         weaponCooldown: isDestroyer ? 0.3 : 0.25,
       });
 
-      gShip.faction = "Federation";
+      const sectorId = getSectorFromPosition(spawnPos);
+      gShip.faction = this.territoryControl
+        ? this.territoryControl.sectors[sectorId].controllingFaction
+        : "Federation";
       const controller = new AIController(gShip, "guard", {
         useUtilityAdvisor: true,
         factionPolicy: this.factionRegistry.factionPolicy(),
         standingPolicy: this.factionRegistry.standingPolicy(),
+        factionRegistry: this.factionRegistry,
       });
       this.engine.addEntity(gShip);
       this.ais.push(controller);
     }
+
+    // Seed authoritative Wandering Cosmic Storms
+    const empStorm = new CosmicStorm({
+      id: "storm_emp_1",
+      name: "Stellar EMP Storm",
+      description: "High-intensity solar flares draining energy reserves.",
+      position: new Vector2D(-500, -500),
+      radius: 400,
+      velocity: new Vector2D(5, 5),
+      hazardType: "emp_storm",
+      color: "rgba(255, 140, 0, 0.12)",
+      particleColor: "rgba(255, 140, 0, 0.35)",
+    });
+    this.cosmicStorms.push(empStorm);
+    this.engine.addEntity(empStorm);
+
+    const radioactiveStorm = new CosmicStorm({
+      id: "storm_rad_1",
+      name: "Radioactive Anomaly",
+      description:
+        "Ultra-dense toxic fallout fog causing hull erosion and sensor jamming.",
+      position: new Vector2D(1200, -800),
+      radius: 350,
+      velocity: new Vector2D(-6, 4),
+      hazardType: "radioactive_cloud",
+      color: "rgba(57, 255, 20, 0.12)",
+      particleColor: "rgba(57, 255, 20, 0.35)",
+    });
+    this.cosmicStorms.push(radioactiveStorm);
+    this.engine.addEntity(radioactiveStorm);
   }
 
   /**
@@ -444,6 +443,42 @@ export class GameInstance {
     };
     for (const planet of this.planets) {
       planet.faction = byName[planet.name] || "Independents";
+    }
+  }
+
+  handleControlShift(sectorId, oldOwner, newOwner) {
+    // Shift factions of planets in this sector belonging to oldOwner to newOwner
+    for (const planet of this.planets) {
+      if (planet.sector === sectorId && planet.faction === oldOwner) {
+        planet.faction = newOwner;
+      }
+    }
+
+    // Broadcast global chat comms and warning notifications announcing the conquest.
+    this.broadcast({
+      type: "chat",
+      sender: "GALAXY NEWS",
+      message: `📢 SECTOR CONQUEST: Faction [${newOwner}] has seized control of the [${sectorId.toUpperCase()}] sector from [${oldOwner}]!`,
+      color: "#ffaa00",
+    });
+
+    this.broadcastNotification(
+      `Sector ${sectorId.toUpperCase()} has been captured by ${newOwner}!`,
+      "warning",
+    );
+
+    if (this.chronicle) {
+      this.chronicle.recordEvent({
+        sector: sectorId,
+        category: "faction_conquest",
+        title: `Sector Conquered: ${sectorId.toUpperCase()}`,
+        description: `Faction ${newOwner} has conquered the ${sectorId.toUpperCase()} sector from ${oldOwner}.`,
+        impactMetrics: {
+          sector: sectorId,
+          oldOwner,
+          newOwner,
+        },
+      });
     }
   }
 
@@ -541,6 +576,8 @@ export class GameInstance {
     const controller = new AIController(pShip, "pirate", {
       useUtilityAdvisor: true,
       factionPolicy: this.factionRegistry.factionPolicy(),
+      standingPolicy: this.factionRegistry.standingPolicy(),
+      factionRegistry: this.factionRegistry,
     });
     this.engine.addEntity(pShip);
     this.ais.push(controller);
@@ -600,11 +637,15 @@ export class GameInstance {
           weaponDamage: 25,
           weaponCooldown: 0.25,
         });
-        gShip.faction = "Federation";
+        const sectorId = getSectorFromPosition(spawnPos);
+        gShip.faction = this.territoryControl
+          ? this.territoryControl.sectors[sectorId].controllingFaction
+          : "Federation";
         const controller = new AIController(gShip, "guard", {
           useUtilityAdvisor: true,
           factionPolicy: this.factionRegistry.factionPolicy(),
           standingPolicy: this.factionRegistry.standingPolicy(),
+          factionRegistry: this.factionRegistry,
         });
         this.engine.addEntity(gShip);
         this.ais.push(controller);
@@ -630,6 +671,9 @@ export class GameInstance {
         mShip.faction = "Independents";
         const controller = new AIController(mShip, "merchant", {
           useUtilityAdvisor: true,
+          factionPolicy: this.factionRegistry.factionPolicy(),
+          standingPolicy: this.factionRegistry.standingPolicy(),
+          factionRegistry: this.factionRegistry,
         });
         this.engine.addEntity(mShip);
         this.ais.push(controller);
@@ -685,7 +729,7 @@ export class GameInstance {
   broadcast(data) {
     const str = JSON.stringify(data);
     for (const client of this.clients.values()) {
-      if (client.ws.readyState === client.ws.OPEN) {
+      if (client.ws && client.ws.readyState === client.ws.OPEN) {
         client.ws.send(str);
       }
     }
@@ -770,6 +814,12 @@ export class GameInstance {
           base.targetPosition = ent.targetPosition
             ? { x: ent.targetPosition.x, y: ent.targetPosition.y }
             : null;
+        } else if (ent.type === "cosmic_storm") {
+          base.name = ent.name;
+          base.description = ent.description;
+          base.hazardType = ent.hazardType;
+          base.color = ent.color;
+          base.particleColor = ent.particleColor;
         }
         return base;
       });
@@ -853,10 +903,110 @@ export class GameInstance {
 
     // --- Ships destroyed ---
     else if (ent.type === "ship") {
+      if (ent.name === "Training Drone") {
+        const pod = new CargoPod({
+          resourceType: "Wreckage Salvage",
+          amount: 1,
+          position: ent.position.clone(),
+          velocity: new Vector2D(0, 0),
+        });
+        pod.isTrainingSalvage = true;
+        this.engine.addEntity(pod);
+
+        for (const client of this.clients.values()) {
+          client.tutorialStep = "collect_salvage";
+          client.send({
+            type: "notification",
+            message:
+              "Training Drone neutralized! Deploy cargo scoop and harvest the wreckage salvage pod.",
+            style: "success",
+          });
+          client.send({
+            type: "tutorial_state",
+            step: "collect_salvage",
+          });
+        }
+      }
+
+      if (ent.name === "Diplomatic Transport") {
+        for (const client of this.clients.values()) {
+          const escMissionIdx = client.missionManager.activeMissions.findIndex(
+            (m) => m.type === "escort_ambassador",
+          );
+          if (escMissionIdx !== -1) {
+            client.missionManager.activeMissions.splice(escMissionIdx, 1);
+            client.send({
+              type: "notification",
+              message:
+                "MISSION FAILED: The Diplomatic Transport was destroyed!",
+              style: "error",
+            });
+            client.sendStats();
+          }
+        }
+      }
+
       // Remove AI controller from room's active AIs list to optimize updates and avoid memory leaks
       const aiIdx = this.ais.findIndex((a) => a.ship === ent);
       if (aiIdx !== -1) {
         this.ais.splice(aiIdx, 1);
+      }
+
+      // Log vengeance hunter or player vengeance destruction (SPEC-156)
+      const entIsPlayer =
+        Array.from(this.clients.values()).some((c) => c.ship === ent) ||
+        ent.isPlayerMock;
+      if (ent.isVengeanceHunter) {
+        const killerName = killerClient
+          ? killerClient.nickname || killerClient.name
+          : ent.destroyedBy || "Unknown Threat";
+        if (this.chronicle) {
+          this.chronicle.recordEvent({
+            sector: this.id,
+            category: "combat",
+            title: "Vengeance Hunter Neutralized",
+            description: `Elite ${ent.faction} Hunter [${ent.name}] has been destroyed in combat by ${killerName}!`,
+            impactMetrics: {
+              faction: ent.faction,
+              hunterName: ent.name,
+              destroyedBy: killerName,
+            },
+          });
+        }
+        SandboxSecurityRegistry.logViolation(
+          "process",
+          "vengeance_hunter_destroyed",
+          {
+            hunterName: ent.name,
+            faction: ent.faction,
+            destroyedBy: ent.destroyedBy || "Unknown",
+            sector: this.id,
+          },
+        );
+      } else if (entIsPlayer) {
+        const killerEnt = this.engine.entities.find(
+          (e) => e.id === ent.destroyedBy,
+        );
+        if (killerEnt && killerEnt.isVengeanceHunter) {
+          if (this.chronicle) {
+            this.chronicle.recordEvent({
+              sector: this.id,
+              category: "combat",
+              title: "Hostile Pilot Executed",
+              description: `Commander ${ent.name || "Unknown"} has been executed by ${killerEnt.name} for hostile faction crimes!`,
+              impactMetrics: { target: ent.name, executedBy: killerEnt.name },
+            });
+          }
+          SandboxSecurityRegistry.logViolation(
+            "process",
+            "player_executed_by_vengeance",
+            {
+              playerName: ent.name,
+              executedBy: killerEnt.name,
+              sector: this.id,
+            },
+          );
+        }
       }
 
       // EW1: credit the attributed killer with the victim's worth + a kill.
@@ -925,6 +1075,47 @@ export class GameInstance {
         }
       }
 
+      if (this.territoryControl && ent.position) {
+        const sectorId = getSectorFromPosition(ent.position);
+        const sector = this.territoryControl.sectors[sectorId];
+        if (sector) {
+          const isPirate = AIController.isPirateShip(ent);
+          if (isPirate) {
+            const currentController = sector.controllingFaction;
+            this.territoryControl.adjustInfluence(
+              sectorId,
+              currentController,
+              3.0,
+            );
+            this.territoryControl.adjustInfluence(sectorId, "Pirates", -3.0);
+            this.broadcast({
+              type: "territory_sync",
+              sectors: this.territoryControl.sectors,
+            });
+          } else if (ent.faction && ent.faction !== "Independents") {
+            this.territoryControl.adjustInfluence(sectorId, ent.faction, -5.0);
+            let opposingFaction = sector.controllingFaction;
+            if (this.isConflictZone) {
+              opposingFaction =
+                ent.faction === this.conflictFactionA
+                  ? this.conflictFactionB
+                  : this.conflictFactionA;
+            }
+            if (opposingFaction && opposingFaction !== ent.faction) {
+              this.territoryControl.adjustInfluence(
+                sectorId,
+                opposingFaction,
+                5.0,
+              );
+            }
+            this.broadcast({
+              type: "territory_sync",
+              sectors: this.territoryControl.sectors,
+            });
+          }
+        }
+      }
+
       // Role/faction-based (name-independent) classification — null-safe.
       const isPirate = AIController.isPirateShip(ent);
 
@@ -943,6 +1134,30 @@ export class GameInstance {
               style: "success",
             });
           }
+
+          if (completedBounty.generated) {
+            const alertMsg = `GALAXY NEWS: Threat ${completedBounty.targetName} neutralized by player ${client.nickname}! Bounty of ${completedBounty.reward.toLocaleString()} CR claimed!`;
+            this.broadcastNotification(alertMsg, "success");
+            this.broadcast({
+              type: "chat",
+              channel: "global",
+              sender: "GALAXY-NEWS",
+              text: alertMsg,
+            });
+            if (
+              completedBounty.factionChanges &&
+              completedBounty.factionChanges.length > 0
+            ) {
+              for (const change of completedBounty.factionChanges) {
+                client.send({
+                  type: "notification",
+                  message: `Standing with ${change.faction}: +${change.delta.toFixed(1)} merits!`,
+                  style: "success",
+                });
+              }
+            }
+          }
+
           if (client.fleetName) {
             const fleetSet = this.fleets.get(client.fleetName);
             if (fleetSet && fleetSet.size > 1) {
@@ -999,6 +1214,7 @@ export class GameInstance {
               style: "success",
             });
           }
+
           client.sendStats();
         }
       }
@@ -1026,9 +1242,17 @@ export class GameInstance {
           this.engine.addEntity(pod);
         }
 
-        const rewardBase = 1000;
+        let rewardBase = 1000;
+        let faction = this.getGoverningFaction();
+        let isElite = false;
+        if (ent.name && ent.name.includes("Hunter Elite")) {
+          rewardBase = 8000;
+          faction = ent.faction || faction;
+          isElite = true;
+        }
+
         if (killerClient) {
-          const faction = this.getGoverningFaction();
+          const label = isElite ? "Elite Hunter" : "Pirate";
           if (killerSquadMembers && killerSquadMembers.length > 0) {
             const share = Math.floor(rewardBase / killerSquadMembers.length);
             for (const member of killerSquadMembers) {
@@ -1038,7 +1262,7 @@ export class GameInstance {
               member.ship.bountyVouchers.push({ faction, value: share });
               member.send({
                 type: "notification",
-                message: `Pirate eliminated by ${killerClient.nickname}! Squad share bounty voucher: +${share} CR (${faction})`,
+                message: `${label} eliminated by ${killerClient.nickname}! Squad share bounty voucher: +${share} CR (${faction})`,
                 style: "success",
               });
               member.sendStats();
@@ -1052,7 +1276,7 @@ export class GameInstance {
               member.ship.bountyVouchers.push({ faction, value: share });
               member.send({
                 type: "notification",
-                message: `Pirate eliminated by ${killerClient.nickname}! Fleet share bounty voucher: +${share} CR (${faction})`,
+                message: `${label} eliminated by ${killerClient.nickname}! Fleet share bounty voucher: +${share} CR (${faction})`,
                 style: "success",
               });
               member.sendStats();
@@ -1245,6 +1469,7 @@ export class GameInstance {
       useUtilityAdvisor: true,
       factionPolicy: this.factionRegistry.factionPolicy(),
       standingPolicy: this.factionRegistry.standingPolicy(),
+      factionRegistry: this.factionRegistry,
     });
 
     // Make the patrol aggressively target the hostile player ship
@@ -1258,6 +1483,241 @@ export class GameInstance {
       message: `Warning: Hostile ${faction} Interceptor scrambled to your location!`,
       style: "error",
     });
+  }
+
+  /**
+   * Scrambles highly aggressive elite faction hunters to hunt players with nadir reputation (< -50).
+   * @param {number} dt - Time delta in seconds.
+   */
+  checkEliteHunterSpawns(dt) {
+    if (!this.hunterSpawnTimer) this.hunterSpawnTimer = 0;
+    this.hunterSpawnTimer += dt;
+    if (this.hunterSpawnTimer < 12) return; // check every 12 seconds
+    this.hunterSpawnTimer = 0;
+
+    // Scan for players who are highly hostile to any major faction (standing < -50)
+    for (const ent of this.engine.entities) {
+      if (ent.type === "ship" && !ent.isDestroyed) {
+        const isPlayer =
+          Array.from(this.clients.values()).some((c) => c.ship === ent) ||
+          ent.isPlayerMock;
+        if (!isPlayer) continue;
+
+        for (const faction of ["Federation", "Frontier League", "Pirates"]) {
+          const standing = this.factionRegistry.getStanding(ent.id, faction);
+          if (standing < -50) {
+            // Check if any active vengeance hunter of this faction already exists in the room
+            const exists = this.engine.entities.some(
+              (e) =>
+                e.type === "ship" &&
+                e.isVengeanceHunter &&
+                e.faction === faction &&
+                !e.isDestroyed,
+            );
+            if (exists) continue;
+
+            // Check player-specific hunter cooldown (e.g. 120 seconds max per spawn)
+            if (!this.lastEliteHunterSpawnTime) {
+              this.lastEliteHunterSpawnTime = {};
+            }
+            const lastSpawn = this.lastEliteHunterSpawnTime[ent.id] || 0;
+            if (Date.now() - lastSpawn < 120000) continue; // 120 seconds cooldown
+
+            this.lastEliteHunterSpawnTime[ent.id] = Date.now();
+            this.spawnEliteHunter(ent, faction);
+            break; // Spawn one wing at a time
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Spawns a premium, highly aggressive elite faction hunter wing targeting the hostile player.
+   * @param {Object} playerShip - The hostile player's Ship instance.
+   * @param {string} faction - The faction scrambling the elite hunter wing.
+   */
+  spawnEliteHunter(playerShip, faction) {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 1100; // Spawn slightly out of view
+    const spawnPos = playerShip.position.add(
+      new Vector2D(Math.cos(angle) * dist, Math.sin(angle) * dist),
+    );
+
+    if (this.chronicle) {
+      this.chronicle.recordEvent({
+        sector: this.id,
+        category: "combat",
+        title: "Vengeance Wing Dispatched",
+        description: `An elite ${faction} Vengeance Wing has been scrambled to eliminate hostile player ${playerShip.name || "Unknown"}!`,
+        impactMetrics: { faction, target: playerShip.name, wingSize: 3 },
+      });
+    }
+
+    SandboxSecurityRegistry.logViolation("process", "vengeance_hunter_spawn", {
+      faction,
+      targetShip: playerShip.name || "Unknown",
+      targetPlayerId: playerShip.id,
+      sector: this.id,
+      leader: `${faction} Hunter Elite`,
+      wingSize: 3,
+    });
+
+    // 1. Wing Leader
+    const leaderShip = new Ship({
+      name: `${faction} Hunter Elite`,
+      position: spawnPos,
+      velocity: new Vector2D(0, 0),
+      maxShield: 1200,
+      maxArmor: 1000,
+      thrustPower: 32000,
+      turnRate: 3.2,
+      weaponDamage: 55,
+      weaponCooldown: 0.18,
+    });
+    leaderShip.role = "guard";
+    leaderShip.faction = faction;
+    leaderShip.outfits = [
+      "Hyperdrive Interdictor Matrix",
+      "Interdictor Matrix",
+    ];
+    leaderShip.isVengeanceHunter = true;
+    leaderShip.combatValue = 50000;
+    leaderShip.combatRating = 320; // Elite
+
+    const leaderController = new AIController(leaderShip, "guard", {
+      useUtilityAdvisor: true,
+      factionPolicy: this.factionRegistry.factionPolicy(),
+      standingPolicy: this.factionRegistry.standingPolicy(),
+      factionRegistry: this.factionRegistry,
+    });
+    leaderController.target = playerShip;
+
+    this.engine.addEntity(leaderShip);
+    this.ais.push(leaderController);
+
+    // 2. Wingmen
+    const offsets = [-0.25, 0.25];
+    for (let i = 0; i < offsets.length; i++) {
+      const wingmanAngle = angle + offsets[i];
+      const wingmanPos = playerShip.position.add(
+        new Vector2D(
+          Math.cos(wingmanAngle) * (dist + 50),
+          Math.sin(wingmanAngle) * (dist + 50),
+        ),
+      );
+
+      const wingmanShip = new Ship({
+        name: `${faction} Vengeance Wingman ${i === 0 ? "Alpha" : "Beta"}`,
+        position: wingmanPos,
+        velocity: new Vector2D(0, 0),
+        maxShield: 600,
+        maxArmor: 500,
+        thrustPower: 26000,
+        turnRate: 3.0,
+        weaponDamage: 35,
+        weaponCooldown: 0.25,
+      });
+      wingmanShip.role = "guard";
+      wingmanShip.faction = faction;
+      wingmanShip.outfits = ["Interdictor Matrix"];
+      wingmanShip.isVengeanceHunter = true;
+      wingmanShip.combatValue = 20000;
+      wingmanShip.combatRating = 200; // Dangerous
+
+      const wingmanController = new AIController(wingmanShip, "guard", {
+        useUtilityAdvisor: true,
+        factionPolicy: this.factionRegistry.factionPolicy(),
+        standingPolicy: this.factionRegistry.standingPolicy(),
+        factionRegistry: this.factionRegistry,
+      });
+      wingmanController.target = playerShip;
+
+      this.engine.addEntity(wingmanShip);
+      this.ais.push(wingmanController);
+    }
+
+    this.broadcast({
+      type: "notification",
+      message: `HIGH THREAT WARNING: ${faction} Vengeance Wing has entered the sector to eliminate you!`,
+      style: "error",
+    });
+  }
+
+  /**
+   * Scrambles ambush pirate raiders to target the Diplomatic Transport or the player
+   * during an active Escort Ambassador mission.
+   * @param {number} dt - Time delta in seconds.
+   */
+  checkEscortAmbushSpawns(dt) {
+    if (!this.escortAmbushTimer) this.escortAmbushTimer = 0;
+    this.escortAmbushTimer += dt;
+    if (this.escortAmbushTimer < 15) return; // check every 15 seconds
+    this.escortAmbushTimer = 0;
+
+    // Check if the Diplomatic Transport is active in this sector
+    const transport = this.engine.entities.find(
+      (ent) =>
+        ent.type === "ship" &&
+        ent.name === "Diplomatic Transport" &&
+        !ent.isDestroyed,
+    );
+    if (!transport) return;
+
+    // Check if we already have too many ambushers in space to avoid entity overcrowding
+    let activeAmbushers = 0;
+    for (const ent of this.engine.entities) {
+      if (
+        ent.type === "ship" &&
+        ent.name &&
+        ent.name.includes("Ambush Raider") &&
+        !ent.isDestroyed
+      ) {
+        activeAmbushers++;
+      }
+    }
+    if (activeAmbushers >= 2) return;
+
+    // 50% chance to spawn an ambush raider near the transport
+    if (Math.random() < 0.5) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 800; // spawn slightly off screen
+      const spawnPos = transport.position.add(
+        new Vector2D(Math.cos(angle) * dist, Math.sin(angle) * dist),
+      );
+
+      const raider = new Ship({
+        name: "Ambush Raider",
+        position: spawnPos,
+        velocity: new Vector2D(0, 0),
+        maxShield: 250,
+        maxArmor: 150,
+        thrustPower: 16000,
+        turnRate: 3.0,
+        weaponDamage: 25,
+        weaponCooldown: 0.25,
+      });
+      raider.role = "pirate";
+      raider.faction = "Pirates";
+
+      const controller = new AIController(raider, "pirate", {
+        useUtilityAdvisor: true,
+        factionPolicy: this.factionRegistry.factionPolicy(),
+        standingPolicy: this.factionRegistry.standingPolicy(),
+        factionRegistry: this.factionRegistry,
+      });
+      controller.target = transport; // Target the fragile transport!
+
+      this.engine.addEntity(raider);
+      this.ais.push(controller);
+
+      this.broadcast({
+        type: "notification",
+        message:
+          "AMBUSH INCOMING: Pirate Ambush Raider has locked on the Diplomatic Transport!",
+        style: "error",
+      });
+    }
   }
 
   /**
@@ -1399,6 +1859,16 @@ export class GameInstance {
     this.conflictFactionA = factionA;
     this.conflictFactionB = factionB;
 
+    if (this.chronicle) {
+      this.chronicle.recordEvent({
+        sector: this.id,
+        category: "combat",
+        title: "Faction Conflict Triggered",
+        description: `War fleets from ${factionA} and ${factionB} have clashed in sector ${this.name || this.id}! Sector is now an active combat zone.`,
+        impactMetrics: { factionA, factionB },
+      });
+    }
+
     // Spawn Faction A combatants
     for (let i = 0; i < 3; i++) {
       const aShip = new Ship({
@@ -1417,6 +1887,7 @@ export class GameInstance {
         useUtilityAdvisor: true,
         factionPolicy: this.factionRegistry.factionPolicy(),
         standingPolicy: this.factionRegistry.standingPolicy(),
+        factionRegistry: this.factionRegistry,
       });
       controller.isConflictZone = true;
       controller.conflictFactionA = factionA;
@@ -1443,6 +1914,7 @@ export class GameInstance {
         useUtilityAdvisor: true,
         factionPolicy: this.factionRegistry.factionPolicy(),
         standingPolicy: this.factionRegistry.standingPolicy(),
+        factionRegistry: this.factionRegistry,
       });
       controller.isConflictZone = true;
       controller.conflictFactionA = factionA;

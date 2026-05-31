@@ -1,6 +1,6 @@
 # TICKET015 — Self-heal non-finite market values & guard heartbeat diffusion
 
-- **Status:** OPEN
+- **Status:** DONE (retroactive close; NaN self-healing and diffusion guards were implemented in specs 006 and subsequent hardening — see EconomyManager.js L156-163 and GalaxyHeartbeat.js L93-122)
 - **Priority:** P1 (high)
 
 ## Goal

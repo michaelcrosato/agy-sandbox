@@ -30,8 +30,10 @@ export class AIController {
     {
       factionPolicy = null,
       standingPolicy = null,
+      factionRegistry = null,
       useUtilityAdvisor = false,
       perceptionOptions = null,
+      isSmuggler = false,
     } = {},
   ) {
     this.ship = ship;
@@ -40,8 +42,11 @@ export class AIController {
     // Per-player standing view (spec 016) — lets a guard target a player whose
     // standing with the guard's faction is hostile. Null ⇒ legacy targeting.
     this.standingPolicy = standingPolicy;
-    this.useUtilityAdvisor = useUtilityAdvisor;
+    this.factionRegistry = factionRegistry;
+    this.useUtilityAdvisor = useUtilityAdvisor || isSmuggler;
     this.perceptionOptions = perceptionOptions;
+    this.isSmuggler = isSmuggler;
+    this.ship.isSmuggler = isSmuggler;
 
     // Advisory goal selected on the last update (null until first tick / when
     // the advisor is disabled). Exposed for observability and tests.
@@ -58,6 +63,8 @@ export class AIController {
     // Escort AI parameters
     this.flagship = null;
     this.escortMode = "follow"; // "follow" (defend), "hold" (stay), "attack" (target lock)
+    /** @type {string} */
+    this.formation = "orbit"; // "orbit" (defensive orbit), "delta" (Delta wing)
 
     // Faction conflict zone states
     this.isConflictZone = false;
@@ -71,6 +78,12 @@ export class AIController {
     this.consumerPlanetName = null;
     this.targetPlanetName = null;
     this.route = [];
+
+    // Refuel tanker AI states (distress beacon, spec 084)
+    /** @type {boolean} */
+    this.isRefuelTanker = false;
+    /** @type {string|null} */
+    this.refuelTargetId = null;
   }
 
   /**
@@ -80,6 +93,13 @@ export class AIController {
    */
   update(dt, entities) {
     if (this.ship.isDestroyed || this.ship.isDisabled) return;
+
+    // Update coordinated shielding need (SPEC-156)
+    if (this.ship.isVengeanceHunter) {
+      const shieldRatio =
+        this.ship.maxShield > 0 ? this.ship.shield / this.ship.maxShield : 1;
+      this.ship.needsShieldCoordination = shieldRatio <= 0.4;
+    }
 
     this.ship.clearControls();
 
@@ -111,21 +131,44 @@ export class AIController {
       const perception = buildPerception(this.ship, entities, {
         factionPolicy: this.factionPolicy,
         standingPolicy: this.standingPolicy,
+        factionRegistry: this.factionRegistry,
         isConflictZone: this.isConflictZone,
         conflictFactionA: this.conflictFactionA,
         conflictFactionB: this.conflictFactionB,
         ...this.perceptionOptions,
       });
       this.currentGoal = selectGoal(perception).goal;
+      if (this.currentGoal === Goals.ESCAPE_SECURITY) {
+        this.executeEscapeSecurity(entities);
+        return;
+      } else {
+        this.ship.isChaffActive = false;
+        this.ship.decoyJammerActive = false;
+      }
+
       if (this.currentGoal === Goals.FLEE) {
+        // Vengeance Hunters are highly disciplined and aggressive, so they only flee under extreme emergency (SPEC-156)
+        const isVengeance =
+          this.ship.isVengeanceHunter ||
+          (this.ship.name &&
+            (this.ship.name.includes("Vengeance") ||
+              this.ship.name.includes("Hunter")));
+        if (isVengeance && this.ship.armor / this.ship.maxArmor > 0.15) {
+          this.executeEngage(entities, dt);
+          return;
+        }
         this.executeFlee(entities);
         return;
       } else if (this.currentGoal === Goals.REGROUP) {
         this.executeRegroup(entities);
         return;
       } else if (this.currentGoal === Goals.TRADE) {
-        this.executeTrade(entities);
-        return;
+        if (this.role === "caravan" || this.isSmuggler) {
+          // Fall through to executeCaravanAI
+        } else {
+          this.executeTrade(entities);
+          return;
+        }
       } else if (this.currentGoal === Goals.ENGAGE) {
         this.executeEngage(entities, dt);
         return;
@@ -136,10 +179,10 @@ export class AIController {
     if (this.role === "pirate") {
       this.executePirateAI(dt);
     } else if (this.role === "guard") {
-      this.executeGuardAI(dt);
+      this.executeGuardAI(dt, entities);
     } else if (this.role === "escort") {
       this.executeEscortAI(dt, entities);
-    } else if (this.role === "caravan") {
+    } else if (this.role === "caravan" || this.isSmuggler) {
       this.executeCaravanAI(dt, entities);
     } else {
       this.executeMerchantAI(dt);
@@ -221,13 +264,33 @@ export class AIController {
   }
 
   scanSensors(entities) {
-    const sensorRange = 500;
+    const isVengeance =
+      this.ship.isVengeanceHunter ||
+      (this.ship.name &&
+        (this.ship.name.includes("Vengeance") ||
+          this.ship.name.includes("Hunter Elite")));
+    const sensorRange = isVengeance ? 1200 : 500;
+
+    // Direct hunter wings to actively lock onto hostile players and maintain lock-on (SPEC-156)
+    if (isVengeance && this.target && !this.target.isDestroyed) {
+      const d = this.ship.position.distance(this.target.position);
+      if (d < sensorRange) {
+        // Keep target locked!
+        return;
+      }
+    }
+
     let closestTarget = null;
     let closestDist = sensorRange;
     let bestScore = -1;
 
     for (const ent of entities) {
-      if (ent.id === this.ship.id || ent.isDestroyed || ent.type !== "ship") {
+      if (
+        !ent ||
+        ent.id === this.ship.id ||
+        ent.isDestroyed ||
+        ent.type !== "ship"
+      ) {
         continue;
       }
 
@@ -304,7 +367,97 @@ export class AIController {
    * Defense AI guarding local planets and engaging pirates.
    * @param {number} dt - Time step.
    */
-  executeGuardAI(dt) {
+  executeGuardAI(dt, entities = []) {
+    // 1. Vengeance Hunter special behaviors (SPEC-156)
+    const isVengeance =
+      this.ship.isVengeanceHunter ||
+      (this.ship.name &&
+        (this.ship.name.includes("Vengeance") ||
+          this.ship.name.includes("Hunter Elite")));
+    if (isVengeance && this.target && !this.target.isDestroyed) {
+      // Manage interdiction sweep state based on proximity
+      const distToTarget = this.ship.position.distance(this.target.position);
+      if (distToTarget <= 400) {
+        this.ship.isInterdicting = true;
+      } else {
+        this.ship.isInterdicting = false;
+      }
+
+      // Check if we are healthy and can coordinate shielding for a damaged wingman
+      const myShieldRatio =
+        this.ship.maxShield > 0 ? this.ship.shield / this.ship.maxShield : 1;
+      const isHealthy = myShieldRatio > 0.4;
+
+      if (isHealthy) {
+        // Search for a damaged ally who needs shield coordination
+        let damagedAlly = null;
+        let closestAllyDist = 600;
+
+        for (const ent of entities) {
+          if (
+            ent &&
+            ent.type === "ship" &&
+            ent !== this.ship &&
+            ent.isVengeanceHunter &&
+            ent.faction === this.ship.faction &&
+            ent.needsShieldCoordination &&
+            !ent.isDestroyed
+          ) {
+            const d = this.ship.position.distance(ent.position);
+            if (d < closestAllyDist) {
+              closestAllyDist = d;
+              damagedAlly = ent;
+            }
+          }
+        }
+
+        if (damagedAlly) {
+          // Coordinated Shielding: Intercept the line between the damaged ally and the threat (target)
+          const toThreat = this.target.position
+            .subtract(damagedAlly.position)
+            .normalize();
+          const defensivePos = damagedAlly.position.add(toThreat.multiply(90));
+
+          this.steerTowards(defensivePos);
+          this.ship.controls.isThrusting =
+            this.ship.position.distance(defensivePos) > 30;
+
+          // Turn to face the threat and attack while holding the line
+          const angleToTarget = Math.atan2(
+            this.target.position.y - this.ship.position.y,
+            this.target.position.x - this.ship.position.x,
+          );
+          const headingDiff = Math.abs(
+            this.normalizeAngle(angleToTarget - this.ship.heading),
+          );
+          if (headingDiff < 0.3) {
+            this.ship.controls.isFiring = true;
+          }
+          return; // Done coordinating shielding!
+        }
+      }
+
+      // Default Vengeance Attack Run (aggressive chase)
+      this.steerTowards(this.target.position);
+      if (distToTarget < 350) {
+        this.ship.controls.isThrusting = distToTarget > 100;
+        const angleToTarget = Math.atan2(
+          this.target.position.y - this.ship.position.y,
+          this.target.position.x - this.ship.position.x,
+        );
+        const headingDiff = Math.abs(
+          this.normalizeAngle(angleToTarget - this.ship.heading),
+        );
+        if (headingDiff < 0.3) {
+          this.ship.controls.isFiring = true;
+        }
+      } else {
+        this.ship.controls.isThrusting = true;
+      }
+      return;
+    }
+
+    // 2. Default Guard AI
     if (this.target) {
       this.steerTowards(this.target.position);
       const dist = this.ship.position.distance(this.target.position);
@@ -440,6 +593,46 @@ export class AIController {
   }
 
   /**
+   * Smuggler escape security FSM state. Maximizes thrusters towards nearest stargate,
+   * deactivating weapons and deploying decoy jammers/chaff.
+   * @param {Array<any>} entities - All sector entities.
+   */
+  executeEscapeSecurity(entities) {
+    this.ship.controls.isFiring = false;
+    this.ship.isChaffActive = true;
+    this.ship.decoyJammerActive = true;
+
+    let nearestGate = null;
+    let bestDist = Infinity;
+    for (const ent of entities) {
+      if (ent && ent.type === "warp_gate") {
+        const dist = this.ship.position.distance(ent.position);
+        if (dist < bestDist) {
+          bestDist = dist;
+          nearestGate = ent;
+        }
+      }
+    }
+
+    if (nearestGate) {
+      this.destination = nearestGate.position;
+      this.steerTowards(this.destination);
+      this.ship.controls.isThrusting = true;
+
+      if (bestDist < 150) {
+        // Warp jump out of the sector
+        this.ship.position = nearestGate.targetPosition.clone();
+        this.ship.velocity = new Vector2D(0, 0);
+        this.destination = null;
+        this.ship.isChaffActive = false;
+        this.ship.decoyJammerActive = false;
+      }
+    } else {
+      this.executeFlee(entities);
+    }
+  }
+
+  /**
    * Defensive Escort autopilot executing defend formation or target interception commands.
    * @param {number} dt - Frame time step.
    * @param {Array<Object>} entities - All entities.
@@ -455,6 +648,36 @@ export class AIController {
       const speed = this.ship.velocity.magnitude();
       if (speed > 5) {
         this.ship.controls.isBraking = true;
+      }
+      return;
+    }
+
+    // Focus Intercept Command - break off and intercept flagship's locked target
+    if (this.escortMode === "intercept") {
+      let currentTarget = this.flagship.target;
+
+      if (currentTarget && !currentTarget.isDestroyed) {
+        this.target = currentTarget;
+        this.ship.target = currentTarget;
+        this.steerTowards(currentTarget.position);
+        const dist = this.ship.position.distance(currentTarget.position);
+        if (dist < 500) {
+          this.ship.controls.isThrusting = dist > 120;
+          const angle = Math.atan2(
+            currentTarget.position.y - this.ship.position.y,
+            currentTarget.position.x - this.ship.position.x,
+          );
+          const headingDiff = Math.abs(
+            this.normalizeAngle(angle - this.ship.heading),
+          );
+          if (headingDiff < 0.25) {
+            this.ship.controls.isFiring = true;
+          }
+        } else {
+          this.ship.controls.isThrusting = true;
+        }
+      } else {
+        this.escortMode = "follow";
       }
       return;
     }
@@ -546,15 +769,70 @@ export class AIController {
         this.ship.controls.isThrusting = true;
       }
     } else {
-      // Formation cruising behind flagship
-      const distToFlag = this.ship.position.distance(this.flagship.position);
-      if (distToFlag > 160) {
-        this.steerTowards(this.flagship.position);
-        this.ship.controls.isThrusting = true;
-      } else if (distToFlag < 70) {
-        this.ship.controls.isBraking = true;
+      // Ensure local flagship properties are tagged on the ship so other players/clients see them
+      if (this.flagship) {
+        this.ship["flagshipId"] = this.flagship.id;
+        this.ship.role = "escort";
+      }
+
+      // Filter and sort active sister escorts for the same flagship
+      const sisterEscorts = entities.filter(
+        (e) =>
+          e.type === "ship" &&
+          !e.isDestroyed &&
+          e["flagshipId"] === this.flagship.id,
+      );
+      sisterEscorts.sort((a, b) => (a.id < b.id ? -1 : 1));
+      const escortIndex = Math.max(0, sisterEscorts.indexOf(this.ship));
+      const totalEscorts = Math.max(1, sisterEscorts.length);
+
+      let targetPos;
+      const formation = String(this.formation || "orbit");
+
+      if (formation === "delta") {
+        // Delta Wing (V-formation behind flagship)
+        const distanceBehind = 120 + 60 * Math.floor(escortIndex / 2);
+        const sideOffset = 60 * (Math.floor(escortIndex / 2) + 1);
+        const angle = this.flagship.heading;
+        const forwardX = Math.cos(angle);
+        const forwardY = Math.sin(angle);
+        const leftX = -Math.sin(angle);
+        const leftY = Math.cos(angle);
+
+        const isEven = escortIndex % 2 === 0;
+        const sideSign = isEven ? 1 : -1;
+
+        targetPos = new Vector2D(
+          this.flagship.position.x -
+            distanceBehind * forwardX +
+            sideOffset * leftX * sideSign,
+          this.flagship.position.y -
+            distanceBehind * forwardY +
+            sideOffset * leftY * sideSign,
+        );
       } else {
-        // Gently match flagship heading
+        // Defensive Orbit (rotating circle around flagship)
+        if (this.orbitAngle === undefined) {
+          this.orbitAngle = 0;
+        }
+        this.orbitAngle = (this.orbitAngle + 0.8 * dt) % (2 * Math.PI);
+        const angle =
+          this.orbitAngle + (2 * Math.PI * escortIndex) / totalEscorts;
+        const radius = 150;
+
+        targetPos = new Vector2D(
+          this.flagship.position.x + radius * Math.cos(angle),
+          this.flagship.position.y + radius * Math.sin(angle),
+        );
+      }
+
+      // Cruising to target formation position
+      const distToTarget = this.ship.position.distance(targetPos);
+      if (distToTarget > 15) {
+        this.steerTowards(targetPos);
+        this.ship.controls.isThrusting = true;
+      } else {
+        // Match flagship heading and speed when close to slot
         const angleDiff = this.normalizeAngle(
           this.flagship.heading - this.ship.heading,
         );
@@ -562,11 +840,12 @@ export class AIController {
           if (angleDiff > 0) this.ship.controls.isTurningRight = true;
           else this.ship.controls.isTurningLeft = true;
         }
-        // Match speed relative to target flagship
-        if (
-          this.ship.velocity.magnitude() < this.flagship.velocity.magnitude()
-        ) {
+        const flagshipSpeed = this.flagship.velocity.magnitude();
+        const mySpeed = this.ship.velocity.magnitude();
+        if (mySpeed < flagshipSpeed - 5) {
           this.ship.controls.isThrusting = true;
+        } else if (mySpeed > flagshipSpeed + 5) {
+          this.ship.controls.isBraking = true;
         }
       }
     }
@@ -747,19 +1026,33 @@ export class AIController {
    */
   executeCaravanAI(dt, entities) {
     if (!this.producerPlanetName || !this.consumerPlanetName) {
-      const planets = entities.filter((e) => e.type === "planet");
-      if (planets.length >= 2) {
-        const prod =
-          planets.find((p) => p.name === "New Polaris") || planets[0];
-        const cons =
-          planets.find((p) => p.name === "Sigma Draconis") || planets[1];
-        this.producerPlanetName = prod.name;
-        this.consumerPlanetName = cons.name;
+      if (this.isSmuggler) {
+        this.producerPlanetName = "Rogue's Hollow";
+        const planets = entities.filter(
+          (e) => e.type === "planet" && e.name !== "Rogue's Hollow",
+        );
+        if (planets.length > 0) {
+          this.consumerPlanetName = planets[0].name;
+        } else {
+          this.consumerPlanetName = "Sol Prime";
+        }
         this.targetPlanetName = this.producerPlanetName;
         this.caravanState = "loading";
       } else {
-        this.executeWander(dt);
-        return;
+        const planets = entities.filter((e) => e.type === "planet");
+        if (planets.length >= 2) {
+          const prod =
+            planets.find((p) => p.name === "New Polaris") || planets[0];
+          const cons =
+            planets.find((p) => p.name === "Sigma Draconis") || planets[1];
+          this.producerPlanetName = prod.name;
+          this.consumerPlanetName = cons.name;
+          this.targetPlanetName = this.producerPlanetName;
+          this.caravanState = "loading";
+        } else {
+          this.executeWander(dt);
+          return;
+        }
       }
     }
 
@@ -773,12 +1066,27 @@ export class AIController {
         const speed = this.ship.velocity.magnitude();
 
         if (dist < 80 && speed < 5) {
-          // Perform transaction: buy/load ore
-          if (planet.market && planet.market.ore !== undefined) {
-            const available = planet.market.ore;
-            const toBuy = Math.min(20, available);
-            planet.market.ore = Math.max(0, planet.market.ore - toBuy);
-            this.caravanCargo = { item: "ore", amount: toBuy };
+          if (this.isSmuggler) {
+            const available = planet.market ? planet.market.contraband || 0 : 0;
+            const toBuy = Math.min(10, available || 20);
+            if (planet.market && planet.market.contraband !== undefined) {
+              planet.market.contraband = Math.max(
+                0,
+                planet.market.contraband - toBuy,
+              );
+            }
+            this.caravanCargo = { item: "contraband", amount: toBuy };
+            this.ship.cargo = this.ship.cargo || {};
+            this.ship.cargo.contraband =
+              (this.ship.cargo.contraband || 0) + toBuy;
+          } else {
+            // Perform transaction: buy/load ore
+            if (planet.market && planet.market.ore !== undefined) {
+              const available = planet.market.ore;
+              const toBuy = Math.min(20, available);
+              planet.market.ore = Math.max(0, planet.market.ore - toBuy);
+              this.caravanCargo = { item: "ore", amount: toBuy };
+            }
           }
 
           // Set target to consumer planet and compute route
@@ -799,10 +1107,23 @@ export class AIController {
         const speed = this.ship.velocity.magnitude();
 
         if (dist < 80 && speed < 5) {
-          // Perform transaction: sell/unload ore
-          if (planet.market) {
+          if (this.isSmuggler) {
             const toSell = this.caravanCargo ? this.caravanCargo.amount : 0;
-            planet.market.ore = (planet.market.ore || 0) + toSell;
+            if (planet.market) {
+              planet.market.contraband =
+                (planet.market.contraband || 0) + toSell;
+            }
+            this.ship.cargo = this.ship.cargo || {};
+            this.ship.cargo.contraband = Math.max(
+              0,
+              (this.ship.cargo.contraband || 0) - toSell,
+            );
+          } else {
+            // Perform transaction: sell/unload ore
+            if (planet.market) {
+              const toSell = this.caravanCargo ? this.caravanCargo.amount : 0;
+              planet.market.ore = (planet.market.ore || 0) + toSell;
+            }
           }
           this.caravanCargo = null;
 

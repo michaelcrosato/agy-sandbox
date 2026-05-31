@@ -6,6 +6,10 @@
  * messaging (for production multi-worker clusters).
  */
 
+/**
+ * Abstract base class defining the contract for process-agnostic publish-subscribe transports.
+ * Supports both local InMemoryPubSub and distributed RedisPubSub implementations.
+ */
 export class PubSub {
   /**
    * Publishes a message to a channel.

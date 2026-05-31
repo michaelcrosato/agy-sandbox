@@ -197,6 +197,8 @@ export class CanvasRenderer {
         this.drawCargoPod(ent);
       } else if (ent.type === "warp_gate") {
         this.drawWarpGate(ent);
+      } else if (ent.type === "cosmic_storm") {
+        this.drawCosmicStorm(ent, dt);
       } else {
         this.drawAsteroid(ent);
       }
@@ -239,6 +241,11 @@ export class CanvasRenderer {
           targetEntity.position.y,
         );
       }
+    }
+
+    // Draw holographic wingman guiding overlays
+    if (playerShip) {
+      this.drawWingmanGuides(playerShip, entities);
     }
 
     // Draw target marker
@@ -937,6 +944,12 @@ export class CanvasRenderer {
     } else if (ship.name.includes("Guard")) {
       strokeColor = "#30d158"; // Emerald defense
       fillColor = "#08220f";
+    } else if (
+      ship.isSmuggler ||
+      (ship.name && ship.name.includes("Smuggler"))
+    ) {
+      strokeColor = "#ff9500"; // Sleek Orange smuggler
+      fillColor = "#221208"; // Deep warm outlaw theme
     } else if (ship.name && ship.name.includes("Caravan")) {
       strokeColor = "#ffb300"; // Rich Gold caravan
       fillColor = "#221908"; // Deep Gold theme
@@ -979,6 +992,28 @@ export class CanvasRenderer {
       this.ctx.beginPath();
       this.ctx.arc(0, 0, ship.radius * 1.5, 0, Math.PI * 2);
       this.ctx.stroke();
+    }
+
+    // Decoy Jammer / Chaff effect (Spec 086)
+    if ((ship.isChaffActive || ship.decoyJammerActive) && !ship.isDestroyed) {
+      this.ctx.save();
+      this.ctx.shadowBlur = 15;
+      this.ctx.shadowColor = "#ff9500";
+      this.ctx.fillStyle = "rgba(255, 149, 0, 0.45)";
+
+      const timeSec = Date.now() / 1000;
+      for (let i = 0; i < 5; i++) {
+        const offsetAngle = Math.PI + Math.sin(timeSec * (i + 1)) * 0.5;
+        const dist = ship.radius * (1.2 + Math.cos(timeSec + i) * 0.8);
+        const cx = Math.cos(offsetAngle) * dist;
+        const cy = Math.sin(offsetAngle) * dist;
+        const r = 3 + Math.abs(Math.sin(timeSec * 5 + i)) * 4;
+
+        this.ctx.beginPath();
+        this.ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        this.ctx.fill();
+      }
+      this.ctx.restore();
     }
 
     // Render interdictor pulsing gravitational distortion field
@@ -1708,6 +1743,141 @@ export class CanvasRenderer {
       );
     }
 
+    // Neon-purple pulsing dashed holographic brackets (Spec 088)
+    if (
+      this.navigationTarget &&
+      (this.navigationTarget.id === gate.id ||
+        (this.navigationTarget.position &&
+          this.navigationTarget.position.x === gate.position.x &&
+          this.navigationTarget.position.y === gate.position.y))
+    ) {
+      this.ctx.save();
+      const timeMs = Date.now();
+      const pulse = Math.sin(timeMs * 0.005) * 0.2 + 0.8;
+      this.ctx.strokeStyle = `rgba(224, 64, 251, ${pulse})`;
+      this.ctx.shadowBlur = 15;
+      this.ctx.shadowColor = "#e040fb";
+      this.ctx.lineWidth = 3;
+
+      const r = gate.radius * 1.5;
+      const bracketLen = 15;
+      const x = gate.position.x;
+      const y = gate.position.y;
+
+      // Top Left
+      this.ctx.beginPath();
+      this.ctx.moveTo(x - r, y - r + bracketLen);
+      this.ctx.lineTo(x - r, y - r);
+      this.ctx.lineTo(x - r + bracketLen, y - r);
+      this.ctx.stroke();
+
+      // Top Right
+      this.ctx.beginPath();
+      this.ctx.moveTo(x + r, y - r + bracketLen);
+      this.ctx.lineTo(x + r, y - r);
+      this.ctx.lineTo(x + r - bracketLen, y - r);
+      this.ctx.stroke();
+
+      // Bottom Left
+      this.ctx.beginPath();
+      this.ctx.moveTo(x - r, y + r - bracketLen);
+      this.ctx.lineTo(x - r, y + r);
+      this.ctx.lineTo(x - r + bracketLen, y + r);
+      this.ctx.stroke();
+
+      // Bottom Right
+      this.ctx.beginPath();
+      this.ctx.moveTo(x + r, y + r - bracketLen);
+      this.ctx.lineTo(x + r, y + r);
+      this.ctx.lineTo(x + r - bracketLen, y + r);
+      this.ctx.stroke();
+
+      // Pulsing dotted guide circle
+      this.ctx.setLineDash([4, 6]);
+      this.ctx.beginPath();
+      this.ctx.arc(x, y, r * 1.25, 0, Math.PI * 2);
+      this.ctx.stroke();
+      this.ctx.restore();
+    }
+
+    this.ctx.restore();
+  }
+
+  /**
+   * Draws a wandering server-authoritative cosmic storm cloud.
+   * @param {Object} storm - Cosmic storm entity.
+   * @param {number} _dt - Frame time delta.
+   */
+  drawCosmicStorm(storm, _dt) {
+    this.ctx.save();
+
+    // Draw a radial gradient background for the storm cloud
+    const grad = this.ctx.createRadialGradient(
+      storm.position.x,
+      storm.position.y,
+      0,
+      storm.position.x,
+      storm.position.y,
+      storm.radius,
+    );
+
+    // Use orange/yellow colors for EMP storm, green/blue for radioactive cloud
+    const baseColor =
+      storm.color ||
+      (storm.hazardType === "emp_storm"
+        ? "rgba(255, 140, 0, 0.12)"
+        : "rgba(57, 255, 20, 0.12)");
+    const particleColor =
+      storm.particleColor ||
+      (storm.hazardType === "emp_storm"
+        ? "rgba(255, 140, 0, 0.35)"
+        : "rgba(57, 255, 20, 0.35)");
+
+    grad.addColorStop(0, baseColor);
+    grad.addColorStop(0.5, baseColor.replace(/[\d.]+\)$/, "0.08)"));
+    grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+    this.ctx.fillStyle = grad;
+    this.ctx.beginPath();
+    this.ctx.arc(
+      storm.position.x,
+      storm.position.y,
+      storm.radius,
+      0,
+      Math.PI * 2,
+    );
+    this.ctx.fill();
+
+    // Draw an outer pulsing dashed border ring
+    this.ctx.strokeStyle = particleColor;
+    this.ctx.lineWidth = 1.5;
+    this.ctx.setLineDash([8, 12]);
+    this.ctx.beginPath();
+    this.ctx.arc(
+      storm.position.x,
+      storm.position.y,
+      storm.radius,
+      0,
+      Math.PI * 2,
+    );
+    this.ctx.stroke();
+
+    // Draw the storm type label at its center
+    this.ctx.font = "bold 11px 'Orbitron', 'Inter', sans-serif";
+    this.ctx.fillStyle = particleColor;
+    this.ctx.textAlign = "center";
+    this.ctx.textBaseline = "middle";
+    this.ctx.fillText(
+      (
+        storm.name ||
+        (storm.hazardType === "emp_storm"
+          ? "Solar EMP Storm"
+          : "Radioactive Fog")
+      ).toUpperCase(),
+      storm.position.x,
+      storm.position.y,
+    );
+
     this.ctx.restore();
   }
 
@@ -1860,5 +2030,74 @@ export class CanvasRenderer {
     this.ctx.font = "8px 'Inter', sans-serif";
     this.ctx.fillStyle = `rgba(0, 255, 136, ${pulse * 0.7})`;
     this.ctx.fillText(`${dist} u`, labelOffX, labelOffY + 6);
+  }
+
+  drawWingmanGuides(playerShip, entities) {
+    if (!playerShip) return;
+
+    // Find all active, non-destroyed wingmen belonging to our player's flagship
+    const escorts = entities.filter(
+      (e) =>
+        e.type === "ship" &&
+        !e.isDestroyed &&
+        (e["flagshipId"] === playerShip.id ||
+          (e.role === "escort" && e["flagshipId"] === playerShip.id)),
+    );
+
+    if (escorts.length === 0) return;
+
+    this.ctx.save();
+
+    for (const escort of escorts) {
+      // 1. Draw dotted vector projection line linking player to wingman
+      this.ctx.strokeStyle = "rgba(0, 240, 255, 0.4)"; // soft holographic cyan
+      this.ctx.lineWidth = 1;
+      this.ctx.setLineDash([4, 4]); // neat dotted style
+      this.ctx.beginPath();
+      this.ctx.moveTo(playerShip.position.x, playerShip.position.y);
+      this.ctx.lineTo(escort.position.x, escort.position.y);
+      this.ctx.stroke();
+
+      // 2. Draw subtle holographic bounding brackets around the wingman ship
+      const size = escort.radius || 20;
+      const x = escort.position.x;
+      const y = escort.position.y;
+      const bracketSize = size + 6;
+      const armLength = 8;
+
+      this.ctx.strokeStyle = "rgba(0, 240, 255, 0.65)";
+      this.ctx.lineWidth = 1.5;
+      this.ctx.setLineDash([]); // solid line for brackets
+
+      // Top-Left corner bracket
+      this.ctx.beginPath();
+      this.ctx.moveTo(x - bracketSize + armLength, y - bracketSize);
+      this.ctx.lineTo(x - bracketSize, y - bracketSize);
+      this.ctx.lineTo(x - bracketSize, y - bracketSize + armLength);
+      this.ctx.stroke();
+
+      // Top-Right corner bracket
+      this.ctx.beginPath();
+      this.ctx.moveTo(x + bracketSize - armLength, y - bracketSize);
+      this.ctx.lineTo(x + bracketSize, y - bracketSize);
+      this.ctx.lineTo(x + bracketSize, y - bracketSize + armLength);
+      this.ctx.stroke();
+
+      // Bottom-Left corner bracket
+      this.ctx.beginPath();
+      this.ctx.moveTo(x - bracketSize + armLength, y + bracketSize);
+      this.ctx.lineTo(x - bracketSize, y + bracketSize);
+      this.ctx.lineTo(x - bracketSize, y + bracketSize - armLength);
+      this.ctx.stroke();
+
+      // Bottom-Right corner bracket
+      this.ctx.beginPath();
+      this.ctx.moveTo(x + bracketSize - armLength, y + bracketSize);
+      this.ctx.lineTo(x + bracketSize, y + bracketSize);
+      this.ctx.lineTo(x + bracketSize, y + bracketSize - armLength);
+      this.ctx.stroke();
+    }
+
+    this.ctx.restore();
   }
 }

@@ -5,6 +5,55 @@
  */
 
 import { Worker } from "worker_threads";
+import childProcess from "child_process";
+
+const originalExecSync = childProcess.execSync;
+
+/**
+ * Recursively terminates child processes on Unix platforms.
+ * @param {number} pid
+ */
+function killUnixProcessTree(pid) {
+  try {
+    const stdout = originalExecSync(`pgrep -P ${pid}`, {
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "ignore"],
+    });
+    const pids = stdout
+      .split("\n")
+      .map((p) => p.trim())
+      .filter((p) => p && /^\d+$/.test(p));
+    for (const childPid of pids) {
+      killUnixProcessTree(parseInt(childPid, 10));
+    }
+  } catch {
+    // pgrep throws if no children are found
+  }
+
+  try {
+    process.kill(pid, "SIGKILL");
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * Terminates the entire process tree recursively.
+ * @param {number} pid
+ */
+function killProcessTree(pid) {
+  if (!pid) return;
+  const isWin = process.platform === "win32";
+  if (isWin) {
+    try {
+      originalExecSync(`taskkill /F /T /PID ${pid}`, { stdio: "ignore" });
+    } catch {
+      // ignore
+    }
+  } else {
+    killUnixProcessTree(pid);
+  }
+}
 
 const activeWorkers = new Set();
 const activeProcesses = new Set();
@@ -65,7 +114,11 @@ export const ProcessReaper = {
     // Terminate child processes
     for (const proc of activeProcesses) {
       try {
-        if (!proc.killed) {
+        if (proc.pid) {
+          killProcessTree(proc.pid);
+          proc.killed = true;
+        }
+        if (!proc.killed && typeof proc.kill === "function") {
           proc.kill("SIGKILL");
         }
       } catch {

@@ -8,6 +8,7 @@ import childProcess from "child_process";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { ProcessReaper } from "./ProcessReaper.js";
 
 // Store original native child_process functions
 const originalSpawn = childProcess.spawn;
@@ -271,7 +272,8 @@ export const ProcessSentinel = {
           throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
         }
         stats.allowedCount++;
-        return originalSpawn.apply(this, arguments);
+        const proc = originalSpawn.apply(this, arguments);
+        return ProcessReaper.registerProcess(proc);
       }
     );
 
@@ -284,7 +286,8 @@ export const ProcessSentinel = {
           throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
         }
         stats.allowedCount++;
-        return originalSpawnSync.apply(this, arguments);
+        const proc = originalSpawnSync.apply(this, arguments);
+        return ProcessReaper.registerProcess(proc);
       }
     );
 
@@ -297,7 +300,8 @@ export const ProcessSentinel = {
           throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
         }
         stats.allowedCount++;
-        return originalFork.apply(this, arguments);
+        const proc = originalFork.apply(this, arguments);
+        return ProcessReaper.registerProcess(proc);
       }
     );
 
@@ -336,7 +340,8 @@ export const ProcessSentinel = {
         }
 
         stats.allowedCount++;
-        return originalExec.apply(this, arguments);
+        const proc = originalExec.apply(this, arguments);
+        return ProcessReaper.registerProcess(proc);
       }
     );
 
@@ -358,7 +363,8 @@ export const ProcessSentinel = {
         }
 
         stats.allowedCount++;
-        return originalExecSync.apply(this, arguments);
+        const proc = originalExecSync.apply(this, arguments);
+        return ProcessReaper.registerProcess(proc);
       }
     );
 
@@ -380,7 +386,8 @@ export const ProcessSentinel = {
           throw err;
         }
         stats.allowedCount++;
-        return originalExecFile.apply(this, arguments);
+        const proc = originalExecFile.apply(this, arguments);
+        return ProcessReaper.registerProcess(proc);
       }
     );
 
@@ -393,7 +400,8 @@ export const ProcessSentinel = {
           throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
         }
         stats.allowedCount++;
-        return originalExecFileSync.apply(this, arguments);
+        const proc = originalExecFileSync.apply(this, arguments);
+        return ProcessReaper.registerProcess(proc);
       }
     );
 

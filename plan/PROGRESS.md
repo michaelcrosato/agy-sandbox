@@ -28,11 +28,17 @@ _**v22 re-audit baseline (2026-05-31, ENTIRE v22 sandbox blueprint shipped): 979
 _**v23 re-audit baseline (2026-05-31, ENTIRE v23 blueprint shipped): 1,013 Jest tests / 91 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; Living Codex + Interactive Ontological Tree + Centralized Commodities Schema Registry + Emergent Faction Territory Control + Fittings Presets all DONE.**_
 _**v28 re-audit baseline (2026-05-31): 1,129 Jest tests / 102 suites + 57 client green + 3 Vitest browser tests green; 0 npm audit vulnerabilities; all previous specs completed with perfect Living Codex coverage.**_
 
-## v33 — Advanced Guest Isolation, Adaptive Controls & Ontological Visualization Wave (TO DO) — see [`ROADMAP.md`](ROADMAP.md)
+## v34 — Sandbox Safety, Centralized Auditing & Console Visualization Wave (TO DO) — see [`ROADMAP.md`](ROADMAP.md)
 
-- [ ] `127` Inbound Connection Flood Protection & Active IP Sentry (build connection floor sentinel capping concurrent sockets per remote IP address and intercepting raw HTTP upgrades)
-- [ ] `128` Configurable Event-Loop Adaptive Backpressure Sentinel (extend reloader and ResourceLimiter to support dynamically tunable adaptive latency thresholds without worker downtime)
-- [ ] `129` Living Codex Epistemic Debt Cockpit Telemetry Meter (enhance Codex Dashboard with premium golden-amber health panels and real-time SVG circular code documentation rings)
+- [x] `130` Autonomic Process-Tree Tracking & Orphan Reaper (intercept child process spawns globally and recursively kill nested process trees to prevent system leakage) — **done** (monkey-patched all successful Node child_process async/sync spawns globally in ProcessSentinel.js to auto-register to ProcessReaper, extended ProcessReaper.js with portable OS-specific recursive process tree teardowns using taskkill on Windows and recursive pgrep scanning on Unix, and authored robust Jest tests covering automatic registration and recursive grandchildren pid sweeping)
+- [ ] `131` Centralized Security Audit Registry & Observability Ledger (log filesystem path escapes and block triggers to an append-only JSON audit ledger, exposing telemetry under `/metrics`)
+- [ ] `132` Golden-Glassmorphic Codex "Containment Breaches Log" Console (visualize security blocks in real-time on a premium terminal screen on the cockpit dashboard)
+
+## v33 — Advanced Guest Isolation, Adaptive Controls & Ontological Visualization Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
+
+- [x] `127` Inbound Connection Flood Protection & Active IP Sentry (build connection floor sentinel capping concurrent sockets per remote IP address and intercepting raw HTTP upgrades) — **done** (implemented ConnectionFloodSentry.js tracking concurrent socket counts per IP with loopback bypass, integrated it into server.js under verifyWebSocketClient async callback to immediately drop flood upgrades with 429 status code, verified raw upgrade URL lengths > 2048 and Content-Length > 4096 headers with standard HTTP error drops, wired dynamic ceilings to hot config reload, and created extensive Jest unit and integration tests)
+- [x] `128` Configurable Event-Loop Adaptive Backpressure Sentinel (extend reloader and ResourceLimiter to support dynamically tunable adaptive latency thresholds without worker downtime) — **done** (extended ResourceLimiter.js and ConfigWatcher.js to support loading, validating, and propagating soft/hard latency and memory thresholds, integrated live backpressure updates into WebSocket message handler in server.js to dynamically pause/resume ingestion under loop stress, and covered reload updates in Jest tests)
+- [x] `129` Living Codex Epistemic Debt Cockpit Telemetry Meter (enhance Codex Dashboard with premium golden-amber health panels and real-time SVG circular code documentation rings) — **done** (enhanced dashboard-codex.html with an interactive, gold-glassmorphic "Epistemic Quality & Coverage Sentry" cockpit card, dynamically reading JSDoc completeness, missing JSDoc symbols count, spec requirement alignment, and untested core modules, rendering real-time SVG circular progress rings using CSS dash offsets, and adding assertions to codexDashboard.integration.test.js)
 
 ## v32 — Completed (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

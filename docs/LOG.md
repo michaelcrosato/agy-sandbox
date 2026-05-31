@@ -39,6 +39,18 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T22:30 · iter-0122 · GREEN · spec-130-autonomic-process-tree-reaper
+- **Baseline:** `5d9f075` on `feat/procedural-missions`; 1,186 Jest green.
+- **Move:** Implement SPEC-130 to automatically register spawned child processes in ProcessReaper and recursively kill nested process trees on Windows and Unix.
+- **Changed:**
+  - Modified `src/net/ProcessSentinel.js` to automatically intercept and register all successful child process instances from `spawn`, `spawnSync`, `fork`, `exec`, `execSync`, `execFile`, and `execFileSync` into `ProcessReaper`.
+  - Upgraded `src/net/ProcessReaper.js` to recursively sweeping child and grandchild process trees. Implemented platform-agnostic killing using `taskkill /F /T /PID` on Windows and recursive `pgrep -P` walking on POSIX, backed up by standard signal kills.
+  - Authored extensive unit and integration tests in `src/net/ProcessReaper.test.js` verifying both automatic monkey-patched process registration and full multi-generation nested process tree reaping.
+  - Marked SPEC-130 as completed in `plan/PROGRESS.md`.
+- **Decisions:** Made ProcessReaper capture and store original `child_process` methods at module load time before ProcessSentinel applies its patches. This guarantees ProcessReaper has secure, direct access to raw native commands like `taskkill` and `pgrep` without opening sandbox holes for untrusted guest scripts.
+- **Validation:** Executed `npm run agent:check` confirming 100% green gate across 1,186 Jest tests, Prettier, ESLint, and JSDoc typechecking.
+- **Next:** Proceed with SPEC-131 implementation for the Centralized Security Audit Registry & Observability Ledger.
+
 ## 2026-05-31T22:20 · iter-0121 · GREEN · cycle-33-replenish-spec-127-128-129
 - **Baseline:** `cec3c59` on `feat/procedural-missions`; 1,175 Jest green.
 - **Move:** Perform Cycle 32 Phase R (Replenish) to promote backlog ideas and establish Wave v33 blueprints.

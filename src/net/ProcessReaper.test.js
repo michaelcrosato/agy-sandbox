@@ -1,5 +1,9 @@
 import { ProcessReaper } from "./ProcessReaper.js";
 import { spawn } from "child_process";
+import fs from "fs";
+import path from "path";
+import { ProcessSentinel } from "./ProcessSentinel.js";
+import childProcess from "child_process";
 
 describe("ProcessReaper (SPEC-092)", () => {
   afterEach(async () => {
@@ -53,5 +57,100 @@ describe("ProcessReaper (SPEC-092)", () => {
     // Wait briefly for exit
     await new Promise((resolve) => setTimeout(resolve, 800));
     expect(ProcessReaper.getProcessCount()).toBe(0);
+  });
+
+  test("automatically registers spawned processes when ProcessSentinel is active", async () => {
+    expect(ProcessReaper.getProcessCount()).toBe(0);
+
+    ProcessSentinel.activate();
+    try {
+      const proc = childProcess.spawn("node", ["src/net/temp_port_worker.mjs"]);
+      expect(ProcessReaper.getProcessCount()).toBe(1);
+
+      await ProcessReaper.reap();
+      expect(ProcessReaper.getProcessCount()).toBe(0);
+    } finally {
+      ProcessSentinel.deactivate();
+    }
+  });
+
+  test("reaps a nested process tree (children and grandchildren) recursively", async () => {
+    // Write temporary scripts for nesting
+    const childScriptPath = path.resolve("temp_child.js");
+    const grandchildScriptPath = path.resolve("temp_grandchild.js");
+    const childPidPath = path.resolve("child.pid");
+    const grandchildPidPath = path.resolve("grandchild.pid");
+
+    fs.writeFileSync(
+      grandchildScriptPath,
+      `import fs from "fs";
+fs.writeFileSync("${grandchildPidPath.replace(/\\/g, "/")}", process.pid.toString());
+setInterval(() => {}, 1000);`,
+    );
+
+    fs.writeFileSync(
+      childScriptPath,
+      `import { spawn } from "child_process";
+import fs from "fs";
+fs.writeFileSync("${childPidPath.replace(/\\/g, "/")}", process.pid.toString());
+const proc = spawn("node", ["${grandchildScriptPath.replace(/\\/g, "/")}"]);
+setInterval(() => {}, 1000);`,
+    );
+
+    // Spawn child
+    const childProc = childProcess.spawn("node", [childScriptPath]);
+    ProcessReaper.registerProcess(childProc);
+
+    // Wait for pids to be written
+    let attempts = 0;
+    while (
+      (!fs.existsSync(childPidPath) || !fs.existsSync(grandchildPidPath)) &&
+      attempts < 50
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      attempts++;
+    }
+
+    expect(fs.existsSync(childPidPath)).toBe(true);
+    expect(fs.existsSync(grandchildPidPath)).toBe(true);
+
+    const childPid = parseInt(fs.readFileSync(childPidPath, "utf8"), 10);
+    const grandchildPid = parseInt(
+      fs.readFileSync(grandchildPidPath, "utf8"),
+      10,
+    );
+
+    // Verify they are running
+    expect(() => process.kill(childPid, 0)).not.toThrow();
+    expect(() => process.kill(grandchildPid, 0)).not.toThrow();
+
+    // Reap
+    await ProcessReaper.reap();
+
+    // Verify both are dead
+    expect(() => process.kill(childPid, 0)).toThrow();
+    expect(() => process.kill(grandchildPid, 0)).toThrow();
+
+    // Clean up files
+    try {
+      fs.unlinkSync(childScriptPath);
+    } catch {
+      // ignore
+    }
+    try {
+      fs.unlinkSync(grandchildScriptPath);
+    } catch {
+      // ignore
+    }
+    try {
+      fs.unlinkSync(childPidPath);
+    } catch {
+      // ignore
+    }
+    try {
+      fs.unlinkSync(grandchildPidPath);
+    } catch {
+      // ignore
+    }
   });
 });

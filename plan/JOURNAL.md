@@ -3,6 +3,12 @@
 This is the machine-readable execution ledger for the autonomous-engineering loop in `agy-sandbox`.
 It records cycle transitions, key milestones, and precise next steps.
 
+## Cycle 47 — 2026-05-31
+
+- **Status:** GREEN
+- **Summary:** Successfully shipped the entire Wave v47 specifications (Hyper-Secure Agent Sandbox and Teardown Hardening Wave) with a 100% green gate across 1,299 Jest tests, 63 Vitest browser/client tests, ESLint, and Prettier checks. Completed SPEC-169 (Prevent Sandbox Directory Traversal Escapes), hardening `ProcessSentinel.checkPath` and `validateCommand` path validation checks by suffixing container bounds with `path.sep` to block prefix-sharing sibling directory traversal escapes, verified by new unit tests. Completed SPEC-168 (Loader Native Modules Restriction), enhancing the ESM `GuestLoader.js` resolution hooks with `isBuiltin` checks to intercept and block dynamic/static imports of dangerous core Node libraries (like `node:child_process`, `node:vm`, `node:fs`, `node:dns`) while allowlisting only safe path/crypto/stream modules, logging violations directly to `SandboxSecurityRegistry` under category `"integrity"`. Completed SPEC-167 (C++ Native Binding Lockdown), overriding and sealing `process.dlopen`, `process.binding`, and `process._linkedBinding` on startup inside `IntegrityGuard.js` to block low-level breakouts, and verifying immutability by asserting that redefining non-configurable properties throws errors. Completed SPEC-170 (Autonomic Process Tree Teardown Registry), adding process-level signal listeners (`SIGINT`, `SIGTERM`, `exit`) directly inside `ProcessReaper.js` for synchronous/asynchronous recursive process-tree teardowns upon host exit/kill events, with self-cleaning handlers that prevent event-loop handle leaks in Jest.
+- **Next Action:** Initiate Cycle 48 Phase R (Replenish) to perform next-frontier audits, promote backlog items, and formulate new security & infrastructure roadmap blueprints.
+
 ## Cycle 46 — 2026-05-31
 
 - **Status:** GREEN

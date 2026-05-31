@@ -88,8 +88,10 @@ describe("ProcessReaper Container Teardown lifecycle", () => {
 
 describe("SandboxSecurityRegistry Log Compaction Sentry", () => {
   const customAuditFile = "plan/security_audit_teardown_test.json";
+  let originalAuditFile;
 
   beforeAll(() => {
+    originalAuditFile = process.env.SECURITY_AUDIT_FILE;
     process.env.SECURITY_AUDIT_FILE = customAuditFile;
   });
 
@@ -99,7 +101,11 @@ describe("SandboxSecurityRegistry Log Compaction Sentry", () => {
 
   afterAll(() => {
     SandboxSecurityRegistry.clearRegistry();
-    delete process.env.SECURITY_AUDIT_FILE;
+    if (originalAuditFile !== undefined) {
+      process.env.SECURITY_AUDIT_FILE = originalAuditFile;
+    } else {
+      delete process.env.SECURITY_AUDIT_FILE;
+    }
   });
 
   test("should limit audit file capacity strictly to 500 records to prevent OOM", () => {

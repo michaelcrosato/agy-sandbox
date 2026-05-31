@@ -37,6 +37,12 @@ _**v43 re-audit baseline (2026-05-31, ENTIRE v42 blueprint shipped): 1,247 Jest 
 _**v44 re-audit baseline (2026-05-31, ENTIRE v43 blueprint shipped): 1,270 Jest tests / 124 suites green; secure script jailing, ProcessReaper process-tree tracking, and log compaction all 100% DONE.**_
 _**v45 re-audit baseline (2026-05-31, ENTIRE v45 blueprint shipped): 1,292 Jest tests / 126 suites + 63 client tests green; modular REST API handlers, sharded Redis Pub/Sub, and Playwright visual automation E2E regression guard all 100% DONE.**_
 
+## v46 — Faction War Campaign, Interactive Stellar HUD, and Real-Time Strategic Maps (IN PROGRESS) — see [`ROADMAP.md`](ROADMAP.md)
+
+- [ ] `164` Faction War Strategy Engine & Real-Time Conflict Zone Map REST API (design a pure headless FactionWarCampaign.js strategy engine simulating dynamic sector military conflicts and exposing REST endpoint GET /api/faction/campaign)
+- [ ] `165` Clustered Sync for Galactic Military Fleets over Redis Pub/Sub (extend the sharded worker subscriber model to synchronize military actions, sector conquests, and campaign alerts globally)
+- [ ] `166` Golden-Glassmorphic Interactive Faction War & Strategic Map HUD Card (build an exquisite golden-glassmorphic responsive star map HUD card rendering borders, active conflicts, and tooltip overrides under Playwright E2E visual checks)
+
 ## v45 — Modular REST API, Sharded Pub/Sub, and Visual Automation Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 - [x] `161` Decompose HTTP REST Endpoints to Modular Handler & Author Integration Tests (decouple REST routes from main `src/server.js` monolith to modular handlers `src/server/restHandlers.js`, adding comprehensive integration tests) — **done** (decoupled all 9 REST endpoints and static file serving into a pure tested restHandlers.js ES module, integrated OPTIONS CORS preflight at the root of the handler, captured all JSON SyntaxErrors as 400 Bad Request responses, refactored server.js to delegate requests with a dynamic context options parameter, and covered the code with a robust 15-test headless Jest suite inside restHandlers.test.js; 1,285 Jest tests 100% green)

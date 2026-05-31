@@ -380,6 +380,7 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
 
   test("should pre-activate outbound firewall inside guest process and block egress network attempts (SPEC-143)", async () => {
     const result = await GuestRunner.runScript(tempNetworkScript, {
+      sandboxDir,
       timeoutMs: 3000,
     });
 

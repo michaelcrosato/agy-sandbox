@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-31T15:27:59.371Z",
+  "generatedAt": "2026-05-31T15:30:06.401Z",
   "stats": {
     "totalSourceFiles": 102,
     "totalTestFiles": 133,
-    "totalSpecFiles": 170,
+    "totalSpecFiles": 173,
     "totalLoc": 23755,
     "totalTests": 1715,
     "untestedCoreFilesCount": 6
@@ -2773,7 +2773,8 @@
       "testFile": "src/server/restHandlers.test.js",
       "testCasesCount": 22,
       "referencingSpecs": [
-        "plan/specs/161_decompose_http_rest_endpoints.md"
+        "plan/specs/161_decompose_http_rest_endpoints.md",
+        "plan/specs/164_faction_war_campaign_engine.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -4891,6 +4892,42 @@
         "src/client/__tests__/CanvasRenderer.browser.test.js",
         "src/client/__tests__/PlaywrightVisual.test.js"
       ]
+    },
+    {
+      "path": "plan/specs/164_faction_war_campaign_engine.md",
+      "filename": "164_faction_war_campaign_engine.md",
+      "title": "SPEC-164: Faction War Strategy Engine & Real-Time Conflict Zone Map REST API",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/engine/FactionWarCampaign.js",
+        "src/server/restHandlers.js",
+        "src/engine/FactionWarCampaign.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/165_clustered_campaign_pubsub_sync.md",
+      "filename": "165_clustered_campaign_pubsub_sync.md",
+      "title": "SPEC-165: Clustered Sync for Galactic Military Fleets over Redis Pub/Sub",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/server.js",
+        "src/server/squad.integration.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/166_glassmorphic_stellar_map_hud.md",
+      "filename": "166_glassmorphic_stellar_map_hud.md",
+      "title": "SPEC-166: Golden-Glassmorphic Interactive Faction War & Strategic Map HUD Card",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/server/PlaywrightVisual.integration.test.js"
+      ]
     }
   ],
   "epistemicDebt": {
@@ -5042,6 +5079,13 @@
         "brokenFiles": [
           "src/client/__tests__/CanvasRenderer.browser.test.js",
           "src/client/__tests__/PlaywrightVisual.test.js"
+        ]
+      },
+      {
+        "spec": "plan/specs/164_faction_war_campaign_engine.md",
+        "brokenFiles": [
+          "src/engine/FactionWarCampaign.js",
+          "src/engine/FactionWarCampaign.test.js"
         ]
       }
     ]

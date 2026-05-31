@@ -532,21 +532,39 @@ The sandbox containment and node script path jailing wave:
 
 ---
 
-## EXECUTION WAVES (v45) — Open (In Progress)
+## EXECUTION WAVES (v45) — Completed (DONE)
 
 The modular REST API, sharded Pub/Sub co-op, and visual automation E2E guard wave:
 
 ### Phase 0 — Modular HTTP REST Handlers — `161`
 
-- `161` Decompose HTTP REST Endpoints to Modular Handler & Author Integration Tests (decouple REST routes from main `src/server.js` monolith to modular handlers `src/server/restHandlers.js`, adding comprehensive integration tests) — **pending**.
+- `161` Decompose HTTP REST Endpoints to Modular Handler & Author Integration Tests (decouple REST routes from main `src/server.js` monolith to modular handlers `src/server/restHandlers.js`, adding comprehensive integration tests) — **done**.
 
 ### Phase 1 — Cross-Process Squad Pub/Sub Sync — `162`
 
-- `162` Cross-Process Chat & Sector Interest Sync Pipeline over Redis Pub/Sub (implement squad chat and positioning synchronization across sharded workers in a horizon-grade multi-process environment) — **pending**.
+- `162` Cross-Process Chat & Sector Interest Sync Pipeline over Redis Pub/Sub (implement squad chat and positioning synchronization across sharded workers in a horizon-grade multi-process environment) — **done**.
 
 ### Phase 2 — Golden Visual Playwright E2E Guard — `163`
 
-- `163` Golden Visual E2E Playwright Automation & UI Telemetry Regression Guard (design Playwright visual-regression tests verifying HUD cockpit and dashboard cards under responsive viewport sizes, saving to `browser_recordings/`) — **pending**.
+- `163` Golden Visual E2E Playwright Automation & UI Telemetry Regression Guard (design Playwright visual-regression tests verifying HUD cockpit and dashboard cards under responsive viewport sizes, saving to `browser_recordings/`) — **done**.
+
+---
+
+## EXECUTION WAVES (v46) — Open (In Progress)
+
+The Faction War Campaign, Interactive Stellar HUD, and Real-Time Strategic Maps wave:
+
+### Phase 0 — Faction War Strategy Engine — `164`
+
+- `164` Faction War Strategy Engine & Real-Time Conflict Zone Map REST API (design a pure headless `FactionWarCampaign.js` strategy engine simulating dynamic sector military conflicts and exposing REST endpoint `GET /api/faction/campaign`) — **pending**.
+
+### Phase 1 — Clustered Campaign Pub/Sub Sync — `165`
+
+- `165` Clustered Sync for Galactic Military Fleets over Redis Pub/Sub (extend the sharded worker subscriber model to synchronize military actions, sector conquests, and campaign alerts globally) — **pending**.
+
+### Phase 2 — Golden-Glassmorphic Stellar Map HUD — `166`
+
+- `166` Golden-Glassmorphic Interactive Faction War & Strategic Map HUD Card (build an exquisite golden-glassmorphic responsive star map HUD card rendering borders, active conflicts, and tooltip overrides under Playwright E2E visual checks) — **pending**.
 
 ---
 
@@ -556,9 +574,12 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title                            | Phase | Impact | Feasibility | Risk(5=safe) | Fit |  Σ  |  Status  |
 | ---- | -------------------------------- | :---: | :----: | :---------: | :----------: | :-: | :-: | :------: |
-| 161  | Modular REST Handlers            |   0   |   5    |      5      |      5       |  5  | 20  | Pending  |
-| 162  | Cross-Process Squad Pub/Sub Sync |   1   |   5    |      4      |      5       |  5  | 19  | Pending  |
-| 163  | Golden Visual Playwright E2E     |   2   |   4    |      4      |      5       |  5  | 17  | Pending  |
+| 164  | Faction War Strategy Engine      |   0   |   5    |      5      |      5       |  5  | 20  | Pending  |
+| 165  | Clustered Campaign PubSub Sync    |   1   |   5    |      4      |      5       |  5  | 19  | Pending  |
+| 166  | Glassmorphic Stellar Map HUD     |   2   |   5    |      4      |      5       |  5  | 19  | Pending  |
+| 161  | Modular REST Handlers            |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
+| 162  | Cross-Process Squad Pub/Sub Sync |   1   |   5    |      4      |      5       |  5  | 19  | **DONE** |
+| 163  | Golden Visual Playwright E2E     |   2   |   4    |      4      |      5       |  5  | 17  | **DONE** |
 | 160  | Secure Sandbox Teardown          |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
 | 157  | Outfitting Presets Modular       |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
 | 158  | Guided Onboarding Tutorial       |   1   |   5    |      4      |      5       |  5  | 19  | **DONE** |

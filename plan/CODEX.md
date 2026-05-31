@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T17:44:01.804Z` · Baseline: `25,386 LOC` across `106 source files`
+> Generated: `2026-05-31T17:47:34.124Z` · Baseline: `25,386 LOC` across `106 source files`
 
 ---
 
@@ -13,7 +13,7 @@
 | **Source Modules** | `106 files` | 🟢 Structured |
 | **Test Suites** | `138 test files` | 🟢 Integrated |
 | **Total Test Cases** | `1774 cases` | 🟢 Deterministic |
-| **Active/Archived Specs** | `180 specifications` | 🟢 Traceable |
+| **Active/Archived Specs** | `183 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `6 files` | ⚠️ Debt Pending |
 
 ---
@@ -168,10 +168,13 @@
 - [ ] `src/net/mockFreezeScript.js` is missing a unit test suite.
 - [ ] `src/net/SecureModuleRegistry.js` is missing a unit test suite.
 
-### ⚠️ Stale Specification File References (3)
+### ⚠️ Stale Specification File References (6)
 - [ ] Spec [`145_secure_guest_rpc_sentry.md`](file:///C:/dev/agy-sandbox/plan/specs/145_secure_guest_rpc_sentry.md) references missing files: `src/net/GuestRpcSentry.test.js`
 - [ ] Spec [`158_guided_onboarding_tutorial_mission.md`](file:///C:/dev/agy-sandbox/plan/specs/158_guided_onboarding_tutorial_mission.md) references missing files: `src/client/tutorialUI.test.js`
 - [ ] Spec [`163_playwright_e2e_regression_guard.md`](file:///C:/dev/agy-sandbox/plan/specs/163_playwright_e2e_regression_guard.md) references missing files: `src/client/__tests__/CanvasRenderer.browser.test.js`, `src/client/__tests__/PlaywrightVisual.test.js`
+- [ ] Spec [`174_token_cost_governance_mock_sentry.md`](file:///C:/dev/agy-sandbox/plan/specs/174_token_cost_governance_mock_sentry.md) references missing files: `src/net/TokenCostGovernor.js`, `src/net/TokenCostGovernor.test.js`
+- [ ] Spec [`175_sandbox_escape_intrusion_sentry.md`](file:///C:/dev/agy-sandbox/plan/specs/175_sandbox_escape_intrusion_sentry.md) references missing files: `src/net/IntrusionDetectionSentry.js`, `src/net/IntrusionDetectionSentry.test.js`
+- [ ] Spec [`176_zero_trace_teardown_purger.md`](file:///C:/dev/agy-sandbox/plan/specs/176_zero_trace_teardown_purger.md) references missing files: `src/net/ZeroTraceTeardown.js`, `src/net/ZeroTraceTeardown.test.js`
 
 ### ⚠️ Missing JSDoc Type Signatures (18 symbols)
 - `src/net/DnsEgressSentry.js`:

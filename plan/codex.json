@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-31T17:44:01.804Z",
+  "generatedAt": "2026-05-31T17:47:34.124Z",
   "stats": {
     "totalSourceFiles": 106,
     "totalTestFiles": 138,
-    "totalSpecFiles": 180,
+    "totalSpecFiles": 183,
     "totalLoc": 25386,
     "totalTests": 1774,
     "untestedCoreFilesCount": 6
@@ -5132,6 +5132,42 @@
         "src/net/DnsEgressSentry.js",
         "src/net/DnsEgressSentry.test.js"
       ]
+    },
+    {
+      "path": "plan/specs/174_token_cost_governance_mock_sentry.md",
+      "filename": "174_token_cost_governance_mock_sentry.md",
+      "title": "SPEC-174: Automated LLM API Token Cost Governance & Mock Sentry",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/TokenCostGovernor.js",
+        "src/net/TokenCostGovernor.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/175_sandbox_escape_intrusion_sentry.md",
+      "filename": "175_sandbox_escape_intrusion_sentry.md",
+      "title": "SPEC-175: V8 Isolated Sandbox Process Escape Intrusion Sentry",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/IntrusionDetectionSentry.js",
+        "src/net/IntrusionDetectionSentry.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/176_zero_trace_teardown_purger.md",
+      "filename": "176_zero_trace_teardown_purger.md",
+      "title": "SPEC-176: Ephemeral Guest Sandbox Zero-Trace State Wiper & Purger",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/ZeroTraceTeardown.js",
+        "src/net/ZeroTraceTeardown.test.js"
+      ]
     }
   ],
   "epistemicDebt": {
@@ -5318,6 +5354,27 @@
         "brokenFiles": [
           "src/client/__tests__/CanvasRenderer.browser.test.js",
           "src/client/__tests__/PlaywrightVisual.test.js"
+        ]
+      },
+      {
+        "spec": "plan/specs/174_token_cost_governance_mock_sentry.md",
+        "brokenFiles": [
+          "src/net/TokenCostGovernor.js",
+          "src/net/TokenCostGovernor.test.js"
+        ]
+      },
+      {
+        "spec": "plan/specs/175_sandbox_escape_intrusion_sentry.md",
+        "brokenFiles": [
+          "src/net/IntrusionDetectionSentry.js",
+          "src/net/IntrusionDetectionSentry.test.js"
+        ]
+      },
+      {
+        "spec": "plan/specs/176_zero_trace_teardown_purger.md",
+        "brokenFiles": [
+          "src/net/ZeroTraceTeardown.js",
+          "src/net/ZeroTraceTeardown.test.js"
         ]
       }
     ]

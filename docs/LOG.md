@@ -44,6 +44,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-05-31T08:30 · iter-0143 · GREEN · spec-163-playwright-e2e-regression-guard
+
+- **Baseline:** `85e149d` on `main`; 1,290 Jest green, 63 client green.
+- **Move:** Implement SPEC-163 to establish Golden Visual E2E Playwright Automation verifying cockpit HUD and dashboard layouts across responsive viewports.
+- **Changed:**
+  - Designed automated regression testing script `src/server/PlaywrightVisual.integration.test.js` booting a sharded node worker and launching headless Chromium via Playwright.
+  - Injected custom style overrides to completely freeze CSS transitions/animations and mocked `Date.now` for absolute layout determinism.
+  - Automatically captured and saved responsive layouts to `browser_recordings/` (Mobile `375x667`, Tablet `768x1024`, and Desktop `1280x800`) for both Codex and main cockpit dashboards.
+  - Generated and validated all 6 golden visual assets on disk under mock-frozen clock conditions.
+  - Ran full `agent:check` verification pipeline to ensure zero errors or format drifts across modified files.
+- **Decisions:** Mocking system clocks and freezing rendering loops guarantees visual determinism across headless test runners, preventing arbitrary timing shifts.
+- **Validation:** Executed `npm test src/server/PlaywrightVisual.integration.test.js` passing 2/2 tests. Ran full check gate `npm run agent:check` confirming a 100% green gate across 1,292 backend Jest tests and 63 client Vitest tests.
+- **Next:** Transition to Phase R (Replenish) of Cycle 47 to re-audit the codebase, promote backlog candidates, and define next specification wave.
+
 ## 2026-05-31T08:26 · iter-0142 · GREEN · spec-162-cross-process-squad-pubsub-sync
 
 - **Baseline:** `a495c09` on `main`; 1,285 Jest green, 63 client green.

@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T15:26:13.901Z",
+  "generatedAt": "2026-05-31T15:27:59.371Z",
   "stats": {
     "totalSourceFiles": 102,
-    "totalTestFiles": 132,
+    "totalTestFiles": 133,
     "totalSpecFiles": 170,
     "totalLoc": 23755,
-    "totalTests": 1712,
+    "totalTests": 1715,
     "untestedCoreFilesCount": 6
   },
   "files": [

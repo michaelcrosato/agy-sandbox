@@ -99,6 +99,21 @@ describe("Living Codex & Dashboard HTTP Integration Tests (SPEC-102)", () => {
           expect(body).toContain('id="api-rate-display"');
           expect(body).toContain('id="api-rate-meter"');
           expect(body).toContain('id="memory-leak-alerts-display"');
+
+          // SPEC-129 Epistemic Sentry and circular progress rings validation
+          expect(body).toContain('id="epistemic-sentry-panel"');
+          expect(body).toContain('id="ring-jsdoc"');
+          expect(body).toContain('id="ring-specs"');
+          expect(body).toContain('id="stat-jsdoc-symbols"');
+          expect(body).toContain('id="stat-jsdoc-missing"');
+          expect(body).toContain('id="stat-spec-files"');
+          expect(body).toContain('id="stat-untested-files"');
+
+          // SPEC-132 Containment Breach Console panel validation
+          expect(body).toContain('id="containment-breach-console"');
+          expect(body).toContain('id="breach-active-indicator"');
+          expect(body).toContain('id="breach-log-list"');
+
           resolve();
         });
 

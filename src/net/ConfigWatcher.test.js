@@ -146,6 +146,46 @@ describe("ConfigWatcher", () => {
     watcher.stop();
   });
 
+  test("loads and applies connectionFlood and resourceLimits configurations", () => {
+    const validConfig = {
+      connectionFlood: {
+        maxConnectionsPerIp: 8,
+      },
+      resourceLimits: {
+        softMemoryLimit: 200 * 1024 * 1024,
+        hardMemoryLimit: 300 * 1024 * 1024,
+        softLatencyLimit: 15,
+        hardLatencyLimit: 85,
+      },
+    };
+
+    writeTestConfig(validConfig);
+
+    const connectionFloodSentry = { maxConnectionsPerIp: 5 };
+    const resourceLimiter = {
+      softMemoryLimit: 100,
+      hardMemoryLimit: 200,
+      softLatencyLimit: 20,
+      hardLatencyLimit: 100,
+    };
+
+    const watcher = new ConfigWatcher(testConfigPath, {
+      connectionFloodSentry,
+      resourceLimiter,
+    });
+
+    watcher.start();
+    expect(watcher.reloadCount).toBe(1);
+
+    expect(connectionFloodSentry.maxConnectionsPerIp).toBe(8);
+    expect(resourceLimiter.softMemoryLimit).toBe(200 * 1024 * 1024);
+    expect(resourceLimiter.hardMemoryLimit).toBe(300 * 1024 * 1024);
+    expect(resourceLimiter.softLatencyLimit).toBe(15);
+    expect(resourceLimiter.hardLatencyLimit).toBe(85);
+
+    watcher.stop();
+  });
+
   test("watches config file for disk mutations and triggers reload asynchronously", (done) => {
     const config1 = {
       wsRateLimit: {

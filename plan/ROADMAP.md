@@ -297,13 +297,40 @@ The sandbox security and self-healing telemetry wave:
 The advanced guest isolation, adaptive controls, and ontological visualization wave:
 
 ### Phase 0 — Inbound Connection Sentry — `127`
-- `127` Inbound Connection Flood Protection & Active IP Sentry (build connection floor sentinel capping concurrent sockets per remote IP address and intercepting raw HTTP upgrades).
+- `127` Inbound Connection Flood Protection & Active IP Sentry (build connection floor sentinel capping concurrent sockets per remote IP address and intercepting raw HTTP upgrades) — **done**.
 
 ### Phase 1 — Adaptive Thresholds — `128`
-- `128` Configurable Event-Loop Adaptive Backpressure Sentinel (extend reloader and ResourceLimiter to support dynamically tunable adaptive latency thresholds without worker downtime).
+- `128` Configurable Event-Loop Adaptive Backpressure Sentinel (extend reloader and ResourceLimiter to support dynamically tunable adaptive latency thresholds without worker downtime) — **done**.
 
 ### Phase 2 — Ontological Visualization — `129`
-- `129` Living Codex Epistemic Debt Cockpit Telemetry Meter (enhance Codex Dashboard with premium golden-amber health panels and real-time SVG circular code documentation rings).
+- `129` Living Codex Epistemic Debt Cockpit Telemetry Meter (enhance Codex Dashboard with premium golden-amber health panels and real-time SVG circular code documentation rings) — **done**.
+
+---
+
+## EXECUTION WAVES (v34)
+
+The process tree safety, centralized security auditing, and console visualization wave:
+
+### Phase 0 — Process Tree safety — `130`
+- `130` Autonomic Process-Tree Tracking & Orphan Reaper (intercept child process spawns globally and recursively kill nested process trees to prevent system leakage).
+
+### Phase 1 — Centralized Auditing — `131`
+- `131` Centralized Security Audit Registry & Observability Ledger (log filesystem path escapes and block triggers to an append-only JSON audit ledger, exposing telemetry under `/metrics`).
+
+### Phase 2 — Breach Visualization — `132`
+- `132` Golden-Glassmorphic Codex "Containment Breaches Log" Console (visualize security blocks in real-time on a premium terminal screen on the cockpit dashboard) — **done**.
+
+---
+
+## EXECUTION WAVES (v35)
+
+The sandbox exhaustion prevention and object integrity wave:
+
+### Phase 0 — CPU Watchdog — `133`
+- `133` Autonomic CPU Exhaustion Guard & Main-Thread Watchdog (periodically ping the main thread from a background worker thread; forcefully terminate the process if it fails to respond).
+
+### Phase 1 — Prototype Sentry — `134`
+- `134` Global Prototype Tamper-Proofing & Object Integrity Guard (freeze core JavaScript prototypes and monitor global variables at startup to prevent privilege escalation or sandbox escapes).
 
 ---
 
@@ -313,11 +340,10 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 127 | Connection Flood Sentry | 0 | 5 | 5 | 5 | 5 | 20 |
-| 128 | Adaptive Backpressure | 1 | 5 | 4 | 5 | 5 | 19 |
-| 129 | Epistemic Debt Meter | 2 | 4 | 5 | 5 | 5 | 19 |
+| 133 | CPU Watchdog | 0 | 5 | 5 | 5 | 5 | 20 |
+| 134 | Prototype Sentry | 1 | 5 | 5 | 5 | 5 | 20 |
 
-**Recommended start:** `127` (Σ20 — Connection Flood Sentry) immediately.
+**Recommended start:** `133` (Σ20 — CPU Watchdog) immediately.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

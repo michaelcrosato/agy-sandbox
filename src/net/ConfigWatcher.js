@@ -16,6 +16,8 @@ export class ConfigWatcher {
    * @param {object} [targets.sandboxFirewall] - The Outbound DNS/socket firewall.
    * @param {object} [targets.wsRateLimitConfig] - Dynamic WebSocket message rate limit configuration reference.
    * @param {Map<string, object>} [targets.instances] - active GameInstance instances to dynamically tune standings coefficients.
+   * @param {object} [targets.connectionFloodSentry] - Inbound connection flood sentinel.
+   * @param {object} [targets.resourceLimiter] - Event-loop resource and latency limiter.
    */
   constructor(filePath, targets = {}) {
     this.filePath = path.resolve(filePath);
@@ -156,6 +158,34 @@ export class ConfigWatcher {
         }
       }
 
+      if (config.connectionFlood) {
+        const val = validateMessage({
+          type: "connectionFloodConfig",
+          ...config.connectionFlood,
+        });
+        if (!val.valid) {
+          console.error(
+            `❌ [CONFIG WATCHER] Invalid connectionFlood configuration:`,
+            val.error,
+          );
+          return false;
+        }
+      }
+
+      if (config.resourceLimits) {
+        const val = validateMessage({
+          type: "resourceLimitsConfig",
+          ...config.resourceLimits,
+        });
+        if (!val.valid) {
+          console.error(
+            `❌ [CONFIG WATCHER] Invalid resourceLimits configuration:`,
+            val.error,
+          );
+          return false;
+        }
+      }
+
       this.apply(config);
       this.reloadCount++;
       this.lastReloadTime = Date.now();
@@ -223,6 +253,31 @@ export class ConfigWatcher {
             };
           }
         }
+      }
+    }
+
+    // 5. Connection flood sentry IP ceiling
+    if (config.connectionFlood && this.targets.connectionFloodSentry) {
+      if (config.connectionFlood.maxConnectionsPerIp !== undefined) {
+        this.targets.connectionFloodSentry.maxConnectionsPerIp =
+          config.connectionFlood.maxConnectionsPerIp;
+      }
+    }
+
+    // 6. Adaptive event loop resource limits
+    if (config.resourceLimits && this.targets.resourceLimiter) {
+      const limiter = this.targets.resourceLimiter;
+      if (config.resourceLimits.softMemoryLimit !== undefined) {
+        limiter.softMemoryLimit = config.resourceLimits.softMemoryLimit;
+      }
+      if (config.resourceLimits.hardMemoryLimit !== undefined) {
+        limiter.hardMemoryLimit = config.resourceLimits.hardMemoryLimit;
+      }
+      if (config.resourceLimits.softLatencyLimit !== undefined) {
+        limiter.softLatencyLimit = config.resourceLimits.softLatencyLimit;
+      }
+      if (config.resourceLimits.hardLatencyLimit !== undefined) {
+        limiter.hardLatencyLimit = config.resourceLimits.hardLatencyLimit;
       }
     }
   }

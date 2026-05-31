@@ -265,4 +265,13 @@ export const SCHEMAS = Object.freeze({
     decayRate: { type: "number", required: true, min: 0, max: 1 },
     maxPriceSwing: { type: "number", required: true, min: 0, max: 1 },
   },
+  connectionFloodConfig: {
+    maxConnectionsPerIp: { type: "integer", required: true, min: 1 },
+  },
+  resourceLimitsConfig: {
+    softMemoryLimit: { type: "integer", required: true, min: 10485760 },
+    hardMemoryLimit: { type: "integer", required: true, min: 20971520 },
+    softLatencyLimit: { type: "number", required: true, min: 1 },
+    hardLatencyLimit: { type: "number", required: true, min: 2 },
+  },
 });

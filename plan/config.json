@@ -33,5 +33,14 @@
     "enemyPropagation": 0.5,
     "decayRate": 0.01,
     "maxPriceSwing": 0.2
+  },
+  "connectionFlood": {
+    "maxConnectionsPerIp": 5
+  },
+  "resourceLimits": {
+    "softMemoryLimit": 536870912,
+    "hardMemoryLimit": 671088640,
+    "softLatencyLimit": 20,
+    "hardLatencyLimit": 100
   }
 }

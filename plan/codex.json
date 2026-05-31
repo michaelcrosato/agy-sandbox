@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-05-31T05:02:30.708Z",
+  "generatedAt": "2026-05-31T05:22:37.143Z",
   "stats": {
-    "totalSourceFiles": 87,
-    "totalTestFiles": 117,
-    "totalSpecFiles": 135,
-    "totalLoc": 19601,
-    "totalTests": 1569,
-    "untestedCoreFilesCount": 0
+    "totalSourceFiles": 92,
+    "totalTestFiles": 121,
+    "totalSpecFiles": 140,
+    "totalLoc": 20161,
+    "totalTests": 1592,
+    "untestedCoreFilesCount": 2
   },
   "files": [
     {
@@ -1185,22 +1185,22 @@
     },
     {
       "path": "src/net/ApiRateLimiter.js",
-      "loc": 312,
+      "loc": 328,
       "classes": [
         {
           "name": "ApiRateLimiter",
           "jsdoc": "/**\n* ApiRateLimiter (P0).\n*\n* Active sliding-window API rate limiter and outbound network sentinel.\n* Protects host budgets from runaway recursive LLM API calls and restricts\n* egress destinations to a secure, developer-configured allowlist.\n*/",
-          "line": 11
+          "line": 12
         },
         {
           "name": "extends",
           "jsdoc": "/** @type {any} */",
-          "line": 143
+          "line": 159
         },
         {
           "name": "extends",
           "jsdoc": "/** @type {any} */",
-          "line": 201
+          "line": 217
         }
       ],
       "exports": [
@@ -1208,13 +1208,13 @@
           "name": "activateOutboundSentinel",
           "type": "function",
           "jsdoc": "/**\n* Activates monkey-patching on core Node.js http/https and globalThis.fetch\n* interfaces to strictly redirect and govern all outbound egress network calls.\n*\n* @param {ApiRateLimiter} limiter - The active rate limiter governance instance.\n*/",
-          "line": 122
+          "line": 138
         },
         {
           "name": "deactivateOutboundSentinel",
           "type": "function",
           "jsdoc": "/**\n* Safely deactivates all monkey-patches, restoring the original Node.js core\n* HTTP request methods and standard web fetch.\n*/",
-          "line": 276
+          "line": 292
         }
       ],
       "testFile": "src/net/ApiRateLimiter.test.js",
@@ -1317,7 +1317,7 @@
     },
     {
       "path": "src/net/ConfigWatcher.js",
-      "loc": 230,
+      "loc": 285,
       "classes": [
         {
           "name": "ConfigWatcher",
@@ -1327,9 +1327,27 @@
       ],
       "exports": [],
       "testFile": "src/net/ConfigWatcher.test.js",
-      "testCasesCount": 5,
+      "testCasesCount": 6,
       "referencingSpecs": [
         "plan/specs/125_hot_config_reload.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/net/ConnectionFloodSentry.js",
+      "loc": 81,
+      "classes": [
+        {
+          "name": "ConnectionFloodSentry",
+          "jsdoc": "/**\n* ConnectionFloodSentry.js (SPEC-127)\n* High-performance inbound connection rate-limiting and concurrent IP sentry.\n* Enforces strict ceilings on concurrent WebSocket connections per unique client remote IP,\n* and tracks socket bounds to prevent distributed flood attacks and host memory exhaustion.\n*/",
+          "line": 7
+        }
+      ],
+      "exports": [],
+      "testFile": "src/net/ConnectionFloodSentry.test.js",
+      "testCasesCount": 5,
+      "referencingSpecs": [
+        "plan/specs/127_connection_flood_protection.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -1465,6 +1483,41 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/net/MainThreadWatchdog.js",
+      "loc": 80,
+      "classes": [],
+      "exports": [
+        {
+          "name": "MainThreadWatchdog",
+          "type": "constant",
+          "jsdoc": null,
+          "line": 16
+        }
+      ],
+      "testFile": "src/net/MainThreadWatchdog.test.js",
+      "testCasesCount": 4,
+      "referencingSpecs": [
+        "plan/specs/133_main_thread_cpu_watchdog.md"
+      ],
+      "missingJsDocSymbols": [
+        {
+          "name": "MainThreadWatchdog",
+          "type": "constant",
+          "line": 16
+        }
+      ]
+    },
+    {
+      "path": "src/net/MainThreadWatchdogWorker.js",
+      "loc": 66,
+      "classes": [],
+      "exports": [],
+      "testFile": null,
+      "testCasesCount": 0,
+      "referencingSpecs": [],
+      "missingJsDocSymbols": []
+    },
+    {
       "path": "src/net/MemoryLeakSentry.js",
       "loc": 104,
       "classes": [
@@ -1506,6 +1559,16 @@
         "plan/specs/010_observability_metrics.md",
         "plan/specs/117_websocket_rate_limiter_telemetry.md"
       ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/net/mockFreezeScript.js",
+      "loc": 22,
+      "classes": [],
+      "exports": [],
+      "testFile": null,
+      "testCasesCount": 0,
+      "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
     {
@@ -1559,18 +1622,18 @@
     },
     {
       "path": "src/net/ProcessReaper.js",
-      "loc": 107,
+      "loc": 160,
       "classes": [],
       "exports": [
         {
           "name": "ProcessReaper",
           "type": "constant",
           "jsdoc": "/**\n* ProcessReaper (spec 092) — pure, modular lifecycle manager to track\n* and aggressively terminate background workers, child processes, and\n* sockets to prevent memory leaks and zombie locks in the AI sandbox.\n* @type {object}\n*/",
-          "line": 18
+          "line": 67
         }
       ],
       "testFile": "src/net/ProcessReaper.test.js",
-      "testCasesCount": 4,
+      "testCasesCount": 6,
       "referencingSpecs": [
         "plan/specs/092_zombie_reaper_orphan_cleanup.md",
         "plan/specs/104_living_codex_hygiene_jsdoc_audit.md"
@@ -1579,26 +1642,26 @@
     },
     {
       "path": "src/net/ProcessSentinel.js",
-      "loc": 574,
+      "loc": 613,
       "classes": [],
       "exports": [
         {
           "name": "parseCommandString",
           "type": "function",
           "jsdoc": "/**\n* Parses a full command string into a binary name and an array of arguments,\n* respecting basic quotes.\n* @param {string} cmdStr - Full shell command string.\n* @returns {ParsedCommand}\n*/",
-          "line": 86
+          "line": 105
         },
         {
           "name": "validateCommand",
           "type": "function",
           "jsdoc": "/**\n* Validates whether a command and its arguments are permitted under the strict security whitelist.\n* @param {string} command - The command or binary path under evaluation.\n* @param {string[]} [args=[]] - Optional array of arguments passed to the command.\n* @returns {{ allowed: boolean, reason?: string }}\n*/",
-          "line": 130
+          "line": 149
         },
         {
           "name": "ProcessSentinel",
           "type": "constant",
           "jsdoc": "/**\n* ProcessSentinel (spec 106) — child process security sentinel whitelister.\n* @type {object}\n*/",
-          "line": 242
+          "line": 261
         }
       ],
       "testFile": "src/net/ProcessSentinel.test.js",
@@ -1702,12 +1765,12 @@
     },
     {
       "path": "src/net/SandboxFirewall.js",
-      "loc": 265,
+      "loc": 278,
       "classes": [
         {
           "name": "SandboxFirewall",
           "jsdoc": null,
-          "line": 13
+          "line": 14
         }
       ],
       "exports": [
@@ -1715,13 +1778,13 @@
           "name": "activateFirewall",
           "type": "function",
           "jsdoc": "/**\n* Activates active low-overhead DNS and socket level monkeypatching sentries.\n*\n* @param {SandboxFirewall} firewall\n*/",
-          "line": 165
+          "line": 178
         },
         {
           "name": "deactivateFirewall",
           "type": "function",
           "jsdoc": "/**\n* Restores original native network connection and resolution configurations.\n*/",
-          "line": 235
+          "line": 248
         }
       ],
       "testFile": "src/net/SandboxFirewall.test.js",
@@ -1733,7 +1796,32 @@
         {
           "name": "SandboxFirewall",
           "type": "class",
-          "line": 13
+          "line": 14
+        }
+      ]
+    },
+    {
+      "path": "src/net/SandboxSecurityRegistry.js",
+      "loc": 126,
+      "classes": [],
+      "exports": [
+        {
+          "name": "SandboxSecurityRegistry",
+          "type": "constant",
+          "jsdoc": null,
+          "line": 55
+        }
+      ],
+      "testFile": "src/net/SandboxSecurityRegistry.test.js",
+      "testCasesCount": 5,
+      "referencingSpecs": [
+        "plan/specs/131_centralized_security_audit_ledger.md"
+      ],
+      "missingJsDocSymbols": [
+        {
+          "name": "SandboxSecurityRegistry",
+          "type": "constant",
+          "line": 55
         }
       ]
     },
@@ -1799,7 +1887,7 @@
     },
     {
       "path": "src/net/SchemaRegistry.js",
-      "loc": 269,
+      "loc": 278,
       "classes": [],
       "exports": [
         {
@@ -4136,11 +4224,77 @@
       "priority": "Normal",
       "pillar": "None",
       "filesMentioned": []
+    },
+    {
+      "path": "plan/specs/130_autonomic_process_tree_reaper.md",
+      "filename": "130_autonomic_process_tree_reaper.md",
+      "title": "SPEC-130: Autonomic Process-Tree Tracking & Orphan Reaper",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/ProcessReaper.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/131_centralized_security_audit_ledger.md",
+      "filename": "131_centralized_security_audit_ledger.md",
+      "title": "SPEC-131: Centralized Security Audit Registry & Observability Ledger",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/SandboxSecurityRegistry.js"
+      ]
+    },
+    {
+      "path": "plan/specs/132_containment_breaches_visual_sentry.md",
+      "filename": "132_containment_breaches_visual_sentry.md",
+      "title": "SPEC-132: Golden-Glassmorphic Codex \"Containment Breaches Log\" Console",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": []
+    },
+    {
+      "path": "plan/specs/133_main_thread_cpu_watchdog.md",
+      "filename": "133_main_thread_cpu_watchdog.md",
+      "title": "SPEC-133: Autonomic CPU Exhaustion Guard & Main-Thread Watchdog",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/MainThreadWatchdog.js"
+      ]
+    },
+    {
+      "path": "plan/specs/134_global_prototype_freeze_sentry.md",
+      "filename": "134_global_prototype_freeze_sentry.md",
+      "title": "SPEC-134: Global Prototype Tamper-Proofing & Object Integrity Guard",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/IntegrityGuard.js"
+      ]
     }
   ],
   "epistemicDebt": {
-    "untestedCoreFiles": [],
+    "untestedCoreFiles": [
+      "src/net/MainThreadWatchdogWorker.js",
+      "src/net/mockFreezeScript.js"
+    ],
     "missingJsDocs": [
+      {
+        "path": "src/net/MainThreadWatchdog.js",
+        "symbols": [
+          {
+            "name": "MainThreadWatchdog",
+            "type": "constant",
+            "line": 16
+          }
+        ]
+      },
       {
         "path": "src/net/MemoryLeakSentry.js",
         "symbols": [
@@ -4157,17 +4311,26 @@
           {
             "name": "SandboxFirewall",
             "type": "class",
-            "line": 13
+            "line": 14
+          }
+        ]
+      },
+      {
+        "path": "src/net/SandboxSecurityRegistry.js",
+        "symbols": [
+          {
+            "name": "SandboxSecurityRegistry",
+            "type": "constant",
+            "line": 55
           }
         ]
       }
     ],
     "staleSpecReferences": [
       {
-        "spec": "plan/specs/127_connection_flood_protection.md",
+        "spec": "plan/specs/134_global_prototype_freeze_sentry.md",
         "brokenFiles": [
-          "src/net/ConnectionFloodSentry.js",
-          "src/net/ConnectionFloodSentry.test.js"
+          "src/net/IntegrityGuard.js"
         ]
       }
     ]

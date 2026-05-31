@@ -94,6 +94,13 @@ export class AIController {
   update(dt, entities) {
     if (this.ship.isDestroyed || this.ship.isDisabled) return;
 
+    // Update coordinated shielding need (SPEC-156)
+    if (this.ship.isVengeanceHunter) {
+      const shieldRatio =
+        this.ship.maxShield > 0 ? this.ship.shield / this.ship.maxShield : 1;
+      this.ship.needsShieldCoordination = shieldRatio <= 0.4;
+    }
+
     this.ship.clearControls();
 
     // 1. Scan for targets if necessary
@@ -140,6 +147,16 @@ export class AIController {
       }
 
       if (this.currentGoal === Goals.FLEE) {
+        // Vengeance Hunters are highly disciplined and aggressive, so they only flee under extreme emergency (SPEC-156)
+        const isVengeance =
+          this.ship.isVengeanceHunter ||
+          (this.ship.name &&
+            (this.ship.name.includes("Vengeance") ||
+              this.ship.name.includes("Hunter")));
+        if (isVengeance && this.ship.armor / this.ship.maxArmor > 0.15) {
+          this.executeEngage(entities, dt);
+          return;
+        }
         this.executeFlee(entities);
         return;
       } else if (this.currentGoal === Goals.REGROUP) {
@@ -162,7 +179,7 @@ export class AIController {
     if (this.role === "pirate") {
       this.executePirateAI(dt);
     } else if (this.role === "guard") {
-      this.executeGuardAI(dt);
+      this.executeGuardAI(dt, entities);
     } else if (this.role === "escort") {
       this.executeEscortAI(dt, entities);
     } else if (this.role === "caravan" || this.isSmuggler) {
@@ -247,7 +264,22 @@ export class AIController {
   }
 
   scanSensors(entities) {
-    const sensorRange = 500;
+    const isVengeance =
+      this.ship.isVengeanceHunter ||
+      (this.ship.name &&
+        (this.ship.name.includes("Vengeance") ||
+          this.ship.name.includes("Hunter Elite")));
+    const sensorRange = isVengeance ? 1200 : 500;
+
+    // Direct hunter wings to actively lock onto hostile players and maintain lock-on (SPEC-156)
+    if (isVengeance && this.target && !this.target.isDestroyed) {
+      const d = this.ship.position.distance(this.target.position);
+      if (d < sensorRange) {
+        // Keep target locked!
+        return;
+      }
+    }
+
     let closestTarget = null;
     let closestDist = sensorRange;
     let bestScore = -1;
@@ -335,7 +367,97 @@ export class AIController {
    * Defense AI guarding local planets and engaging pirates.
    * @param {number} dt - Time step.
    */
-  executeGuardAI(dt) {
+  executeGuardAI(dt, entities = []) {
+    // 1. Vengeance Hunter special behaviors (SPEC-156)
+    const isVengeance =
+      this.ship.isVengeanceHunter ||
+      (this.ship.name &&
+        (this.ship.name.includes("Vengeance") ||
+          this.ship.name.includes("Hunter Elite")));
+    if (isVengeance && this.target && !this.target.isDestroyed) {
+      // Manage interdiction sweep state based on proximity
+      const distToTarget = this.ship.position.distance(this.target.position);
+      if (distToTarget <= 400) {
+        this.ship.isInterdicting = true;
+      } else {
+        this.ship.isInterdicting = false;
+      }
+
+      // Check if we are healthy and can coordinate shielding for a damaged wingman
+      const myShieldRatio =
+        this.ship.maxShield > 0 ? this.ship.shield / this.ship.maxShield : 1;
+      const isHealthy = myShieldRatio > 0.4;
+
+      if (isHealthy) {
+        // Search for a damaged ally who needs shield coordination
+        let damagedAlly = null;
+        let closestAllyDist = 600;
+
+        for (const ent of entities) {
+          if (
+            ent &&
+            ent.type === "ship" &&
+            ent !== this.ship &&
+            ent.isVengeanceHunter &&
+            ent.faction === this.ship.faction &&
+            ent.needsShieldCoordination &&
+            !ent.isDestroyed
+          ) {
+            const d = this.ship.position.distance(ent.position);
+            if (d < closestAllyDist) {
+              closestAllyDist = d;
+              damagedAlly = ent;
+            }
+          }
+        }
+
+        if (damagedAlly) {
+          // Coordinated Shielding: Intercept the line between the damaged ally and the threat (target)
+          const toThreat = this.target.position
+            .subtract(damagedAlly.position)
+            .normalize();
+          const defensivePos = damagedAlly.position.add(toThreat.multiply(90));
+
+          this.steerTowards(defensivePos);
+          this.ship.controls.isThrusting =
+            this.ship.position.distance(defensivePos) > 30;
+
+          // Turn to face the threat and attack while holding the line
+          const angleToTarget = Math.atan2(
+            this.target.position.y - this.ship.position.y,
+            this.target.position.x - this.ship.position.x,
+          );
+          const headingDiff = Math.abs(
+            this.normalizeAngle(angleToTarget - this.ship.heading),
+          );
+          if (headingDiff < 0.3) {
+            this.ship.controls.isFiring = true;
+          }
+          return; // Done coordinating shielding!
+        }
+      }
+
+      // Default Vengeance Attack Run (aggressive chase)
+      this.steerTowards(this.target.position);
+      if (distToTarget < 350) {
+        this.ship.controls.isThrusting = distToTarget > 100;
+        const angleToTarget = Math.atan2(
+          this.target.position.y - this.ship.position.y,
+          this.target.position.x - this.ship.position.x,
+        );
+        const headingDiff = Math.abs(
+          this.normalizeAngle(angleToTarget - this.ship.heading),
+        );
+        if (headingDiff < 0.3) {
+          this.ship.controls.isFiring = true;
+        }
+      } else {
+        this.ship.controls.isThrusting = true;
+      }
+      return;
+    }
+
+    // 2. Default Guard AI
     if (this.target) {
       this.steerTowards(this.target.position);
       const dist = this.ship.position.distance(this.target.position);

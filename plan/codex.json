@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-05-31T06:35:03.118Z",
+  "generatedAt": "2026-05-31T13:47:43.289Z",
   "stats": {
     "totalSourceFiles": 100,
-    "totalTestFiles": 127,
-    "totalSpecFiles": 162,
-    "totalLoc": 22257,
-    "totalTests": 1649,
+    "totalTestFiles": 128,
+    "totalSpecFiles": 165,
+    "totalLoc": 22517,
+    "totalTests": 1655,
     "untestedCoreFilesCount": 6
   },
   "files": [
     {
       "path": "src/engine/ai/AIController.js",
-      "loc": 1094,
+      "loc": 1216,
       "classes": [
         {
           "name": "AIController",
@@ -102,7 +102,7 @@
     },
     {
       "path": "src/engine/ai/UtilityAI.js",
-      "loc": 398,
+      "loc": 416,
       "classes": [],
       "exports": [
         {
@@ -163,49 +163,49 @@
           "name": "scoreFlee",
           "type": "function",
           "jsdoc": "/**\n* Scores the FLEE goal. Rises sharply as armor drops (squared deficit)\n* and is amplified by threat pressure; a wounded agent fears any given\n* threat more than a healthy one.\n*\n* @param {Object} self - Normalized self state.\n* @param {number} threatPressure - Pressure from `maxThreatPressure`.\n* @param {Object} options - Tuning.\n* @returns {number} FLEE score in [0, 1].\n*/",
-          "line": 238
+          "line": 244
         },
         {
           "name": "scoreTrade",
           "type": "function",
           "jsdoc": "/**\n* Scores the TRADE goal. Requires a trade opportunity; rises with the\n* profit and proximity of the best trade; collapses sharply near\n* threats (trade is a peaceful activity).\n*\n* @param {Object} self - Normalized self state.\n* @param {Object} opportunities - `{ prey, trades }`; only `trades` is read.\n* @param {number} threatPressure - Pressure from `maxThreatPressure`.\n* @param {Object} options - Tuning.\n* @returns {number} TRADE score in [0, 1].\n*/",
-          "line": 259
+          "line": 269
         },
         {
           "name": "scoreRegroup",
           "type": "function",
           "jsdoc": "/**\n* Scores the REGROUP goal — \"step out of the fight to recharge\".\n* Rises with shield deficit but is damped when armor is critical\n* (FLEE should take over there) or threats are nearby (no safe pause).\n*\n* @param {Object} self - Normalized self state.\n* @param {number} threatPressure - Pressure from `maxThreatPressure`.\n* @param {Object} options - Tuning.\n* @returns {number} REGROUP score in [0, 1].\n*/",
-          "line": 279
+          "line": 289
         },
         {
           "name": "scorePatrol",
           "type": "function",
           "jsdoc": "/**\n* Scores the PATROL goal — a constant baseline so the agent has\n* something to do when no other goal scores higher.\n*\n* @param {Object} options - Tuning.\n* @returns {number} PATROL score in [0, 1].\n*/",
-          "line": 298
+          "line": 308
         },
         {
           "name": "normalizeSelf",
           "type": "function",
           "jsdoc": "/**\n* Defensive normalization for the `self` block — clamps each field\n* to [0,1] and supplies zeros for missing entries. Caller-supplied\n* snapshots are trusted in test code but boundary code (e.g. a Ship\n* with no max-energy module) may legitimately pass `NaN`.\n*\n* @param {Object} raw - Caller-supplied `self`.\n* @returns {{shield:number,armor:number,energy:number,cargoFill:number}}\n*/",
-          "line": 311
+          "line": 321
         },
         {
           "name": "evaluateGoals",
           "type": "function",
           "jsdoc": "/**\n* Computes scores for every catalogued goal given a perception snapshot.\n* Pure function — does not mutate `perception` or `options`.\n*\n* @param {Object} perception - See module header for shape.\n* @param {Object} [options=DEFAULT_UTILITY_OPTIONS] - Tuning overrides.\n* @returns {Object} Map keyed by `Goals.*` of score in [0, 1].\n*/",
-          "line": 329
+          "line": 339
         },
         {
           "name": "selectGoal",
           "type": "function",
           "jsdoc": "/**\n* Returns the highest-scoring goal, its score, and the full score table.\n* Ties are broken by `GOAL_ORDER` (earlier entries win), guaranteeing\n* a deterministic result for identical inputs.\n*\n* @param {Object} perception - See module header for shape.\n* @param {Object} [options=DEFAULT_UTILITY_OPTIONS] - Tuning overrides.\n* @returns {{goal:string, score:number, scores:Object}}\n*/",
-          "line": 355
+          "line": 365
         },
         {
           "name": "selfStateFromShip",
           "type": "function",
-          "jsdoc": "/**\n* Builds the `self` block of a perception snapshot from a Ship-like\n* object. Convenience helper for callers integrating with `AIController`;\n* the scoring functions themselves accept any duck-typed snapshot.\n*\n* @param {Object} ship - Ship-like with shield/armor/energy/cargo fields.\n* @returns {{shield:number,armor:number,energy:number,cargoFill:number}}\n*/",
-          "line": 378
+          "jsdoc": "/**\n* Builds the `self` block of a perception snapshot from a Ship-like\n* object. Convenience helper for callers integrating with `AIController`;\n* the scoring functions themselves accept any duck-typed snapshot.\n*\n* @param {Object} ship - Ship-like with shield/armor/energy/cargo fields.\n* @returns {{shield:number,armor:number,energy:number,cargoFill:number,isVengeanceHunter:boolean}}\n*/",
+          "line": 388
         }
       ],
       "testFile": "src/engine/ai/UtilityAI.test.js",
@@ -388,7 +388,8 @@
       "testFile": "src/engine/EconomyManager.test.js",
       "testCasesCount": 10,
       "referencingSpecs": [
-        "plan/specs/006_economy_nan_selfheal.md"
+        "plan/specs/006_economy_nan_selfheal.md",
+        "plan/specs/159_commodities_schema_invariant_sentry.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -485,12 +486,12 @@
     },
     {
       "path": "src/engine/GameInstance.js",
-      "loc": 1786,
+      "loc": 1902,
       "classes": [
         {
           "name": "GameInstance",
           "jsdoc": "/**\n* Authoritative sandbox game instance simulator managing sectors, entities,\n* economies, and dynamic galactic factions.\n*/",
-          "line": 52
+          "line": 53
         }
       ],
       "exports": [
@@ -498,13 +499,13 @@
           "name": "SECTOR_ADJACENCY",
           "type": "constant",
           "jsdoc": "/**\n* Map defining which sectors share direct warp-gate trade route adjacency links.\n* Used for simulated economic and price diffusion.\n* @type {Record<string, Array<string>>}\n*/",
-          "line": 27
+          "line": 28
         },
         {
           "name": "getSectorFromPosition",
           "type": "function",
           "jsdoc": "/**\n* Utility helper to identify a sector ID from 2D vector coordinate bounds.\n* @param {object} pos Coordinate point containing x and y coordinates.\n* @returns {string} The sector name identifier.\n*/",
-          "line": 41
+          "line": 42
         }
       ],
       "testFile": "src/engine/GameInstance.test.js",
@@ -990,7 +991,7 @@
     },
     {
       "path": "src/engine/Ship.js",
-      "loc": 521,
+      "loc": 525,
       "classes": [
         {
           "name": "Ship",
@@ -4751,6 +4752,44 @@
       "filesMentioned": [
         "src/server/galaxyTicker.js"
       ]
+    },
+    {
+      "path": "plan/specs/157_outfitting_presets_modularization.md",
+      "filename": "157_outfitting_presets_modularization.md",
+      "title": "SPEC-157: Outfitting Presets & Fittings Storage Server Modularization & Test Expansion",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/server.js",
+        "src/server/outfittingPresetHandlers.js",
+        "src/server/outfittingPresetHandlers.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/158_guided_onboarding_tutorial_mission.md",
+      "filename": "158_guided_onboarding_tutorial_mission.md",
+      "title": "SPEC-158: Guided Interactive Tutorial Mission & Flight-Deck Onboarding HUD Cards",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/server/tutorialHandlers.test.js",
+        "src/client/tutorialUI.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/159_commodities_schema_invariant_sentry.md",
+      "filename": "159_commodities_schema_invariant_sentry.md",
+      "title": "SPEC-159: Centralized Commodities Schema Registry & Real-Time Production Chain Invariant Monitor Sentry",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/engine/EconomyManager.js",
+        "src/engine/EconomyManager.test.js",
+        "src/engine/EconomyRegistry.test.js"
+      ]
     }
   ],
   "epistemicDebt": {
@@ -4889,6 +4928,25 @@
         "spec": "plan/specs/145_secure_guest_rpc_sentry.md",
         "brokenFiles": [
           "src/net/GuestRpcSentry.test.js"
+        ]
+      },
+      {
+        "spec": "plan/specs/157_outfitting_presets_modularization.md",
+        "brokenFiles": [
+          "src/server/outfittingPresetHandlers.js",
+          "src/server/outfittingPresetHandlers.test.js"
+        ]
+      },
+      {
+        "spec": "plan/specs/158_guided_onboarding_tutorial_mission.md",
+        "brokenFiles": [
+          "src/client/tutorialUI.test.js"
+        ]
+      },
+      {
+        "spec": "plan/specs/159_commodities_schema_invariant_sentry.md",
+        "brokenFiles": [
+          "src/engine/EconomyRegistry.test.js"
         ]
       }
     ]

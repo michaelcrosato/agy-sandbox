@@ -33,12 +33,19 @@ _**v37 re-audit baseline (2026-05-31, ENTIRE v37 blueprint shipped): 1,213 Jest 
 _**v38 re-audit baseline (2026-05-31, ENTIRE v38 blueprint shipped): 1,216 Jest tests / 117 suites green; golden-glassmorphic resource HUD telemetry gauge panel, pre-activated zero-trust outbound firewall containment, and ESM dynamic loader module jailing all 100% DONE.**_
 _**v39 re-audit baseline (2026-05-31, ENTIRE v39 blueprint shipped): 1,222 Jest tests / 118 suites green; secure schema-validated Guest RPC channel sentry, post-run workspace snapshot drift auditing, self-healing copy-on-write restoration cleanup, and golden-glassmorphic cockpit dashboard card all 100% DONE.**_
 _**v42 re-audit baseline (2026-05-31, ENTIRE v41 blueprint shipped): 1,233 Jest tests / 119 suites green; kernel isolation, secure module verification registry, and visual cli terminal HUD all 100% DONE.**_
+_**v43 re-audit baseline (2026-05-31, ENTIRE v42 blueprint shipped): 1,247 Jest tests / 121 suites green; world-derived missions flow, mass-agility physics dynamics, and dynamic faction vengeance spawner all 100% DONE.**_
 
-## v42 — World-Derived Missions, Mass-Agility Dynamics, and Faction Hunter Wave (PENDING) — see [`ROADMAP.md`](ROADMAP.md)
+## v43 — Outfitting Presets, Interactive Onboarding, and Economic Invariants Wave (PENDING) — see [`ROADMAP.md`](ROADMAP.md)
+
+- [ ] `157` Outfitting Presets & Fittings Storage Server Modularization & Test Expansion (extract outfitting preset endpoints and validation checks from server monolith into modular handlers, authoring robust preset CRUD integration tests)
+- [ ] `158` Guided Interactive Tutorial Mission & Flight-Deck Onboarding HUD Cards (build interactable multi-step guided interactive tutorial mission tracking throttle/lock/shoot/salvage/docking objectives, presented in an exquisite golden-glassmorphic onboarding HUD cockpit card)
+- [ ] `159` Centralized Commodities Schema Registry & Real-Time Production Chain Invariant Monitor Sentry (establish centralized commodities validation schema and heartbeat monitor sweeps ensuring non-negative assets and safe margins, logging anomalies to SandboxSecurityRegistry)
+
+## v42 — World-Derived Missions, Mass-Agility Dynamics, and Faction Hunter Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 - [x] `154` World-Derived Generative Missions Landing Flow Integration (integrate dynamic generative missions derived from planetary market surpluses/shortages and conflicts directly into the spaceport landing flow, extracting handlers modularly) — **done** (decoupled handleMissionAccept and handleMissionAbandon into modular spaceportMissionHandlers.js, hardening faction resolution mapping directly from planet entities to support emergent faction reputation updates, and authored dedicated mock integration test suites)
 - [x] `155` Outfitting Fitting Preset Mass-Agility Dynamics HUD Card (calculate total outfitting chassis mass and scale ship velocity/agility dynamics programmatically on the server, presenting metrics on a golden-glassmorphic outfitter HUD) — **done** (extended LoadoutManager.js to compute preset weights, scaled velocity limits and fuel jump costs dynamically based on outfitting mass ratios, exposed metrics via WebSocket stats payload and GET /api/outfitting/metrics HTTP API, designed exquisite gold-glassmorphic HUD cards with SVG gauges, and authored comprehensive unit/integration test suites)
-- [ ] `156` Dynamic Faction Hostility Patrols & Vengeance Hunters Spawner (monitor standings to dispatch elite faction hunter wings targeting hostile players dynamically, registering engagements in the Galactic Chronicle)
+- [x] `156` Dynamic Faction Hostility Patrols & Vengeance Hunters Spawner (monitor standings to dispatch elite faction hunter wings targeting hostile players dynamically, registering engagements in the Galactic Chronicle) — **done** (implemented standings-triggered checks under < -50 with capped dynamic spawns of leader + wingmen, advanced AI lock-on target retention, coordinated shielding maneuvers, dynamic Chronicle news database records, and SandboxSecurityRegistry outcomes logs, verified with robust dedicated tests)
 
 ## v41 — Kernel Isolation, Secure ESM Modules, and Codex CLI Terminal Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

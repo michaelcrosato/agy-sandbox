@@ -18,6 +18,7 @@ import { recordKill, shipBountyValue } from "./CombatRating.js";
 import { mineYield } from "./Mining.js";
 import { shipName, createSeededRng } from "./NameGenerator.js";
 import { squadManager } from "../server/SquadManager.js";
+import { SandboxSecurityRegistry } from "../net/SandboxSecurityRegistry.js";
 
 /**
  * Map defining which sectors share direct warp-gate trade route adjacency links.
@@ -926,6 +927,63 @@ export class GameInstance {
         this.ais.splice(aiIdx, 1);
       }
 
+      // Log vengeance hunter or player vengeance destruction (SPEC-156)
+      const entIsPlayer =
+        Array.from(this.clients.values()).some((c) => c.ship === ent) ||
+        ent.isPlayerMock;
+      if (ent.isVengeanceHunter) {
+        const killerName = killerClient
+          ? killerClient.nickname || killerClient.name
+          : ent.destroyedBy || "Unknown Threat";
+        if (this.chronicle) {
+          this.chronicle.recordEvent({
+            sector: this.id,
+            category: "combat",
+            title: "Vengeance Hunter Neutralized",
+            description: `Elite ${ent.faction} Hunter [${ent.name}] has been destroyed in combat by ${killerName}!`,
+            impactMetrics: {
+              faction: ent.faction,
+              hunterName: ent.name,
+              destroyedBy: killerName,
+            },
+          });
+        }
+        SandboxSecurityRegistry.logViolation(
+          "process",
+          "vengeance_hunter_destroyed",
+          {
+            hunterName: ent.name,
+            faction: ent.faction,
+            destroyedBy: ent.destroyedBy || "Unknown",
+            sector: this.id,
+          },
+        );
+      } else if (entIsPlayer) {
+        const killerEnt = this.engine.entities.find(
+          (e) => e.id === ent.destroyedBy,
+        );
+        if (killerEnt && killerEnt.isVengeanceHunter) {
+          if (this.chronicle) {
+            this.chronicle.recordEvent({
+              sector: this.id,
+              category: "combat",
+              title: "Hostile Pilot Executed",
+              description: `Commander ${ent.name || "Unknown"} has been executed by ${killerEnt.name} for hostile faction crimes!`,
+              impactMetrics: { target: ent.name, executedBy: killerEnt.name },
+            });
+          }
+          SandboxSecurityRegistry.logViolation(
+            "process",
+            "player_executed_by_vengeance",
+            {
+              playerName: ent.name,
+              executedBy: killerEnt.name,
+              sector: this.id,
+            },
+          );
+        }
+      }
+
       // EW1: credit the attributed killer with the victim's worth + a kill.
       if (killerClient && killerClient.ship) {
         recordKill(killerClient.ship, shipBountyValue(ent));
@@ -1403,7 +1461,7 @@ export class GameInstance {
   }
 
   /**
-   * Scrambles highly aggressive elite faction hunters to hunt players with nadir reputation (<= -60).
+   * Scrambles highly aggressive elite faction hunters to hunt players with nadir reputation (< -50).
    * @param {number} dt - Time delta in seconds.
    */
   checkEliteHunterSpawns(dt) {
@@ -1412,7 +1470,7 @@ export class GameInstance {
     if (this.hunterSpawnTimer < 12) return; // check every 12 seconds
     this.hunterSpawnTimer = 0;
 
-    // Scan for players who are highly hostile to any major faction (standing <= -60)
+    // Scan for players who are highly hostile to any major faction (standing < -50)
     for (const ent of this.engine.entities) {
       if (ent.type === "ship" && !ent.isDestroyed) {
         const isPlayer =
@@ -1422,12 +1480,13 @@ export class GameInstance {
 
         for (const faction of ["Federation", "Frontier League", "Pirates"]) {
           const standing = this.factionRegistry.getStanding(ent.id, faction);
-          if (standing <= -60) {
-            // Check if an elite hunter of this faction already exists and is targeting this player in the room
+          if (standing < -50) {
+            // Check if any active vengeance hunter of this faction already exists in the room
             const exists = this.engine.entities.some(
               (e) =>
                 e.type === "ship" &&
-                e.name === `${faction} Hunter Elite` &&
+                e.isVengeanceHunter &&
+                e.faction === faction &&
                 !e.isDestroyed,
             );
             if (exists) continue;
@@ -1441,7 +1500,7 @@ export class GameInstance {
 
             this.lastEliteHunterSpawnTime[ent.id] = Date.now();
             this.spawnEliteHunter(ent, faction);
-            break; // Spawn one hunter at a time
+            break; // Spawn one wing at a time
           }
         }
       }
@@ -1449,9 +1508,9 @@ export class GameInstance {
   }
 
   /**
-   * Spawns a premium, highly aggressive elite faction hunter targeting the hostile player.
+   * Spawns a premium, highly aggressive elite faction hunter wing targeting the hostile player.
    * @param {Object} playerShip - The hostile player's Ship instance.
-   * @param {string} faction - The faction scrambling the elite hunter.
+   * @param {string} faction - The faction scrambling the elite hunter wing.
    */
   spawnEliteHunter(playerShip, faction) {
     const angle = Math.random() * Math.PI * 2;
@@ -1463,42 +1522,99 @@ export class GameInstance {
     if (this.chronicle) {
       this.chronicle.recordEvent({
         sector: this.id,
-        category: "stargate",
-        title: "Elite Hunter Dispatched",
-        description: `An elite ${faction} Hunter carrying a Stargate Interdictor Matrix has been scrambled to intercept player ${playerShip.name || "Unknown"}!`,
-        impactMetrics: { faction, target: playerShip.name },
+        category: "combat",
+        title: "Vengeance Wing Dispatched",
+        description: `An elite ${faction} Vengeance Wing has been scrambled to eliminate hostile player ${playerShip.name || "Unknown"}!`,
+        impactMetrics: { faction, target: playerShip.name, wingSize: 3 },
       });
     }
 
-    const hunterShip = new Ship({
+    SandboxSecurityRegistry.logViolation("process", "vengeance_hunter_spawn", {
+      faction,
+      targetShip: playerShip.name || "Unknown",
+      targetPlayerId: playerShip.id,
+      sector: this.id,
+      leader: `${faction} Hunter Elite`,
+      wingSize: 3,
+    });
+
+    // 1. Wing Leader
+    const leaderShip = new Ship({
       name: `${faction} Hunter Elite`,
       position: spawnPos,
       velocity: new Vector2D(0, 0),
-      maxShield: 1000,
-      maxArmor: 800,
+      maxShield: 1200,
+      maxArmor: 1000,
       thrustPower: 32000,
       turnRate: 3.2,
       weaponDamage: 55,
       weaponCooldown: 0.18,
     });
-    hunterShip.role = "guard";
-    hunterShip.faction = faction;
-    hunterShip.outfits = ["Interdictor Matrix"]; // Elite tactical gravity interdiction capability
+    leaderShip.role = "guard";
+    leaderShip.faction = faction;
+    leaderShip.outfits = [
+      "Hyperdrive Interdictor Matrix",
+      "Interdictor Matrix",
+    ];
+    leaderShip.isVengeanceHunter = true;
+    leaderShip.combatValue = 50000;
+    leaderShip.combatRating = 320; // Elite
 
-    const controller = new AIController(hunterShip, "guard", {
+    const leaderController = new AIController(leaderShip, "guard", {
       useUtilityAdvisor: true,
       factionPolicy: this.factionRegistry.factionPolicy(),
       standingPolicy: this.factionRegistry.standingPolicy(),
       factionRegistry: this.factionRegistry,
     });
-    controller.target = playerShip;
+    leaderController.target = playerShip;
 
-    this.engine.addEntity(hunterShip);
-    this.ais.push(controller);
+    this.engine.addEntity(leaderShip);
+    this.ais.push(leaderController);
+
+    // 2. Wingmen
+    const offsets = [-0.25, 0.25];
+    for (let i = 0; i < offsets.length; i++) {
+      const wingmanAngle = angle + offsets[i];
+      const wingmanPos = playerShip.position.add(
+        new Vector2D(
+          Math.cos(wingmanAngle) * (dist + 50),
+          Math.sin(wingmanAngle) * (dist + 50),
+        ),
+      );
+
+      const wingmanShip = new Ship({
+        name: `${faction} Vengeance Wingman ${i === 0 ? "Alpha" : "Beta"}`,
+        position: wingmanPos,
+        velocity: new Vector2D(0, 0),
+        maxShield: 600,
+        maxArmor: 500,
+        thrustPower: 26000,
+        turnRate: 3.0,
+        weaponDamage: 35,
+        weaponCooldown: 0.25,
+      });
+      wingmanShip.role = "guard";
+      wingmanShip.faction = faction;
+      wingmanShip.outfits = ["Interdictor Matrix"];
+      wingmanShip.isVengeanceHunter = true;
+      wingmanShip.combatValue = 20000;
+      wingmanShip.combatRating = 200; // Dangerous
+
+      const wingmanController = new AIController(wingmanShip, "guard", {
+        useUtilityAdvisor: true,
+        factionPolicy: this.factionRegistry.factionPolicy(),
+        standingPolicy: this.factionRegistry.standingPolicy(),
+        factionRegistry: this.factionRegistry,
+      });
+      wingmanController.target = playerShip;
+
+      this.engine.addEntity(wingmanShip);
+      this.ais.push(wingmanController);
+    }
 
     this.broadcast({
       type: "notification",
-      message: `HIGH THREAT WARNING: ${faction} Hunter Elite has entered the sector to terminate you!`,
+      message: `HIGH THREAT WARNING: ${faction} Vengeance Wing has entered the sector to eliminate you!`,
       style: "error",
     });
   }

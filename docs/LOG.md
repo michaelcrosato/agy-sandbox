@@ -44,6 +44,22 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-05-31T13:46 · iter-0136 · GREEN · spec-156-faction-vengeance-hunter-spawner
+
+- **Baseline:** `3bd2134` on `feat/procedural-missions`; 1,247 Jest green.
+- **Move:** Implement SPEC-156 to monitor player standings, dynamically scramble coordinated elite faction vengeance hunter wings with fearless AI, active interdiction matrix sweeps, and logging.
+- **Changed:**
+  - Hardened standings monitor checks inside `GameInstance.js` to dispatch elite faction hunter wings (1 Leader + 2 Wingmen) dynamically when player reputation falls below the nadir standing of `< -50`.
+  - Configured strict wing capacity controls limiting spawns to 1 active wing (3 ships) per faction in any given room sector.
+  - Programmed fearless utility-ai thresholds in `UtilityAI.js` to divide FLEE scores by 5 and lock ENGAGE scores to a minimum of 0.8.
+  - Implemented lock-on sensor target retention in `AIController.js` (up to 1200 units), alongside dynamic coordinate shielding intercept maneuvers protecting damaged allies under shields <= 40%.
+  - Registered elite spawns, interdictions, and combat outcomes (both hunter destroyed and player executions) in the Galactic Chronicle and the SandboxSecurityRegistry auditing systems.
+  - Exposed properties `isVengeanceHunter` and `needsShieldCoordination` on `Ship.js` and updated helper mappings in `UtilityAI.js` and `AIController.js`.
+  - Authored a comprehensive new unit/integration test suite `src/engine/factionVengeance.test.js` validating spawning thresholds, cap boundaries, targeting locks, coordinated shielding, and outcome logs.
+- **Decisions:** Scaling vengeance spawner wings creates dynamic, persistent late-game faction risk. Splitting AI controls between fearless utility matrices and coordinated team shielding routes ensures high threat profiles without complex state management.
+- **Validation:** Executed `npm run agent:check` confirming a 100% green gate across 1,247 Jest tests, ESLint formatting, and strict type check compiles.
+- **Next:** Transition to Cycle 44 Wave Blueprints under Phase R to perform codebase audits, promote backlog items, and formulate new specifications.
+
 ## 2026-05-31T07:15 · iter-0135 · GREEN · spec-155-mass-agility-outfitting-hud
 
 - **Baseline:** `ab3f3e9` on `feat/procedural-missions`; 1,235 Jest green.

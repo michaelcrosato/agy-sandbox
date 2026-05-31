@@ -49,6 +49,10 @@ export class Ship extends SpaceEntity {
     // pairwise faction policy; absent or null defaults to legacy name-based
     // behaviour so existing fleets remain unaffected.
     this.faction = faction;
+    /** @type {boolean} */
+    this.isVengeanceHunter = false;
+    /** @type {boolean} */
+    this.needsShieldCoordination = false;
     this.thrustPower = thrustPower;
     this.brakePower = brakePower;
     this.turnRate = turnRate;

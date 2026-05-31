@@ -432,7 +432,25 @@ The secure guest RPC channel and workspace integrity self-healing wave:
 
 ---
 
-## EXECUTION WAVES (v42)
+## EXECUTION WAVES (v43)
+
+The outfitting presets modularization, interactive guided tutorial, and economic invariant registry wave:
+
+### Phase 0 — Outfitting Presets Modularization — `157`
+
+- `157` Outfitting Presets & Fittings Storage Server Modularization & Test Expansion (extract all outfitting preset endpoints and validation checks from server monolith into modular handlers, authoring robust preset CRUD integration tests).
+
+### Phase 1 — Interactive Guided Tutorial — `158`
+
+- `158` Guided Interactive Tutorial Mission & Flight-Deck Onboarding HUD Cards (build interactable multi-step guided interactive tutorial mission tracking throttle/lock/shoot/salvage/docking objectives, presented in an exquisite golden-glassmorphic onboarding HUD cockpit card).
+
+### Phase 2 — Economy Invariant Registry — `159`
+
+- `159` Centralized Commodities Schema Registry & Real-Time Production Chain Invariant Monitor Sentry (establish centralized commodities validation schema and heartbeat monitor sweeps ensuring non-negative assets and safe margins, logging anomalies to SandboxSecurityRegistry).
+
+---
+
+## EXECUTION WAVES (v42) — Completed (DONE)
 
 The world-derived missions flow, mass-agility physics dynamics, and dynamic faction vengeance spawner wave:
 
@@ -510,9 +528,12 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title                            | Phase | Impact | Feasibility | Risk(5=safe) | Fit |  Σ  |  Status  |
 | ---- | -------------------------------- | :---: | :----: | :---------: | :----------: | :-: | :-: | :------: |
-| 154  | World-Derived Missions           |   0   |   5    |      5      |      5       |  5  | 20  | Pending  |
-| 155  | Mass-Agility Dynamics HUD        |   1   |   4    |      5      |      5       |  5  | 19  | Pending  |
-| 156  | Dynamic Faction Hunters          |   2   |   5    |      4      |      5       |  5  | 19  | Pending  |
+| 157  | Outfitting Presets Modular       |   0   |   5    |      5      |      5       |  5  | 20  | Pending  |
+| 158  | Guided Onboarding Tutorial       |   1   |   5    |      4      |      5       |  5  | 19  | Pending  |
+| 159  | Economy Invariant Sentry         |   2   |   5    |      5      |      5       |  5  | 20  | Pending  |
+| 154  | World-Derived Missions           |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
+| 155  | Mass-Agility Dynamics HUD        |   1   |   4    |      5      |      5       |  5  | 19  | **DONE** |
+| 156  | Dynamic Faction Hunters          |   2   |   5    |      4      |      5       |  5  | 19  | **DONE** |
 | 151  | Kernel Resource Isolation        |   0   |   5    |      4      |      5       |  5  | 19  | **DONE** |
 | 152  | Secure Module Verification       |   1   |   5    |      5      |      5       |  5  | 20  | **DONE** |
 | 153  | Interactive Codex CLI HUD        |   2   |   4    |      5      |      5       |  5  | 19  | **DONE** |

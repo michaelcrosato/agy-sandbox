@@ -3,6 +3,12 @@
 This is the machine-readable execution ledger for the autonomous-engineering loop in `agy-sandbox`.
 It records cycle transitions, key milestones, and precise next steps.
 
+## Cycle 51 — 2026-05-31
+
+- **Status:** GREEN
+- **Summary:** Successfully initiated Cycle 51 and completed SPEC-172 (Dynamic Memory & CPU Priority Scheduler Sentry) under Wave v49. Shipped `DynamicResourceGovernor.js` monitoring host system resources (free memory ratio and CPU load ratio) with simulated stress overrides for stable test suites. Engineered an asynchronous queue (`GuestLaunchQueue`) inside `GuestRunner.js` that queues untrusted script launches when host free memory falls below 15% or CPU load exceeds 85%. Configured processes to start at normal priority 0, and wired a periodic `cpu_heartbeat` check that dynamically lowers the execution priority of near-budget processes (over 80% CPU or memory) to lowest OS priority level 19 via `os.setPriority`. Exposed metrics via the modular `/metrics` REST endpoint and covered the complete implementation with a robust 11-test unit suite in `DynamicResourceGovernor.test.js` and full gate verify of 1,343 tests.
+- **Next Action:** Claim and implement SPEC-173 (DNS Egress Firewall & Tunneling Sentry) to intercept guest DNS resolutions and block tunneling data exfiltration under a new feature branch.
+
 ## Cycle 50 — 2026-05-31
 
 - **Status:** GREEN

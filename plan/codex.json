@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T17:25:25.383Z",
+  "generatedAt": "2026-05-31T17:37:22.819Z",
   "stats": {
-    "totalSourceFiles": 104,
-    "totalTestFiles": 136,
+    "totalSourceFiles": 105,
+    "totalTestFiles": 137,
     "totalSpecFiles": 180,
-    "totalLoc": 24885,
-    "totalTests": 1742,
+    "totalLoc": 25128,
+    "totalTests": 1754,
     "untestedCoreFilesCount": 6
   },
   "files": [
@@ -1420,6 +1420,31 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/net/DynamicResourceGovernor.js",
+      "loc": 223,
+      "classes": [],
+      "exports": [
+        {
+          "name": "DynamicResourceGovernor",
+          "type": "constant",
+          "jsdoc": null,
+          "line": 26
+        }
+      ],
+      "testFile": "src/net/DynamicResourceGovernor.test.js",
+      "testCasesCount": 12,
+      "referencingSpecs": [
+        "plan/specs/172_dynamic_memory_priority_scheduler.md"
+      ],
+      "missingJsDocSymbols": [
+        {
+          "name": "DynamicResourceGovernor",
+          "type": "constant",
+          "line": 26
+        }
+      ]
+    },
+    {
       "path": "src/net/EphemeralSandbox.js",
       "loc": 115,
       "classes": [
@@ -1493,14 +1518,14 @@
     },
     {
       "path": "src/net/GuestRunner.js",
-      "loc": 504,
+      "loc": 523,
       "classes": [],
       "exports": [
         {
           "name": "GuestRunner",
           "type": "constant",
           "jsdoc": null,
-          "line": 22
+          "line": 23
         }
       ],
       "testFile": "src/net/GuestRunner.test.js",
@@ -1512,7 +1537,7 @@
         {
           "name": "GuestRunner",
           "type": "constant",
-          "line": 22
+          "line": 23
         }
       ]
     },
@@ -2214,7 +2239,7 @@
     },
     {
       "path": "src/net/StaticSecuritySentry.js",
-      "loc": 311,
+      "loc": 310,
       "classes": [],
       "exports": [
         {
@@ -2821,14 +2846,14 @@
     },
     {
       "path": "src/server/restHandlers.js",
-      "loc": 634,
+      "loc": 636,
       "classes": [],
       "exports": [
         {
           "name": "handleRestRequest",
           "type": "function",
           "jsdoc": "/**\n* Handles incoming REST API and static file serving requests modularly.\n*\n* @param {import(\"http\").IncomingMessage} req The HTTP request.\n* @param {import(\"http\").ServerResponse} res The HTTP response.\n* @param {Object} options The configuration/dependency singletons option object.\n* @param {Object} options.metrics The core metrics registry.\n* @param {Map} options.instances The active room/sector instances directory.\n* @param {Object} options.matchmakingQueue The active JoinQueue.\n* @param {Object} options.latencyMonitor The LatencyMonitor singleton.\n* @param {Object} options.sandboxTelemetry The SandboxTelemetry singleton.\n* @param {Object} options.apiRateLimiter The ApiRateLimiter singleton.\n* @param {Object} options.sandboxFirewall The SandboxFirewall singleton.\n* @param {Object} options.memoryLeakSentry The MemoryLeakSentry singleton.\n* @param {Object} options.anomalyDetector The AnomalyDetector singleton.\n* @param {Map} options.clients The map of active sockets/clients ws -> clientObj.\n* @param {Object} options.galacticChronicle The GalacticChronicle instance.\n* @param {number} options.PORT The HTTP port the server is listening on.\n* @param {number} options.WORKERS The total number of sharded worker processes.\n* @param {number} options.SHARD_INDEX The current shard index.\n* @param {Object} options.wss The WebSocketServer instance.\n* @param {string} [options.ROOT_DIR] The optional repository root directory path.\n*/",
-          "line": 43
+          "line": 44
         }
       ],
       "testFile": "src/server/restHandlers.test.js",
@@ -5084,6 +5109,16 @@
     ],
     "missingJsDocs": [
       {
+        "path": "src/net/DynamicResourceGovernor.js",
+        "symbols": [
+          {
+            "name": "DynamicResourceGovernor",
+            "type": "constant",
+            "line": 26
+          }
+        ]
+      },
+      {
         "path": "src/net/GuestRpcSentry.js",
         "symbols": [
           {
@@ -5104,7 +5139,7 @@
           {
             "name": "GuestRunner",
             "type": "constant",
-            "line": 22
+            "line": 23
           }
         ]
       },
@@ -5232,13 +5267,6 @@
         "brokenFiles": [
           "src/client/__tests__/CanvasRenderer.browser.test.js",
           "src/client/__tests__/PlaywrightVisual.test.js"
-        ]
-      },
-      {
-        "spec": "plan/specs/172_dynamic_memory_priority_scheduler.md",
-        "brokenFiles": [
-          "src/net/DynamicResourceGovernor.js",
-          "src/net/DynamicResourceGovernor.test.js"
         ]
       },
       {

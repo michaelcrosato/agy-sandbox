@@ -12,6 +12,7 @@ import { SandboxSecurityRegistry } from "../net/SandboxSecurityRegistry.js";
 import { validateMessage } from "../net/SchemaValidator.js";
 import { COMMODITIES_METADATA, SCHEMAS } from "../net/SchemaRegistry.js";
 import { buildLobbyRoomsList } from "./lobbySync.js";
+import { DynamicResourceGovernor } from "../net/DynamicResourceGovernor.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -155,6 +156,7 @@ export function handleRestRequest(req, res, options) {
         active_workers: ProcessReaper.getWorkerCount(),
       },
       process_sentinel: ProcessSentinel.getStats(),
+      resource_governor: DynamicResourceGovernor.getMetrics(),
       guest_sandbox: {
         active_runs: Array.from(GuestRunner.activeRuns.values()),
         recent_runs: GuestRunner.recentRuns,

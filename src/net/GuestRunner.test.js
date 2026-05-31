@@ -503,7 +503,7 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
         timeoutMs: 3000,
       });
       expect(callCount).toBeGreaterThan(0);
-      expect(lastArgs[1]).toBe(19);
+      expect(lastArgs[1]).toBe(0);
     } finally {
       process.setPriority = originalSetPriority;
     }
@@ -531,7 +531,7 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
       expect(warnings.length).toBeGreaterThan(0);
       expect(
         warnings.some((w) =>
-          w.includes("Failed to set low CPU scheduling priority for guest PID"),
+          w.includes("Failed to set CPU scheduling priority for guest PID"),
         ),
       ).toBe(true);
     } finally {

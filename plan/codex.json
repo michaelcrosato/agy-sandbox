@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T02:02:52.018Z",
+  "generatedAt": "2026-05-31T04:00:39.886Z",
   "stats": {
-    "totalSourceFiles": 73,
-    "totalTestFiles": 102,
-    "totalSpecFiles": 112,
-    "totalLoc": 17271,
-    "totalTests": 1389,
+    "totalSourceFiles": 76,
+    "totalTestFiles": 105,
+    "totalSpecFiles": 115,
+    "totalLoc": 17735,
+    "totalTests": 1483,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -490,14 +490,15 @@
         }
       ],
       "testFile": "src/engine/GameInstance.test.js",
-      "testCasesCount": 11,
+      "testCasesCount": 78,
       "referencingSpecs": [
         "plan/specs/047_dynamic_reputation_patrol_spawns.md",
         "plan/specs/048_contraband_space_patrol_scans.md",
         "plan/specs/054_faction_conflict_battlegrounds.md",
         "plan/specs/066_utilityai_advisor_spawns_rollout.md",
         "plan/specs/081_outlaw_black_markets.md",
-        "plan/specs/104_living_codex_hygiene_jsdoc_audit.md"
+        "plan/specs/104_living_codex_hygiene_jsdoc_audit.md",
+        "plan/specs/107_gameinstance_deep_test_coverage.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -1859,7 +1860,9 @@
       ],
       "testFile": "src/persistence/serializers.test.js",
       "testCasesCount": 15,
-      "referencingSpecs": [],
+      "referencingSpecs": [
+        "plan/specs/108_kill_restart_rejoin_persistence.md"
+      ],
       "missingJsDocSymbols": []
     },
     {
@@ -1952,6 +1955,37 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/server/chatHandler.js",
+      "loc": 76,
+      "classes": [],
+      "exports": [],
+      "testFile": "src/server/chatHandler.test.js",
+      "testCasesCount": 8,
+      "referencingSpecs": [
+        "plan/specs/109_server_handler_extraction_round4.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/fleetHandlers.js",
+      "loc": 52,
+      "classes": [],
+      "exports": [
+        {
+          "name": "handleFleetAction",
+          "type": "function",
+          "jsdoc": "/**\n* Handles \"fleet_create\", \"fleet_join\", and \"fleet_leave\" WebSocket messages.\n*\n* @param {object} clientObj - The active client connection object.\n* @param {object} msg - The incoming action message payload.\n* @param {object} room - The current GameInstance room context.\n*/",
+          "line": 8
+        }
+      ],
+      "testFile": "src/server/fleetHandlers.test.js",
+      "testCasesCount": 6,
+      "referencingSpecs": [
+        "plan/specs/109_server_handler_extraction_round4.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
       "path": "src/server/galaxyTicker.js",
       "loc": 376,
       "classes": [],
@@ -2010,6 +2044,37 @@
       "referencingSpecs": [
         "plan/specs/042_server_monolith_extraction_galaxy_ticker.md",
         "plan/specs/078_reputation_decay_heartbeat.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/gameplayHandlers.js",
+      "loc": 336,
+      "classes": [],
+      "exports": [
+        {
+          "name": "handleControls",
+          "type": "function",
+          "jsdoc": "/**\n* Handles the \"controls\" message: updates ship controls and heading.\n*\n* @param {object} clientObj - The authenticated client object.\n* @param {object} msg - The controls payload.\n*/",
+          "line": 12
+        },
+        {
+          "name": "handleLand",
+          "type": "function",
+          "jsdoc": "/**\n* Handles the \"land\" message: docking on a planet, contraband scans,\n* mission completion, mission generation, and state saving.\n*\n* @param {object} clientObj - The authenticated client object.\n* @param {object} room - The current GameInstance room.\n* @param {object} persistenceManager - The PersistenceManager instance.\n*/",
+          "line": 27
+        },
+        {
+          "name": "handleLaunch",
+          "type": "function",
+          "jsdoc": "/**\n* Handles the \"launch\" message: taking off from a planet, repositioning ship.\n*\n* @param {object} clientObj - The authenticated client object.\n* @param {object} room - The current GameInstance room.\n*/",
+          "line": 313
+        }
+      ],
+      "testFile": "src/server/gameplayHandlers.test.js",
+      "testCasesCount": 12,
+      "referencingSpecs": [
+        "plan/specs/109_server_handler_extraction_round4.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -3564,6 +3629,47 @@
         "src/net/ProcessSentinel.test.js",
         "src/net/PortReclaimer.test.js",
         "src/server.js"
+      ]
+    },
+    {
+      "path": "plan/specs/107_gameinstance_deep_test_coverage.md",
+      "filename": "107_gameinstance_deep_test_coverage.md",
+      "title": "SPEC-107: GameInstance Deep Test Coverage Expansion",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/engine/GameInstance.js",
+        "src/engine/GameInstance.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/108_kill_restart_rejoin_persistence.md",
+      "filename": "108_kill_restart_rejoin_persistence.md",
+      "title": "SPEC-108: Kill-Restart-Rejoin Persistence Integration Test",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/persistence/restart.integration.test.js",
+        "src/persistence/serializers.js"
+      ]
+    },
+    {
+      "path": "plan/specs/109_server_handler_extraction_round4.md",
+      "filename": "109_server_handler_extraction_round4.md",
+      "title": "SPEC-109: Server.js Handler Extraction Round 4 — Chat, Fleet & Misc Handlers",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/server.js",
+        "src/server/chatHandler.js",
+        "src/server/fleetHandlers.js",
+        "src/server/gameplayHandlers.js",
+        "src/server/chatHandler.test.js",
+        "src/server/fleetHandlers.test.js",
+        "src/server/gameplayHandlers.test.js"
       ]
     }
   ],

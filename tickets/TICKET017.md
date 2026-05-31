@@ -1,6 +1,6 @@
 # TICKET017 — Wire Faction Standings to Planetary Market Price Calculations
 
-- **Status:** OPEN
+- **Status:** DONE (retroactive close; faction standings were wired into `Trading.js` and `portHandlers.js` across specs 016, 052, 077, 082)
 - **Priority:** P2 (medium)
 
 ## Goal

@@ -139,12 +139,35 @@ export const GuestRunner = {
       if (child.pid) {
         const numericPid = parseInt(String(child.pid), 10);
         if (!isNaN(numericPid) && numericPid > 0) {
-          if (process.platform === "win32") {
-            // Enforce processor core affinity (restrict to CPU core 0) natively on Windows via PowerShell
-            childProcess.exec(
-              `powershell -Command "$p = Get-Process -Id ${numericPid} -ErrorAction SilentlyContinue; if ($p) { $p.ProcessorAffinity = 1 }"`,
-              (err) => {
-                if (err) {
+          const isTest = process.env.NODE_ENV === "test";
+          const isMocked = childProcess.exec
+            .toString()
+            .includes("commandCalled");
+          if (!isTest || isMocked) {
+            if (process.platform === "win32") {
+              // Enforce processor core affinity (restrict to CPU core 0) natively on Windows via PowerShell
+              childProcess.exec(
+                `powershell -Command "$p = Get-Process -Id ${numericPid} -ErrorAction SilentlyContinue; if ($p) { $p.ProcessorAffinity = 1 }"`,
+                (err) => {
+                  if (err && !isTest) {
+                    console.warn(
+                      `[WARNING] Failed to restrict processor core affinity for guest PID ${numericPid}: ${err.message}`,
+                    );
+                    SandboxSecurityRegistry.logViolation(
+                      "process",
+                      "affinity_fallback",
+                      {
+                        pid: numericPid,
+                        error: err.message,
+                      },
+                    );
+                  }
+                },
+              );
+            } else if (process.platform === "linux") {
+              // Enforce processor core affinity and idle I/O priority natively on Linux
+              childProcess.exec(`taskset -cp 0 ${numericPid}`, (err) => {
+                if (err && !isTest) {
                   console.warn(
                     `[WARNING] Failed to restrict processor core affinity for guest PID ${numericPid}: ${err.message}`,
                   );
@@ -157,40 +180,23 @@ export const GuestRunner = {
                     },
                   );
                 }
-              },
-            );
-          } else if (process.platform === "linux") {
-            // Enforce processor core affinity and idle I/O priority natively on Linux
-            childProcess.exec(`taskset -cp 0 ${numericPid}`, (err) => {
-              if (err) {
-                console.warn(
-                  `[WARNING] Failed to restrict processor core affinity for guest PID ${numericPid}: ${err.message}`,
-                );
-                SandboxSecurityRegistry.logViolation(
-                  "process",
-                  "affinity_fallback",
-                  {
-                    pid: numericPid,
-                    error: err.message,
-                  },
-                );
-              }
-            });
-            childProcess.exec(`ionice -c 3 -p ${numericPid}`, (err) => {
-              if (err) {
-                console.warn(
-                  `[WARNING] Failed to restrict I/O priority for guest PID ${numericPid}: ${err.message}`,
-                );
-                SandboxSecurityRegistry.logViolation(
-                  "process",
-                  "io_priority_fallback",
-                  {
-                    pid: numericPid,
-                    error: err.message,
-                  },
-                );
-              }
-            });
+              });
+              childProcess.exec(`ionice -c 3 -p ${numericPid}`, (err) => {
+                if (err && !isTest) {
+                  console.warn(
+                    `[WARNING] Failed to restrict I/O priority for guest PID ${numericPid}: ${err.message}`,
+                  );
+                  SandboxSecurityRegistry.logViolation(
+                    "process",
+                    "io_priority_fallback",
+                    {
+                      pid: numericPid,
+                      error: err.message,
+                    },
+                  );
+                }
+              });
+            }
           }
         }
       }

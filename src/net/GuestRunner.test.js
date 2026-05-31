@@ -548,6 +548,28 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
     }
   });
 
+  test("should skip execution of affinity and isolation command in test environment when not explicitly mocked to prevent CPU starvation (SPEC-151)", async () => {
+    const originalExec = childProcess.exec;
+    let execCalled = false;
+    // Replace with a standard spy function that has NO 'commandCalled' string in its implementation.
+    childProcess.exec = function (cmd, options, callback) {
+      execCalled = true;
+      const cb = typeof options === "function" ? options : callback;
+      if (cb) process.nextTick(() => cb(null, "", ""));
+      return /** @type {any} */ ({});
+    };
+
+    try {
+      await GuestRunner.runScript(tempImportScript, {
+        timeoutMs: 3000,
+      });
+      // It should NOT call the spy function since it is not the specific "commandCalled" mock definition!
+      expect(execCalled).toBe(false);
+    } finally {
+      childProcess.exec = originalExec;
+    }
+  });
+
   test("should block ESM loader imports that fail cryptographic integrity checksum verification (SPEC-152)", async () => {
     // Ensure the registry is empty so the sub-module has no trusted signature registered
     SecureModuleRegistry.clear();

@@ -225,7 +225,9 @@ function checkPath(filePath, isWrite = false) {
     // 1. If it resolved inside the active sandboxDir, it's always allowed (read/write)
     if (
       resolved === sandboxDir ||
-      resolved.startsWith(sandboxDir.endsWith(path.sep) ? sandboxDir : sandboxDir + path.sep)
+      resolved.startsWith(
+        sandboxDir.endsWith(path.sep) ? sandboxDir : sandboxDir + path.sep,
+      )
     ) {
       return;
     }
@@ -252,9 +254,17 @@ function checkPath(filePath, isWrite = false) {
     const workspaceNodeModules = path.resolve(process.cwd(), "node_modules");
     if (
       resolved === rootNodeModules ||
-      resolved.startsWith(rootNodeModules.endsWith(path.sep) ? rootNodeModules : rootNodeModules + path.sep) ||
+      resolved.startsWith(
+        rootNodeModules.endsWith(path.sep)
+          ? rootNodeModules
+          : rootNodeModules + path.sep,
+      ) ||
       resolved === workspaceNodeModules ||
-      resolved.startsWith(workspaceNodeModules.endsWith(path.sep) ? workspaceNodeModules : workspaceNodeModules + path.sep)
+      resolved.startsWith(
+        workspaceNodeModules.endsWith(path.sep)
+          ? workspaceNodeModules
+          : workspaceNodeModules + path.sep,
+      )
     ) {
       return;
     }
@@ -273,7 +283,9 @@ function checkPath(filePath, isWrite = false) {
     );
     if (
       resolved === workerFile ||
-      resolved.startsWith(workerFile.endsWith(path.sep) ? workerFile : workerFile + path.sep)
+      resolved.startsWith(
+        workerFile.endsWith(path.sep) ? workerFile : workerFile + path.sep,
+      )
     ) {
       return;
     }
@@ -472,7 +484,11 @@ export function validateCommand(command, args = []) {
           // Allow inside sandbox
           if (
             resolved === sandboxDir ||
-            resolved.startsWith(sandboxDir.endsWith(path.sep) ? sandboxDir : sandboxDir + path.sep)
+            resolved.startsWith(
+              sandboxDir.endsWith(path.sep)
+                ? sandboxDir
+                : sandboxDir + path.sep,
+            )
           ) {
             continue;
           }
@@ -487,9 +503,17 @@ export function validateCommand(command, args = []) {
           );
           if (
             resolved === rootNodeModules ||
-            resolved.startsWith(rootNodeModules.endsWith(path.sep) ? rootNodeModules : rootNodeModules + path.sep) ||
+            resolved.startsWith(
+              rootNodeModules.endsWith(path.sep)
+                ? rootNodeModules
+                : rootNodeModules + path.sep,
+            ) ||
             resolved === workspaceNodeModules ||
-            resolved.startsWith(workspaceNodeModules.endsWith(path.sep) ? workspaceNodeModules : workspaceNodeModules + path.sep)
+            resolved.startsWith(
+              workspaceNodeModules.endsWith(path.sep)
+                ? workspaceNodeModules
+                : workspaceNodeModules + path.sep,
+            )
           ) {
             continue;
           }
@@ -499,7 +523,11 @@ export function validateCommand(command, args = []) {
           );
           if (
             resolved === workerFile ||
-            resolved.startsWith(workerFile.endsWith(path.sep) ? workerFile : workerFile + path.sep)
+            resolved.startsWith(
+              workerFile.endsWith(path.sep)
+                ? workerFile
+                : workerFile + path.sep,
+            )
           ) {
             continue;
           }

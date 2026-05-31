@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T16:27:58.433Z",
+  "generatedAt": "2026-05-31T16:43:53.525Z",
   "stats": {
     "totalSourceFiles": 102,
     "totalTestFiles": 133,
-    "totalSpecFiles": 173,
-    "totalLoc": 23763,
-    "totalTests": 1717,
+    "totalSpecFiles": 177,
+    "totalLoc": 23965,
+    "totalTests": 1722,
     "untestedCoreFilesCount": 6
   },
   "files": [
@@ -1408,12 +1408,14 @@
     },
     {
       "path": "src/net/GuestLoader.js",
-      "loc": 82,
+      "loc": 117,
       "classes": [],
       "exports": [],
       "testFile": null,
       "testCasesCount": 0,
-      "referencingSpecs": [],
+      "referencingSpecs": [
+        "plan/specs/168_loader_native_modules_restriction.md"
+      ],
       "missingJsDocSymbols": []
     },
     {
@@ -1471,7 +1473,7 @@
         }
       ],
       "testFile": "src/net/GuestRunner.test.js",
-      "testCasesCount": 20,
+      "testCasesCount": 23,
       "referencingSpecs": [
         "plan/specs/136_isolated_guest_runner.md"
       ],
@@ -1520,7 +1522,7 @@
     },
     {
       "path": "src/net/IntegrityGuard.js",
-      "loc": 205,
+      "loc": 244,
       "classes": [],
       "exports": [
         {
@@ -1533,7 +1535,8 @@
       "testFile": "src/net/IntegrityGuard.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [
-        "plan/specs/134_global_prototype_freeze_sentry.md"
+        "plan/specs/134_global_prototype_freeze_sentry.md",
+        "plan/specs/167_process_binding_dlopen_lockdown.md"
       ],
       "missingJsDocSymbols": [
         {
@@ -1753,27 +1756,28 @@
     },
     {
       "path": "src/net/ProcessReaper.js",
-      "loc": 160,
+      "loc": 244,
       "classes": [],
       "exports": [
         {
           "name": "ProcessReaper",
           "type": "constant",
           "jsdoc": "/**\n* ProcessReaper (spec 092) — pure, modular lifecycle manager to track\n* and aggressively terminate background workers, child processes, and\n* sockets to prevent memory leaks and zombie locks in the AI sandbox.\n* @type {object}\n*/",
-          "line": 67
+          "line": 110
         }
       ],
       "testFile": "src/net/ProcessReaper.test.js",
-      "testCasesCount": 6,
+      "testCasesCount": 7,
       "referencingSpecs": [
         "plan/specs/092_zombie_reaper_orphan_cleanup.md",
-        "plan/specs/104_living_codex_hygiene_jsdoc_audit.md"
+        "plan/specs/104_living_codex_hygiene_jsdoc_audit.md",
+        "plan/specs/170_autonomic_reaper_host_signals.md"
       ],
       "missingJsDocSymbols": []
     },
     {
       "path": "src/net/ProcessSentinel.js",
-      "loc": 1304,
+      "loc": 1348,
       "classes": [
         {
           "name": "for",
@@ -1801,26 +1805,27 @@
           "name": "parseCommandString",
           "type": "function",
           "jsdoc": "/**\n* Parses a full command string into a binary name and an array of arguments,\n* respecting basic quotes.\n* @param {string} cmdStr - Full shell command string.\n* @returns {ParsedCommand}\n*/",
-          "line": 329
+          "line": 349
         },
         {
           "name": "validateCommand",
           "type": "function",
           "jsdoc": "/**\n* Validates whether a command and its arguments are permitted under the strict security whitelist.\n* @param {string} command - The command or binary path under evaluation.\n* @param {string[]} [args=[]] - Optional array of arguments passed to the command.\n* @returns {{ allowed: boolean, reason?: string }}\n*/",
-          "line": 373
+          "line": 393
         },
         {
           "name": "ProcessSentinel",
           "type": "constant",
           "jsdoc": "/**\n* ProcessSentinel (spec 106) — child process security sentinel whitelister.\n* @type {object}\n*/",
-          "line": 531
+          "line": 575
         }
       ],
       "testFile": "src/net/ProcessSentinel.test.js",
-      "testCasesCount": 14,
+      "testCasesCount": 15,
       "referencingSpecs": [
         "plan/specs/106_sandbox_containment_sentinel.md",
-        "plan/specs/138_strict_path_jailing.md"
+        "plan/specs/138_strict_path_jailing.md",
+        "plan/specs/169_path_sibling_directory_jailing.md"
       ],
       "missingJsDocSymbols": [
         {
@@ -4927,6 +4932,52 @@
       "pillar": "None",
       "filesMentioned": [
         "src/server/PlaywrightVisual.integration.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/167_process_binding_dlopen_lockdown.md",
+      "filename": "167_process_binding_dlopen_lockdown.md",
+      "title": "SPEC-167: Lock Down Node Native C++ Bindings (process.dlopen, process.binding, process._linkedBinding)",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/IntegrityGuard.js"
+      ]
+    },
+    {
+      "path": "plan/specs/168_loader_native_modules_restriction.md",
+      "filename": "168_loader_native_modules_restriction.md",
+      "title": "SPEC-168: Restrict Dynamic and Static Imports of Dangerous Core Native Libraries in GuestLoader",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/GuestLoader.js",
+        "src/net/GuestRunner.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/169_path_sibling_directory_jailing.md",
+      "filename": "169_path_sibling_directory_jailing.md",
+      "title": "SPEC-169: Prevent Sandbox Directory Traversal Escapes via Sibling Directory Boundary Separation",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/ProcessSentinel.js",
+        "src/net/ProcessSentinel.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/170_autonomic_reaper_host_signals.md",
+      "filename": "170_autonomic_reaper_host_signals.md",
+      "title": "SPEC-170: Autonomic Process Tree Teardown Registry in ProcessReaper on Host Signal Interceptions",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/ProcessReaper.js"
       ]
     }
   ],

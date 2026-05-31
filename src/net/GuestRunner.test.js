@@ -407,7 +407,8 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
         (v.category === "firewall" && v.action === "connect") ||
         (v.category === "integrity" &&
           v.action === "native_import_violation" &&
-          (v.details.specifier === "dns" || v.details.specifier === "node:dns")),
+          (v.details.specifier === "dns" ||
+            v.details.specifier === "node:dns")),
     );
     expect(firewallViolation).toBeDefined();
     if (firewallViolation.action === "connect") {
@@ -620,7 +621,10 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
   });
 
   test("should block dynamic imports of dangerous native core libraries in GuestLoader (SPEC-168)", async () => {
-    const tempEvilImportScript = path.join(__dirname, "temp_guest_evil_import.js");
+    const tempEvilImportScript = path.join(
+      __dirname,
+      "temp_guest_evil_import.js",
+    );
     fs.writeFileSync(
       tempEvilImportScript,
       `try {
@@ -629,7 +633,7 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
       } catch (err) {
         console.log("NATIVE_IMPORT_BLOCKED: " + err.message);
       }`,
-      "utf8"
+      "utf8",
     );
 
     try {
@@ -638,7 +642,9 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
       });
 
       expect(result.stdout).toContain("NATIVE_IMPORT_BLOCKED:");
-      expect(result.stdout).toContain("Access to native core module [node:child_process] is restricted");
+      expect(result.stdout).toContain(
+        "Access to native core module [node:child_process] is restricted",
+      );
 
       // Verify integrity violation log is registered inside SandboxSecurityRegistry disk file
       const auditFile = result.childAuditFile || testAuditFile;
@@ -663,7 +669,10 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
   });
 
   test("should permit dynamic imports of safe native core libraries in GuestLoader (SPEC-168)", async () => {
-    const tempSafeImportScript = path.join(__dirname, "temp_guest_safe_import.js");
+    const tempSafeImportScript = path.join(
+      __dirname,
+      "temp_guest_safe_import.js",
+    );
     fs.writeFileSync(
       tempSafeImportScript,
       `try {
@@ -672,7 +681,7 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
       } catch (err) {
         console.log("SAFE_IMPORT_BLOCKED: " + err.message);
       }`,
-      "utf8"
+      "utf8",
     );
 
     try {
@@ -715,7 +724,7 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
       } catch (err) {
         console.log("OVERRIDE_FAILED: " + err.message);
       }`,
-      "utf8"
+      "utf8",
     );
 
     try {
@@ -724,9 +733,13 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
       });
 
       expect(result.stdout).toContain("BINDING_BLOCKED:");
-      expect(result.stdout).toContain("Access to native C++ binding [process.binding] is blocked");
+      expect(result.stdout).toContain(
+        "Access to native C++ binding [process.binding] is blocked",
+      );
       expect(result.stdout).toContain("DLOPEN_BLOCKED:");
-      expect(result.stdout).toContain("Access to native C++ binding [process.dlopen] is blocked");
+      expect(result.stdout).toContain(
+        "Access to native C++ binding [process.dlopen] is blocked",
+      );
       expect(result.stdout).toContain("OVERRIDE_FAILED:");
 
       // Verify C++ binding escape violations are registered in SandboxSecurityRegistry
@@ -735,8 +748,7 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
       const content = fs.readFileSync(auditFile, "utf8");
       const logs = JSON.parse(content);
       const bindingViolation = logs.find(
-        (v) =>
-          v.category === "integrity" && v.action === "cpp_binding_escape",
+        (v) => v.category === "integrity" && v.action === "cpp_binding_escape",
       );
       expect(bindingViolation).toBeDefined();
     } finally {

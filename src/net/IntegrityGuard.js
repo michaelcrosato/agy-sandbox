@@ -137,13 +137,13 @@ export const IntegrityGuard = {
                 {
                   method: methodName,
                   reason: `Unauthorized attempt to call native C++ binding [process.${methodName}]`,
-                }
+                },
               );
             } catch {
               // Fail-safe registry logging bypass
             }
             throw new Error(
-              `[SECURITY ACCESS DENIED] Access to native C++ binding [process.${methodName}] is blocked inside the guest sandbox.`
+              `[SECURITY ACCESS DENIED] Access to native C++ binding [process.${methodName}] is blocked inside the guest sandbox.`,
             );
           };
         };

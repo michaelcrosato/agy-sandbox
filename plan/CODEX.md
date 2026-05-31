@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T16:27:58.433Z` · Baseline: `23,763 LOC` across `102 source files`
+> Generated: `2026-05-31T16:43:53.525Z` · Baseline: `23,965 LOC` across `102 source files`
 
 ---
 
@@ -9,11 +9,11 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `23,763 LOC` | 🟢 Healthy |
+| **Total Code Volume** | `23,965 LOC` | 🟢 Healthy |
 | **Source Modules** | `102 files` | 🟢 Structured |
 | **Test Suites** | `133 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1717 cases` | 🟢 Deterministic |
-| **Active/Archived Specs** | `173 specifications` | 🟢 Traceable |
+| **Total Test Cases** | `1722 cases` | 🟢 Deterministic |
+| **Active/Archived Specs** | `177 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `6 files` | ⚠️ Debt Pending |
 
 ---
@@ -83,12 +83,12 @@
 | [ConnectionFloodSentry.js](file:///C:/dev/agy-sandbox/src/net/ConnectionFloodSentry.js) | 81 | `class ConnectionFloodSentry` | [ConnectionFloodSentry.test.js](file:///C:/dev/agy-sandbox/src/net/ConnectionFloodSentry.test.js) | [`127_connection_flood_protection`](file:///C:/dev/agy-sandbox/plan/specs/127_connection_flood_protection.md) |
 | [DeltaStateCodec.js](file:///C:/dev/agy-sandbox/src/net/DeltaStateCodec.js) | 120 | `class DeltaStateCodec` | [DeltaStateCodec.test.js](file:///C:/dev/agy-sandbox/src/net/DeltaStateCodec.test.js) | [`072_snapshot_delta_compression`](file:///C:/dev/agy-sandbox/plan/specs/072_snapshot_delta_compression.md) |
 | [EphemeralSandbox.js](file:///C:/dev/agy-sandbox/src/net/EphemeralSandbox.js) | 115 | `class EphemeralSandbox` | [EphemeralSandbox.test.js](file:///C:/dev/agy-sandbox/src/net/EphemeralSandbox.test.js) | [`115_ephemeral_workspace_sandbox`](file:///C:/dev/agy-sandbox/plan/specs/115_ephemeral_workspace_sandbox.md) |
-| [GuestLoader.js](file:///C:/dev/agy-sandbox/src/net/GuestLoader.js) | 82 | _None_ | ❌ _Untested_ | _None_ |
+| [GuestLoader.js](file:///C:/dev/agy-sandbox/src/net/GuestLoader.js) | 117 | _None_ | ❌ _Untested_ | [`168_loader_native_modules_restriction`](file:///C:/dev/agy-sandbox/plan/specs/168_loader_native_modules_restriction.md) |
 | [GuestRpcSentry.js](file:///C:/dev/agy-sandbox/src/net/GuestRpcSentry.js) | 188 | `constant ALLOWED_RPC_ACTIONS`, `function validateRpcRequest`, `constant GuestRpcSentry` | ❌ _Untested_ | [`145_secure_guest_rpc_sentry`](file:///C:/dev/agy-sandbox/plan/specs/145_secure_guest_rpc_sentry.md) |
 | [GuestRunner.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.js) | 484 | `constant GuestRunner` | [GuestRunner.test.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.test.js) | [`136_isolated_guest_runner`](file:///C:/dev/agy-sandbox/plan/specs/136_isolated_guest_runner.md) |
 | [GuestRunnerWorker.js](file:///C:/dev/agy-sandbox/src/net/GuestRunnerWorker.js) | 113 | _None_ | ❌ _Untested_ | _None_ |
 | [heartbeat.js](file:///C:/dev/agy-sandbox/src/net/heartbeat.js) | 30 | `constant DEFAULT_HEARTBEAT_MS`, `function selectDeadSockets` | [heartbeat.test.js](file:///C:/dev/agy-sandbox/src/net/heartbeat.test.js) | [`003_ws_connection_heartbeat`](file:///C:/dev/agy-sandbox/plan/specs/003_ws_connection_heartbeat.md) |
-| [IntegrityGuard.js](file:///C:/dev/agy-sandbox/src/net/IntegrityGuard.js) | 205 | `constant IntegrityGuard` | [IntegrityGuard.test.js](file:///C:/dev/agy-sandbox/src/net/IntegrityGuard.test.js) | [`134_global_prototype_freeze_sentry`](file:///C:/dev/agy-sandbox/plan/specs/134_global_prototype_freeze_sentry.md) |
+| [IntegrityGuard.js](file:///C:/dev/agy-sandbox/src/net/IntegrityGuard.js) | 244 | `constant IntegrityGuard` | [IntegrityGuard.test.js](file:///C:/dev/agy-sandbox/src/net/IntegrityGuard.test.js) | [`134_global_prototype_freeze_sentry`](file:///C:/dev/agy-sandbox/plan/specs/134_global_prototype_freeze_sentry.md)<br>[`167_process_binding_dlopen_lockdown`](file:///C:/dev/agy-sandbox/plan/specs/167_process_binding_dlopen_lockdown.md) |
 | [interest.js](file:///C:/dev/agy-sandbox/src/net/interest.js) | 170 | `constant DEFAULT_INTEREST_RADIUS`, `function interestFilter`, `function buildSpatialGrid` | [interest.test.js](file:///C:/dev/agy-sandbox/src/net/interest.test.js) | [`014_interest_management`](file:///C:/dev/agy-sandbox/plan/specs/014_interest_management.md)<br>[`049_interest_management_grid_optimization`](file:///C:/dev/agy-sandbox/plan/specs/049_interest_management_grid_optimization.md)<br>[`059_alliance_fleets`](file:///C:/dev/agy-sandbox/plan/specs/059_alliance_fleets.md) |
 | [LatencyMonitor.js](file:///C:/dev/agy-sandbox/src/net/LatencyMonitor.js) | 108 | `class LatencyMonitor` | [LatencyMonitor.test.js](file:///C:/dev/agy-sandbox/src/net/LatencyMonitor.test.js) | [`090_event_loop_latency_backpressure`](file:///C:/dev/agy-sandbox/plan/specs/090_event_loop_latency_backpressure.md) |
 | [logger.js](file:///C:/dev/agy-sandbox/src/net/logger.js) | 42 | `function createLogger` | [logger.test.js](file:///C:/dev/agy-sandbox/src/net/logger.test.js) | [`010_observability_metrics`](file:///C:/dev/agy-sandbox/plan/specs/010_observability_metrics.md) |
@@ -100,8 +100,8 @@
 | [NetworkLatencyInjector.js](file:///C:/dev/agy-sandbox/src/net/NetworkLatencyInjector.js) | 105 | `class NetworkLatencyInjector` | [NetworkLatencyInjector.test.js](file:///C:/dev/agy-sandbox/src/net/NetworkLatencyInjector.test.js) | [`095_concurrency_stress_latency_injector`](file:///C:/dev/agy-sandbox/plan/specs/095_concurrency_stress_latency_injector.md) |
 | [originPolicy.js](file:///C:/dev/agy-sandbox/src/net/originPolicy.js) | 60 | `function isAllowedOrigin` | [originPolicy.test.js](file:///C:/dev/agy-sandbox/src/net/originPolicy.test.js) | [`002_ws_inbound_hardening`](file:///C:/dev/agy-sandbox/plan/specs/002_ws_inbound_hardening.md) |
 | [PortReclaimer.js](file:///C:/dev/agy-sandbox/src/net/PortReclaimer.js) | 105 | _None_ | [PortReclaimer.test.js](file:///C:/dev/agy-sandbox/src/net/PortReclaimer.test.js) | [`106_sandbox_containment_sentinel`](file:///C:/dev/agy-sandbox/plan/specs/106_sandbox_containment_sentinel.md) |
-| [ProcessReaper.js](file:///C:/dev/agy-sandbox/src/net/ProcessReaper.js) | 160 | `constant ProcessReaper` | [ProcessReaper.test.js](file:///C:/dev/agy-sandbox/src/net/ProcessReaper.test.js) | [`092_zombie_reaper_orphan_cleanup`](file:///C:/dev/agy-sandbox/plan/specs/092_zombie_reaper_orphan_cleanup.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
-| [ProcessSentinel.js](file:///C:/dev/agy-sandbox/src/net/ProcessSentinel.js) | 1304 | `class for`, `class VirtualWriteStream`, `class for`, `class VirtualReadStream`, `function parseCommandString`, `function validateCommand`, `constant ProcessSentinel` | [ProcessSentinel.test.js](file:///C:/dev/agy-sandbox/src/net/ProcessSentinel.test.js) | [`106_sandbox_containment_sentinel`](file:///C:/dev/agy-sandbox/plan/specs/106_sandbox_containment_sentinel.md)<br>[`138_strict_path_jailing`](file:///C:/dev/agy-sandbox/plan/specs/138_strict_path_jailing.md) |
+| [ProcessReaper.js](file:///C:/dev/agy-sandbox/src/net/ProcessReaper.js) | 244 | `constant ProcessReaper` | [ProcessReaper.test.js](file:///C:/dev/agy-sandbox/src/net/ProcessReaper.test.js) | [`092_zombie_reaper_orphan_cleanup`](file:///C:/dev/agy-sandbox/plan/specs/092_zombie_reaper_orphan_cleanup.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md)<br>[`170_autonomic_reaper_host_signals`](file:///C:/dev/agy-sandbox/plan/specs/170_autonomic_reaper_host_signals.md) |
+| [ProcessSentinel.js](file:///C:/dev/agy-sandbox/src/net/ProcessSentinel.js) | 1348 | `class for`, `class VirtualWriteStream`, `class for`, `class VirtualReadStream`, `function parseCommandString`, `function validateCommand`, `constant ProcessSentinel` | [ProcessSentinel.test.js](file:///C:/dev/agy-sandbox/src/net/ProcessSentinel.test.js) | [`106_sandbox_containment_sentinel`](file:///C:/dev/agy-sandbox/plan/specs/106_sandbox_containment_sentinel.md)<br>[`138_strict_path_jailing`](file:///C:/dev/agy-sandbox/plan/specs/138_strict_path_jailing.md)<br>[`169_path_sibling_directory_jailing`](file:///C:/dev/agy-sandbox/plan/specs/169_path_sibling_directory_jailing.md) |
 | [PubSub.js](file:///C:/dev/agy-sandbox/src/net/PubSub.js) | 198 | `class PubSub`, `class InMemoryPubSub`, `class RedisPubSub` | [PubSub.test.js](file:///C:/dev/agy-sandbox/src/net/PubSub.test.js) | [`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md)<br>[`162_cross_process_pubsub_sync`](file:///C:/dev/agy-sandbox/plan/specs/162_cross_process_pubsub_sync.md) |
 | [ResourceLimiter.js](file:///C:/dev/agy-sandbox/src/net/ResourceLimiter.js) | 157 | `class ResourceLimiter` | [ResourceLimiter.test.js](file:///C:/dev/agy-sandbox/src/net/ResourceLimiter.test.js) | [`116_resource_backpressure_limiter`](file:///C:/dev/agy-sandbox/plan/specs/116_resource_backpressure_limiter.md)<br>[`128_adaptive_backpressure`](file:///C:/dev/agy-sandbox/plan/specs/128_adaptive_backpressure.md) |
 | [roomRouter.js](file:///C:/dev/agy-sandbox/src/net/roomRouter.js) | 304 | `class RoomRegistry`, `function hashString`, `function assignShard`, `function routeConnection`, `function planDrain` | [roomRouter.test.js](file:///C:/dev/agy-sandbox/src/net/roomRouter.test.js) | [`019a_scaling_decomposition`](file:///C:/dev/agy-sandbox/plan/specs/019a_scaling_decomposition.md)<br>[`019d_sticky_routing_lb`](file:///C:/dev/agy-sandbox/plan/specs/019d_sticky_routing_lb.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |

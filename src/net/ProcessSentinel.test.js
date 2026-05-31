@@ -300,7 +300,7 @@ describe("ProcessSentinel (SPEC-106)", () => {
 
       // Node command check with sibling script target must be blocked
       expect(
-        validateCommand("node", [path.join(siblingDir, "script.js")]).allowed
+        validateCommand("node", [path.join(siblingDir, "script.js")]).allowed,
       ).toBe(false);
     } finally {
       delete process.env.GUEST_SCRIPT_PATH;

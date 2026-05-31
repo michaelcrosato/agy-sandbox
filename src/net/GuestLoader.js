@@ -7,12 +7,18 @@ import { ProcessSentinel } from "./ProcessSentinel.js";
 import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
 
 const SAFE_CORE_MODULES = new Set([
-  "node:path", "path",
-  "node:url", "url",
-  "node:crypto", "crypto",
-  "node:util", "util",
-  "node:stream", "stream",
-  "node:string_decoder", "string_decoder"
+  "node:path",
+  "path",
+  "node:url",
+  "url",
+  "node:crypto",
+  "crypto",
+  "node:util",
+  "util",
+  "node:stream",
+  "stream",
+  "node:string_decoder",
+  "string_decoder",
 ]);
 
 /**
@@ -29,13 +35,13 @@ export async function resolve(specifier, context, nextResolve) {
         SandboxSecurityRegistry.logViolation(
           "integrity",
           "native_import_violation",
-          { specifier }
+          { specifier },
         );
       } catch {
         // Fail-safe registry logging bypass
       }
       throw new Error(
-        `[SECURITY ACCESS DENIED] ESM Import Violation: Access to native core module [${specifier}] is restricted inside the guest sandbox.`
+        `[SECURITY ACCESS DENIED] ESM Import Violation: Access to native core module [${specifier}] is restricted inside the guest sandbox.`,
       );
     }
   }

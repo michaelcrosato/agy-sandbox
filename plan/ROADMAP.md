@@ -432,21 +432,39 @@ The secure guest RPC channel and workspace integrity self-healing wave:
 
 ---
 
-## EXECUTION WAVES (v41)
+## EXECUTION WAVES (v42)
+
+The world-derived missions flow, mass-agility physics dynamics, and dynamic faction vengeance spawner wave:
+
+### Phase 0 — World-Derived Missions — `154`
+
+- `154` World-Derived Generative Missions Landing Flow Integration (integrate dynamic generative missions derived from planetary market surpluses/shortages and conflicts directly into the spaceport landing flow, extracting handlers modularly).
+
+### Phase 1 — Mass-Agility Dynamics — `155`
+
+- `155` Outfitting Fitting Preset Mass-Agility Dynamics HUD Card (calculate total outfitting chassis mass and scale ship velocity/agility dynamics programmatically on the server, presenting metrics on a golden-glassmorphic outfitter HUD).
+
+### Phase 2 — Faction Bounty Hunters — `156`
+
+- `156` Dynamic Faction Hostility Patrols & Vengeance Hunters Spawner (monitor standings to dispatch elite faction hunter wings targeting hostile players dynamically, registering engagements in the Galactic Chronicle).
+
+---
+
+## EXECUTION WAVES (v41) — Completed (DONE)
 
 The OS kernel-level process isolation, dynamic signature module loading, and visual Codex visual CLI terminal card wave:
 
 ### Phase 0 — Kernel-Level Process Isolation — `151`
 
-- `151` Guest Process Kernel-level Resource Isolation and Job Objects Containment Sentry (establish absolute OS-level resource boundaries utilizing Windows Job Objects or Linux cgroups on guest child worker processes).
+- `151` Guest Process Kernel-level Resource Isolation and Job Objects Containment Sentry (establish absolute OS-level resource boundaries utilizing Windows Job Objects or Linux cgroups on guest child worker processes) — **done**.
 
 ### Phase 1 — Secure Cryptographic Module Verification — `152`
 
-- `152` Cryptographically Signed Secure Module Verification Sentry (enforce runtime supply-chain integrity validation checking imports against a cryptographically signed module checksum registry).
+- `152` Cryptographically Signed Secure Module Verification Sentry (enforce runtime supply-chain integrity validation checking imports against a cryptographically signed module checksum registry) — **done**.
 
 ### Phase 2 — Interactive Codex CLI Terminal Dashboard HUD Card — `153`
 
-- `153` Interactive Codex CLI Terminal Dashboard HUD Card (design premium gold-glassmorphic visual terminal console inside Codex HUD allowing dynamic authenticated command dispatching).
+- `153` Interactive Codex CLI Terminal Dashboard HUD Card (design premium gold-glassmorphic visual terminal console inside Codex HUD allowing dynamic authenticated command dispatching) — **done**.
 
 ---
 
@@ -492,9 +510,12 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title                            | Phase | Impact | Feasibility | Risk(5=safe) | Fit |  Σ  |  Status  |
 | ---- | -------------------------------- | :---: | :----: | :---------: | :----------: | :-: | :-: | :------: |
-| 151  | Kernel Resource Isolation        |   0   |   5    |      4      |      5       |  5  | 19  | Pending  |
-| 152  | Secure Module Verification       |   1   |   5    |      5      |      5       |  5  | 20  | Pending  |
-| 153  | Interactive Codex CLI HUD        |   2   |   4    |      5      |      5       |  5  | 19  | Pending  |
+| 154  | World-Derived Missions           |   0   |   5    |      5      |      5       |  5  | 20  | Pending  |
+| 155  | Mass-Agility Dynamics HUD        |   1   |   4    |      5      |      5       |  5  | 19  | Pending  |
+| 156  | Dynamic Faction Hunters          |   2   |   5    |      4      |      5       |  5  | 19  | Pending  |
+| 151  | Kernel Resource Isolation        |   0   |   5    |      4      |      5       |  5  | 19  | **DONE** |
+| 152  | Secure Module Verification       |   1   |   5    |      5      |      5       |  5  | 20  | **DONE** |
+| 153  | Interactive Codex CLI HUD        |   2   |   4    |      5      |      5       |  5  | 19  | **DONE** |
 | 148  | Authenticated HMAC Guest RPC Key |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
 | 149  | OS CPU Priority Scheduler        |   1   |   5    |      5      |      5       |  5  | 20  | **DONE** |
 | 150  | Virtual COW Filesystem Overlay   |   2   |   5    |      4      |      5       |  5  | 19  | **DONE** |

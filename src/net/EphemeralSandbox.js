@@ -50,8 +50,10 @@ export class EphemeralSandbox {
       }
 
       // Ensure parent subdirectory exists in target
-      fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-      fs.copyFileSync(sourcePath, targetPath);
+      if (fs.existsSync(sourcePath)) {
+        fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+        fs.copyFileSync(sourcePath, targetPath);
+      }
     }
 
     console.log(

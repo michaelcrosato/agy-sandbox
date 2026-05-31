@@ -32,6 +32,13 @@ _**v36 re-audit baseline (2026-05-31, ENTIRE v36 blueprint shipped): 1,209 Jest 
 _**v37 re-audit baseline (2026-05-31, ENTIRE v37 blueprint shipped): 1,213 Jest tests / 117 suites green; V8 memory caps, cumulative CPU time-slice budget policing, and environment variable sanitization masking all DONE.**_
 _**v38 re-audit baseline (2026-05-31, ENTIRE v38 blueprint shipped): 1,216 Jest tests / 117 suites green; golden-glassmorphic resource HUD telemetry gauge panel, pre-activated zero-trust outbound firewall containment, and ESM dynamic loader module jailing all 100% DONE.**_
 _**v39 re-audit baseline (2026-05-31, ENTIRE v39 blueprint shipped): 1,222 Jest tests / 118 suites green; secure schema-validated Guest RPC channel sentry, post-run workspace snapshot drift auditing, self-healing copy-on-write restoration cleanup, and golden-glassmorphic cockpit dashboard card all 100% DONE.**_
+_**v42 re-audit baseline (2026-05-31, ENTIRE v41 blueprint shipped): 1,233 Jest tests / 119 suites green; kernel isolation, secure module verification registry, and visual cli terminal HUD all 100% DONE.**_
+
+## v42 — World-Derived Missions, Mass-Agility Dynamics, and Faction Hunter Wave (PENDING) — see [`ROADMAP.md`](ROADMAP.md)
+
+- [ ] `154` World-Derived Generative Missions Landing Flow Integration (integrate dynamic generative missions derived from planetary market surpluses/shortages and conflicts directly into the spaceport landing flow, extracting handlers modularly)
+- [ ] `155` Outfitting Fitting Preset Mass-Agility Dynamics HUD Card (calculate total outfitting chassis mass and scale ship velocity/agility dynamics programmatically on the server, presenting metrics on a golden-glassmorphic outfitter HUD)
+- [ ] `156` Dynamic Faction Hostility Patrols & Vengeance Hunters Spawner (monitor standings to dispatch elite faction hunter wings targeting hostile players dynamically, registering engagements in the Galactic Chronicle)
 
 ## v41 — Kernel Isolation, Secure ESM Modules, and Codex CLI Terminal Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 

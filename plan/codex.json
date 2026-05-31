@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-05-31T06:27:05.512Z",
+  "generatedAt": "2026-05-31T06:28:45.571Z",
   "stats": {
     "totalSourceFiles": 99,
     "totalTestFiles": 126,
-    "totalSpecFiles": 159,
-    "totalLoc": 22115,
+    "totalSpecFiles": 162,
+    "totalLoc": 22117,
     "totalTests": 1636,
     "untestedCoreFilesCount": 6
   },
@@ -675,7 +675,8 @@
       "testCasesCount": 20,
       "referencingSpecs": [
         "plan/specs/100_ship_fittings_presets_loadout_manager.md",
-        "plan/specs/104_living_codex_hygiene_jsdoc_audit.md"
+        "plan/specs/104_living_codex_hygiene_jsdoc_audit.md",
+        "plan/specs/155_mass_agility_outfitting_hud.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -1371,7 +1372,7 @@
     },
     {
       "path": "src/net/EphemeralSandbox.js",
-      "loc": 113,
+      "loc": 115,
       "classes": [
         {
           "name": "EphemeralSandbox",
@@ -2535,7 +2536,8 @@
       "referencingSpecs": [
         "plan/specs/042_server_monolith_extraction_galaxy_ticker.md",
         "plan/specs/078_reputation_decay_heartbeat.md",
-        "plan/specs/114_faction_decay_chronicle.md"
+        "plan/specs/114_faction_decay_chronicle.md",
+        "plan/specs/156_faction_vengeance_bounty_hunters.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -4690,6 +4692,40 @@
       "priority": "Normal",
       "pillar": "None",
       "filesMentioned": []
+    },
+    {
+      "path": "plan/specs/154_world_derived_missions_landing_flow.md",
+      "filename": "154_world_derived_missions_landing_flow.md",
+      "title": "SPEC-154: World-Derived Generative Missions Landing Flow Integration",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/server.js",
+        "src/server/spaceportMissionHandlers.js"
+      ]
+    },
+    {
+      "path": "plan/specs/155_mass_agility_outfitting_hud.md",
+      "filename": "155_mass_agility_outfitting_hud.md",
+      "title": "SPEC-155: Outfitting Fitting Preset Mass-Agility Dynamics HUD Card",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/engine/LoadoutManager.js"
+      ]
+    },
+    {
+      "path": "plan/specs/156_faction_vengeance_bounty_hunters.md",
+      "filename": "156_faction_vengeance_bounty_hunters.md",
+      "title": "SPEC-156: Dynamic Faction Hostility Patrols & Vengeance Hunters Spawner",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/server/galaxyTicker.js"
+      ]
     }
   ],
   "epistemicDebt": {
@@ -4828,6 +4864,12 @@
         "spec": "plan/specs/145_secure_guest_rpc_sentry.md",
         "brokenFiles": [
           "src/net/GuestRpcSentry.test.js"
+        ]
+      },
+      {
+        "spec": "plan/specs/154_world_derived_missions_landing_flow.md",
+        "brokenFiles": [
+          "src/server/spaceportMissionHandlers.js"
         ]
       }
     ]

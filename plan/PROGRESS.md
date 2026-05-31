@@ -40,7 +40,13 @@ _**v47 re-audit baseline (2026-05-31, ENTIRE Cycle 46 sandbox baseline audit com
 _**v48 re-audit baseline (2026-05-31, Specs 164 and 165 shipped): 1,309 Jest tests / 128 suites green; Faction War Campaign Strategy Engine and Clustered Sync both 100% DONE.**_
 _**v49 re-audit baseline (2026-05-31, Spec 166, 167, 168, 169, 170 all shipped): 1,309 Jest tests / 128 suites + 63 client tests green; Interactive Faction HUD map card and sandbox teardown hardening 100% DONE. Cycle 50 started.**_
 
-## v49 — Static Analysis AST Security Sentry & OS Resource Sentry (IN PROGRESS) — see [`ROADMAP.md`](ROADMAP.md)
+## v50 — LLM Token Cost Governance, Intrusion Sentries & Zero-Trace Teardowns (IN PROGRESS) — see [`ROADMAP.md`](ROADMAP.md)
+
+- [ ] `174` Automated LLM API Token Cost Governance & Mock Sentry (enforce runtime budgets and dynamically intercept model queries with local deterministic mocks)
+- [ ] `175` V8 Isolated Sandbox Process Escape Intrusion Sentry (monitor global prototypes, HMAC IPC signatures, and system calls to block escape attempts)
+- [ ] `176` Ephemeral Guest Sandbox Zero-Trace State Wiper & Purger (execute post-run sweeps to guarantee zero lingering zombie processes, timers, or files)
+
+## v49 — Static Analysis AST Security Sentry & OS Resource Sentry (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
 - [x] `171` Static Analysis AST Security Sentry (design and build an AST or token lexical analysis pre-scan engine blocking prototype pollution, constructors, and eval escapes) — **done** (designed and implemented pure JS high-performance token lexical analyzer StaticSecuritySentry.js that pre-scans all untrusted guest scripts before execution to block eval, Function, globalThis/global/window variables, and prototype/constructor pollution attempts; integrated checks directly inside GuestRunner.runScript() to immediately fail scripts statically before process spawns, logging violations directly to SandboxSecurityRegistry under the new static_analysis category; verified under a 23-test suite in StaticSecuritySentry.test.js and 1,332 green Jest tests)
 - [x] `172` Dynamic Memory & CPU Priority Scheduler Sentry (monitor host system limits to dynamically queue and OS down-prioritize near-budget guest processes) — **done** (implemented DynamicResourceGovernor.js to monitor host OS-level load and free memory ratio, automatically queueing script launches under capacity stress, and dynamically down-prioritizing guest PIDs to lowest priority level 19 via os.setPriority once resource utilization ratios cross 80% budget; exposed metrics in /metrics payload; covered under a robust 11-test suite in DynamicResourceGovernor.test.js and full gate verify)

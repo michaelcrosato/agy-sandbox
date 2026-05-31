@@ -586,18 +586,33 @@ The hyper-secure agent sandbox and teardown hardening wave:
 
 ---
 
-## EXECUTION WAVES (v49) — In Progress
+## EXECUTION WAVES (v49) — Completed (DONE)
 
 The frontier-grade static analysis, dynamic scheduling priority, and DNS resolution egress sentry wave:
 
 ### Phase 0 — Static AST Sentry — `171`
-- `171` Static Analysis AST Security Sentry (design and build an AST or token lexical analysis pre-scan engine blocking prototype pollution, constructors, and eval escapes) — **in progress**.
+- `171` Static Analysis AST Security Sentry (design and build an AST or token lexical analysis pre-scan engine blocking prototype pollution, constructors, and eval escapes) — **done**.
 
 ### Phase 1 — Dynamic Scheduler — `172`
-- `172` Dynamic Memory & CPU Priority Scheduler Sentry (monitor host system limits to dynamically queue and OS down-prioritize near-budget guest processes).
+- `172` Dynamic Memory & CPU Priority Scheduler Sentry (monitor host system limits to dynamically queue and OS down-prioritize near-budget guest processes) — **done**.
 
 ### Phase 2 — DNS Egress Sentry — `173`
-- `173` DNS Egress Firewall & Tunneling Sentry (intercept guest DNS resolutions to block tunneling data exfiltration and enforce zero-trust domain lookups).
+- `173` DNS Egress Firewall & Tunneling Sentry (intercept guest DNS resolutions to block tunneling data exfiltration and enforce zero-trust domain lookups) — **done**.
+
+---
+
+## EXECUTION WAVES (v50) — In Progress
+
+The LLM Token Cost Governance, V8 Escape Intrusion Sentries, and Zero-Trace Teardowns wave:
+
+### Phase 0 — LLM Cost Governor — `174`
+- `174` Automated LLM API Token Cost Governance & Mock Sentry (design and build a centralized token governor protecting sandboxed agent executions from runaway costs, enforcing USD budgets, and dynamically proxying local deterministic completions).
+
+### Phase 1 — Sandbox Escape Sentry — `175`
+- `175` V8 Isolated Sandbox Process Escape Intrusion Sentry (build an active syscall monitor and context redefinition guardian that terminates guest contexts immediately upon privilege escalation or injection escapes).
+
+### Phase 2 — Zero-Trace Teardown — `176`
+- `176` Ephemeral Guest Sandbox Zero-Trace State Wiper & Purger (develop an autonomic clean teardown sweep purifying residual processes, open handles, timers, and sibling file drifts).
 
 ---
 
@@ -607,16 +622,16 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title                            | Phase | Impact | Feasibility | Risk(5=safe) | Fit |  Σ  |   Status    |
 | ---- | -------------------------------- | :---: | :----: | :---------: | :----------: | :-: | :-: | :---------: |
-| 171  | Static AST Security Sentry       |   0   |   5    |      5      |      5       |  5  | 20  | **IN PROG** |
-| 172  | Dynamic OS Priority Scheduler    |   1   |   5    |      5      |      5       |  5  | 20  | **PLANNED** |
-| 173  | DNS Egress Tunneling Sentry      |   2   |   5    |      5      |      5       |  5  | 20  | **PLANNED** |
+| 174  | Automated LLM Cost Sentry        |   0   |   5    |      5      |      5       |  5  | 20  | **PLANNED** |
+| 175  | Sandbox Escape Intrusion Sentry  |   1   |   5    |      5      |      5       |  5  | 20  | **PLANNED** |
+| 176  | Zero-Trace Teardown Purger       |   2   |   5    |      5      |      5       |  5  | 20  | **PLANNED** |
+| 171  | Static AST Security Sentry       |   0   |   5    |      5      |      5       |  5  | 20  |  **DONE**   |
+| 172  | Dynamic OS Priority Scheduler    |   1   |   5    |      5      |      5       |  5  | 20  |  **DONE**   |
+| 173  | DNS Egress Tunneling Sentry      |   2   |   5    |      5      |      5       |  5  | 20  |  **DONE**   |
 | 167  | Lock Node Native C++ Bindings    |   0   |   5    |      5      |      5       |  5  | 20  |  **DONE**   |
 | 168  | Restrict Dangerous Imports       |   1   |   5    |      5      |      5       |  5  | 20  |  **DONE**   |
 | 169  | Prevent Traversal sibling Escapes|   2   |   5    |      5      |      5       |  5  | 20  |  **DONE**   |
 | 170  | Process Tree Teardown Signals    |   3   |   5    |      5      |      5       |  5  | 20  |  **DONE**   |
-| 164  | Faction War Strategy Engine      |   0   |   5    |      5      |      5       |  5  | 20  |  **DONE**   |
-| 165  | Clustered Campaign PubSub Sync    |   1   |   5    |      4      |      5       |  5  | 19  |  **DONE**   |
-| 166  | Glassmorphic Stellar Map HUD     |   2   |   5    |      4      |      5       |  5  | 19  |  **DONE**   |
 
 ## Risks & guardrails
 

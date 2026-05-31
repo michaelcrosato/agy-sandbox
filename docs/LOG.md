@@ -39,6 +39,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T22:45 · iter-0124 · GREEN · spec-133-autonomic-cpu-exhaustion-watchdog
+- **Baseline:** `1f3c6a0` on `feat/procedural-missions`; 1,191 Jest green.
+- **Move:** Implement SPEC-133 to develop an autonomic background worker-thread main event loop watchdog preventing CPU exhaustion and synchronous guest freeze exploits.
+- **Changed:**
+  - Created `src/net/MainThreadWatchdog.js` as the main-thread watchdog orchestrator resolving pathing, managing active worker references, and replying immediately to heartbeat pings.
+  - Created `src/net/MainThreadWatchdogWorker.js` as a background worker thread executing on a dedicated V8 instance, periodically dispatching heartbeat messages and terminating the process via SIGKILL upon timeout thresholds (default 1000ms).
+  - Addressed a subtle asynchronous race condition in the watchdog exit/error callback logic to prevent terminated old workers from clobbering active worker references.
+  - Created `src/net/mockFreezeScript.js` to simulate absolute synchronous Event Loop blocks safely within an isolated child process context.
+  - Authored comprehensive Jest unit and integration tests in `src/net/MainThreadWatchdog.test.js` validating the watchdog APIs, heartbeat tolerance, and forced CPU freeze SIGKILL recovery.
+  - Formulated Wave v35 sections inside `plan/PROGRESS.md` and `plan/ROADMAP.md`, prioritizing specs.
+- **Decisions:** Spawning the watchdog in a background worker thread via `worker_threads` isolates the heartbeat monitor from main-thread V8 freezes. Executing a synchronous, blocking write via `SandboxSecurityRegistry.logViolation` guarantees the audit ledger is persisted to disk before the SIGKILL is dispatched.
+- **Validation:** Verified via `npm run agent:check` yielding 100% green gate across all 1,194 Jest tests, ESLint, Prettier, and TypeScript typechecking.
+- **Next:** Proceed with SPEC-134 implementation to design and build global prototype tamper-proofing and object integrity guards.
+
 ## 2026-05-31T22:40 · iter-0123 · GREEN · spec-131-centralized-security-audit-ledger
 - **Baseline:** `d7fd24e` on `feat/procedural-missions`; 1,190 Jest green.
 - **Move:** Implement SPEC-131 to establish a centralized security registry SandboxSecurityRegistry.js that captures filesystem, egress, and rate limiter blocks into a persistent JSON ledger on disk, exposing these metrics in /metrics.

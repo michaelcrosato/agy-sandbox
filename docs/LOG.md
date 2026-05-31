@@ -39,6 +39,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
 == LOG-ANCHOR ==
 
+## 2026-05-31T23:55 · iter-0128 · GREEN · spec-137-dynamic-egress-firewall-admin
+- **Baseline:** `12ff9ba` on `feat/procedural-missions`; 1,202 Jest green.
+- **Move:** Implement SPEC-137 to deliver dynamic egress firewall administrative controls, exposing CORS preflights, zero-downtime Whitelist/Block rules modification endpoints, and an interactive gold-glassmorphic sentry dashboard cockpit panel.
+- **Changed:**
+  - Exposed HTTP `POST /api/firewall/rules` in `src/server.js` matching `allow` and `block` actions, validating domain formatting with strict zero-trust regex before editing `plan/config.json`.
+  - Exposed CORS `OPTIONS` preflight handling returning `204 No Content` for full HTTP interoperability.
+  - Enhanced the Living Codex Dashboard `dashboard-codex.html` to render an interactive `Egress Sentry Admin` visual section inside the Egress card, providing domain inputs, `Whitelist` / `Block` action buttons, and dynamic status notifications.
+  - Authored comprehensive integration tests in `src/server/firewallAdmin.integration.test.js` validating the preflight CORS headers, whitelisting/blocking persistence, schema validation failures, and runtime ConfigWatcher reloads.
+  - Reassigned the new integration test suite to run on a dedicated, unused port `18194` to prevent port collisions under parallel Jest test workloads.
+- **Decisions:** Designing zero-downtime administrative endpoints requires rigorous data validation. Regex limits inputs to strictly safe domain formats, preventing malicious config injections. Reassigning ports prevents parallel test runners from clobbering each other.
+- **Validation:** Executed `npm run agent:check` yielding a 100% green gate across 1,205 Jest tests, ESLint, Prettier, and TypeScript typechecking.
+- **Next:** Transition to SPEC-138 implementation to deliver strict sandboxed path jailing and whitelisted reads.
+
 ## 2026-05-31T23:45 · iter-0127 · GREEN · spec-136-host-isolated-process-guest-runner
 - **Baseline:** `b7cd8b0` on `feat/procedural-missions`; 1,198 Jest green.
 - **Move:** Implement SPEC-136 to securely execute untrusted guest scripts in a dedicated low-privilege child process with environment controls, pre-activating ProcessSentinel/IntegrityGuard boundaries, and enforcing hard SIGKILL watchdog budgets.

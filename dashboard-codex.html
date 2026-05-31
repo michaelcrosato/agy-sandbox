@@ -1549,6 +1549,101 @@
               ></div>
             </div>
 
+            <!-- SPEC-137: Dynamic Egress Sentry Admin Controls -->
+            <div
+              style="
+                margin-top: 0.75rem;
+                padding-top: 0.75rem;
+                border-top: 1px dashed rgba(251, 191, 36, 0.15);
+              "
+            >
+              <div
+                style="
+                  font-size: 0.75rem;
+                  color: var(--color-text-muted);
+                  margin-bottom: 0.4rem;
+                "
+              >
+                Egress Sentry Admin:
+              </div>
+              <input
+                type="text"
+                id="firewall-domain-input"
+                placeholder="e.g., evil-domain.com"
+                style="
+                  width: 100%;
+                  box-sizing: border-box;
+                  background: rgba(0, 0, 0, 0.4);
+                  border: 1px solid rgba(251, 191, 36, 0.3);
+                  border-radius: 4px;
+                  padding: 0.35rem 0.5rem;
+                  color: #fff;
+                  font-size: 0.75rem;
+                  font-family: monospace;
+                  margin-bottom: 0.5rem;
+                  outline: none;
+                "
+              />
+              <div style="display: flex; gap: 0.5rem;">
+                <button
+                  id="btn-firewall-allow"
+                  style="
+                    flex: 1;
+                    background: rgba(251, 191, 36, 0.12);
+                    border: 1px solid #fbbf24;
+                    border-radius: 4px;
+                    padding: 0.35rem;
+                    color: #fbbf24;
+                    font-size: 0.7rem;
+                    font-weight: 700;
+                    cursor: pointer;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.25rem;
+                    transition: background 0.2s, transform 0.1s;
+                  "
+                  onmouseover="this.style.background='rgba(251, 191, 36, 0.25)'"
+                  onmouseout="this.style.background='rgba(251, 191, 36, 0.12)'"
+                >
+                  ➕ Whitelist
+                </button>
+                <button
+                  id="btn-firewall-block"
+                  style="
+                    flex: 1;
+                    background: rgba(239, 68, 68, 0.12);
+                    border: 1px solid #ef4444;
+                    border-radius: 4px;
+                    padding: 0.35rem;
+                    color: #ef4444;
+                    font-size: 0.7rem;
+                    font-weight: 700;
+                    cursor: pointer;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.25rem;
+                    transition: background 0.2s, transform 0.1s;
+                  "
+                  onmouseover="this.style.background='rgba(239, 68, 68, 0.25)'"
+                  onmouseout="this.style.background='rgba(239, 68, 68, 0.12)'"
+                >
+                  ❌ Block
+                </button>
+              </div>
+              <div
+                id="firewall-admin-status"
+                style="
+                  font-size: 0.7rem;
+                  margin-top: 0.4rem;
+                  min-height: 1rem;
+                  display: none;
+                  font-family: monospace;
+                "
+              ></div>
+            </div>
+
             <!-- API Rate Limit Slider / Metrics -->
             <div
               style="
@@ -3144,7 +3239,80 @@
           pathRateLimits.setAttribute("d", buildPath(historyRateLimits));
       }
 
+      function initFirewallAdmin() {
+        const inputEl = document.getElementById("firewall-domain-input");
+        const btnAllow = document.getElementById("btn-firewall-allow");
+        const btnBlock = document.getElementById("btn-firewall-block");
+        const statusEl = document.getElementById("firewall-admin-status");
+
+        if (!inputEl || !btnAllow || !btnBlock || !statusEl) return;
+
+        async function submitRule(action) {
+          const domain = inputEl.value.trim();
+          if (!domain) {
+            showStatus("⚠️ Please enter a domain name.", "#fbbf24");
+            return;
+          }
+
+          // Simple regex verification on the client side too
+          const domainRegex = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+          if (!domainRegex.test(domain)) {
+            showStatus("⚠️ Invalid domain name format.", "#ef4444");
+            return;
+          }
+
+          showStatus("⏳ Updating firewall rules...", "#fbbf24");
+
+          try {
+            const res = await fetch("/api/firewall/rules", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action, domain }),
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+              const actionWord = action === "allow" ? "Whitelisted" : "Blocked";
+              showStatus(`✅ Successfully ${actionWord}: ${domain}`, "#fbbf24");
+              inputEl.value = "";
+              // Trigger an immediate telemetry pull to show updated list
+              if (typeof updateTelemetry === "function") {
+                updateTelemetry();
+              }
+            } else {
+              showStatus(`❌ Error: ${data.error || "Request failed"}`, "#ef4444");
+            }
+          } catch (err) {
+            showStatus(`❌ Connection error: ${err.message}`, "#ef4444");
+          }
+        }
+
+        function showStatus(text, color) {
+          statusEl.style.display = "block";
+          statusEl.style.color = color;
+          statusEl.innerText = text;
+          // Auto-hide status after 4 seconds
+          if (window.firewallStatusTimeout) {
+            clearTimeout(window.firewallStatusTimeout);
+          }
+          window.firewallStatusTimeout = setTimeout(() => {
+            statusEl.style.display = "none";
+          }, 4000);
+        }
+
+        btnAllow.addEventListener("click", () => submitRule("allow"));
+        btnBlock.addEventListener("click", () => submitRule("block"));
+
+        // Allow pressing Enter in the input field
+        inputEl.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            submitRule("allow");
+          }
+        });
+      }
+
       // Start
+      initFirewallAdmin();
       init();
       updateTelemetry();
       setInterval(updateTelemetry, 1000);

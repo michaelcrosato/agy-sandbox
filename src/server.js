@@ -306,6 +306,140 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Handle CORS OPTIONS preflight
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    });
+    res.end();
+    return;
+  }
+
+  // SPEC-137: Dynamic Egress Firewall Admin rules modification endpoint
+  if (req.method === "POST" && safeUrl === "/api/firewall/rules") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk;
+    });
+    req.on("end", () => {
+      try {
+        const payload = JSON.parse(body);
+        if (!payload || typeof payload !== "object") {
+          res.writeHead(400, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(JSON.stringify({ error: "Invalid JSON payload" }));
+          return;
+        }
+
+        const { action, domain } = payload;
+        if (action !== "allow" && action !== "block") {
+          res.writeHead(400, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(
+            JSON.stringify({ error: "Action must be 'allow' or 'block'" }),
+          );
+          return;
+        }
+
+        if (typeof domain !== "string" || !domain.trim()) {
+          res.writeHead(400, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(
+            JSON.stringify({
+              error:
+                "Domain parameter is required and must be a non-empty string",
+            }),
+          );
+          return;
+        }
+
+        // Domain validation: simple regex check for safety (alphanumeric, dashes, dots)
+        const domainRegex = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!domainRegex.test(domain)) {
+          res.writeHead(400, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(JSON.stringify({ error: "Invalid domain name format" }));
+          return;
+        }
+
+        const targetDomain = domain.trim().toLowerCase();
+        const configPath = path.resolve(ROOT_DIR, "plan/config.json");
+        const configContent = fs.readFileSync(configPath, "utf-8");
+        const config = JSON.parse(configContent);
+
+        if (!config.sandboxFirewall) {
+          config.sandboxFirewall = { allowlistDomains: [] };
+        }
+        if (!Array.isArray(config.sandboxFirewall.allowlistDomains)) {
+          config.sandboxFirewall.allowlistDomains = [];
+        }
+
+        const originalList = config.sandboxFirewall.allowlistDomains.map((d) =>
+          d.toLowerCase(),
+        );
+        let updatedList = [...originalList];
+
+        if (action === "allow") {
+          if (!updatedList.includes(targetDomain)) {
+            updatedList.push(targetDomain);
+          }
+        } else if (action === "block") {
+          updatedList = updatedList.filter((d) => d !== targetDomain);
+        }
+
+        config.sandboxFirewall.allowlistDomains = updatedList;
+
+        // Run validation against schemas before writing to config.json
+        const val = validateMessage({
+          type: "sandboxFirewallConfig",
+          ...config.sandboxFirewall,
+        });
+        if (!val.valid) {
+          res.writeHead(400, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          });
+          res.end(
+            JSON.stringify({
+              error: `Schema validation failed: ${val.error}`,
+            }),
+          );
+          return;
+        }
+
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2), "utf-8");
+
+        res.writeHead(200, {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        });
+        res.end(
+          JSON.stringify({
+            success: true,
+            allowlistDomains: config.sandboxFirewall.allowlistDomains,
+          }),
+        );
+      } catch (err) {
+        res.writeHead(500, {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
   if (safeUrl === "/dashboard-codex") {
     safeUrl = "/dashboard-codex.html";
   }

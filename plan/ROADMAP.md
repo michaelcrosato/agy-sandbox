@@ -174,11 +174,20 @@ Completed waves (`001–102`) are recorded DONE in `PROGRESS.md`. The emergent g
 
 ## EXECUTION WAVES (v24)
 
-Completed waves (`001–100`) are recorded DONE in `PROGRESS.md`. The active modularization and codebase hygiene wave:
+Completed waves (`001–104`) are recorded DONE in `PROGRESS.md`. The active modularization and codebase hygiene wave:
 
 ### Phase 0 — Core Architecture Hardening — `103`, `104`
-- `103` Modularize WebSocket Action Handlers (extract inline handlers for `trade`, `port_service`, `jettison`, `warp_jump`, and `boarding_action` from `src/server.js` into clean, modular, and fully tested functions in a new `src/server/actionHandlers.js` file, wire them in, and write tests).
-- `104` Living Codex Hygiene & JSDoc Audit (add JSDoc type annotations to the 13 flagged missing symbols across modules and update the 5 stale spec reference markdown links to keep the repo codex ontology perfectly healthy).
+- `103` Modularize WebSocket Action Handlers (extract inline handlers for `trade`, `port_service`, `jettison`, `warp_jump`, and `boarding_action` from `src/server.js` into clean, modular, and fully tested functions in a new `src/server/actionHandlers.js` file, wire them in, and write tests) — **done**.
+- `104` Living Codex Hygiene & JSDoc Audit (add JSDoc type annotations to the 13 flagged missing symbols across modules and update the 5 stale spec reference markdown links to keep the repo codex ontology perfectly healthy) — **done**.
+
+---
+
+## EXECUTION WAVES (v25)
+
+Completed waves (`001–104`) are recorded DONE in `PROGRESS.md`. The live work for the current wave:
+
+### Phase 0 — Presentation & Game Feel — `105`
+- `105` Interactive Neon Onboarding Tutorial & Cockpit HUD Guide (build interactive step-by-step Cockpit tutorial with glowing overlays and dynamic bracket highlights, persist completion state on server, and issue a 500 CR starter economy reward; verify via unit & client tests).
 
 ---
 
@@ -188,10 +197,9 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 103 | Modularize WebSocket Handlers | 0 | 5 | 5 | 5 | 5 | 20 |
-| 104 | Living Codex Hygiene & JSDoc | 0 | 4 | 5 | 5 | 5 | 19 |
+| 105 | Neon Onboarding Tutorial | 0 | 5 | 5 | 5 | 5 | 20 |
 
-**Recommended start:** `103` (Σ20 — Modularize WebSocket Handlers) immediately, followed by `104` (Σ19 — Living Codex Hygiene & JSDoc).
+**Recommended start:** `105` (Σ20 — Neon Onboarding Tutorial) immediately.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

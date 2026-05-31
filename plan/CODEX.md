@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T00:42:58.789Z` · Baseline: `16,791 LOC` across `71 source files`
+> Generated: `2026-05-31T00:44:05.954Z` · Baseline: `16,791 LOC` across `71 source files`
 
 ---
 
@@ -13,7 +13,7 @@
 | **Source Modules** | `71 files` | 🟢 Structured |
 | **Test Suites** | `98 test files` | 🟢 Integrated |
 | **Total Test Cases** | `1366 cases` | 🟢 Deterministic |
-| **Active/Archived Specs** | `110 specifications` | 🟢 Traceable |
+| **Active/Archived Specs** | `111 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `0 files` | 🟢 100% Covered |
 
 ---
@@ -128,8 +128,8 @@
 ### ⚠️ Untested Core Modules (0)
 _None! All core modules have associated test suites._
 
-### ⚠️ Stale Specification File References (0)
-_None! All specification file references correspond to real paths._
+### ⚠️ Stale Specification File References (1)
+- [ ] Spec [`105_neon_onboarding_tutorial_hud.md`](file:///C:/dev/agy-sandbox/plan/specs/105_neon_onboarding_tutorial_hud.md) references missing files: `src/client/TutorialManager.js`, `src/client/__tests/TutorialManager.test.js`
 
 ### ⚠️ Missing JSDoc Type Signatures (0 symbols)
 _None! All exported classes and functions have JSDoc type signatures._

@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-31T00:42:58.789Z",
+  "generatedAt": "2026-05-31T00:44:05.954Z",
   "stats": {
     "totalSourceFiles": 71,
     "totalTestFiles": 98,
-    "totalSpecFiles": 110,
+    "totalSpecFiles": 111,
     "totalLoc": 16791,
     "totalTests": 1366,
     "untestedCoreFilesCount": 0
@@ -3478,7 +3478,7 @@
       "path": "plan/specs/104_living_codex_hygiene_jsdoc_audit.md",
       "filename": "104_living_codex_hygiene_jsdoc_audit.md",
       "title": "SPEC-104 — Living Codex Hygiene & JSDoc Audit",
-      "status": "Approved / Todo",
+      "status": "Completed",
       "priority": "Medium",
       "pillar": "P7 — Netcode & Scale",
       "filesMentioned": [
@@ -3494,11 +3494,34 @@
         "src/client/__tests/Reconciler.test.js",
         "src/engine/Trading.js"
       ]
+    },
+    {
+      "path": "plan/specs/105_neon_onboarding_tutorial_hud.md",
+      "filename": "105_neon_onboarding_tutorial_hud.md",
+      "title": "SPEC-105 — Interactive Neon Onboarding Tutorial & Cockpit HUD Guide",
+      "status": "Approved / Todo",
+      "priority": "High",
+      "pillar": "P8 — Presentation & Game Feel",
+      "filesMentioned": [
+        "src/client/TutorialManager.js",
+        "src/client/CanvasRenderer.js",
+        "src/client/UIController.js",
+        "src/server.js",
+        "src/client/__tests/TutorialManager.test.js"
+      ]
     }
   ],
   "epistemicDebt": {
     "untestedCoreFiles": [],
     "missingJsDocs": [],
-    "staleSpecReferences": []
+    "staleSpecReferences": [
+      {
+        "spec": "plan/specs/105_neon_onboarding_tutorial_hud.md",
+        "brokenFiles": [
+          "src/client/TutorialManager.js",
+          "src/client/__tests/TutorialManager.test.js"
+        ]
+      }
+    ]
   }
 }

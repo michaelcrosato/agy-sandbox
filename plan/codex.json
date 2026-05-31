@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T17:37:22.819Z",
+  "generatedAt": "2026-05-31T17:44:01.804Z",
   "stats": {
-    "totalSourceFiles": 105,
-    "totalTestFiles": 137,
+    "totalSourceFiles": 106,
+    "totalTestFiles": 138,
     "totalSpecFiles": 180,
-    "totalLoc": 25128,
-    "totalTests": 1754,
+    "totalLoc": 25386,
+    "totalTests": 1774,
     "untestedCoreFilesCount": 6
   },
   "files": [
@@ -1420,6 +1420,42 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/net/DnsEgressSentry.js",
+      "loc": 253,
+      "classes": [],
+      "exports": [
+        {
+          "name": "loadAllowlist",
+          "type": "function",
+          "jsdoc": null,
+          "line": 30
+        },
+        {
+          "name": "DnsEgressSentry",
+          "type": "constant",
+          "jsdoc": null,
+          "line": 70
+        }
+      ],
+      "testFile": "src/net/DnsEgressSentry.test.js",
+      "testCasesCount": 20,
+      "referencingSpecs": [
+        "plan/specs/173_dns_resolution_egress_sentry.md"
+      ],
+      "missingJsDocSymbols": [
+        {
+          "name": "loadAllowlist",
+          "type": "function",
+          "line": 30
+        },
+        {
+          "name": "DnsEgressSentry",
+          "type": "constant",
+          "line": 70
+        }
+      ]
+    },
+    {
       "path": "src/net/DynamicResourceGovernor.js",
       "loc": 223,
       "classes": [],
@@ -1518,14 +1554,14 @@
     },
     {
       "path": "src/net/GuestRunner.js",
-      "loc": 523,
+      "loc": 526,
       "classes": [],
       "exports": [
         {
           "name": "GuestRunner",
           "type": "constant",
           "jsdoc": null,
-          "line": 23
+          "line": 24
         }
       ],
       "testFile": "src/net/GuestRunner.test.js",
@@ -1537,13 +1573,13 @@
         {
           "name": "GuestRunner",
           "type": "constant",
-          "line": 23
+          "line": 24
         }
       ]
     },
     {
       "path": "src/net/GuestRunnerWorker.js",
-      "loc": 113,
+      "loc": 115,
       "classes": [],
       "exports": [],
       "testFile": null,
@@ -5109,6 +5145,21 @@
     ],
     "missingJsDocs": [
       {
+        "path": "src/net/DnsEgressSentry.js",
+        "symbols": [
+          {
+            "name": "loadAllowlist",
+            "type": "function",
+            "line": 30
+          },
+          {
+            "name": "DnsEgressSentry",
+            "type": "constant",
+            "line": 70
+          }
+        ]
+      },
+      {
         "path": "src/net/DynamicResourceGovernor.js",
         "symbols": [
           {
@@ -5139,7 +5190,7 @@
           {
             "name": "GuestRunner",
             "type": "constant",
-            "line": 23
+            "line": 24
           }
         ]
       },
@@ -5267,13 +5318,6 @@
         "brokenFiles": [
           "src/client/__tests__/CanvasRenderer.browser.test.js",
           "src/client/__tests__/PlaywrightVisual.test.js"
-        ]
-      },
-      {
-        "spec": "plan/specs/173_dns_resolution_egress_sentry.md",
-        "brokenFiles": [
-          "src/net/DnsEgressSentry.js",
-          "src/net/DnsEgressSentry.test.js"
         ]
       }
     ]

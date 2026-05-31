@@ -9,6 +9,7 @@ import { register } from "node:module";
 import { ProcessSentinel } from "./ProcessSentinel.js";
 import { IntegrityGuard } from "./IntegrityGuard.js";
 import { SandboxFirewall, activateFirewall } from "./SandboxFirewall.js";
+import { DnsEgressSentry } from "./DnsEgressSentry.js";
 
 async function bootstrap() {
   const scriptPath = process.env.GUEST_SCRIPT_PATH;
@@ -35,9 +36,10 @@ async function bootstrap() {
       ProcessSentinel.setSandboxDirectory(path.resolve(sandboxDir));
     }
 
-    // 1.5 Pre-activate zero-trust network containment firewall (SPEC-143)
+    // 1.5 Pre-activate zero-trust network containment firewall (SPEC-143) and DNS egress exfiltration sentry (SPEC-173)
     const firewall = new SandboxFirewall({ allowlistDomains: [] });
     activateFirewall(firewall);
+    DnsEgressSentry.activate();
 
     // 2. Lock down global prototypes and monitor scope pollution
     IntegrityGuard.start(25); // High-frequency polling for guest runs

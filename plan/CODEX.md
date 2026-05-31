@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T17:37:22.819Z` · Baseline: `25,128 LOC` across `105 source files`
+> Generated: `2026-05-31T17:44:01.804Z` · Baseline: `25,386 LOC` across `106 source files`
 
 ---
 
@@ -9,10 +9,10 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `25,128 LOC` | 🟢 Healthy |
-| **Source Modules** | `105 files` | 🟢 Structured |
-| **Test Suites** | `137 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1754 cases` | 🟢 Deterministic |
+| **Total Code Volume** | `25,386 LOC` | 🟢 Healthy |
+| **Source Modules** | `106 files` | 🟢 Structured |
+| **Test Suites** | `138 test files` | 🟢 Integrated |
+| **Total Test Cases** | `1774 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `180 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `6 files` | ⚠️ Debt Pending |
 
@@ -83,12 +83,13 @@
 | [ConfigWatcher.js](file:///C:/dev/agy-sandbox/src/net/ConfigWatcher.js) | 287 | `class ConfigWatcher` | [ConfigWatcher.test.js](file:///C:/dev/agy-sandbox/src/net/ConfigWatcher.test.js) | [`125_hot_config_reload`](file:///C:/dev/agy-sandbox/plan/specs/125_hot_config_reload.md) |
 | [ConnectionFloodSentry.js](file:///C:/dev/agy-sandbox/src/net/ConnectionFloodSentry.js) | 81 | `class ConnectionFloodSentry` | [ConnectionFloodSentry.test.js](file:///C:/dev/agy-sandbox/src/net/ConnectionFloodSentry.test.js) | [`127_connection_flood_protection`](file:///C:/dev/agy-sandbox/plan/specs/127_connection_flood_protection.md) |
 | [DeltaStateCodec.js](file:///C:/dev/agy-sandbox/src/net/DeltaStateCodec.js) | 120 | `class DeltaStateCodec` | [DeltaStateCodec.test.js](file:///C:/dev/agy-sandbox/src/net/DeltaStateCodec.test.js) | [`072_snapshot_delta_compression`](file:///C:/dev/agy-sandbox/plan/specs/072_snapshot_delta_compression.md) |
+| [DnsEgressSentry.js](file:///C:/dev/agy-sandbox/src/net/DnsEgressSentry.js) | 253 | `function loadAllowlist`, `constant DnsEgressSentry` | [DnsEgressSentry.test.js](file:///C:/dev/agy-sandbox/src/net/DnsEgressSentry.test.js) | [`173_dns_resolution_egress_sentry`](file:///C:/dev/agy-sandbox/plan/specs/173_dns_resolution_egress_sentry.md) |
 | [DynamicResourceGovernor.js](file:///C:/dev/agy-sandbox/src/net/DynamicResourceGovernor.js) | 223 | `constant DynamicResourceGovernor` | [DynamicResourceGovernor.test.js](file:///C:/dev/agy-sandbox/src/net/DynamicResourceGovernor.test.js) | [`172_dynamic_memory_priority_scheduler`](file:///C:/dev/agy-sandbox/plan/specs/172_dynamic_memory_priority_scheduler.md) |
 | [EphemeralSandbox.js](file:///C:/dev/agy-sandbox/src/net/EphemeralSandbox.js) | 115 | `class EphemeralSandbox` | [EphemeralSandbox.test.js](file:///C:/dev/agy-sandbox/src/net/EphemeralSandbox.test.js) | [`115_ephemeral_workspace_sandbox`](file:///C:/dev/agy-sandbox/plan/specs/115_ephemeral_workspace_sandbox.md) |
 | [GuestLoader.js](file:///C:/dev/agy-sandbox/src/net/GuestLoader.js) | 117 | _None_ | ❌ _Untested_ | [`168_loader_native_modules_restriction`](file:///C:/dev/agy-sandbox/plan/specs/168_loader_native_modules_restriction.md) |
 | [GuestRpcSentry.js](file:///C:/dev/agy-sandbox/src/net/GuestRpcSentry.js) | 188 | `constant ALLOWED_RPC_ACTIONS`, `function validateRpcRequest`, `constant GuestRpcSentry` | ❌ _Untested_ | [`145_secure_guest_rpc_sentry`](file:///C:/dev/agy-sandbox/plan/specs/145_secure_guest_rpc_sentry.md) |
-| [GuestRunner.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.js) | 523 | `constant GuestRunner` | [GuestRunner.test.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.test.js) | [`136_isolated_guest_runner`](file:///C:/dev/agy-sandbox/plan/specs/136_isolated_guest_runner.md) |
-| [GuestRunnerWorker.js](file:///C:/dev/agy-sandbox/src/net/GuestRunnerWorker.js) | 113 | _None_ | ❌ _Untested_ | _None_ |
+| [GuestRunner.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.js) | 526 | `constant GuestRunner` | [GuestRunner.test.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.test.js) | [`136_isolated_guest_runner`](file:///C:/dev/agy-sandbox/plan/specs/136_isolated_guest_runner.md) |
+| [GuestRunnerWorker.js](file:///C:/dev/agy-sandbox/src/net/GuestRunnerWorker.js) | 115 | _None_ | ❌ _Untested_ | _None_ |
 | [heartbeat.js](file:///C:/dev/agy-sandbox/src/net/heartbeat.js) | 30 | `constant DEFAULT_HEARTBEAT_MS`, `function selectDeadSockets` | [heartbeat.test.js](file:///C:/dev/agy-sandbox/src/net/heartbeat.test.js) | [`003_ws_connection_heartbeat`](file:///C:/dev/agy-sandbox/plan/specs/003_ws_connection_heartbeat.md) |
 | [IntegrityGuard.js](file:///C:/dev/agy-sandbox/src/net/IntegrityGuard.js) | 244 | `constant IntegrityGuard` | [IntegrityGuard.test.js](file:///C:/dev/agy-sandbox/src/net/IntegrityGuard.test.js) | [`134_global_prototype_freeze_sentry`](file:///C:/dev/agy-sandbox/plan/specs/134_global_prototype_freeze_sentry.md)<br>[`167_process_binding_dlopen_lockdown`](file:///C:/dev/agy-sandbox/plan/specs/167_process_binding_dlopen_lockdown.md) |
 | [interest.js](file:///C:/dev/agy-sandbox/src/net/interest.js) | 170 | `constant DEFAULT_INTEREST_RADIUS`, `function interestFilter`, `function buildSpatialGrid` | [interest.test.js](file:///C:/dev/agy-sandbox/src/net/interest.test.js) | [`014_interest_management`](file:///C:/dev/agy-sandbox/plan/specs/014_interest_management.md)<br>[`049_interest_management_grid_optimization`](file:///C:/dev/agy-sandbox/plan/specs/049_interest_management_grid_optimization.md)<br>[`059_alliance_fleets`](file:///C:/dev/agy-sandbox/plan/specs/059_alliance_fleets.md) |
@@ -167,20 +168,22 @@
 - [ ] `src/net/mockFreezeScript.js` is missing a unit test suite.
 - [ ] `src/net/SecureModuleRegistry.js` is missing a unit test suite.
 
-### ⚠️ Stale Specification File References (4)
+### ⚠️ Stale Specification File References (3)
 - [ ] Spec [`145_secure_guest_rpc_sentry.md`](file:///C:/dev/agy-sandbox/plan/specs/145_secure_guest_rpc_sentry.md) references missing files: `src/net/GuestRpcSentry.test.js`
 - [ ] Spec [`158_guided_onboarding_tutorial_mission.md`](file:///C:/dev/agy-sandbox/plan/specs/158_guided_onboarding_tutorial_mission.md) references missing files: `src/client/tutorialUI.test.js`
 - [ ] Spec [`163_playwright_e2e_regression_guard.md`](file:///C:/dev/agy-sandbox/plan/specs/163_playwright_e2e_regression_guard.md) references missing files: `src/client/__tests__/CanvasRenderer.browser.test.js`, `src/client/__tests__/PlaywrightVisual.test.js`
-- [ ] Spec [`173_dns_resolution_egress_sentry.md`](file:///C:/dev/agy-sandbox/plan/specs/173_dns_resolution_egress_sentry.md) references missing files: `src/net/DnsEgressSentry.js`, `src/net/DnsEgressSentry.test.js`
 
-### ⚠️ Missing JSDoc Type Signatures (16 symbols)
+### ⚠️ Missing JSDoc Type Signatures (18 symbols)
+- `src/net/DnsEgressSentry.js`:
+  - Line 30: Missing JSDoc for `function loadAllowlist`
+  - Line 70: Missing JSDoc for `constant DnsEgressSentry`
 - `src/net/DynamicResourceGovernor.js`:
   - Line 26: Missing JSDoc for `constant DynamicResourceGovernor`
 - `src/net/GuestRpcSentry.js`:
   - Line 9: Missing JSDoc for `constant ALLOWED_RPC_ACTIONS`
   - Line 111: Missing JSDoc for `constant GuestRpcSentry`
 - `src/net/GuestRunner.js`:
-  - Line 23: Missing JSDoc for `constant GuestRunner`
+  - Line 24: Missing JSDoc for `constant GuestRunner`
 - `src/net/IntegrityGuard.js`:
   - Line 51: Missing JSDoc for `constant IntegrityGuard`
 - `src/net/MainThreadWatchdog.js`:

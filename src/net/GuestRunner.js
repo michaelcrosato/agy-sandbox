@@ -15,6 +15,7 @@ import { WorkspaceDriftSentry } from "./WorkspaceDriftSentry.js";
 import { SecureModuleRegistry } from "./SecureModuleRegistry.js";
 import { StaticSecuritySentry } from "./StaticSecuritySentry.js";
 import { DynamicResourceGovernor } from "./DynamicResourceGovernor.js";
+import { loadAllowlist } from "./DnsEgressSentry.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -132,6 +133,7 @@ export const GuestRunner = {
           "SECURITY_AUDIT_FILE",
           "GUEST_RUN_TOKEN",
           "GUEST_ALLOWED_MODULE_HASHES",
+          "GUEST_DNS_ALLOWLIST",
         ];
         const childEnv = {};
         for (const key of allowedKeys) {
@@ -149,6 +151,7 @@ export const GuestRunner = {
         childEnv.GUEST_ALLOWED_MODULE_HASHES = JSON.stringify(
           SecureModuleRegistry.getRegistry(),
         );
+        childEnv.GUEST_DNS_ALLOWLIST = JSON.stringify(loadAllowlist());
 
         // Spawn the bootstrap worker via fork to establish IPC channel
         const child = childProcess.fork(workerPath, [], {

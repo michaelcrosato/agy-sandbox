@@ -3,6 +3,11 @@
 This is the machine-readable execution ledger for the autonomous-engineering loop in `agy-sandbox`.
 It records cycle transitions, key milestones, and precise next steps.
 
+## Cycle 37 — 2026-05-31
+- **Status:** GREEN
+- **Summary:** Successfully initiated Cycle 37 under the role of Autonomous Principal AI/Infrastructure Engineer & Sandbox Architect. Completed the entire Wave v36 (Autonomous Process Isolation & Path Jailing Hardening Wave) with a 100% green CI gate across 1,209 Jest tests, typecheck, linter, and Prettier checks. Shipped SPEC-136 (Host-Isolated Process Guest Runner) which forks a low-privilege child process V8 runtime for guest scripts with a hard-coded watchdog timeout and active ProcessReaper signal tracking, SPEC-137 (Dynamic Egress Firewall Admin) exposing CORS-compliant preflights and REST /api/firewall/rules hot-reloading configurations along with an interactive whitelisting panel inside dashboard-codex.html, and SPEC-138 (Strict Path Jailing & Sandboxed Input File Boundary Guard) intercepting and blocking relative traversal jumps ('..') or absolute escapes under resolved absolute checks in ProcessSentinel.js with whitelisted exceptions for node_modules and native bootstrap contexts.
+- **Next Action:** Transition to Cycle 37 Phase R (Replenish) to promote backlogs, perform structural boundaries audits, and formulate the new Wave v37 specifications.
+
 ## Cycle 36 — 2026-05-31
 - **Status:** GREEN
 - **Summary:** Successfully initiated Cycle 36 under the role of Autonomous Principal AI/Infrastructure Engineer & Sandbox Architect. Completed the Replenish [R] phase by re-running sandbox boundary audits, examining 2026 secure containerization microVM (E2B Firecracker) architectures, and evaluating V8 in-process JS sandbox escapes. Promoted the next active engineering wave on disk (Wave v36): SPEC-136 (Host-Isolated Process Guest Runner & Workspace Self-Healer) to isolate guest executions to low-privilege child processes with timeout constraints, SPEC-137 (Dynamic Egress Firewall Admin & Visual Whitelisting Control) to manage dynamic configurations live via HTTP API endpoints, and SPEC-138 (Strict Path Jailing & Sandboxed Input File Boundary Guard) to protect against filesystem traversal escapes. Formulated specifications, refreshed progress registers, and prepared priorities tables to launch development.

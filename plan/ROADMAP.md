@@ -432,21 +432,39 @@ The secure guest RPC channel and workspace integrity self-healing wave:
 
 ---
 
+## EXECUTION WAVES (v41)
+
+The OS kernel-level process isolation, dynamic signature module loading, and visual Codex visual CLI terminal card wave:
+
+### Phase 0 — Kernel-Level Process Isolation — `151`
+
+- `151` Guest Process Kernel-level Resource Isolation and Job Objects Containment Sentry (establish absolute OS-level resource boundaries utilizing Windows Job Objects or Linux cgroups on guest child worker processes).
+
+### Phase 1 — Secure Cryptographic Module Verification — `152`
+
+- `152` Cryptographically Signed Secure Module Verification Sentry (enforce runtime supply-chain integrity validation checking imports against a cryptographically signed module checksum registry).
+
+### Phase 2 — Interactive Codex CLI Terminal Dashboard HUD Card — `153`
+
+- `153` Interactive Codex CLI Terminal Dashboard HUD Card (design premium gold-glassmorphic visual terminal console inside Codex HUD allowing dynamic authenticated command dispatching).
+
+---
+
 ## EXECUTION WAVES (v40)
 
 The authenticated HMAC channels, CPU scheduling throttling, and COW virtual filesystem jailing wave:
 
 ### Phase 0 — Authenticated HMAC Guest RPC Key — `148`
 
-- `148` Secure Execution-Run Single-Use HMAC Cryptographic Key Sentry (generate dynamically HMAC run tokens in host, verifying them on child Guest RPC headers and SIGKILLing unauthenticated requests).
+- `148` Secure Execution-Run Single-Use HMAC Cryptographic Key Sentry (generate dynamically HMAC run tokens in host, verifying them on child Guest RPC headers and SIGKILLing unauthenticated requests) — **done**.
 
 ### Phase 1 — OS CPU Priority Scheduler — `149`
 
-- `149` Dynamic OS-Level Child Process CPU Priority Throttling Scheduler (programmatically schedule guest child PID execution to low CPU priorities immediately upon spawn to safeguard host cycles).
+- `149` Dynamic OS-Level Child Process CPU Priority Throttling Scheduler (programmatically schedule guest child PID execution to low CPU priorities immediately upon spawn to safeguard host cycles) — **done**.
 
 ### Phase 2 — Virtual COW Filesystem overlay — `150`
 
-- `150` Absolute Zero-Trust Copy-On-Write In-Memory Virtual Filesystem Sentry (redirect guest process writes transparently into virtual copy-on-write overlay dictionaries, completely bypassing disk foot-print).
+- `150` Absolute Zero-Trust Copy-On-Write In-Memory Virtual Filesystem Sentry (redirect guest process writes transparently into virtual copy-on-write overlay dictionaries, completely bypassing disk foot-print) — **done**.
 
 ---
 
@@ -474,15 +492,12 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title                            | Phase | Impact | Feasibility | Risk(5=safe) | Fit |  Σ  |  Status  |
 | ---- | -------------------------------- | :---: | :----: | :---------: | :----------: | :-: | :-: | :------: |
-| 148  | Authenticated HMAC Guest RPC Key |   0   |   5    |      5      |      5       |  5  | 20  | Pending  |
-| 149  | OS CPU Priority Scheduler        |   1   |   5    |      5      |      5       |  5  | 20  | Pending  |
-| 150  | Virtual COW Filesystem Overlay   |   2   |   5    |      4      |      5       |  5  | 19  | Pending  |
-| 145  | Guest RPC Sentry                 |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
-| 146  | Workspace Drift Self-Healer      |   1   |   5    |      5      |      5       |  5  | 20  | **DONE** |
-| 147  | Guest RPC & Drift HUD Card       |   2   |   4    |      5      |      5       |  5  | 19  | **DONE** |
-| 142  | Guest Footprint HUD Gauge        |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
-| 143  | Guest Egress Sandboxing          |   1   |   5    |      5      |      5       |  5  | 20  | **DONE** |
-| 144  | Guest Module Loader Sentry       |   2   |   5    |      5      |      5       |  5  | 20  | **DONE** |
+| 151  | Kernel Resource Isolation        |   0   |   5    |      4      |      5       |  5  | 19  | Pending  |
+| 152  | Secure Module Verification       |   1   |   5    |      5      |      5       |  5  | 20  | Pending  |
+| 153  | Interactive Codex CLI HUD        |   2   |   4    |      5      |      5       |  5  | 19  | Pending  |
+| 148  | Authenticated HMAC Guest RPC Key |   0   |   5    |      5      |      5       |  5  | 20  | **DONE** |
+| 149  | OS CPU Priority Scheduler        |   1   |   5    |      5      |      5       |  5  | 20  | **DONE** |
+| 150  | Virtual COW Filesystem Overlay   |   2   |   5    |      4      |      5       |  5  | 19  | **DONE** |
 
 ## Risks & guardrails
 

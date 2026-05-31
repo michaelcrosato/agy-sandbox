@@ -155,4 +155,23 @@ setInterval(() => {}, 1000);`,
       // ignore
     }
   });
+
+  test("manages signal and exit listeners autonomously (SPEC-170)", () => {
+    // Initially no listeners registered because getProcessCount/getWorkerCount is 0
+    expect(ProcessReaper.getProcessCount()).toBe(0);
+    expect(ProcessReaper.getWorkerCount()).toBe(0);
+
+    // Spawn a mock process
+    const proc = spawn("node", ["-e", "setInterval(() => {}, 1000)"]);
+    ProcessReaper.registerProcess(proc);
+
+    // Verify it added the process and auto-registered the signal handlers
+    expect(ProcessReaper.getProcessCount()).toBe(1);
+
+    // Reap synchronously via reapSync
+    ProcessReaper.reapSync();
+
+    // Verify it reaped everything and automatically removed signal handlers
+    expect(ProcessReaper.getProcessCount()).toBe(0);
+  });
 });

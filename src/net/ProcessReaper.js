@@ -58,6 +58,49 @@ function killProcessTree(pid) {
 const activeWorkers = new Set();
 const activeProcesses = new Set();
 
+let isListenersRegistered = false;
+
+// Synchronous reaping helper for exit hook
+function reapSync() {
+  for (const proc of activeProcesses) {
+    try {
+      if (proc.pid) {
+        killProcessTree(proc.pid);
+        proc.killed = true;
+      }
+      if (!proc.killed && typeof proc.kill === "function") {
+        proc.kill("SIGKILL");
+      }
+    } catch {
+      // ignore
+    }
+  }
+  activeProcesses.clear();
+
+  for (const worker of activeWorkers) {
+    try {
+      worker.terminate();
+    } catch {
+      // ignore
+    }
+  }
+  activeWorkers.clear();
+}
+
+const sigintHandler = async () => {
+  await ProcessReaper.reap();
+  process.exit(130);
+};
+
+const sigtermHandler = async () => {
+  await ProcessReaper.reap();
+  process.exit(143);
+};
+
+const exitHandler = () => {
+  reapSync();
+};
+
 /**
  * ProcessReaper (spec 092) — pure, modular lifecycle manager to track
  * and aggressively terminate background workers, child processes, and
@@ -65,6 +108,30 @@ const activeProcesses = new Set();
  * @type {object}
  */
 export const ProcessReaper = {
+  /**
+   * Registers signal and exit listeners on the host process to ensure autonomic teardowns.
+   */
+  registerSignalListeners() {
+    if (!isListenersRegistered) {
+      process.on("SIGINT", sigintHandler);
+      process.on("SIGTERM", sigtermHandler);
+      process.on("exit", exitHandler);
+      isListenersRegistered = true;
+    }
+  },
+
+  /**
+   * Deregisters signal and exit listeners from the host process.
+   */
+  deregisterSignalListeners() {
+    if (isListenersRegistered) {
+      process.off("SIGINT", sigintHandler);
+      process.off("SIGTERM", sigtermHandler);
+      process.off("exit", exitHandler);
+      isListenersRegistered = false;
+    }
+  },
+
   /**
    * Registers an active Worker thread to the cleanup ledger.
    * @param {Worker} worker
@@ -75,7 +142,11 @@ export const ProcessReaper = {
       activeWorkers.add(worker);
       worker.on("exit", () => {
         activeWorkers.delete(worker);
+        if (activeWorkers.size === 0 && activeProcesses.size === 0) {
+          this.deregisterSignalListeners();
+        }
       });
+      this.registerSignalListeners();
     }
     return worker;
   },
@@ -101,7 +172,11 @@ export const ProcessReaper = {
       activeProcesses.add(proc);
       proc.on("exit", () => {
         activeProcesses.delete(proc);
+        if (activeWorkers.size === 0 && activeProcesses.size === 0) {
+          this.deregisterSignalListeners();
+        }
       });
+      this.registerSignalListeners();
     }
     return proc;
   },
@@ -139,6 +214,15 @@ export const ProcessReaper = {
     activeWorkers.clear();
 
     await Promise.all(termPromises);
+    this.deregisterSignalListeners();
+  },
+
+  /**
+   * Synchronously terminates all tracked child processes and worker threads immediately.
+   */
+  reapSync() {
+    reapSync();
+    this.deregisterSignalListeners();
   },
 
   /**

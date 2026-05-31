@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T04:00:39.886Z` · Baseline: `17,735 LOC` across `76 source files`
+> Generated: `2026-05-31T04:01:42.744Z` · Baseline: `17,735 LOC` across `76 source files`
 
 ---
 
@@ -13,7 +13,7 @@
 | **Source Modules** | `76 files` | 🟢 Structured |
 | **Test Suites** | `105 test files` | 🟢 Integrated |
 | **Total Test Cases** | `1483 cases` | 🟢 Deterministic |
-| **Active/Archived Specs** | `115 specifications` | 🟢 Traceable |
+| **Active/Archived Specs** | `118 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `0 files` | 🟢 100% Covered |
 
 ---
@@ -133,8 +133,9 @@
 ### ⚠️ Untested Core Modules (0)
 _None! All core modules have associated test suites._
 
-### ⚠️ Stale Specification File References (0)
-_None! All specification file references correspond to real paths._
+### ⚠️ Stale Specification File References (2)
+- [ ] Spec [`110_server_handler_extraction_round5.md`](file:///C:/dev/agy-sandbox/plan/specs/110_server_handler_extraction_round5.md) references missing files: `src/server/squadHandlers.js`, `src/server/escortHandlers.js`, `src/server/tutorialHandlers.js`, `src/server/squadHandlers.test.js`, `src/server/escortHandlers.test.js`, `src/server/tutorialHandlers.test.js`
+- [ ] Spec [`111_connection_lifecycle_decomposition.md`](file:///C:/dev/agy-sandbox/plan/specs/111_connection_lifecycle_decomposition.md) references missing files: `src/server/connectionHandlers.js`, `src/server/connectionHandlers.test.js`
 
 ### ⚠️ Missing JSDoc Type Signatures (0 symbols)
 _None! All exported classes and functions have JSDoc type signatures._

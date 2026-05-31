@@ -190,7 +190,33 @@ Completed waves (`001–104`) are recorded DONE in `PROGRESS.md`. The live work 
 - `106` Sandbox Containment: Strict Process Spawn Sentinel & Self-Healing Port Reclaimer (monkey-patch Node's child_process module with strict command whitelisting to block process-level escape vectors, and implement an automatic port-conflict resolver that reclaims EADDRINUSE ports on boot; verify via unit & integration tests) — **done**.
 
 ### Phase 1 — Presentation & Game Feel — `105`
-- `105` Interactive Neon Onboarding Tutorial & Cockpit HUD Guide (build interactive step-by-step Cockpit tutorial with glowing overlays and dynamic bracket highlights, persist completion state on server, and issue a 500 CR starter economy reward; verify via unit & client tests).
+- `105` Interactive Neon Onboarding Tutorial & Cockpit HUD Guide (build interactive step-by-step Cockpit tutorial with glowing overlays and dynamic bracket highlights, persist completion state on server, and issue a 500 CR starter economy reward; verify via unit & client tests) — **done**.
+
+---
+
+## EXECUTION WAVES (v26)
+
+Completed waves (`001–109`) are recorded DONE in `PROGRESS.md`. The core hardening and coverage wave:
+
+### Phase 0 — Core Architecture Hardening — `107`, `109`
+- `107` GameInstance Deep Test Coverage Expansion (expand `GameInstance.js` test suite from 11 → 40+ tests covering entity lifecycle, combat resolution, faction wiring, NPC spawning, economic triggers, sector transitions, and territory control; pure headless tests only) — **done**.
+- `109` Server.js Handler Extraction Round 4 (extract chat, fleet, and gameplay handlers into modular, tested modules under `src/server/`; reduce server monolith by 400+ LOC) — **done**.
+
+### Phase 1 — Integration & Validation — `108`
+- `108` Kill-Restart-Rejoin Persistence Integration Test (TICKET016: spawn server, modify player state, hard-kill, restart, rejoin, and assert credits/cargo/markets survive the restart cycle) — **done**.
+
+---
+
+## EXECUTION WAVES (v27)
+
+Completed waves (`001–109`) are recorded DONE in `PROGRESS.md`. The active modularization and workspace cockpit wave:
+
+### Phase 0 — Server Monolith Decomposition — `110`, `111`
+- `110` Server.js Handler Extraction Round 5 — Squad, Escort & Tutorial Handlers (extract inline handlers for squad messaging, wingman/escort commands, and tutorial completion from `src/server.js` into tested modules under `src/server/`).
+- `111` Lobby & Matchmaking Connection Decomposition (extract complex room joining, custom room creation, and matchmaking connection state logic from `src/server.js` into modular connections handler `src/server/connectionHandlers.js`).
+
+### Phase 1 — Developer Tooling — `112`
+- `112` Visual Codex Ontology Enhancements & Automated Schema Generator (enhance the neon-cyan Living Codex Dashboard with an interactive command builder that dynamically loads `plan/codex.json` to generate client JS/JSON WebSocket payloads).
 
 ---
 
@@ -200,9 +226,11 @@ Scores 1–5 (5 = best). Risk: 5 = low risk. Σ = Impact + Feasibility + Risk + 
 
 | Spec | Title | Phase | Impact | Feasibility | Risk(5=safe) | Fit | Σ |
 | --- | --- | :-: | :-: | :-: | :-: | :-: | :-: |
-| 105 | Neon Onboarding Tutorial | 1 | 5 | 5 | 5 | 5 | 20 |
+| 110 | Server Decomp Round 5 | 0 | 5 | 5 | 5 | 5 | 20 |
+| 111 | Connection Decomposition | 0 | 5 | 5 | 5 | 5 | 20 |
+| 112 | Visual Codex Generator | 1 | 4 | 5 | 5 | 5 | 19 |
 
-**Recommended start:** `105` (Σ20 — Neon Onboarding Tutorial) immediately.
+**Recommended start:** `110` (Σ20 — Server Decomp Round 5) immediately.
 
 ## Risks & guardrails
 - **Substrate is read-only** (`AGENTS.md §0`) — never modify.

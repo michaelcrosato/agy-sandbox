@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-31T04:00:39.886Z",
+  "generatedAt": "2026-05-31T04:01:42.744Z",
   "stats": {
     "totalSourceFiles": 76,
     "totalTestFiles": 105,
-    "totalSpecFiles": 115,
+    "totalSpecFiles": 118,
     "totalLoc": 17735,
     "totalTests": 1483,
     "untestedCoreFilesCount": 0
@@ -3671,11 +3671,69 @@
         "src/server/fleetHandlers.test.js",
         "src/server/gameplayHandlers.test.js"
       ]
+    },
+    {
+      "path": "plan/specs/110_server_handler_extraction_round5.md",
+      "filename": "110_server_handler_extraction_round5.md",
+      "title": "SPEC-110: Server.js Handler Extraction Round 5 — Squad, Escort & Tutorial Handlers",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/server.js",
+        "src/server/squadHandlers.js",
+        "src/server/escortHandlers.js",
+        "src/server/tutorialHandlers.js",
+        "src/server/squadHandlers.test.js",
+        "src/server/escortHandlers.test.js",
+        "src/server/tutorialHandlers.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/111_connection_lifecycle_decomposition.md",
+      "filename": "111_connection_lifecycle_decomposition.md",
+      "title": "SPEC-111: Lobby & Matchmaking Connection Decomposition",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/server.js",
+        "src/server/connectionHandlers.js",
+        "src/server/connectionHandlers.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/112_visual_codex_schema_builders.md",
+      "filename": "112_visual_codex_schema_builders.md",
+      "title": "SPEC-112: Visual Codex Ontology Enhancements & Automated Schema Generator",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": []
     }
   ],
   "epistemicDebt": {
     "untestedCoreFiles": [],
     "missingJsDocs": [],
-    "staleSpecReferences": []
+    "staleSpecReferences": [
+      {
+        "spec": "plan/specs/110_server_handler_extraction_round5.md",
+        "brokenFiles": [
+          "src/server/squadHandlers.js",
+          "src/server/escortHandlers.js",
+          "src/server/tutorialHandlers.js",
+          "src/server/squadHandlers.test.js",
+          "src/server/escortHandlers.test.js",
+          "src/server/tutorialHandlers.test.js"
+        ]
+      },
+      {
+        "spec": "plan/specs/111_connection_lifecycle_decomposition.md",
+        "brokenFiles": [
+          "src/server/connectionHandlers.js",
+          "src/server/connectionHandlers.test.js"
+        ]
+      }
+    ]
   }
 }

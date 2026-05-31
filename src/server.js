@@ -41,6 +41,8 @@ import { ConfigWatcher } from "./net/ConfigWatcher.js";
 import { ConnectionFloodSentry } from "./net/ConnectionFloodSentry.js";
 import { SandboxSecurityRegistry } from "./net/SandboxSecurityRegistry.js";
 import { GuestRunner } from "./net/GuestRunner.js";
+import { GuestRpcSentry } from "./net/GuestRpcSentry.js";
+import { WorkspaceDriftSentry } from "./net/WorkspaceDriftSentry.js";
 import {
   handleOutfitBuy,
   handleShipBuy,
@@ -259,6 +261,11 @@ const server = http.createServer((req, res) => {
       guest_sandbox: {
         active_runs: Array.from(GuestRunner.activeRuns.values()),
         recent_runs: GuestRunner.recentRuns,
+        rpc_total_requests: GuestRpcSentry.totalRequests,
+        rpc_blocked_requests: GuestRpcSentry.blockedRequests,
+        drift_total_self_heals: WorkspaceDriftSentry.totalSelfHeals,
+        drift_total_files_restored_or_purged:
+          WorkspaceDriftSentry.totalFilesRestoredOrPurged,
       },
       rooms: buildLobbyRoomsList(instances).map((r) => ({
         ...r,

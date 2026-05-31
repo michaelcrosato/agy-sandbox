@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-05-31T06:05:06.811Z` · Baseline: `20,935 LOC` across `96 source files`
+> Generated: `2026-05-31T06:11:02.122Z` · Baseline: `21,380 LOC` across `98 source files`
 
 ---
 
@@ -9,12 +9,12 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `20,935 LOC` | 🟢 Healthy |
-| **Source Modules** | `96 files` | 🟢 Structured |
-| **Test Suites** | `124 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1617 cases` | 🟢 Deterministic |
-| **Active/Archived Specs** | `150 specifications` | 🟢 Traceable |
-| **Untested Core Modules** | `4 files` | ⚠️ Debt Pending |
+| **Total Code Volume** | `21,380 LOC` | 🟢 Healthy |
+| **Source Modules** | `98 files` | 🟢 Structured |
+| **Test Suites** | `125 test files` | 🟢 Integrated |
+| **Total Test Cases** | `1624 cases` | 🟢 Deterministic |
+| **Active/Archived Specs** | `153 specifications` | 🟢 Traceable |
+| **Untested Core Modules** | `5 files` | ⚠️ Debt Pending |
 
 ---
 
@@ -84,8 +84,9 @@
 | [DeltaStateCodec.js](file:///C:/dev/agy-sandbox/src/net/DeltaStateCodec.js) | 120 | `class DeltaStateCodec` | [DeltaStateCodec.test.js](file:///C:/dev/agy-sandbox/src/net/DeltaStateCodec.test.js) | [`072_snapshot_delta_compression`](file:///C:/dev/agy-sandbox/plan/specs/072_snapshot_delta_compression.md) |
 | [EphemeralSandbox.js](file:///C:/dev/agy-sandbox/src/net/EphemeralSandbox.js) | 113 | `class EphemeralSandbox` | [EphemeralSandbox.test.js](file:///C:/dev/agy-sandbox/src/net/EphemeralSandbox.test.js) | [`115_ephemeral_workspace_sandbox`](file:///C:/dev/agy-sandbox/plan/specs/115_ephemeral_workspace_sandbox.md) |
 | [GuestLoader.js](file:///C:/dev/agy-sandbox/src/net/GuestLoader.js) | 25 | _None_ | ❌ _Untested_ | _None_ |
-| [GuestRunner.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.js) | 307 | `constant GuestRunner` | [GuestRunner.test.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.test.js) | [`136_isolated_guest_runner`](file:///C:/dev/agy-sandbox/plan/specs/136_isolated_guest_runner.md) |
-| [GuestRunnerWorker.js](file:///C:/dev/agy-sandbox/src/net/GuestRunnerWorker.js) | 75 | _None_ | ❌ _Untested_ | _None_ |
+| [GuestRpcSentry.js](file:///C:/dev/agy-sandbox/src/net/GuestRpcSentry.js) | 169 | `constant ALLOWED_RPC_ACTIONS`, `function validateRpcRequest`, `constant GuestRpcSentry` | ❌ _Untested_ | [`145_secure_guest_rpc_sentry`](file:///C:/dev/agy-sandbox/plan/specs/145_secure_guest_rpc_sentry.md) |
+| [GuestRunner.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.js) | 344 | `constant GuestRunner` | [GuestRunner.test.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.test.js) | [`136_isolated_guest_runner`](file:///C:/dev/agy-sandbox/plan/specs/136_isolated_guest_runner.md) |
+| [GuestRunnerWorker.js](file:///C:/dev/agy-sandbox/src/net/GuestRunnerWorker.js) | 111 | _None_ | ❌ _Untested_ | _None_ |
 | [heartbeat.js](file:///C:/dev/agy-sandbox/src/net/heartbeat.js) | 30 | `constant DEFAULT_HEARTBEAT_MS`, `function selectDeadSockets` | [heartbeat.test.js](file:///C:/dev/agy-sandbox/src/net/heartbeat.test.js) | [`003_ws_connection_heartbeat`](file:///C:/dev/agy-sandbox/plan/specs/003_ws_connection_heartbeat.md) |
 | [IntegrityGuard.js](file:///C:/dev/agy-sandbox/src/net/IntegrityGuard.js) | 205 | `constant IntegrityGuard` | [IntegrityGuard.test.js](file:///C:/dev/agy-sandbox/src/net/IntegrityGuard.test.js) | [`134_global_prototype_freeze_sentry`](file:///C:/dev/agy-sandbox/plan/specs/134_global_prototype_freeze_sentry.md) |
 | [interest.js](file:///C:/dev/agy-sandbox/src/net/interest.js) | 170 | `constant DEFAULT_INTEREST_RADIUS`, `function interestFilter`, `function buildSpatialGrid` | [interest.test.js](file:///C:/dev/agy-sandbox/src/net/interest.test.js) | [`014_interest_management`](file:///C:/dev/agy-sandbox/plan/specs/014_interest_management.md)<br>[`049_interest_management_grid_optimization`](file:///C:/dev/agy-sandbox/plan/specs/049_interest_management_grid_optimization.md)<br>[`059_alliance_fleets`](file:///C:/dev/agy-sandbox/plan/specs/059_alliance_fleets.md) |
@@ -112,6 +113,7 @@
 | [SchemaValidator.js](file:///C:/dev/agy-sandbox/src/net/SchemaValidator.js) | 157 | `function validateMessage` | [SchemaValidator.test.js](file:///C:/dev/agy-sandbox/src/net/SchemaValidator.test.js) | [`089_zero_trust_websocket_validation`](file:///C:/dev/agy-sandbox/plan/specs/089_zero_trust_websocket_validation.md)<br>[`099_centralized_commodities_schema_registry`](file:///C:/dev/agy-sandbox/plan/specs/099_centralized_commodities_schema_registry.md)<br>[`118_websocket_injection_sentinel`](file:///C:/dev/agy-sandbox/plan/specs/118_websocket_injection_sentinel.md) |
 | [StateCodec.js](file:///C:/dev/agy-sandbox/src/net/StateCodec.js) | 207 | `function encodeSnapshot`, `function diff`, `function applyDelta` | [StateCodec.test.js](file:///C:/dev/agy-sandbox/src/net/StateCodec.test.js) | _None_ |
 | [statsPayload.js](file:///C:/dev/agy-sandbox/src/net/statsPayload.js) | 70 | `function buildStatsPayload` | [statsPayload.test.js](file:///C:/dev/agy-sandbox/src/net/statsPayload.test.js) | _None_ |
+| [WorkspaceDriftSentry.js](file:///C:/dev/agy-sandbox/src/net/WorkspaceDriftSentry.js) | 203 | `constant WorkspaceDriftSentry` | [WorkspaceDriftSentry.test.js](file:///C:/dev/agy-sandbox/src/net/WorkspaceDriftSentry.test.js) | [`146_workspace_drift_self_healer`](file:///C:/dev/agy-sandbox/plan/specs/146_workspace_drift_self_healer.md) |
 | [wsCompression.js](file:///C:/dev/agy-sandbox/src/net/wsCompression.js) | 42 | `constant DEFAULT_DEFLATE_OPTIONS`, `function perMessageDeflateOption` | [wsCompression.test.js](file:///C:/dev/agy-sandbox/src/net/wsCompression.test.js) | _None_ |
 
 ### 📂 Directory: `src/persistence/`
@@ -150,18 +152,22 @@
 
 ## ⚡ EPISTEMIC DEBT & STALE LOGIC REPORT
 
-### ⚠️ Untested Core Modules (4)
+### ⚠️ Untested Core Modules (5)
 - [ ] `src/net/GuestLoader.js` is missing a unit test suite.
+- [ ] `src/net/GuestRpcSentry.js` is missing a unit test suite.
 - [ ] `src/net/GuestRunnerWorker.js` is missing a unit test suite.
 - [ ] `src/net/MainThreadWatchdogWorker.js` is missing a unit test suite.
 - [ ] `src/net/mockFreezeScript.js` is missing a unit test suite.
 
-### ⚠️ Stale Specification File References (0)
-_None! All specification file references correspond to real paths._
+### ⚠️ Stale Specification File References (1)
+- [ ] Spec [`145_secure_guest_rpc_sentry.md`](file:///C:/dev/agy-sandbox/plan/specs/145_secure_guest_rpc_sentry.md) references missing files: `src/net/GuestRpcSentry.test.js`
 
-### ⚠️ Missing JSDoc Type Signatures (6 symbols)
+### ⚠️ Missing JSDoc Type Signatures (9 symbols)
+- `src/net/GuestRpcSentry.js`:
+  - Line 9: Missing JSDoc for `constant ALLOWED_RPC_ACTIONS`
+  - Line 111: Missing JSDoc for `constant GuestRpcSentry`
 - `src/net/GuestRunner.js`:
-  - Line 16: Missing JSDoc for `constant GuestRunner`
+  - Line 19: Missing JSDoc for `constant GuestRunner`
 - `src/net/IntegrityGuard.js`:
   - Line 51: Missing JSDoc for `constant IntegrityGuard`
 - `src/net/MainThreadWatchdog.js`:
@@ -172,3 +178,5 @@ _None! All specification file references correspond to real paths._
   - Line 14: Missing JSDoc for `class SandboxFirewall`
 - `src/net/SandboxSecurityRegistry.js`:
   - Line 62: Missing JSDoc for `constant SandboxSecurityRegistry`
+- `src/net/WorkspaceDriftSentry.js`:
+  - Line 49: Missing JSDoc for `constant WorkspaceDriftSentry`

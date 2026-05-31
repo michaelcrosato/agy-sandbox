@@ -133,6 +133,16 @@ describe("Living Codex & Dashboard HTTP Integration Tests (SPEC-102)", () => {
           expect(body).toContain('id="guest-last-script"');
           expect(body).toContain('id="guest-last-status"');
 
+          // SPEC-147 Guest RPC & Workspace Drift HUD Card validation
+          expect(body).toContain('id="guest-rpc-panel"');
+          expect(body).toContain('id="ring-integrity-status"');
+          expect(body).toContain('id="integrity-health-text"');
+          expect(body).toContain('id="rpc-total-requests"');
+          expect(body).toContain('id="rpc-blocked-requests"');
+          expect(body).toContain('id="drift-self-heals"');
+          expect(body).toContain('id="drift-files-healed"');
+          expect(body).toContain('id="rpc-feed-ticker"');
+
           resolve();
         });
 

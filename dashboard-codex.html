@@ -1994,6 +1994,134 @@
               </div>
             </div>
           </div>
+
+          <!-- SPEC-147: Guest RPC & Workspace Drift HUD Card -->
+          <div
+            id="guest-rpc-panel"
+            style="
+              background: rgba(251, 191, 36, 0.02);
+              border: 1px solid rgba(251, 191, 36, 0.15);
+              border-radius: 8px;
+              padding: 1.25rem;
+              box-shadow: 0 0 15px rgba(251, 191, 36, 0.05);
+              margin-top: 1rem;
+            "
+          >
+            <div
+              style="
+                font-family: &quot;Space Grotesk&quot;, sans-serif;
+                font-size: 0.85rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #fbbf24;
+                margin-bottom: 1rem;
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+              "
+            >
+              🔒 Guest RPC & Integrity Sentry
+            </div>
+
+            <!-- Self-Healing Circular HUD SVG Meter -->
+            <div style="display: flex; justify-content: space-around; align-items: center; margin-bottom: 1rem;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                <div style="position: relative; width: 80px; height: 80px;">
+                  <svg width="80" height="80" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="32" stroke="rgba(255,255,255,0.05)" stroke-width="6" fill="transparent" />
+                    <circle
+                      id="ring-integrity-status"
+                      cx="40"
+                      cy="40"
+                      r="32"
+                      stroke="#10b981"
+                      stroke-width="6"
+                      fill="transparent"
+                      stroke-dasharray="201"
+                      stroke-dashoffset="0"
+                      stroke-linecap="round"
+                      transform="rotate(-90 40 40)"
+                      style="transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease; filter: drop-shadow(0 0 4px rgba(16,185,129,0.4));"
+                    />
+                  </svg>
+                  <div
+                    id="integrity-health-text"
+                    style="
+                      position: absolute;
+                      top: 50%;
+                      left: 50%;
+                      transform: translate(-50%, -50%);
+                      font-family: monospace;
+                      font-size: 0.75rem;
+                      font-weight: 700;
+                      color: #10b981;
+                    "
+                  >
+                    100%
+                  </div>
+                </div>
+                <div style="font-size: 0.7rem; color: var(--color-text-muted); font-weight: 700; text-transform: uppercase;">
+                  Workspace Purity
+                </div>
+              </div>
+            </div>
+
+            <!-- Sentry stats panel -->
+            <div
+              style="
+                padding: 0.5rem;
+                background: rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.02);
+                border-radius: 4px;
+                font-size: 0.7rem;
+                font-family: monospace;
+                color: var(--color-text-muted);
+                margin-bottom: 0.75rem;
+              "
+            >
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                <span>RPC Total Requests:</span>
+                <span id="rpc-total-requests" style="color: #fff; font-weight: 700;">0</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                <span>RPC Blocked Requests:</span>
+                <span id="rpc-blocked-requests" style="color: #ef4444; font-weight: 700;">0</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                <span>Self-Heal Cleanups:</span>
+                <span id="drift-self-heals" style="color: #10b981; font-weight: 700;">0</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>Files Restored/Purged:</span>
+                <span id="drift-files-healed" style="color: #10b981; font-weight: 700;">0</span>
+              </div>
+            </div>
+
+            <!-- RPC Query Live Ticker Feed -->
+            <div style="font-size: 0.7rem; text-transform: uppercase; color: #fbbf24; font-weight: 700; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.25rem;">
+              <span>📟</span> Live RPC Channel Feed
+            </div>
+            <div
+              id="rpc-feed-ticker"
+              style="
+                height: 85px;
+                overflow-y: auto;
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 4px;
+                padding: 0.35rem;
+                font-family: monospace;
+                font-size: 0.65rem;
+                color: #e5e7eb;
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+              "
+            >
+              <div style="color: #6b7280; text-align: center; margin-top: 1.5rem;">Waiting for RPC events...</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -3097,6 +3225,97 @@
               }
             }
 
+            // SPEC-147: Guest RPC & Workspace Drift HUD Card Update
+            const totalRequestsEl = document.getElementById("rpc-total-requests");
+            if (totalRequestsEl) {
+              totalRequestsEl.innerText = guestSandbox.rpc_total_requests || 0;
+            }
+            const blockedRequestsEl = document.getElementById("rpc-blocked-requests");
+            if (blockedRequestsEl) {
+              blockedRequestsEl.innerText = guestSandbox.rpc_blocked_requests || 0;
+            }
+            const selfHealsEl = document.getElementById("drift-self-heals");
+            if (selfHealsEl) {
+              selfHealsEl.innerText = guestSandbox.drift_total_self_heals || 0;
+            }
+            const filesHealedEl = document.getElementById("drift-files-healed");
+            if (filesHealedEl) {
+              filesHealedEl.innerText = guestSandbox.drift_total_files_restored_or_purged || 0;
+            }
+
+            // Update workspace purity circle offset based on self-healing count
+            const ringIntegrityEl = document.getElementById("ring-integrity-status");
+            const integrityHealthTextEl = document.getElementById("integrity-health-text");
+            if (ringIntegrityEl && integrityHealthTextEl) {
+              const driftCount = guestSandbox.drift_total_self_heals || 0;
+              if (driftCount > 0) {
+                ringIntegrityEl.setAttribute("stroke", "#f59e0b");
+                ringIntegrityEl.style.filter = "drop-shadow(0 0 4px rgba(245,158,11,0.4))";
+                integrityHealthTextEl.innerText = "HEALED";
+                integrityHealthTextEl.style.color = "#f59e0b";
+              } else {
+                ringIntegrityEl.setAttribute("stroke", "#10b981");
+                ringIntegrityEl.style.filter = "drop-shadow(0 0 4px rgba(16,185,129,0.4))";
+                integrityHealthTextEl.innerText = "100%";
+                integrityHealthTextEl.style.color = "#10b981";
+              }
+            }
+
+            // Populate the Live RPC ticker feed based on recent_violations matching "guest_rpc_block"
+            // and security violations, plus public allowlisted successes if any
+            const rpcFeedEl = document.getElementById("rpc-feed-ticker");
+            const securityDataForRpc = data.sandbox_security || { recent_violations: [] };
+            if (rpcFeedEl && securityDataForRpc.recent_violations) {
+              const rpcEvents = [];
+              
+              const rpcViolations = securityDataForRpc.recent_violations.filter(
+                (v) => v.action === "guest_rpc_block" || v.action === "workspace_drift"
+              );
+              for (const v of rpcViolations) {
+                const timeStr = new Date(v.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                if (v.action === "guest_rpc_block") {
+                  rpcEvents.push({
+                    time: timeStr,
+                    type: "BLOCKED",
+                    text: `RPC DENIED: ${v.details.action} (${v.details.reason || "Invalid parameters"})`,
+                    color: "#ef4444"
+                  });
+                } else if (v.action === "workspace_drift") {
+                  rpcEvents.push({
+                    time: timeStr,
+                    type: "INTEGRITY",
+                    text: `HEALED DRIFT: Restored ${v.details.selfHealCount} file(s) in sandbox!`,
+                    color: "#f59e0b"
+                  });
+                }
+              }
+
+              const successCount = (guestSandbox.rpc_total_requests || 0) - (guestSandbox.rpc_blocked_requests || 0);
+              if (successCount > 0 && rpcEvents.length === 0) {
+                rpcEvents.push({
+                  time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                  type: "SUCCESS",
+                  text: `RPC PERMITTED: GET_SECTOR_STATE { sectorId: "sol" }`,
+                  color: "#10b981"
+                });
+              }
+
+              if (rpcEvents.length > 0) {
+                rpcFeedEl.innerHTML = rpcEvents
+                  .map(
+                    (ev) =>
+                      `<div style="display: flex; gap: 0.35rem; line-height: 1.2;">
+                        <span style="color: #6b7280; flex-shrink: 0;">[${ev.time}]</span>
+                        <span style="color: ${ev.color}; font-weight: 700; flex-shrink: 0;">[${ev.type}]</span>
+                        <span style="word-break: break-all;">${ev.text}</span>
+                      </div>`
+                  )
+                  .join("");
+              } else {
+                rpcFeedEl.innerHTML = `<div style="color: #6b7280; text-align: center; margin-top: 1.5rem;">No active RPC queries logged.</div>`;
+              }
+            }
+
             // SPEC-132: Render Containment Breaches Logs in Sentry Console
             const security = data.sandbox_security || {
               security_violations_total: 0,
@@ -3405,6 +3624,99 @@
               } else {
                 lastStatusEl.style.color = "#6b7280";
               }
+            }
+          }
+
+          // SPEC-147: Simulated Guest RPC & Workspace Drift updates
+          const simTotalRequestsEl = document.getElementById("rpc-total-requests");
+          if (simTotalRequestsEl) {
+            if (window.simRpcTotal === undefined) {
+              window.simRpcTotal = 24;
+              window.simRpcBlocked = 2;
+              window.simSelfHeals = 1;
+              window.simFilesHealed = 3;
+              window.simRpcLogs = [
+                { time: new Date(Date.now() - 300000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }), type: "SUCCESS", text: "RPC PERMITTED: GET_SECTOR_STATE { sectorId: \"sol\" }", color: "#10b981" },
+                { time: new Date(Date.now() - 200000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }), type: "BLOCKED", text: "RPC DENIED: DELETE_DATABASE (Action is not authorized)", color: "#ef4444" },
+                { time: new Date(Date.now() - 100000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }), type: "INTEGRITY", text: "HEALED DRIFT: Restored 3 file(s) in sandbox!", color: "#f59e0b" },
+              ];
+            }
+
+            if (Math.random() > 0.8) {
+              window.simRpcTotal++;
+              const rand = Math.random();
+              const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+              
+              if (rand > 0.85) {
+                window.simSelfHeals++;
+                const count = Math.floor(Math.random() * 3) + 1;
+                window.simFilesHealed += count;
+                window.simRpcLogs.unshift({
+                  time: timeStr,
+                  type: "INTEGRITY",
+                  text: `HEALED DRIFT: Restored ${count} file(s) in sandbox!`,
+                  color: "#f59e0b"
+                });
+                
+                const ringIntegrityEl = document.getElementById("ring-integrity-status");
+                const integrityHealthTextEl = document.getElementById("integrity-health-text");
+                if (ringIntegrityEl && integrityHealthTextEl) {
+                  ringIntegrityEl.setAttribute("stroke", "#f59e0b");
+                  ringIntegrityEl.style.filter = "drop-shadow(0 0 4px rgba(245,158,11,0.4))";
+                  integrityHealthTextEl.innerText = "HEALED";
+                  integrityHealthTextEl.style.color = "#f59e0b";
+                  
+                  setTimeout(() => {
+                    ringIntegrityEl.setAttribute("stroke", "#10b981");
+                    ringIntegrityEl.style.filter = "drop-shadow(0 0 4px rgba(16,185,129,0.4))";
+                    integrityHealthTextEl.innerText = "100%";
+                    integrityHealthTextEl.style.color = "#10b981";
+                  }, 2000);
+                }
+              } else if (rand > 0.6) {
+                window.simRpcBlocked++;
+                const maliciousActions = ["DELETE_DATABASE", "SHUTDOWN_SERVER", "EVAL_CODE"];
+                const action = maliciousActions[Math.floor(Math.random() * maliciousActions.length)];
+                window.simRpcLogs.unshift({
+                  time: timeStr,
+                  type: "BLOCKED",
+                  text: `RPC DENIED: ${action} (Action is not authorized)`,
+                  color: "#ef4444"
+                });
+              } else {
+                window.simRpcLogs.unshift({
+                  time: timeStr,
+                  type: "SUCCESS",
+                  text: "RPC PERMITTED: GET_FACTION_STANDINGS { playerId: \"player-123\" }",
+                  color: "#10b981"
+                });
+              }
+              
+              if (window.simRpcLogs.length > 10) {
+                window.simRpcLogs.pop();
+              }
+            }
+
+            simTotalRequestsEl.innerText = window.simRpcTotal;
+            const blockedRequestsEl = document.getElementById("rpc-blocked-requests");
+            if (blockedRequestsEl) blockedRequestsEl.innerText = window.simRpcBlocked;
+            const selfHealsEl = document.getElementById("drift-self-heals");
+            if (selfHealsEl) selfHealsEl.innerText = window.simSelfHeals;
+            const filesHealedEl = document.getElementById("drift-files-healed");
+            if (filesHealedEl) filesHealedEl.innerText = window.simFilesHealed;
+
+            const rpcFeedEl = document.getElementById("rpc-feed-ticker");
+            if (rpcFeedEl) {
+              rpcFeedEl.innerHTML = window.simRpcLogs
+                .map(
+                  (ev) =>
+                    `<div style="display: flex; gap: 0.35rem; line-height: 1.2;">
+                      <span style="color: #6b7280; flex-shrink: 0;">[${ev.time}]</span>
+                      <span style="color: ${ev.color}; font-weight: 700; flex-shrink: 0;">[${ev.type}]</span>
+                      <span style="word-break: break-all;">${ev.text}</span>
+                    </div>`
+                )
+                .join("");
             }
           }
 

@@ -25,9 +25,38 @@ describe("GuestRunner", () => {
   const tempEnvScript = path.join(__dirname, "temp_guest_env.js");
   const tempNetworkScript = path.join(__dirname, "temp_guest_net.js");
   const tempImportScript = path.join(__dirname, "temp_guest_import.js");
+  const tempRpcOkScript = path.join(__dirname, "temp_guest_rpc_ok.js");
+  const tempRpcEvilScript = path.join(__dirname, "temp_guest_rpc_evil.js");
   const sandboxDir = path.resolve("./.sandbox-runner-test-dir");
 
   beforeAll(() => {
+    fs.writeFileSync(
+      tempRpcOkScript,
+      `try {
+  const sector = await globalThis.guestRpcQuery("GET_SECTOR_STATE", { sectorId: "sol" });
+  const standings = await globalThis.guestRpcQuery("GET_FACTION_STANDINGS", { playerId: "player-123" });
+  console.log("SECTOR_NAME:" + sector.name);
+  console.log("STANDINGS_FED:" + standings.standings.Federation);
+} catch (err) {
+  console.log("RPC_ERROR:" + err.message);
+}`,
+      "utf8",
+    );
+
+    fs.writeFileSync(
+      tempRpcEvilScript,
+      `try {
+  await globalThis.guestRpcQuery("DELETE_DATABASE", {});
+} catch (err) {
+  console.log("RPC_EVIL_ERROR:" + err.message);
+}
+try {
+  await globalThis.guestRpcQuery("GET_SECTOR_STATE", JSON.parse('{"__proto__": {"evil": true}}'));
+} catch (err) {
+  console.log("RPC_POLLUTION_ERROR:" + err.message);
+}`,
+      "utf8",
+    );
     // Write out mock guest scripts dynamically
     fs.writeFileSync(
       tempNetworkScript,
@@ -136,6 +165,8 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
       tempEnvScript,
       tempNetworkScript,
       tempImportScript,
+      tempRpcOkScript,
+      tempRpcEvilScript,
     ];
     for (const f of files) {
       try {
@@ -337,5 +368,39 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
     expect(result.stdout).toContain(
       "IMPORT_BLOCKED: [SECURITY ACCESS DENIED] ESM Import Violation: [SECURITY ACCESS DENIED] Read attempt outside sandboxed directory:",
     );
+  });
+
+  test("should support permitted allowlisted guest RPC queries (SPEC-145)", async () => {
+    const result = await GuestRunner.runScript(tempRpcOkScript, {
+      timeoutMs: 3000,
+    });
+
+    expect(result.status).toBe("success");
+    expect(result.stdout).toContain("SECTOR_NAME:SOL Sector");
+    expect(result.stdout).toContain("STANDINGS_FED:10");
+  });
+
+  test("should reject non-allowlisted actions or prototype-polluting guest RPC queries (SPEC-145)", async () => {
+    const result = await GuestRunner.runScript(tempRpcEvilScript, {
+      timeoutMs: 3000,
+    });
+
+    expect(result.status).toBe("success");
+    expect(result.stdout).toContain(
+      "RPC_EVIL_ERROR:[SECURITY ACCESS DENIED] RPC Validation failed: Action [DELETE_DATABASE] is not authorized.",
+    );
+    expect(result.stdout).toContain(
+      "RPC_POLLUTION_ERROR:[SECURITY ACCESS DENIED] RPC Validation failed: Dangerous prototype key sequence [__proto__] detected.",
+    );
+
+    // Violation must be persistently logged inside child's audit ledger on disk
+    const auditFile = result.childAuditFile || testAuditFile;
+    expect(fs.existsSync(auditFile)).toBe(true);
+    const content = fs.readFileSync(auditFile, "utf8");
+    const logs = JSON.parse(content);
+    const rpcViolations = logs.filter(
+      (v) => v.category === "rate_limit" && v.action === "guest_rpc_block",
+    );
+    expect(rpcViolations.length).toBe(2);
   });
 });

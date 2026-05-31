@@ -60,6 +60,42 @@ async function bootstrap() {
     }, 50);
     cpuTimer.unref();
 
+    // 2.5 Expose secure promise-based guest RPC query method (SPEC-145)
+    globalThis.guestRpcQuery = function (action, params) {
+      return new Promise((resolve, reject) => {
+        const requestId = Math.random().toString(36).substring(2, 9);
+
+        const responseHandler = (msg) => {
+          const m = /** @type {any} */ (msg);
+          if (
+            m &&
+            m.type === "guest_rpc_response" &&
+            m.requestId === requestId
+          ) {
+            process.off("message", responseHandler);
+            if (m.status === "success") {
+              resolve(m.data);
+            } else {
+              reject(new Error(m.error));
+            }
+          }
+        };
+
+        process.on("message", responseHandler);
+
+        if (process.send) {
+          process.send({
+            type: "guest_rpc",
+            requestId,
+            action,
+            params,
+          });
+        } else {
+          reject(new Error("IPC channel not established"));
+        }
+      });
+    };
+
     // 3. Dynamically import and execute the guest script under active containment
     const resolvedScriptUrl = pathToFileURL(path.resolve(scriptPath)).href;
     await import(resolvedScriptUrl);

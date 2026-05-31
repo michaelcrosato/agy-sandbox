@@ -3,11 +3,14 @@
  * Spawns untrusted scripts in low-privilege child processes with environment and timeout controls.
  */
 
+import fs from "fs";
 import childProcess from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
 import { ProcessReaper } from "./ProcessReaper.js";
 import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
+import { GuestRpcSentry } from "./GuestRpcSentry.js";
+import { WorkspaceDriftSentry } from "./WorkspaceDriftSentry.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,16 +28,42 @@ export const GuestRunner = {
    * @param {number} [options.timeoutMs=5000] - Hard execution time budget.
    * @param {number} [options.maxMemoryMb=128] - Hard V8 old generation heap memory cap.
    * @param {number} [options.cpuTimeBudgetMs=2000] - Cumulative CPU execution time budget.
+   * @param {Object} [options.rpcHandlers] - Custom RPC query handlers.
    * @returns {Promise<{ status: string, exitCode: number | null, signal: string | null, error?: string, stack?: string, stdout: string, stderr: string, childAuditFile?: string }>}
    */
   runScript(scriptPath, options = {}) {
-    return new Promise((resolve) => {
+    const sandboxDir = options.sandboxDir
+      ? path.resolve(options.sandboxDir)
+      : null;
+
+    let baselineSnapshot = null;
+    if (sandboxDir && fs.existsSync(sandboxDir)) {
+      try {
+        baselineSnapshot = WorkspaceDriftSentry.takeSnapshot(sandboxDir);
+      } catch {
+        // ignore
+      }
+    }
+
+    return new Promise((realResolve) => {
+      const resolve = (result) => {
+        if (sandboxDir && baselineSnapshot && fs.existsSync(sandboxDir)) {
+          try {
+            const report = WorkspaceDriftSentry.auditDrift(
+              sandboxDir,
+              baselineSnapshot,
+            );
+            WorkspaceDriftSentry.selfHeal(sandboxDir, report);
+          } catch {
+            // ignore
+          }
+        }
+        realResolve(result);
+      };
+
       const timeoutMs = options.timeoutMs ?? 5000;
       const maxMemoryMb = options.maxMemoryMb ?? 128;
       const cpuTimeBudgetMs = options.cpuTimeBudgetMs ?? 2000;
-      const sandboxDir = options.sandboxDir
-        ? path.resolve(options.sandboxDir)
-        : null;
       const resolvedScriptPath = path.resolve(scriptPath);
 
       const childAuditFile = sandboxDir
@@ -191,7 +220,7 @@ export const GuestRunner = {
       }
 
       // Listen for IPC messages from the bootstrap worker
-      child.on("message", (msg) => {
+      child.on("message", async (msg) => {
         const m = /** @type {any} */ (msg);
         if (m && m.type === "cpu_heartbeat") {
           lastHeartbeatTime = Date.now();
@@ -204,6 +233,14 @@ export const GuestRunner = {
               current.heapUsedBytes = m.heapUsedBytes || 0;
               current.heapTotalBytes = m.heapTotalBytes || 0;
             }
+          }
+        } else if (m && m.type === "guest_rpc") {
+          const response = await GuestRpcSentry.handleMessage(
+            m,
+            options.rpcHandlers,
+          );
+          if (response && child.send) {
+            child.send(response);
           }
         } else if (m && (m.status === "success" || m.status === "error")) {
           IPCData = m;

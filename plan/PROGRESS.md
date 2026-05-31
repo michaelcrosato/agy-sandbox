@@ -33,11 +33,11 @@ _**v37 re-audit baseline (2026-05-31, ENTIRE v37 blueprint shipped): 1,213 Jest 
 _**v38 re-audit baseline (2026-05-31, ENTIRE v38 blueprint shipped): 1,216 Jest tests / 117 suites green; golden-glassmorphic resource HUD telemetry gauge panel, pre-activated zero-trust outbound firewall containment, and ESM dynamic loader module jailing all 100% DONE.**_
 
 
-## v39 — Secure Guest RPC Channel & Workspace Integrity Self-Healing Wave (TO DO) — see [`ROADMAP.md`](ROADMAP.md)
+## v39 — Secure Guest RPC Channel & Workspace Integrity Self-Healing Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)
 
-- [ ] `145` Secure Sandboxed Guest RPC Channel Sentry (establish schema-validated allowlisted IPC channel for guest state queries and block prototype injection escapes)
-- [ ] `146` Workspace Drift Auditing Sentinel & Integrity Self-Healer (take baseline copy-on-write directory snapshots and purge untracked file leaks or modifications post-execution)
-- [ ] `147` Golden-Glassmorphic Guest RPC & Workspace Drift HUD Card (enhance dashboard with visual RPC logger feed and real-time sandbox drift self-healing gauges)
+- [x] `145` Secure Sandboxed Guest RPC Channel Sentry (establish schema-validated allowlisted IPC channel for guest state queries and block prototype injection escapes) — **done** (developed schema-validated GuestRpcSentry validating parameters and blocking prototype-pollution attacks, integrated channel inside GuestRunner and GuestRunnerWorker under globalThis.guestRpcQuery, and verified via Jest unit/integration tests)
+- [x] `146` Workspace Drift Auditing Sentinel & Integrity Self-Healer (take baseline copy-on-write directory snapshots and purge untracked file leaks or modifications post-execution) — **done** (developed recursive directory snapshotting and automatic restoration purging inside WorkspaceDriftSentry, integrated into GuestRunner to auto-heal sandbox workspace post-run while preserving security logs, and covered with robust Jest unit and integration tests)
+- [x] `147` Golden-Glassmorphic Guest RPC & Workspace Drift HUD Card (enhance dashboard with visual RPC logger feed and real-time sandbox drift self-healing gauges) — **done** (exposed cumulative RPC and self-healing counters via /metrics in server.js, integrated golden-glassmorphic status panel and circular workspace purity gauge on dashboard-codex.html complete with live log feeds and offline random simulation mode, and verified element presence in HTTP integration tests)
 
 
 ## v38 — Guest Sandbox Observability, Network Containment & ESM Loader Jailing Wave (DONE) — see [`ROADMAP.md`](ROADMAP.md)

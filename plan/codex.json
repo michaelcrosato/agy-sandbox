@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-05-31T06:05:06.811Z",
+  "generatedAt": "2026-05-31T06:11:02.122Z",
   "stats": {
-    "totalSourceFiles": 96,
-    "totalTestFiles": 124,
-    "totalSpecFiles": 150,
-    "totalLoc": 20935,
-    "totalTests": 1617,
-    "untestedCoreFilesCount": 4
+    "totalSourceFiles": 98,
+    "totalTestFiles": 125,
+    "totalSpecFiles": 153,
+    "totalLoc": 21380,
+    "totalTests": 1624,
+    "untestedCoreFilesCount": 5
   },
   "files": [
     {
@@ -1398,19 +1398,61 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/net/GuestRpcSentry.js",
+      "loc": 169,
+      "classes": [],
+      "exports": [
+        {
+          "name": "ALLOWED_RPC_ACTIONS",
+          "type": "constant",
+          "jsdoc": null,
+          "line": 9
+        },
+        {
+          "name": "validateRpcRequest",
+          "type": "function",
+          "jsdoc": "/**\n* Validates the parameters against strict schemas depending on the action.\n* @param {string} action\n* @param {any} params\n* @returns {{ allowed: boolean; reason?: string }}\n*/",
+          "line": 20
+        },
+        {
+          "name": "GuestRpcSentry",
+          "type": "constant",
+          "jsdoc": null,
+          "line": 111
+        }
+      ],
+      "testFile": null,
+      "testCasesCount": 0,
+      "referencingSpecs": [
+        "plan/specs/145_secure_guest_rpc_sentry.md"
+      ],
+      "missingJsDocSymbols": [
+        {
+          "name": "ALLOWED_RPC_ACTIONS",
+          "type": "constant",
+          "line": 9
+        },
+        {
+          "name": "GuestRpcSentry",
+          "type": "constant",
+          "line": 111
+        }
+      ]
+    },
+    {
       "path": "src/net/GuestRunner.js",
-      "loc": 307,
+      "loc": 344,
       "classes": [],
       "exports": [
         {
           "name": "GuestRunner",
           "type": "constant",
           "jsdoc": null,
-          "line": 16
+          "line": 19
         }
       ],
       "testFile": "src/net/GuestRunner.test.js",
-      "testCasesCount": 11,
+      "testCasesCount": 13,
       "referencingSpecs": [
         "plan/specs/136_isolated_guest_runner.md"
       ],
@@ -1418,13 +1460,13 @@
         {
           "name": "GuestRunner",
           "type": "constant",
-          "line": 16
+          "line": 19
         }
       ]
     },
     {
       "path": "src/net/GuestRunnerWorker.js",
-      "loc": 75,
+      "loc": 111,
       "classes": [],
       "exports": [],
       "testFile": null,
@@ -2059,6 +2101,31 @@
       "testCasesCount": 4,
       "referencingSpecs": [],
       "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/net/WorkspaceDriftSentry.js",
+      "loc": 203,
+      "classes": [],
+      "exports": [
+        {
+          "name": "WorkspaceDriftSentry",
+          "type": "constant",
+          "jsdoc": null,
+          "line": 49
+        }
+      ],
+      "testFile": "src/net/WorkspaceDriftSentry.test.js",
+      "testCasesCount": 5,
+      "referencingSpecs": [
+        "plan/specs/146_workspace_drift_self_healer.md"
+      ],
+      "missingJsDocSymbols": [
+        {
+          "name": "WorkspaceDriftSentry",
+          "type": "constant",
+          "line": 49
+        }
+      ]
     },
     {
       "path": "src/net/wsCompression.js",
@@ -4459,23 +4526,75 @@
         "src/server.js",
         "src/net/GuestRunner.test.js"
       ]
+    },
+    {
+      "path": "plan/specs/145_secure_guest_rpc_sentry.md",
+      "filename": "145_secure_guest_rpc_sentry.md",
+      "title": "SPEC-145: Secure Sandboxed Guest RPC Channel Sentry",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/GuestRpcSentry.js",
+        "src/net/GuestRpcSentry.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/146_workspace_drift_self_healer.md",
+      "filename": "146_workspace_drift_self_healer.md",
+      "title": "SPEC-146: Workspace Drift Auditing Sentinel & Integrity Self-Healer",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/net/WorkspaceDriftSentry.js",
+        "src/net/WorkspaceDriftSentry.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/147_guest_rpc_drift_hud.md",
+      "filename": "147_guest_rpc_drift_hud.md",
+      "title": "SPEC-147: Golden-Glassmorphic Guest RPC & Workspace Drift HUD Card",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "None",
+      "filesMentioned": [
+        "src/server.js",
+        "src/server/codexDashboard.integration.test.js"
+      ]
     }
   ],
   "epistemicDebt": {
     "untestedCoreFiles": [
       "src/net/GuestLoader.js",
+      "src/net/GuestRpcSentry.js",
       "src/net/GuestRunnerWorker.js",
       "src/net/MainThreadWatchdogWorker.js",
       "src/net/mockFreezeScript.js"
     ],
     "missingJsDocs": [
       {
+        "path": "src/net/GuestRpcSentry.js",
+        "symbols": [
+          {
+            "name": "ALLOWED_RPC_ACTIONS",
+            "type": "constant",
+            "line": 9
+          },
+          {
+            "name": "GuestRpcSentry",
+            "type": "constant",
+            "line": 111
+          }
+        ]
+      },
+      {
         "path": "src/net/GuestRunner.js",
         "symbols": [
           {
             "name": "GuestRunner",
             "type": "constant",
-            "line": 16
+            "line": 19
           }
         ]
       },
@@ -4528,8 +4647,25 @@
             "line": 62
           }
         ]
+      },
+      {
+        "path": "src/net/WorkspaceDriftSentry.js",
+        "symbols": [
+          {
+            "name": "WorkspaceDriftSentry",
+            "type": "constant",
+            "line": 49
+          }
+        ]
       }
     ],
-    "staleSpecReferences": []
+    "staleSpecReferences": [
+      {
+        "spec": "plan/specs/145_secure_guest_rpc_sentry.md",
+        "brokenFiles": [
+          "src/net/GuestRpcSentry.test.js"
+        ]
+      }
+    ]
   }
 }

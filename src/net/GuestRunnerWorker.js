@@ -10,6 +10,7 @@ import { ProcessSentinel } from "./ProcessSentinel.js";
 import { IntegrityGuard } from "./IntegrityGuard.js";
 import { SandboxFirewall, activateFirewall } from "./SandboxFirewall.js";
 import { DnsEgressSentry } from "./DnsEgressSentry.js";
+import { TokenCostGovernor } from "./TokenCostGovernor.js";
 
 async function bootstrap() {
   const scriptPath = process.env.GUEST_SCRIPT_PATH;
@@ -40,6 +41,7 @@ async function bootstrap() {
     const firewall = new SandboxFirewall({ allowlistDomains: [] });
     activateFirewall(firewall);
     DnsEgressSentry.activate();
+    TokenCostGovernor.activate();
 
     // 2. Lock down global prototypes and monitor scope pollution
     IntegrityGuard.start(25); // High-frequency polling for guest runs
@@ -57,6 +59,8 @@ async function bootstrap() {
           rssBytes: memUsage.rss,
           heapUsedBytes: memUsage.heapUsed,
           heapTotalBytes: memUsage.heapTotal,
+          tokensSpent: TokenCostGovernor.getTokensSpent(),
+          usdConsumed: TokenCostGovernor.getUsdConsumed(),
         });
       }
     }, 50);

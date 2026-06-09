@@ -24,6 +24,8 @@ const violationCounters = {
   integrity: 0,
   economy: 0,
   static_analysis: 0,
+  token_budget: 0,
+  intrusion: 0,
 };
 
 // Safe asynchronous non-blocking file writer
@@ -126,6 +128,8 @@ export const SandboxSecurityRegistry = {
     violationCounters.integrity = 0;
     violationCounters.economy = 0;
     violationCounters.static_analysis = 0;
+    violationCounters.token_budget = 0;
+    violationCounters.intrusion = 0;
 
     try {
       const auditFilePath = getAuditFilePath();

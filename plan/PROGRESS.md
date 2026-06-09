@@ -42,7 +42,7 @@ _**v49 re-audit baseline (2026-05-31, Spec 166, 167, 168, 169, 170 all shipped):
 
 ## v50 — LLM Token Cost Governance, Intrusion Sentries & Zero-Trace Teardowns (IN PROGRESS) — see [`ROADMAP.md`](ROADMAP.md)
 
-- [ ] `174` Automated LLM API Token Cost Governance & Mock Sentry (enforce runtime budgets and dynamically intercept model queries with local deterministic mocks)
+- [x] `174` Automated LLM API Token Cost Governance & Mock Sentry (enforce runtime budgets and dynamically intercept model queries with local deterministic mocks) — **done** (engineered TokenCostGovernor.js tracking input/output prompt tokens with length heuristics, managing USD and token budgets, intercepting outbound http/https/fetch queries to LLM API domains to automatically redirect to local mock completions or reject with Payment Required error, integrated counters in guest heartbeat IPC telemetry and exposed under /metrics endpoint, covered in an 8-test unit suite in TokenCostGovernor.test.js with 100% green verification runs)
 - [ ] `175` V8 Isolated Sandbox Process Escape Intrusion Sentry (monitor global prototypes, HMAC IPC signatures, and system calls to block escape attempts)
 - [ ] `176` Ephemeral Guest Sandbox Zero-Trace State Wiper & Purger (execute post-run sweeps to guarantee zero lingering zombie processes, timers, or files)
 

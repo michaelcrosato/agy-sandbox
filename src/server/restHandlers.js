@@ -165,6 +165,8 @@ export function handleRestRequest(req, res, options) {
         drift_total_self_heals: WorkspaceDriftSentry.totalSelfHeals,
         drift_total_files_restored_or_purged:
           WorkspaceDriftSentry.totalFilesRestoredOrPurged,
+        tokens_spent: GuestRunner.getTotalTokensSpent(),
+        usd_consumed: GuestRunner.getTotalUsdConsumed(),
       },
       rooms: buildLobbyRoomsList(options.instances).map((r) => ({
         ...r,

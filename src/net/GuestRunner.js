@@ -24,6 +24,14 @@ const workerPath = path.join(__dirname, "GuestRunnerWorker.js");
 export const GuestRunner = {
   activeRuns: new Map(), // pid -> info
   recentRuns: [], // array of completed run summaries, keep last 15
+  totalTokensSpent: 0,
+  totalUsdConsumed: 0.0,
+  getTotalTokensSpent() {
+    return this.totalTokensSpent;
+  },
+  getTotalUsdConsumed() {
+    return this.totalUsdConsumed;
+  },
 
   /**
    * Run an untrusted guest script in an isolated child process.
@@ -250,6 +258,8 @@ export const GuestRunner = {
           rssBytes: 0,
           heapUsedBytes: 0,
           cpuTimeMs: 0,
+          tokensSpent: 0,
+          usdConsumed: 0.0,
           status: "running",
           startTime,
         };
@@ -400,6 +410,17 @@ export const GuestRunner = {
                 current.rssBytes = m.rssBytes || 0;
                 current.heapUsedBytes = m.heapUsedBytes || 0;
                 current.heapTotalBytes = m.heapTotalBytes || 0;
+
+                const prevTokens = current.tokensSpent || 0;
+                const prevUsd = current.usdConsumed || 0.0;
+                current.tokensSpent = m.tokensSpent || 0;
+                current.usdConsumed = m.usdConsumed || 0.0;
+
+                const diffTokens = current.tokensSpent - prevTokens;
+                const diffUsd = current.usdConsumed - prevUsd;
+
+                GuestRunner.totalTokensSpent += diffTokens;
+                GuestRunner.totalUsdConsumed += diffUsd;
 
                 // Evaluate and throttle if near budget
                 DynamicResourceGovernor.evaluateAndThrottle(child.pid, current);

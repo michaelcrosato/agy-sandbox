@@ -44,6 +44,22 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-08T22:45 · iter-0148 · GREEN · token-cost-governance-mock-sentry-shipped
+
+- **Baseline:** `b407b73` on `main`; 1,359 Jest green, 63 client green.
+- **Move:** Implement SPEC-174 (Automated LLM API Token Cost Governance & Mock Sentry) managing model query budgets and local mock interceptor flows.
+- **Changed:**
+  - Created `src/net/TokenCostGovernor.js` implementing standard pricing metadata tables, character-based token heuristics, active interception of outbound `fetch`/`http`/`https` calls to LLM domains, and Payment Required error injection on budget exhaustion.
+  - Implemented programmatic mock response registry wrapping simulated answers dynamically into Anthropic, OpenAI, or Google client envelopes.
+  - Modified `src/net/GuestRunnerWorker.js` to pre-activate `TokenCostGovernor` and report accumulated tokens spent and USD consumed via `cpu_heartbeat` IPC messages.
+  - Updated `src/net/GuestRunner.js` to aggregate and accumulate IPC token metrics.
+  - Modified `src/server/restHandlers.js` to expose `tokens_spent` and `usd_consumed` under the `/metrics` endpoint.
+  - Added `token_budget` and `intrusion` categories in `src/net/SandboxSecurityRegistry.js` counters.
+  - Authored a comprehensive 8-test unit suite in `src/net/TokenCostGovernor.test.js` validating all budget limits, local mocks, and intercept flows.
+- **Decisions:** Designing `TokenCostGovernor` to intercept requests prior to socket initialization allows completely offline tests and bypasses local DNS/socket firewall restrictions safely.
+- **Validation:** Executed `npm run agent:check:core` passing all 1,367 backend Jest assertions with 0 linter or format errors.
+- **Next:** Formulate and execute SPEC-175 (V8 Isolated Sandbox Process Escape Intrusion Sentry) to prevent privilege escalations.
+
 ## 2026-05-31T17:26 · iter-0147 · GREEN · static-ast-security-sentry-shipped
 
 - **Baseline:** `feat/v49-ast-static-security-sentry`; 1,332 Jest green, 63 client green.

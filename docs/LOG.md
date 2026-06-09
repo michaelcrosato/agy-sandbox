@@ -44,6 +44,18 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-09T06:10 · iter-0151 · GREEN · control-loop-monitor-cross-platform-robustness
+
+- **Baseline:** `iter-0150` on `main`; 1,377 Jest green.
+- **Move:** Extend loop monitor processes check and kill actions to support POSIX (macOS, Linux), align the shell daemon `run-afk-loop.sh` with active lockfile states, and update unit tests with OS-agnostic mock helpers.
+- **Changed:**
+  - Updated `getRunningLoopProcesses` and `pauseLoop` in `scripts/agent/loop-monitor.js` to branch on `process.platform`, using `ps -ax` and `kill -9` on POSIX systems.
+  - Added active state lockfile touch and exit trap cleanup to `scripts/run-afk-loop.sh` to match PowerShell loop runner behavior.
+  - Refactored `scripts/agent/loop-monitor.test.js` to dynamically generate process query mock strings based on host platform.
+- **Decisions:** Designing OS-agnostic mocks rather than hardcoding win32 outputs ensures that test suites remain portable and passing in non-Windows CI pipelines.
+- **Validation:** Executed `npm test` passing all 1,377 Jest assertions, with zero format/typecheck violations.
+- **Next:** Proceed with Wave v50 execution or persistent monitoring daemon execution.
+
 ## 2026-06-09T06:06 · iter-0150 · GREEN · control-loop-health-monitor-daemon-shipped
 
 - **Baseline:** `iter-0149` on `main`; 1,371 Jest green.

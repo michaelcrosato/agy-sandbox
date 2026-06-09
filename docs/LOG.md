@@ -44,6 +44,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-09T06:06 · iter-0150 · GREEN · control-loop-health-monitor-daemon-shipped
+
+- **Baseline:** `iter-0149` on `main`; 1,371 Jest green.
+- **Move:** Implement control loop persistent health monitoring daemon, scheduling, process locks, and fix Windows workspace path access denied issues.
+- **Changed:**
+  - Added `--daemon` flag implementation to `scripts/agent/loop-monitor.js` executing persistent loops following the required monitoring schedule (every 60s for 5m, every 5m for 30m, every 15m for 25m, then hourly for 24h).
+  - Modified `scripts/claude-night.ps1` and `scripts/run-afk-loop.ps1` to create and safely release `plan/loop_active.lock` locks during runtime.
+  - Authored a mock-timer based async unit test in `scripts/agent/loop-monitor.test.js` validating `runDaemon` termination under simulated anomalies.
+  - Rewrote the standard OS temp files cleanup in `scripts/agent/workspace-sanitize.ps1` to use a loop over `-Filter` instead of `-Include`, eliminating Windows filesystem Access Denied errors.
+- **Decisions:** Defaulting `fs.existsSync` to return false on logs/lock files within unit tests ensures isolation from the actual filesystem. Utilizing process-filtering by command lines enables daemon termination on Windows.
+- **Validation:** Executed `npm test` passing all 1,377 Jest assertions, with zero linter, format, or typecheck errors.
+- **Next:** Continue monitoring execution or resume standard v50 specs.
+
 ## 2026-06-09T06:01 · iter-0149 · GREEN · sandbox-escape-intrusion-sentry-shipped
 
 - **Baseline:** `iter-0148` on `main`; 1,367 Jest green.

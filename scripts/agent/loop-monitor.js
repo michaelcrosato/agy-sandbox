@@ -103,6 +103,10 @@ export function checkAnomaly() {
           "UnhandledPromiseRejection",
           "ReferenceError",
           "TypeError",
+          "Error:",
+          "fatal:",
+          "uncaughtException",
+          "push failed",
         ];
 
         for (const line of lines.slice(-50)) {

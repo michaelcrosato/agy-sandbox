@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-06-09T06:54:02.499Z",
+  "generatedAt": "2026-06-09T14:52:17.874Z",
   "stats": {
     "totalSourceFiles": 109,
     "totalTestFiles": 142,
     "totalSpecFiles": 183,
-    "totalLoc": 26617,
+    "totalLoc": 26625,
     "totalTests": 1799,
     "untestedCoreFilesCount": 6
   },
@@ -1064,7 +1064,7 @@
     },
     {
       "path": "src/engine/SpaceEntity.js",
-      "loc": 123,
+      "loc": 126,
       "classes": [
         {
           "name": "SpaceEntity",
@@ -1201,7 +1201,7 @@
     },
     {
       "path": "src/physics/Vector2D.js",
-      "loc": 89,
+      "loc": 94,
       "classes": [
         {
           "name": "Vector2D",

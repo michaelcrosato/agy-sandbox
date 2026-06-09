@@ -1,6 +1,6 @@
 # 060 — Autonomy Safety & Truth Sync
 
-- **Status:** In Progress
+- **Status:** Done
 - **Wave:** A0 — Safety & Truth
 - **Priority:** Critical
 - **Primary goal:** make the autonomous control plane single-sourced, cross-platform safe, and gate-truthful before more feature work.
@@ -29,18 +29,18 @@ The repo already has a capable autonomous harness. The risk is drift: multiple w
 
 ## Acceptance criteria
 
-- [ ] `AGENTS.md` has one canonical read order pointing to `plan/PROGRESS.md` + `plan/specs/` as the live queue.
-- [ ] `.github/AGENT_RULES.md` is a thin GitHub issue-flow delta and defers to root `AGENTS.md`.
-- [ ] `docs/GOAL.md` is the product blueprint only, not the live work queue or loop prompt.
-- [ ] `README.md` and `ROADMAP.md` do not contain stale hand-written test counts.
-- [ ] `npm run agent:verify-substrate` verifies `scripts/manifest.txt` on every OS.
-- [ ] `npm run agent:check` runs substrate integrity, format check, lint, typecheck, Jest, and client tests.
-- [ ] CI runs substrate verification and uses Node versions compatible with `package.json`.
-- [ ] The issue-triggered autonomous workflow runs on Node 24 or newer-compatible LTS policy.
-- [ ] `scripts/run-agent.js` blocks substrate writes, creates a task branch before edits, runs `npm run agent:check`, and does not force-push.
-- [ ] AFK loop scripts print `plan/PROGRESS.md` as the live anchor and preserve failed work for inspection.
-- [ ] The full gate has actually run and passed before this spec is marked done.
-- [ ] `plan/PROGRESS.md` and `docs/LOG.md` are updated after validation, or any missing update is explicitly recorded in the handoff.
+- [x] `AGENTS.md` has one canonical read order pointing to `plan/PROGRESS.md` + `plan/specs/` as the live queue.
+- [x] `.github/AGENT_RULES.md` is a thin GitHub issue-flow delta and defers to root `AGENTS.md`.
+- [x] `docs/GOAL.md` is the product blueprint only, not the live work queue or loop prompt.
+- [x] `README.md` and `ROADMAP.md` do not contain stale hand-written test counts.
+- [x] `npm run agent:verify-substrate` verifies `scripts/manifest.txt` on every OS.
+- [x] `npm run agent:check` runs substrate integrity, format check, lint, typecheck, Jest, and client tests.
+- [x] CI runs substrate verification and uses Node versions compatible with `package.json`.
+- [x] The issue-triggered autonomous workflow runs on Node 24 or newer-compatible LTS policy.
+- [x] `scripts/run-agent.js` blocks substrate writes, creates a task branch before edits, runs `npm run agent:check`, and does not force-push.
+- [x] AFK loop scripts print `plan/PROGRESS.md` as the live anchor and preserve failed work for inspection.
+- [x] The full gate has actually run and passed before this spec is marked done.
+- [x] `plan/PROGRESS.md` and `docs/LOG.md` are updated after validation, or any missing update is explicitly recorded in the handoff.
 
 ## Verification commands
 

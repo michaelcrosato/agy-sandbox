@@ -44,6 +44,18 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-09T07:54 · iter-0158 · GREEN · autonomy-safety-sync-completed
+
+- **Baseline:** `e9042d3` on `main`; 1,380 Jest green.
+- **Move:** Verify and complete A0 priority spec `plan/specs/060_autonomy_safety_truth_sync.md`.
+- **Changed:**
+  - Completed and checked all checkboxes in `plan/specs/060_autonomy_safety_truth_sync.md`.
+  - Audited `AGENTS.md`, `.github/AGENT_RULES.md`, `docs/GOAL.md`, `README.md`, `ROADMAP.md`, `scripts/run-agent.js`,
+    and `scripts/run-afk-loop.ps1` for rule compliance, cross-platform safety, and stale test counts.
+- **Decisions:** none.
+- **Validation:** Executed `npm run agent:check` locally; 1380 Jest tests and 63 client tests all passed.
+- **Next:** Proceed with the next unblocked items in the roadmap, including generated REPO_MAP.md or log rotation.
+
 ## 2026-06-09T13:25 · iter-0157 · GREEN · telemetry-test-flakiness-resolved
 
 - **Baseline:** `8c01359` on `main`; 1,380 Jest green.

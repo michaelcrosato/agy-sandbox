@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-06-09T06:54:02.499Z` · Baseline: `26,617 LOC` across `109 source files`
+> Generated: `2026-06-09T14:52:17.874Z` · Baseline: `26,625 LOC` across `109 source files`
 
 ---
 
@@ -9,7 +9,7 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `26,617 LOC` | 🟢 Healthy |
+| **Total Code Volume** | `26,625 LOC` | 🟢 Healthy |
 | **Source Modules** | `109 files` | 🟢 Structured |
 | **Test Suites** | `142 test files` | 🟢 Integrated |
 | **Total Test Cases** | `1799 cases` | 🟢 Deterministic |
@@ -60,7 +60,7 @@
 | [Projectile.js](file:///C:/dev/agy-sandbox/src/engine/Projectile.js) | 68 | `class Projectile` | [Projectile.test.js](file:///C:/dev/agy-sandbox/src/engine/Projectile.test.js) | _None_ |
 | [Ship.js](file:///C:/dev/agy-sandbox/src/engine/Ship.js) | 525 | `class Ship` | [Ship.test.js](file:///C:/dev/agy-sandbox/src/engine/Ship.test.js) | [`055_naval_command_decks`](file:///C:/dev/agy-sandbox/plan/specs/055_naval_command_decks.md)<br>[`067_centralize_commodities_invariants`](file:///C:/dev/agy-sandbox/plan/specs/067_centralize_commodities_invariants.md) |
 | [SpaceEngine.js](file:///C:/dev/agy-sandbox/src/engine/SpaceEngine.js) | 388 | `class SpaceEngine` | [SpaceEngine.test.js](file:///C:/dev/agy-sandbox/src/engine/SpaceEngine.test.js) | [`051_collision_kinetic_damage`](file:///C:/dev/agy-sandbox/plan/specs/051_collision_kinetic_damage.md) |
-| [SpaceEntity.js](file:///C:/dev/agy-sandbox/src/engine/SpaceEntity.js) | 123 | `class SpaceEntity` | [SpaceEntity.test.js](file:///C:/dev/agy-sandbox/src/engine/SpaceEntity.test.js) | _None_ |
+| [SpaceEntity.js](file:///C:/dev/agy-sandbox/src/engine/SpaceEntity.js) | 126 | `class SpaceEntity` | [SpaceEntity.test.js](file:///C:/dev/agy-sandbox/src/engine/SpaceEntity.test.js) | _None_ |
 | [TerritoryControl.js](file:///C:/dev/agy-sandbox/src/engine/TerritoryControl.js) | 209 | `class TerritoryControl` | [TerritoryControl.test.js](file:///C:/dev/agy-sandbox/src/engine/TerritoryControl.test.js) | [`098_emergent_faction_territory_control`](file:///C:/dev/agy-sandbox/plan/specs/098_emergent_faction_territory_control.md) |
 | [Trading.js](file:///C:/dev/agy-sandbox/src/engine/Trading.js) | 248 | `function tradeOne`, `function factionPrice`, `function getTransactionTaxRate`, `function getModifiedUpgradePrice`, `function applyHullPurchase`, `function findBestTradeRoutes` | [Trading.test.js](file:///C:/dev/agy-sandbox/src/engine/Trading.test.js) | [`052_stargate_warp_tolls_taxes`](file:///C:/dev/agy-sandbox/plan/specs/052_stargate_warp_tolls_taxes.md)<br>[`057_dynamic_market_events`](file:///C:/dev/agy-sandbox/plan/specs/057_dynamic_market_events.md)<br>[`065_procedural_mission_completions`](file:///C:/dev/agy-sandbox/plan/specs/065_procedural_mission_completions.md)<br>[`067_centralize_commodities_invariants`](file:///C:/dev/agy-sandbox/plan/specs/067_centralize_commodities_invariants.md)<br>[`081_outlaw_black_markets`](file:///C:/dev/agy-sandbox/plan/specs/081_outlaw_black_markets.md)<br>[`082_faction_aware_trade_advisor`](file:///C:/dev/agy-sandbox/plan/specs/082_faction_aware_trade_advisor.md)<br>[`087_dynamic_trade_profit_perception`](file:///C:/dev/agy-sandbox/plan/specs/087_dynamic_trade_profit_perception.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
 | [WeaponArchetypes.js](file:///C:/dev/agy-sandbox/src/engine/WeaponArchetypes.js) | 187 | `constant WeaponArchetype`, `constant WEAPON_ARCHETYPE_ORDER`, `constant WEAPON_ARCHETYPE_PROFILES`, `constant DEFAULT_WEAPON_COSTS`, `function getArchetypeProfile`, `function applyArchetypeToShip` | [WeaponArchetypes.test.js](file:///C:/dev/agy-sandbox/src/engine/WeaponArchetypes.test.js) | _None_ |
@@ -69,7 +69,7 @@
 
 | File | LOC | Classes / Exports | Unit Test File | Referencing Specs |
 | --- | --- | --- | --- | --- |
-| [Vector2D.js](file:///C:/dev/agy-sandbox/src/physics/Vector2D.js) | 89 | `class Vector2D` | [Vector2D.test.js](file:///C:/dev/agy-sandbox/src/physics/Vector2D.test.js) | _None_ |
+| [Vector2D.js](file:///C:/dev/agy-sandbox/src/physics/Vector2D.js) | 94 | `class Vector2D` | [Vector2D.test.js](file:///C:/dev/agy-sandbox/src/physics/Vector2D.test.js) | _None_ |
 
 ### 📂 Directory: `src/net/`
 

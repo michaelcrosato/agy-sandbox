@@ -13,6 +13,9 @@ const workerPath = path.join(__dirname, "MainThreadWatchdogWorker.js");
 
 let activeWorker = null;
 
+/**
+ * Main Thread Watchdog (SPEC-133) monitoring host event loop responsiveness.
+ */
 export const MainThreadWatchdog = {
   /**
    * Starts the main-thread event loop watchdog.

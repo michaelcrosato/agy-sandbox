@@ -5,7 +5,10 @@
 
 import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
 
-// Strict allowlisted actions
+/**
+ * Strict allowlisted RPC actions.
+ * @type {Set<string>}
+ */
 export const ALLOWED_RPC_ACTIONS = new Set([
   "GET_SECTOR_STATE",
   "GET_FACTION_STANDINGS",
@@ -108,6 +111,9 @@ const defaultHandlers = {
   },
 };
 
+/**
+ * Guest RPC Sentry (SPEC-145) validating IPC payloads.
+ */
 export const GuestRpcSentry = {
   // Observability counters
   totalRequests: 0,

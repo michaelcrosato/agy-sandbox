@@ -23,6 +23,9 @@ let simulatedCpuLoad = null;
 // Background polling loop for stress recovery draining
 let pollInterval = null;
 
+/**
+ * Dynamic Resource Governor (SPEC-172) balancing memory and CPU usage.
+ */
 export const DynamicResourceGovernor = {
   /**
    * Clears governor queue and simulation metrics (mostly for test hygiene).

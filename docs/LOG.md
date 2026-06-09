@@ -44,6 +44,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-09T07:59 · iter-0160 · GREEN · epistemic-debt-remedied
+
+- **Baseline:** `1afa309` on `main`; 1,380 Jest green.
+- **Move:** Resolve codebase epistemic debt by creating missing unit tests and adding JSDoc annotations.
+- **Changed:**
+  - Designed and implemented `src/net/GuestRpcSentry.test.js` to cover secure RPC payload validation.
+  - Designed and implemented `src/net/SecureModuleRegistry.test.js` to cover cryptographic module signing.
+  - Added JSDoc annotations across several net modules (`DnsEgressSentry.js`, `DynamicResourceGovernor.js`,
+    `GuestRpcSentry.js`, `GuestRunner.js`, `IntegrityGuard.js`, `IntrusionDetectionSentry.js`, `MainThreadWatchdog.js`).
+- **Decisions:** none.
+- **Validation:** Executed `npm run agent:check` locally; 1,397 Jest tests and 63 client tests all passed.
+- **Next:** Create the human dashboard `REVIEW_QUEUE.md` and propose the next improvement steps.
+
 ## 2026-06-09T07:56 · iter-0159 · GREEN · log-rotation-implemented
 
 - **Baseline:** `f2da8c6` on `main`; 1,380 Jest green.

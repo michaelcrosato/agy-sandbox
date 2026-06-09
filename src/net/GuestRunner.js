@@ -22,6 +22,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const workerPath = path.join(__dirname, "GuestRunnerWorker.js");
 
+/**
+ * Guest Runner (SPEC-136) managing isolated guest process executions.
+ */
 export const GuestRunner = {
   activeRuns: new Map(), // pid -> info
   recentRuns: [], // array of completed run summaries, keep last 15

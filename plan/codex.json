@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-06-09T14:55:51.364Z",
+  "generatedAt": "2026-06-09T14:59:47.498Z",
   "stats": {
     "totalSourceFiles": 109,
-    "totalTestFiles": 142,
+    "totalTestFiles": 144,
     "totalSpecFiles": 183,
-    "totalLoc": 26625,
-    "totalTests": 1799,
-    "untestedCoreFilesCount": 6
+    "totalLoc": 26652,
+    "totalTests": 1822,
+    "untestedCoreFilesCount": 4
   },
   "files": [
     {
@@ -1421,20 +1421,20 @@
     },
     {
       "path": "src/net/DnsEgressSentry.js",
-      "loc": 253,
+      "loc": 259,
       "classes": [],
       "exports": [
         {
           "name": "loadAllowlist",
           "type": "function",
-          "jsdoc": null,
-          "line": 30
+          "jsdoc": "/**\n* Safely loads allowlist domains from environment or config file.\n* @returns {Array<string>} - Array of lowercased allowlisted domains.\n*/",
+          "line": 33
         },
         {
           "name": "DnsEgressSentry",
           "type": "constant",
-          "jsdoc": null,
-          "line": 70
+          "jsdoc": "/**\n* DNS Egress Sentry (SPEC-173) intercepting DNS resolution to prevent exfiltration.\n*/",
+          "line": 76
         }
       ],
       "testFile": "src/net/DnsEgressSentry.test.js",
@@ -1442,29 +1442,18 @@
       "referencingSpecs": [
         "plan/specs/173_dns_resolution_egress_sentry.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "loadAllowlist",
-          "type": "function",
-          "line": 30
-        },
-        {
-          "name": "DnsEgressSentry",
-          "type": "constant",
-          "line": 70
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/DynamicResourceGovernor.js",
-      "loc": 223,
+      "loc": 226,
       "classes": [],
       "exports": [
         {
           "name": "DynamicResourceGovernor",
           "type": "constant",
-          "jsdoc": null,
-          "line": 26
+          "jsdoc": "/**\n* Dynamic Resource Governor (SPEC-172) balancing memory and CPU usage.\n*/",
+          "line": 29
         }
       ],
       "testFile": "src/net/DynamicResourceGovernor.test.js",
@@ -1472,13 +1461,7 @@
       "referencingSpecs": [
         "plan/specs/172_dynamic_memory_priority_scheduler.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "DynamicResourceGovernor",
-          "type": "constant",
-          "line": 26
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/EphemeralSandbox.js",
@@ -1512,56 +1495,45 @@
     },
     {
       "path": "src/net/GuestRpcSentry.js",
-      "loc": 188,
+      "loc": 194,
       "classes": [],
       "exports": [
         {
           "name": "ALLOWED_RPC_ACTIONS",
           "type": "constant",
-          "jsdoc": null,
-          "line": 9
+          "jsdoc": "/**\n* Strict allowlisted RPC actions.\n* @type {Set<string>}\n*/",
+          "line": 12
         },
         {
           "name": "validateRpcRequest",
           "type": "function",
           "jsdoc": "/**\n* Validates the parameters against strict schemas depending on the action.\n* @param {string} action\n* @param {any} params\n* @returns {{ allowed: boolean; reason?: string }}\n*/",
-          "line": 20
+          "line": 23
         },
         {
           "name": "GuestRpcSentry",
           "type": "constant",
-          "jsdoc": null,
-          "line": 111
+          "jsdoc": "/**\n* Guest RPC Sentry (SPEC-145) validating IPC payloads.\n*/",
+          "line": 117
         }
       ],
-      "testFile": null,
-      "testCasesCount": 0,
+      "testFile": "src/net/GuestRpcSentry.test.js",
+      "testCasesCount": 14,
       "referencingSpecs": [
         "plan/specs/145_secure_guest_rpc_sentry.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "ALLOWED_RPC_ACTIONS",
-          "type": "constant",
-          "line": 9
-        },
-        {
-          "name": "GuestRpcSentry",
-          "type": "constant",
-          "line": 111
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/GuestRunner.js",
-      "loc": 588,
+      "loc": 591,
       "classes": [],
       "exports": [
         {
           "name": "GuestRunner",
           "type": "constant",
-          "jsdoc": null,
-          "line": 25
+          "jsdoc": "/**\n* Guest Runner (SPEC-136) managing isolated guest process executions.\n*/",
+          "line": 28
         }
       ],
       "testFile": "src/net/GuestRunner.test.js",
@@ -1569,13 +1541,7 @@
       "referencingSpecs": [
         "plan/specs/136_isolated_guest_runner.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "GuestRunner",
-          "type": "constant",
-          "line": 25
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/GuestRunnerWorker.js",
@@ -1614,14 +1580,14 @@
     },
     {
       "path": "src/net/IntegrityGuard.js",
-      "loc": 244,
+      "loc": 247,
       "classes": [],
       "exports": [
         {
           "name": "IntegrityGuard",
           "type": "constant",
-          "jsdoc": null,
-          "line": 51
+          "jsdoc": "/**\n* Integrity Guard (SPEC-134) freezing core JS prototypes and preventing tamper attempts.\n*/",
+          "line": 54
         }
       ],
       "testFile": "src/net/IntegrityGuard.test.js",
@@ -1630,13 +1596,7 @@
         "plan/specs/134_global_prototype_freeze_sentry.md",
         "plan/specs/167_process_binding_dlopen_lockdown.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "IntegrityGuard",
-          "type": "constant",
-          "line": 51
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/interest.js",
@@ -1673,14 +1633,14 @@
     },
     {
       "path": "src/net/IntrusionDetectionSentry.js",
-      "loc": 262,
+      "loc": 265,
       "classes": [],
       "exports": [
         {
           "name": "IntrusionDetectionSentry",
           "type": "constant",
-          "jsdoc": null,
-          "line": 47
+          "jsdoc": "/**\n* Intrusion Detection Sentry (SPEC-175) intercepting escape attempts in guest processes.\n*/",
+          "line": 50
         }
       ],
       "testFile": "src/net/IntrusionDetectionSentry.test.js",
@@ -1688,13 +1648,7 @@
       "referencingSpecs": [
         "plan/specs/175_sandbox_escape_intrusion_sentry.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "IntrusionDetectionSentry",
-          "type": "constant",
-          "line": 47
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/LatencyMonitor.js",
@@ -1735,14 +1689,14 @@
     },
     {
       "path": "src/net/MainThreadWatchdog.js",
-      "loc": 80,
+      "loc": 83,
       "classes": [],
       "exports": [
         {
           "name": "MainThreadWatchdog",
           "type": "constant",
-          "jsdoc": null,
-          "line": 16
+          "jsdoc": "/**\n* Main Thread Watchdog (SPEC-133) monitoring host event loop responsiveness.\n*/",
+          "line": 19
         }
       ],
       "testFile": "src/net/MainThreadWatchdog.test.js",
@@ -1750,13 +1704,7 @@
       "referencingSpecs": [
         "plan/specs/133_main_thread_cpu_watchdog.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "MainThreadWatchdog",
-          "type": "constant",
-          "line": 16
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/MainThreadWatchdogWorker.js",
@@ -2258,8 +2206,8 @@
           "line": 30
         }
       ],
-      "testFile": null,
-      "testCasesCount": 0,
+      "testFile": "src/net/SecureModuleRegistry.test.js",
+      "testCasesCount": 9,
       "referencingSpecs": [],
       "missingJsDocSymbols": [
         {
@@ -5248,93 +5196,11 @@
   "epistemicDebt": {
     "untestedCoreFiles": [
       "src/net/GuestLoader.js",
-      "src/net/GuestRpcSentry.js",
       "src/net/GuestRunnerWorker.js",
       "src/net/MainThreadWatchdogWorker.js",
-      "src/net/mockFreezeScript.js",
-      "src/net/SecureModuleRegistry.js"
+      "src/net/mockFreezeScript.js"
     ],
     "missingJsDocs": [
-      {
-        "path": "src/net/DnsEgressSentry.js",
-        "symbols": [
-          {
-            "name": "loadAllowlist",
-            "type": "function",
-            "line": 30
-          },
-          {
-            "name": "DnsEgressSentry",
-            "type": "constant",
-            "line": 70
-          }
-        ]
-      },
-      {
-        "path": "src/net/DynamicResourceGovernor.js",
-        "symbols": [
-          {
-            "name": "DynamicResourceGovernor",
-            "type": "constant",
-            "line": 26
-          }
-        ]
-      },
-      {
-        "path": "src/net/GuestRpcSentry.js",
-        "symbols": [
-          {
-            "name": "ALLOWED_RPC_ACTIONS",
-            "type": "constant",
-            "line": 9
-          },
-          {
-            "name": "GuestRpcSentry",
-            "type": "constant",
-            "line": 111
-          }
-        ]
-      },
-      {
-        "path": "src/net/GuestRunner.js",
-        "symbols": [
-          {
-            "name": "GuestRunner",
-            "type": "constant",
-            "line": 25
-          }
-        ]
-      },
-      {
-        "path": "src/net/IntegrityGuard.js",
-        "symbols": [
-          {
-            "name": "IntegrityGuard",
-            "type": "constant",
-            "line": 51
-          }
-        ]
-      },
-      {
-        "path": "src/net/IntrusionDetectionSentry.js",
-        "symbols": [
-          {
-            "name": "IntrusionDetectionSentry",
-            "type": "constant",
-            "line": 47
-          }
-        ]
-      },
-      {
-        "path": "src/net/MainThreadWatchdog.js",
-        "symbols": [
-          {
-            "name": "MainThreadWatchdog",
-            "type": "constant",
-            "line": 16
-          }
-        ]
-      },
       {
         "path": "src/net/MemoryLeakSentry.js",
         "symbols": [
@@ -5432,12 +5298,6 @@
       }
     ],
     "staleSpecReferences": [
-      {
-        "spec": "plan/specs/145_secure_guest_rpc_sentry.md",
-        "brokenFiles": [
-          "src/net/GuestRpcSentry.test.js"
-        ]
-      },
       {
         "spec": "plan/specs/158_guided_onboarding_tutorial_mission.md",
         "brokenFiles": [

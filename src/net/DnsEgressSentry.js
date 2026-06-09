@@ -26,7 +26,10 @@ function calculateEntropy(str) {
   return entropy;
 }
 
-// Safely loads allowlist domains from environment or config file
+/**
+ * Safely loads allowlist domains from environment or config file.
+ * @returns {Array<string>} - Array of lowercased allowlisted domains.
+ */
 export function loadAllowlist() {
   if (process.env.GUEST_DNS_ALLOWLIST) {
     try {
@@ -67,6 +70,9 @@ export function loadAllowlist() {
 const originalMethods = new Map();
 const originalPromiseMethods = new Map();
 
+/**
+ * DNS Egress Sentry (SPEC-173) intercepting DNS resolution to prevent exfiltration.
+ */
 export const DnsEgressSentry = {
   /**
    * Evaluates hostname query for DNS tunneling and allowlist conformance.

@@ -48,6 +48,9 @@ let initialGlobals = new Set();
 let pollutionInterval = null;
 const allowedGlobals = new Set(["gc", "guestRpcQuery"]);
 
+/**
+ * Integrity Guard (SPEC-134) freezing core JS prototypes and preventing tamper attempts.
+ */
 export const IntegrityGuard = {
   /**
    * Initializes and activates the global prototype freeze and integrity sentry.

@@ -44,6 +44,9 @@ for (const builtin of coreBuiltins) {
 
 let isActivated = false;
 
+/**
+ * Intrusion Detection Sentry (SPEC-175) intercepting escape attempts in guest processes.
+ */
 export const IntrusionDetectionSentry = {
   /**
    * Activates the intrusion detection sentry within the sandboxed child process.

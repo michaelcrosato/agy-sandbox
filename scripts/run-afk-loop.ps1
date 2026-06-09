@@ -11,7 +11,7 @@ param (
     [string]$AgentCommand = "agy"
 )
 
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Continue'
 
 Write-Host "=========================================================" -ForegroundColor Green
 Write-Host "      STARFALL GALAXY - UNATTENDED AFK DAEMON LOOP       " -ForegroundColor Green

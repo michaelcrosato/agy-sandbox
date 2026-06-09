@@ -27,10 +27,16 @@ if (GEMINI_API_KEY && GEMINI_API_KEY.startsWith("ghp_")) {
   process.exit(1);
 }
 
-const genAI =
-  GEMINI_API_KEY && GEMINI_API_KEY !== "hidden"
-    ? new GoogleGenAI({ apiKey: GEMINI_API_KEY })
-    : new GoogleGenAI({});
+let genAI = null;
+function getGenAI() {
+  if (!genAI) {
+    genAI =
+      GEMINI_API_KEY && GEMINI_API_KEY !== "hidden"
+        ? new GoogleGenAI({ apiKey: GEMINI_API_KEY })
+        : new GoogleGenAI({});
+  }
+  return genAI;
+}
 
 function runCommand(command, options = {}) {
   try {
@@ -316,7 +322,7 @@ Return only a JSON array of file operations with complete file content.`;
         },
       ]);
     } else {
-      const result = await genAI.models.generateContent({
+      const result = await getGenAI().models.generateContent({
         model: MODEL_NAME,
         contents: `${systemPrompt}\n\n${userPrompt}${feedback ? `\n\nPrevious gate output:\n${feedback}` : ""}`,
         config: generationConfig,

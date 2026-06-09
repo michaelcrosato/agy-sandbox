@@ -74,10 +74,13 @@ foreach ($filter in $logFilters) {
 }
 
 # 7. Clean up standard OS temporary files
-Get-ChildItem -Path $RepoRoot -File -Include "Thumbs.db", ".DS_Store" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
-    $path = $_.FullName
-    if ($path -notmatch "(\\plan\\|\\.agents\\|\\.git\\|\\node_modules\\|docs\\LOG\.md$)") {
-        Remove-FileSafe $path
+$osTempFilters = @("Thumbs.db", ".DS_Store")
+foreach ($filter in $osTempFilters) {
+    Get-ChildItem -Path $RepoRoot -File -Filter $filter -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+        $path = $_.FullName
+        if ($path -notmatch "(\\plan\\|\\.agents\\|\\.git\\|\\node_modules\\|docs\\LOG\.md$)") {
+            Remove-FileSafe $path
+        }
     }
 }
 

@@ -108,26 +108,30 @@ $queue = Read-Queue
 foreach ($t in $queue.tasks) { if ($t.status -eq "in_progress") { $t.status = "pending" } }
 Write-Queue $queue
 
+# Create lock file indicating loop is active
+New-Item -Path "plan/loop_active.lock" -ItemType File -Force | Out-Null
+
 $consecFail = 0
 
-while ($true) {
-  if ($consecFail -ge $MaxConsecutiveFailures) {
-    Write-Log "Hit $MaxConsecutiveFailures consecutive failures. Stopping for safety so we don't burn the night on a broken state."
-    break
-  }
+try {
+  while ($true) {
+    if ($consecFail -ge $MaxConsecutiveFailures) {
+      Write-Log "Hit $MaxConsecutiveFailures consecutive failures. Stopping for safety so we don't burn the night on a broken state."
+      break
+    }
 
-  $queue = Read-Queue
-  $task = $queue.tasks | Where-Object { $_.status -eq "pending" } | Select-Object -First 1
-  if (-not $task) { Write-Log "No pending tasks remain."; break }
+    $queue = Read-Queue
+    $task = $queue.tasks | Where-Object { $_.status -eq "pending" } | Select-Object -First 1
+    if (-not $task) { Write-Log "No pending tasks remain."; break }
 
-  $task.status = "in_progress"
-  Write-Queue $queue
-  Write-Log "=== Task '$($task.id)': $($task.title) ==="
+    $task.status = "in_progress"
+    Write-Queue $queue
+    Write-Log "=== Task '$($task.id)': $($task.title) ==="
 
-  $preHead = Get-Head
+    $preHead = Get-Head
 
-  # Build the headless prompt: the operating rules + a git-workflow override + the task.
-  $prompt = @"
+    # Build the headless prompt: the operating rules + a git-workflow override + the task.
+    $prompt = @"
 You are running UNATTENDED in headless mode as an autonomous coder on git branch '$Branch' of the agy-sandbox repo. No human is available to answer questions, so make reasonable decisions and keep going.
 
 Operating rules (from .github/AGENT_RULES.md):
@@ -147,66 +151,69 @@ Details: $($task.prompt)
 Approach: explore the relevant files, plan briefly, implement, write or adjust Jest tests to match the conventions already in src/engine/*.test.js, run ``npm test`` and ``npm run lint`` until green, then commit. Do exactly this one task, then stop.
 "@
 
-  $promptFile = Join-Path $LogDir "task-$($task.id)-$RunStamp.prompt.txt"
-  $taskLog = Join-Path $LogDir "task-$($task.id)-$RunStamp.log"
-  $taskErr = Join-Path $LogDir "task-$($task.id)-$RunStamp.err.log"
-  Set-Content -Path $promptFile -Value $prompt -Encoding UTF8
+    $promptFile = Join-Path $LogDir "task-$($task.id)-$RunStamp.prompt.txt"
+    $taskLog = Join-Path $LogDir "task-$($task.id)-$RunStamp.log"
+    $taskErr = Join-Path $LogDir "task-$($task.id)-$RunStamp.err.log"
+    Set-Content -Path $promptFile -Value $prompt -Encoding UTF8
 
-  Write-Log "Launching claude. Output -> $taskLog"
+    Write-Log "Launching claude. Output -> $taskLog"
 
-  # Headless: prompt is fed on stdin; --dangerously-skip-permissions is required
-  # for unattended runs (no one to approve tool calls).
-  $proc = Start-Process -FilePath $ClaudePath `
-    -ArgumentList @("-p", "--model", $Model, "--dangerously-skip-permissions") `
-    -WorkingDirectory $RepoRoot `
-    -RedirectStandardInput $promptFile `
-    -RedirectStandardOutput $taskLog `
-    -RedirectStandardError $taskErr `
-    -NoNewWindow -PassThru
+    # Headless: prompt is fed on stdin; --dangerously-skip-permissions is required
+    # for unattended runs (no one to approve tool calls).
+    $proc = Start-Process -FilePath $ClaudePath `
+      -ArgumentList @("-p", "--model", $Model, "--dangerously-skip-permissions") `
+      -WorkingDirectory $RepoRoot `
+      -RedirectStandardInput $promptFile `
+      -RedirectStandardOutput $taskLog `
+      -RedirectStandardError $taskErr `
+      -NoNewWindow -PassThru
 
-  $timedOut = $false
-  if (-not $proc.WaitForExit($TaskTimeoutMinutes * 60 * 1000)) {
-    $timedOut = $true
-    try { $proc.Kill($true) } catch { }
-    Write-Log "Task '$($task.id)' TIMED OUT after ${TaskTimeoutMinutes}m; process killed."
-  }
-
-  # --- Independent verification gate ---
-  Write-Log "Verifying: npm run lint && npm test"
-  & npm run lint *>> $taskLog
-  $lintOk = ($LASTEXITCODE -eq 0)
-  & npm test *>> $taskLog
-  $testOk = ($LASTEXITCODE -eq 0)
-
-  $postHead = Get-Head
-  $committed = ($postHead -ne $preHead)
-  $dirty = Test-Dirty
-
-  # Re-read queue (script may have been edited) and find this task by id.
-  $queue = Read-Queue
-  $task = $queue.tasks | Where-Object { $_.id -eq $task.id } | Select-Object -First 1
-
-  if ($lintOk -and $testOk -and $committed) {
-    # Keep the commit; tidy any trailing uncommitted noise the agent left behind.
-    if ($dirty) {
-      & git reset --hard HEAD *>> $taskLog
-      & git clean -fd *>> $taskLog
+    $timedOut = $false
+    if (-not $proc.WaitForExit($TaskTimeoutMinutes * 60 * 1000)) {
+      $timedOut = $true
+      try { $proc.Kill($true) } catch { }
+      Write-Log "Task '$($task.id)' TIMED OUT after ${TaskTimeoutMinutes}m; process killed."
     }
-    $task.status = "done"
-    $task | Add-Member -NotePropertyName commit -NotePropertyValue $postHead -Force
-    $consecFail = 0
-    Write-Log "Task '$($task.id)' SUCCESS -> $postHead"
+
+    # --- Independent verification gate ---
+    Write-Log "Verifying: npm run lint && npm test"
+    & npm run lint *>> $taskLog
+    $lintOk = ($LASTEXITCODE -eq 0)
+    & npm test *>> $taskLog
+    $testOk = ($LASTEXITCODE -eq 0)
+
+    $postHead = Get-Head
+    $committed = ($postHead -ne $preHead)
+    $dirty = Test-Dirty
+
+    # Re-read queue (script may have been edited) and find this task by id.
+    $queue = Read-Queue
+    $task = $queue.tasks | Where-Object { $_.id -eq $task.id } | Select-Object -First 1
+
+    if ($lintOk -and $testOk -and $committed) {
+      # Keep the commit; tidy any trailing uncommitted noise the agent left behind.
+      if ($dirty) {
+        & git reset --hard HEAD *>> $taskLog
+        & git clean -fd *>> $taskLog
+      }
+      $task.status = "done"
+      $task | Add-Member -NotePropertyName commit -NotePropertyValue $postHead -Force
+      $consecFail = 0
+      Write-Log "Task '$($task.id)' SUCCESS -> $postHead"
+    }
+    else {
+      # Discard everything since preHead so the next task starts from a clean, green base.
+      & git reset --hard $preHead *>> $taskLog
+      & git clean -fd *>> $taskLog
+      $task.status = "failed"
+      $task | Add-Member -NotePropertyName failReason -NotePropertyValue "lint=$lintOk test=$testOk committed=$committed dirty=$dirty timedOut=$timedOut" -Force
+      $consecFail++
+      Write-Log "Task '$($task.id)' FAILED (lint=$lintOk test=$testOk committed=$committed dirty=$dirty timedOut=$timedOut). Rolled back to $preHead."
+    }
+    Write-Queue $queue
   }
-  else {
-    # Discard everything since preHead so the next task starts from a clean, green base.
-    & git reset --hard $preHead *>> $taskLog
-    & git clean -fd *>> $taskLog
-    $task.status = "failed"
-    $task | Add-Member -NotePropertyName failReason -NotePropertyValue "lint=$lintOk test=$testOk committed=$committed dirty=$dirty timedOut=$timedOut" -Force
-    $consecFail++
-    Write-Log "Task '$($task.id)' FAILED (lint=$lintOk test=$testOk committed=$committed dirty=$dirty timedOut=$timedOut). Rolled back to $preHead."
-  }
-  Write-Queue $queue
+} finally {
+  Remove-Item -Path "plan/loop_active.lock" -ErrorAction SilentlyContinue
 }
 
 # --- Summary ---

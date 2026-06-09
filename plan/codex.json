@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-31T17:48:35.333Z",
+  "generatedAt": "2026-06-09T06:01:25.408Z",
   "stats": {
-    "totalSourceFiles": 106,
-    "totalTestFiles": 138,
+    "totalSourceFiles": 108,
+    "totalTestFiles": 140,
     "totalSpecFiles": 183,
-    "totalLoc": 25386,
-    "totalTests": 1774,
+    "totalLoc": 26279,
+    "totalTests": 1788,
     "untestedCoreFilesCount": 6
   },
   "files": [
@@ -1554,7 +1554,7 @@
     },
     {
       "path": "src/net/GuestRunner.js",
-      "loc": 526,
+      "loc": 595,
       "classes": [],
       "exports": [
         {
@@ -1579,7 +1579,7 @@
     },
     {
       "path": "src/net/GuestRunnerWorker.js",
-      "loc": 115,
+      "loc": 124,
       "classes": [],
       "exports": [],
       "testFile": null,
@@ -1670,6 +1670,31 @@
         "plan/specs/059_alliance_fleets.md"
       ],
       "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/net/IntrusionDetectionSentry.js",
+      "loc": 262,
+      "classes": [],
+      "exports": [
+        {
+          "name": "IntrusionDetectionSentry",
+          "type": "constant",
+          "jsdoc": null,
+          "line": 47
+        }
+      ],
+      "testFile": "src/net/IntrusionDetectionSentry.test.js",
+      "testCasesCount": 5,
+      "referencingSpecs": [
+        "plan/specs/175_sandbox_escape_intrusion_sentry.md"
+      ],
+      "missingJsDocSymbols": [
+        {
+          "name": "IntrusionDetectionSentry",
+          "type": "constant",
+          "line": 47
+        }
+      ]
     },
     {
       "path": "src/net/LatencyMonitor.js",
@@ -2074,14 +2099,14 @@
     },
     {
       "path": "src/net/SandboxSecurityRegistry.js",
-      "loc": 140,
+      "loc": 144,
       "classes": [],
       "exports": [
         {
           "name": "SandboxSecurityRegistry",
           "type": "constant",
           "jsdoc": null,
-          "line": 64
+          "line": 66
         }
       ],
       "testFile": "src/net/SandboxSecurityRegistry.test.js",
@@ -2093,7 +2118,7 @@
         {
           "name": "SandboxSecurityRegistry",
           "type": "constant",
-          "line": 64
+          "line": 66
         }
       ]
     },
@@ -2314,6 +2339,37 @@
       "testCasesCount": 4,
       "referencingSpecs": [],
       "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/net/TokenCostGovernor.js",
+      "loc": 547,
+      "classes": [
+        {
+          "name": "MockClientRequest",
+          "jsdoc": "/**\n* Mock ClientRequest to simulate HTTP connection flows locally.\n*/",
+          "line": 417
+        }
+      ],
+      "exports": [
+        {
+          "name": "TokenCostGovernor",
+          "type": "constant",
+          "jsdoc": null,
+          "line": 37
+        }
+      ],
+      "testFile": "src/net/TokenCostGovernor.test.js",
+      "testCasesCount": 9,
+      "referencingSpecs": [
+        "plan/specs/174_token_cost_governance_mock_sentry.md"
+      ],
+      "missingJsDocSymbols": [
+        {
+          "name": "TokenCostGovernor",
+          "type": "constant",
+          "line": 37
+        }
+      ]
     },
     {
       "path": "src/net/WorkspaceDriftSentry.js",
@@ -2882,7 +2938,7 @@
     },
     {
       "path": "src/server/restHandlers.js",
-      "loc": 636,
+      "loc": 638,
       "classes": [],
       "exports": [
         {
@@ -5241,6 +5297,16 @@
         ]
       },
       {
+        "path": "src/net/IntrusionDetectionSentry.js",
+        "symbols": [
+          {
+            "name": "IntrusionDetectionSentry",
+            "type": "constant",
+            "line": 47
+          }
+        ]
+      },
+      {
         "path": "src/net/MainThreadWatchdog.js",
         "symbols": [
           {
@@ -5301,7 +5367,7 @@
           {
             "name": "SandboxSecurityRegistry",
             "type": "constant",
-            "line": 64
+            "line": 66
           }
         ]
       },
@@ -5322,6 +5388,16 @@
             "name": "StaticSecuritySentry",
             "type": "constant",
             "line": 35
+          }
+        ]
+      },
+      {
+        "path": "src/net/TokenCostGovernor.js",
+        "symbols": [
+          {
+            "name": "TokenCostGovernor",
+            "type": "constant",
+            "line": 37
           }
         ]
       },
@@ -5354,20 +5430,6 @@
         "brokenFiles": [
           "src/client/__tests__/CanvasRenderer.browser.test.js",
           "src/client/__tests__/PlaywrightVisual.test.js"
-        ]
-      },
-      {
-        "spec": "plan/specs/174_token_cost_governance_mock_sentry.md",
-        "brokenFiles": [
-          "src/net/TokenCostGovernor.js",
-          "src/net/TokenCostGovernor.test.js"
-        ]
-      },
-      {
-        "spec": "plan/specs/175_sandbox_escape_intrusion_sentry.md",
-        "brokenFiles": [
-          "src/net/IntrusionDetectionSentry.js",
-          "src/net/IntrusionDetectionSentry.test.js"
         ]
       },
       {

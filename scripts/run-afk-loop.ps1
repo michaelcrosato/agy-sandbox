@@ -22,39 +22,46 @@ if (-not (Test-Path "plan/PROGRESS.md")) {
     exit 1
 }
 
+# Create lock file indicating loop is active
+New-Item -Path "plan/loop_active.lock" -ItemType File -Force | Out-Null
+
 $IterationCount = 1
 
-while ($true) {
-    Clear-Host
-    Write-Host "---------------------------------------------------------" -ForegroundColor DarkCyan
-    Write-Host "   CYCLE RUN TICK #$IterationCount - $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Cyan
-    Write-Host "---------------------------------------------------------" -ForegroundColor DarkCyan
+try {
+    while ($true) {
+        Clear-Host
+        Write-Host "---------------------------------------------------------" -ForegroundColor DarkCyan
+        Write-Host "   CYCLE RUN TICK #$IterationCount - $(Get-Date -Format 'HH:mm:ss')" -ForegroundColor Cyan
+        Write-Host "---------------------------------------------------------" -ForegroundColor DarkCyan
 
-    Write-Host "[STATE] Live Queue Anchor:" -ForegroundColor Yellow
-    Get-Content "plan/PROGRESS.md" -TotalCount 35 | ForEach-Object { Write-Host $_ -ForegroundColor Gray }
+        Write-Host "[STATE] Live Queue Anchor:" -ForegroundColor Yellow
+        Get-Content "plan/PROGRESS.md" -TotalCount 35 | ForEach-Object { Write-Host $_ -ForegroundColor Gray }
 
-    Write-Host "[BIOS] Verifying substrate integrity..." -ForegroundColor Blue
-    npm run --silent agent:verify-substrate
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "[HALT] Substrate integrity failed. Stopping loop." -ForegroundColor Red
-        exit $LASTEXITCODE
+        Write-Host "[BIOS] Verifying substrate integrity..." -ForegroundColor Blue
+        npm run --silent agent:verify-substrate
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "[HALT] Substrate integrity failed. Stopping loop." -ForegroundColor Red
+            exit $LASTEXITCODE
+        }
+
+        Write-Host "[ENGINE] Executing Agent Core Command: $AgentCommand" -ForegroundColor Magenta
+        cmd.exe /c $AgentCommand
+        $AgentExitCode = $LASTEXITCODE
+        Write-Host "[ENGINE] Cycle complete. Exit Code: $AgentExitCode" -ForegroundColor Gray
+
+        Write-Host "[VERIFY] Running full validation gate: npm run agent:check" -ForegroundColor Blue
+        npm run agent:check
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "[FAIL] Validation gate failed. Preserving workspace for inspection." -ForegroundColor Red
+            Write-Host "[NEXT] Archive/log the failed attempt, then manually recover to the last green baseline." -ForegroundColor Yellow
+            exit $LASTEXITCODE
+        }
+
+        Write-Host "[SUCCESS] Full validation gate passed." -ForegroundColor Green
+        Write-Host "[REST] Machine tick resting. Pausing for 5 seconds..." -ForegroundColor DarkGray
+        Start-Sleep -Seconds 5
+        $IterationCount++
     }
-
-    Write-Host "[ENGINE] Executing Agent Core Command: $AgentCommand" -ForegroundColor Magenta
-    cmd.exe /c $AgentCommand
-    $AgentExitCode = $LASTEXITCODE
-    Write-Host "[ENGINE] Cycle complete. Exit Code: $AgentExitCode" -ForegroundColor Gray
-
-    Write-Host "[VERIFY] Running full validation gate: npm run agent:check" -ForegroundColor Blue
-    npm run agent:check
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "[FAIL] Validation gate failed. Preserving workspace for inspection." -ForegroundColor Red
-        Write-Host "[NEXT] Archive/log the failed attempt, then manually recover to the last green baseline." -ForegroundColor Yellow
-        exit $LASTEXITCODE
-    }
-
-    Write-Host "[SUCCESS] Full validation gate passed." -ForegroundColor Green
-    Write-Host "[REST] Machine tick resting. Pausing for 5 seconds..." -ForegroundColor DarkGray
-    Start-Sleep -Seconds 5
-    $IterationCount++
+} finally {
+    Remove-Item -Path "plan/loop_active.lock" -ErrorAction SilentlyContinue
 }

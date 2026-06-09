@@ -44,6 +44,17 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-09T13:25 · iter-0157 · GREEN · telemetry-test-flakiness-resolved
+
+- **Baseline:** `8c01359` on `main`; 1,380 Jest green.
+- **Move:** Resolve memory leak rate test flakiness in SandboxTelemetry unit tests.
+- **Changed:**
+  - Mocked `process.memoryUsage` dynamically inside `calculates memory leak rate without errors or division by zero` in `src/net/SandboxTelemetry.test.js`.
+  - Configured static, deterministic heap usage values to prevent garbage collection sweeps or memory usage fluctuations from causing negative growth assertions.
+- **Decisions:** Mocking process resources inside tests ensures 100% test repeatability independent of background V8 engine activities.
+- **Validation:** Executed `npm run agent:check` confirming all 1,380 Jest tests, client Vitest tests, Prettier, ESLint, and typechecks pass green.
+- **Next:** Relaunch the autonomous development loop and monitor.
+
 ## 2026-06-09T09:39 · iter-0156 · GREEN · physics-engine-determinism-hardened
 
 - **Baseline:** `cf7e4b2` on `main`; 1,380 Jest green.

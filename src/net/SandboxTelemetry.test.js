@@ -59,10 +59,22 @@ describe("SandboxTelemetry (SPEC-094)", () => {
 
     // Manipulate startupTime to simulate elapsed time
     telemetry.startupTime = Date.now() - 120000; // 2 minutes ago
-    // Artificially reduce base memory to simulate leak growth
-    telemetry.baseHeapUsed = process.memoryUsage().heapUsed - 100000;
-    const rate = telemetry.getMemoryLeakRate();
-    expect(rate).toBeGreaterThan(0);
+
+    const originalMemoryUsage = process.memoryUsage;
+    try {
+      process.memoryUsage = () => ({
+        rss: 120000000,
+        heapUsed: 80000000,
+        heapTotal: 100000000,
+        external: 5000000,
+        arrayBuffers: 1000000,
+      });
+      telemetry.baseHeapUsed = 50000000; // base is 50MB, current is 80MB (grew by 30MB)
+      const rate = telemetry.getMemoryLeakRate();
+      expect(rate).toBeGreaterThan(0);
+    } finally {
+      process.memoryUsage = originalMemoryUsage;
+    }
   });
 
   test("correctly handles exclude directories", () => {

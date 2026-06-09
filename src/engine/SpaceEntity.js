@@ -70,7 +70,10 @@ export class SpaceEntity {
     if (dt <= 0) return;
 
     // F = m * a => a = F / m
-    const acceleration = this.accumulatorForce.multiply(1 / this.mass);
+    const acceleration =
+      this.mass > 0
+        ? this.accumulatorForce.multiply(1 / this.mass)
+        : new Vector2D(0, 0);
 
     // Update velocity: v = v + a * dt
     this.velocity = this.velocity.add(acceleration.multiply(dt));

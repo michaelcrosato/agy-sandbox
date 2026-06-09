@@ -71,10 +71,15 @@ export class Vector2D {
    */
   normalize() {
     const mag = this.magnitude();
-    if (mag === 0) {
+    if (mag === 0 || !isFinite(mag)) {
       return new Vector2D(0, 0);
     }
-    return new Vector2D(this.x / mag, this.y / mag);
+    const x = this.x / mag;
+    const y = this.y / mag;
+    if (!isFinite(x) || !isFinite(y)) {
+      return new Vector2D(0, 0);
+    }
+    return new Vector2D(x, y);
   }
 
   /**

@@ -44,6 +44,17 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-09T09:39 · iter-0156 · GREEN · physics-engine-determinism-hardened
+
+- **Baseline:** `cf7e4b2` on `main`; 1,380 Jest green.
+- **Move:** Resolve physics engine state corruption anomalies by preventing division-by-zero or subnormal underflow overflows in vector normalization and acceleration updates.
+- **Changed:**
+  - Hardened `Vector2D.normalize()` in `src/physics/Vector2D.js` to assert magnitude finiteness and return a zero-vector on division overflows.
+  - Hardened `SpaceEntity.update()` in `src/engine/SpaceEntity.js` to guard against division-by-zero when computing acceleration on entities with zero mass (e.g. destroyed asteroids).
+- **Decisions:** Protecting low-level physics functions against subnormal and zero masses prevents floating-point corruption (NaN/Infinity) from cascading across simulated entities.
+- **Validation:** Executed `npm run agent:check` confirming all 1,380 Jest tests, client Vitest tests, Prettier, ESLint, and typechecks pass green.
+- **Next:** Proceed with the automated infinite-loop execution queue.
+
 ## 2026-06-09T07:18 · iter-0155 · GREEN · firewall-admin-test-windows-lock-fixed
 
 - **Baseline:** `e04e873` on `main`; 1,380 Jest green.

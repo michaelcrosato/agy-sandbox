@@ -16,6 +16,7 @@ import { SecureModuleRegistry } from "./SecureModuleRegistry.js";
 import { StaticSecuritySentry } from "./StaticSecuritySentry.js";
 import { DynamicResourceGovernor } from "./DynamicResourceGovernor.js";
 import { loadAllowlist } from "./DnsEgressSentry.js";
+import { ZeroTraceTeardown } from "./ZeroTraceTeardown.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -73,41 +74,33 @@ export const GuestRunner = {
             StaticSecuritySentry.checkScript(scriptContent);
           }
         } catch (err) {
-          if (sandboxDir && baselineSnapshot && fs.existsSync(sandboxDir)) {
-            try {
-              const report = WorkspaceDriftSentry.auditDrift(
-                sandboxDir,
-                baselineSnapshot,
-              );
-              WorkspaceDriftSentry.selfHeal(sandboxDir, report);
-            } catch {
-              // ignore
-            }
-          }
-          return realResolve({
-            status: "crashed",
-            exitCode: null,
-            signal: null,
-            error: err.message,
-            stdout: "",
-            stderr: `[SECURITY ACCESS DENIED] Static analysis failed: ${err.message}`,
-          });
+          ZeroTraceTeardown.teardown(null, sandboxDir, baselineSnapshot)
+            .catch(() => {})
+            .then(() => {
+              realResolve({
+                status: "crashed",
+                exitCode: null,
+                signal: null,
+                error: err.message,
+                stdout: "",
+                stderr: `[SECURITY ACCESS DENIED] Static analysis failed: ${err.message}`,
+              });
+            });
+          return;
         }
       }
 
       DynamicResourceGovernor.acquireLaunchPermit().then(() => {
-        const resolve = (result) => {
+        const resolve = async (result) => {
           DynamicResourceGovernor.releaseLaunchPermit();
-          if (sandboxDir && baselineSnapshot && fs.existsSync(sandboxDir)) {
-            try {
-              const report = WorkspaceDriftSentry.auditDrift(
-                sandboxDir,
-                baselineSnapshot,
-              );
-              WorkspaceDriftSentry.selfHeal(sandboxDir, report);
-            } catch {
-              // ignore
-            }
+          try {
+            await ZeroTraceTeardown.teardown(
+              child,
+              sandboxDir,
+              baselineSnapshot,
+            );
+          } catch {
+            // ignore
           }
           realResolve(result);
         };

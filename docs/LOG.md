@@ -44,6 +44,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-09T06:29 · iter-0153 · GREEN · zero-trace-teardown-purger-shipped
+
+- **Baseline:** `7d4a654` on `main`; 1,377 Jest green.
+- **Move:** Implement SPEC-176 (Ephemeral Guest Sandbox Zero-Trace State Wiper & Purger) managing host-side timers/intervals hook interceptions, process tree cleanups, and file system self-healing checks.
+- **Changed:**
+  - Created `src/net/ZeroTraceTeardown.js` that monkeypatches global `setTimeout` and `setInterval` to register and purge active timers, scans process PPID trees recursively to kill orphaned child processes on Unix and Windows, closes active streams, and resets `SecureModuleRegistry`.
+  - Integrated `ZeroTraceTeardown.teardown()` directly into `GuestRunner.js` `resolve` callback and early static check failure handler.
+  - Added test suite `src/net/ZeroTraceTeardown.test.js` validating absolute zero-timer and process tree cleanup.
+  - Checked off SPEC-176 in `plan/PROGRESS.md`.
+- **Decisions:** Monkeypatching the global timer object inside the host process ensures that all async timeouts or heartbeats scheduled during a guest execution run are completely cleaned up, preventing Jest open-handle warnings.
+- **Validation:** Executed `npm run agent:check` passing all 1,380 Jest assertions and 63 client Vitest tests, with zero format/typecheck violations.
+- **Next:** Proceed with next operational features or loop audits.
+
 ## 2026-06-09T06:26 · iter-0152 · GREEN · repository-audit-and-stabilization
 
 - **Baseline:** `d3c543c` on `main`; 1,377 Jest green.

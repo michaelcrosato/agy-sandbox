@@ -27,7 +27,7 @@ export function getRunningLoopProcesses() {
   try {
     if (process.platform === "win32") {
       // List powershell/node processes and their command line options on Windows
-      const cmd = `powershell -Command "Get-CimInstance Win32_Process -Filter 'Name=\\'powershell.exe\\' or Name=\\'pwsh.exe\\' or Name=\\'node.exe\\'' | Select-Object -Property ProcessId, CommandLine | ConvertTo-Json"`;
+      const cmd = `powershell -Command "Get-CimInstance Win32_Process | Where-Object { $_.Name -match 'powershell|pwsh|node' } | Select-Object ProcessId, CommandLine | ConvertTo-Json"`;
       const output = childProcess.execSync(cmd, {
         encoding: "utf8",
         stdio: ["ignore", "pipe", "ignore"],

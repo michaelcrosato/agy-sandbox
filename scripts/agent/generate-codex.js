@@ -43,7 +43,12 @@ function walkDirectory(dir, filter = () => true) {
 
 // Extract JSDocs, classes, functions, and lines of code from a JS file
 function parseSourceFile(filePath) {
-  const content = fs.readFileSync(filePath, "utf8");
+  let content;
+  try {
+    content = fs.readFileSync(filePath, "utf8");
+  } catch {
+    return null;
+  }
   const relativePath = path
     .relative(WORKSPACE_ROOT, filePath)
     .replace(/\\/g, "/");
@@ -140,7 +145,12 @@ function parseSourceFile(filePath) {
 
 // Parse Jest/Vitest test file to extract describe and test block names
 function parseTestFile(filePath) {
-  const content = fs.readFileSync(filePath, "utf8");
+  let content;
+  try {
+    content = fs.readFileSync(filePath, "utf8");
+  } catch {
+    return null;
+  }
   const relativePath = path
     .relative(WORKSPACE_ROOT, filePath)
     .replace(/\\/g, "/");
@@ -169,7 +179,12 @@ function parseTestFile(filePath) {
 
 // Parse specification files from plan/specs/
 function parseSpecFile(filePath) {
-  const content = fs.readFileSync(filePath, "utf8");
+  let content;
+  try {
+    content = fs.readFileSync(filePath, "utf8");
+  } catch {
+    return null;
+  }
   const relativePath = path
     .relative(WORKSPACE_ROOT, filePath)
     .replace(/\\/g, "/");
@@ -218,7 +233,8 @@ export function generateCodexGraph() {
       (file) => file.endsWith(".js") && !file.endsWith(".test.js"),
     );
     for (const f of files) {
-      sourceFiles.push(parseSourceFile(f));
+      const parsed = parseSourceFile(f);
+      if (parsed) sourceFiles.push(parsed);
     }
   }
 
@@ -227,7 +243,8 @@ export function generateCodexGraph() {
   if (fs.existsSync(rootSrc)) {
     const tests = walkDirectory(rootSrc, (file) => file.endsWith(".test.js"));
     for (const t of tests) {
-      testFiles.push(parseTestFile(t));
+      const parsed = parseTestFile(t);
+      if (parsed) testFiles.push(parsed);
     }
   }
 
@@ -237,7 +254,8 @@ export function generateCodexGraph() {
       file.endsWith(".test.js"),
     );
     for (const t of tests) {
-      testFiles.push(parseTestFile(t));
+      const parsed = parseTestFile(t);
+      if (parsed) testFiles.push(parsed);
     }
   }
 
@@ -246,7 +264,8 @@ export function generateCodexGraph() {
   if (fs.existsSync(specsPath)) {
     const specs = walkDirectory(specsPath, (file) => file.endsWith(".md"));
     for (const s of specs) {
-      specFiles.push(parseSpecFile(s));
+      const parsed = parseSpecFile(s);
+      if (parsed) specFiles.push(parsed);
     }
   }
 

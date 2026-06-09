@@ -19,6 +19,59 @@ const __dirname = path.dirname(__filename);
 const DEFAULT_ROOT_DIR = path.resolve(__dirname, "../..");
 
 /**
+ * Reads a file synchronously with retries on lock contention.
+ * @param {string} filePath
+ * @param {BufferEncoding} options
+ * @param {number} [retries]
+ * @param {number} [delay]
+ * @returns {string}
+ */
+function readFileSyncWithRetry(filePath, options, retries = 5, delay = 20) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return fs.readFileSync(filePath, options);
+    } catch (err) {
+      if (
+        (err.code === "EBUSY" ||
+          err.code === "EPERM" ||
+          err.code === "ENOENT") &&
+        i < retries - 1
+      ) {
+        const start = Date.now();
+        while (Date.now() - start < delay) {
+          // busy wait
+        }
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
+function writeFileSyncWithRetry(
+  filePath,
+  data,
+  options,
+  retries = 5,
+  delay = 20,
+) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return fs.writeFileSync(filePath, data, options);
+    } catch (err) {
+      if ((err.code === "EBUSY" || err.code === "EPERM") && i < retries - 1) {
+        const start = Date.now();
+        while (Date.now() - start < delay) {
+          // busy wait
+        }
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
+/**
  * Handles incoming REST API and static file serving requests modularly.
  *
  * @param {import("http").IncomingMessage} req The HTTP request.
@@ -280,7 +333,7 @@ export function handleRestRequest(req, res, options) {
 
         const targetDomain = domain.trim().toLowerCase();
         const configPath = path.resolve(ROOT_DIR, "plan/config.json");
-        const configContent = fs.readFileSync(configPath, "utf-8");
+        const configContent = readFileSyncWithRetry(configPath, "utf-8");
         const config = JSON.parse(configContent);
 
         if (!config.sandboxFirewall) {
@@ -323,7 +376,11 @@ export function handleRestRequest(req, res, options) {
           return;
         }
 
-        fs.writeFileSync(configPath, JSON.stringify(config, null, 2), "utf-8");
+        writeFileSyncWithRetry(
+          configPath,
+          JSON.stringify(config, null, 2),
+          "utf-8",
+        );
 
         res.writeHead(200, {
           "Content-Type": "application/json",

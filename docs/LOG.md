@@ -44,6 +44,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-09T06:26 · iter-0152 · GREEN · repository-audit-and-stabilization
+
+- **Baseline:** `d3c543c` on `main`; 1,377 Jest green.
+- **Move:** Perform repository audit, stabilization, and deep clean, addressing concurrency contention on `plan/config.json` inside REST handlers.
+- **Changed:**
+  - Implemented `readFileSyncWithRetry` and `writeFileSyncWithRetry` helpers inside `src/server/restHandlers.js` to handle EBUSY/EPERM lock contentions gracefully on Windows.
+  - Replaced standard file system calls for `/api/firewall/rules` with the retry-enabled wrappers.
+  - Added debug log statements inside `src/server/firewallAdmin.integration.test.js` to inspect response bodies on failures.
+  - Removed stale loop-active lock file and reverted transient generated test artifacts.
+- **Decisions:** Using simple busy-wait loop retries on file read/write contention ensures that concurrent test suites running in parallel do not collide when writing global config state.
+- **Validation:** Executed `npm run agent:check` passing all 1,377 Jest assertions and 63 client tests, with zero format/typecheck violations.
+- **Next:** Continue implementing next features in `plan/PROGRESS.md`.
+
 ## 2026-06-09T06:10 · iter-0151 · GREEN · control-loop-monitor-cross-platform-robustness
 
 - **Baseline:** `iter-0150` on `main`; 1,377 Jest green.

@@ -136,6 +136,9 @@ describe("Dynamic Egress Firewall Admin HTTP Integration Tests (SPEC-137)", () =
       action: "allow",
       domain: testDomain,
     });
+    if (allowRes.statusCode !== 200) {
+      console.error("DEBUG - allowRes status is not 200:", allowRes);
+    }
     expect(allowRes.statusCode).toBe(200);
     expect(allowRes.body.success).toBe(true);
     expect(allowRes.body.allowlistDomains).toContain(testDomain);

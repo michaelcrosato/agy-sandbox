@@ -23,6 +23,10 @@ if [ ! -f "plan/PROGRESS.md" ]; then
   exit 1
 fi
 
+# Create lock file indicating loop is active
+touch plan/loop_active.lock
+trap 'rm -f plan/loop_active.lock' EXIT
+
 while true; do
   clear
   echo -e "${CYAN}---------------------------------------------------------${NC}"

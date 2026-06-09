@@ -15,6 +15,18 @@ describe("Control Loop Monitor (Anomaly Detector)", () => {
   let statSpy;
   let execSpy;
 
+  const mockProcessesOutput = (list) => {
+    if (process.platform === "win32") {
+      return JSON.stringify(list);
+    } else {
+      let output = "  PID COMMAND\n";
+      for (const p of list) {
+        output += ` ${p.ProcessId} ${p.CommandLine}\n`;
+      }
+      return output;
+    }
+  };
+
   beforeEach(() => {
     existsSpy = jest.spyOn(fs, "existsSync").mockImplementation((p) => {
       const pathStr = String(p);
@@ -39,7 +51,7 @@ describe("Control Loop Monitor (Anomaly Detector)", () => {
     }));
 
     execSpy.mockReturnValue(
-      JSON.stringify([
+      mockProcessesOutput([
         {
           ProcessId: 1234,
           CommandLine: "powershell -File scripts/run-afk-loop.ps1",
@@ -85,7 +97,7 @@ describe("Control Loop Monitor (Anomaly Detector)", () => {
     }));
 
     execSpy.mockReturnValue(
-      JSON.stringify([
+      mockProcessesOutput([
         {
           ProcessId: 1234,
           CommandLine: "powershell -File scripts/run-afk-loop.ps1",
@@ -128,7 +140,7 @@ describe("Control Loop Monitor (Anomaly Detector)", () => {
     });
 
     execSpy.mockReturnValue(
-      JSON.stringify([
+      mockProcessesOutput([
         {
           ProcessId: 1234,
           CommandLine: "powershell -File scripts/run-afk-loop.ps1",
@@ -151,7 +163,7 @@ describe("Control Loop Monitor (Anomaly Detector)", () => {
     }));
 
     execSpy.mockReturnValue(
-      JSON.stringify([
+      mockProcessesOutput([
         {
           ProcessId: 1234,
           CommandLine: "powershell -File scripts/run-afk-loop.ps1",
@@ -190,7 +202,7 @@ describe("Control Loop Monitor (Anomaly Detector)", () => {
     execSpy.mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
-        return JSON.stringify([
+        return mockProcessesOutput([
           {
             ProcessId: 1234,
             CommandLine: "powershell -File scripts/run-afk-loop.ps1",

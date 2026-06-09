@@ -25,25 +25,59 @@ const REPORT_PATH = path.join(repoRoot, "plan/monitoring_report.json");
 
 export function getRunningLoopProcesses() {
   try {
-    // List powershell/node processes and their command line options
-    const cmd = `powershell -Command "Get-CimInstance Win32_Process -Filter 'Name=\\'powershell.exe\\' or Name=\\'pwsh.exe\\' or Name=\\'node.exe\\'' | Select-Object -Property ProcessId, CommandLine | ConvertTo-Json"`;
-    const output = childProcess.execSync(cmd, {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    });
-    if (!output.trim()) return [];
-    const parsed = JSON.parse(output);
-    const list = Array.isArray(parsed) ? parsed : [parsed];
+    if (process.platform === "win32") {
+      // List powershell/node processes and their command line options on Windows
+      const cmd = `powershell -Command "Get-CimInstance Win32_Process -Filter 'Name=\\'powershell.exe\\' or Name=\\'pwsh.exe\\' or Name=\\'node.exe\\'' | Select-Object -Property ProcessId, CommandLine | ConvertTo-Json"`;
+      const output = childProcess.execSync(cmd, {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      });
+      if (!output.trim()) return [];
+      const parsed = JSON.parse(output);
+      const list = Array.isArray(parsed) ? parsed : [parsed];
 
-    return list.filter((p) => {
-      const line = p.CommandLine || "";
-      return (
-        line.includes("run-afk-loop") ||
-        line.includes("run-autonomous-loop") ||
-        line.includes("claude-night") ||
-        line.includes("run-agent.js")
-      );
-    });
+      return list.filter((p) => {
+        const line = p.CommandLine || "";
+        return (
+          line.includes("run-afk-loop") ||
+          line.includes("run-autonomous-loop") ||
+          line.includes("claude-night") ||
+          line.includes("run-agent.js")
+        );
+      });
+    } else {
+      // List processes on POSIX using ps ax
+      const cmd = "ps -ax -o pid,command";
+      const output = childProcess.execSync(cmd, {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      });
+      if (!output.trim()) return [];
+      const lines = output.split("\n");
+      const list = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const match = line.match(/^(\d+)\s+(.+)$/);
+        if (match) {
+          list.push({
+            ProcessId: parseInt(match[1], 10),
+            CommandLine: match[2],
+          });
+        }
+      }
+
+      return list.filter((p) => {
+        const line = p.CommandLine || "";
+        return (
+          line.includes("run-afk-loop") ||
+          line.includes("run-autonomous-loop") ||
+          line.includes("claude-night") ||
+          line.includes("run-agent")
+        );
+      });
+    }
   } catch {
     return [];
   }
@@ -156,9 +190,13 @@ export function pauseLoop(runningLoops) {
       console.log(
         `[KILL] Terminating PID ${proc.ProcessId}: ${proc.CommandLine}`,
       );
-      childProcess.execSync(
-        `powershell -Command "Stop-Process -Id ${proc.ProcessId} -Force"`,
-      );
+      if (process.platform === "win32") {
+        childProcess.execSync(
+          `powershell -Command "Stop-Process -Id ${proc.ProcessId} -Force"`,
+        );
+      } else {
+        childProcess.execSync(`kill -9 ${proc.ProcessId}`);
+      }
     } catch (err) {
       console.error(`Failed to kill PID ${proc.ProcessId}:`, err.message);
     }

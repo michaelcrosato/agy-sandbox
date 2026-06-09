@@ -347,7 +347,13 @@ Return only a JSON array of file operations with complete file content.`;
       const commitMessage = `feat: autonomously resolve issue #${issueNumber}\n\nResolves issue #${issueNumber}: ${issue.title}`;
       fs.writeFileSync(".git-commit-msg.txt", commitMessage, "utf-8");
       runCommand("git commit -F .git-commit-msg.txt");
-      fs.unlinkSync(".git-commit-msg.txt");
+      if (fs.existsSync(".git-commit-msg.txt")) {
+        try {
+          fs.unlinkSync(".git-commit-msg.txt");
+        } catch {
+          // ignore
+        }
+      }
 
       if (issueNumber === "0") {
         console.log(`[MOCK] committed ${branchName}; skipping push and PR.`);

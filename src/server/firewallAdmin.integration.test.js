@@ -3,6 +3,67 @@ import http from "http";
 import fs from "fs";
 import path from "path";
 
+/**
+ * Reads a file synchronously with retries on lock contention.
+ * @param {string} filePath
+ * @param {BufferEncoding} options
+ * @param {number} [retries]
+ * @param {number} [delay]
+ * @returns {string}
+ */
+function readFileSyncWithRetry(filePath, options, retries = 10, delay = 50) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return fs.readFileSync(filePath, options);
+    } catch (err) {
+      if (
+        (err.code === "EBUSY" ||
+          err.code === "EPERM" ||
+          err.code === "ENOENT") &&
+        i < retries - 1
+      ) {
+        const start = Date.now();
+        while (Date.now() - start < delay) {
+          // busy wait
+        }
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
+/**
+ * Writes a file synchronously with retries on lock contention.
+ * @param {string} filePath
+ * @param {any} data
+ * @param {any} options
+ * @param {number} [retries]
+ * @param {number} [delay]
+ */
+function writeFileSyncWithRetry(
+  filePath,
+  data,
+  options,
+  retries = 10,
+  delay = 50,
+) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return fs.writeFileSync(filePath, data, options);
+    } catch (err) {
+      if ((err.code === "EBUSY" || err.code === "EPERM") && i < retries - 1) {
+        const start = Date.now();
+        while (Date.now() - start < delay) {
+          // busy wait
+        }
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
 describe("Dynamic Egress Firewall Admin HTTP Integration Tests (SPEC-137)", () => {
   let worker;
   const port = 18194;
@@ -12,7 +73,7 @@ describe("Dynamic Egress Firewall Admin HTTP Integration Tests (SPEC-137)", () =
   beforeAll(async () => {
     // Backup original config.json content
     if (fs.existsSync(configPath)) {
-      originalConfigContent = fs.readFileSync(configPath, "utf-8");
+      originalConfigContent = readFileSyncWithRetry(configPath, "utf-8");
     }
 
     // Purge test directories
@@ -28,7 +89,7 @@ describe("Dynamic Egress Firewall Admin HTTP Integration Tests (SPEC-137)", () =
     // Ensure codex.json exists
     const codexPath = path.resolve("plan/codex.json");
     if (!fs.existsSync(codexPath)) {
-      fs.writeFileSync(
+      writeFileSyncWithRetry(
         codexPath,
         JSON.stringify({ stats: { totalLoc: 15600 } }),
         "utf8",
@@ -58,7 +119,7 @@ describe("Dynamic Egress Firewall Admin HTTP Integration Tests (SPEC-137)", () =
 
     // Restore original config.json
     if (originalConfigContent) {
-      fs.writeFileSync(configPath, originalConfigContent, "utf-8");
+      writeFileSyncWithRetry(configPath, originalConfigContent, "utf-8");
     }
 
     // Clean up test directories
@@ -144,7 +205,9 @@ describe("Dynamic Egress Firewall Admin HTTP Integration Tests (SPEC-137)", () =
     expect(allowRes.body.allowlistDomains).toContain(testDomain);
 
     // Verify config.json on disk includes the domain
-    const configContent1 = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+    const configContent1 = JSON.parse(
+      readFileSyncWithRetry(configPath, "utf-8"),
+    );
     expect(configContent1.sandboxFirewall.allowlistDomains).toContain(
       testDomain,
     );
@@ -159,7 +222,9 @@ describe("Dynamic Egress Firewall Admin HTTP Integration Tests (SPEC-137)", () =
     expect(blockRes.body.allowlistDomains).not.toContain(testDomain);
 
     // Verify config.json on disk removes the domain
-    const configContent2 = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+    const configContent2 = JSON.parse(
+      readFileSyncWithRetry(configPath, "utf-8"),
+    );
     expect(configContent2.sandboxFirewall.allowlistDomains).not.toContain(
       testDomain,
     );

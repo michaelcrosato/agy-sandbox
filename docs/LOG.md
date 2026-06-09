@@ -44,6 +44,17 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-09T07:18 · iter-0155 · GREEN · firewall-admin-test-windows-lock-fixed
+
+- **Baseline:** `e04e873` on `main`; 1,380 Jest green.
+- **Move:** Fix Windows file lock contention (EBUSY) in dynamic egress firewall admin integration tests.
+- **Changed:**
+  - Implemented `readFileSyncWithRetry` and `writeFileSyncWithRetry` helpers inside `src/server/firewallAdmin.integration.test.js`.
+  - Replaced standard synchronous file system calls in the test file with these retry-enabled wrappers to resolve EBUSY conflicts on parallel execution.
+- **Decisions:** Defining self-contained retry-based helpers directly in the test file avoids needing to export internal helpers from server source modules while keeping the test suite completely robust.
+- **Validation:** Executed `npm run agent:check` confirming all 1,380 Jest tests, client Vitest tests, Prettier, ESLint, and typechecks pass green.
+- **Next:** Relaunch the autonomous loop and monitor.
+
 ## 2026-06-09T06:52 · iter-0154 · GREEN · autonomous-loop-orchestration-optimized
 
 - **Baseline:** `eb45f2e` on `main`; 1,380 Jest green.

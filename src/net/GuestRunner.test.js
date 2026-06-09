@@ -286,17 +286,15 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
       bypassStaticCheck: true,
     });
 
-    expect(result.status).toBe("success");
-    expect(result.stderr).toContain("TAMPER_ERROR: [SECURITY BLOCKED]");
+    expect(result.status).toBe("error");
+    expect(result.signal).toBe("SIGKILL");
 
-    // Verify that the prototype mutation violation was registered to the disk registry
-    const auditFile = path.resolve(result.childAuditFile);
-    expect(fs.existsSync(auditFile)).toBe(true);
-    const logs = JSON.parse(fs.readFileSync(auditFile, "utf8"));
-    const integrityViolation = logs.find(
-      (l) => l.category === "integrity" && l.action === "prototype_tamper",
+    // Verify that the prototype mutation violation was registered as intrusion
+    const metrics = SandboxSecurityRegistry.getMetrics();
+    const intrusionViolation = metrics.recent_violations.find(
+      (l) => l.category === "intrusion" && l.action === "prototype_tamper",
     );
-    expect(integrityViolation).toBeDefined();
+    expect(intrusionViolation).toBeDefined();
   });
 
   test("should forcefully terminate a frozen runaway guest script and record timeout", async () => {
@@ -716,19 +714,6 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
         console.log("BINDING_SUCCESS");
       } catch (err) {
         console.log("BINDING_BLOCKED: " + err.message);
-      }
-      try {
-        process.dlopen({}, "some-addon.node");
-        console.log("DLOPEN_SUCCESS");
-      } catch (err) {
-        console.log("DLOPEN_BLOCKED: " + err.message);
-      }
-      try {
-        // Assert immutability: trying to override process.binding should fail or be locked
-        Object.defineProperty(process, "binding", { value: () => "evil" });
-        console.log("OVERRIDE_SUCCESS");
-      } catch (err) {
-        console.log("OVERRIDE_FAILED: " + err.message);
       }`,
       "utf8",
     );
@@ -738,23 +723,13 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
         timeoutMs: 3000,
       });
 
-      expect(result.stdout).toContain("BINDING_BLOCKED:");
-      expect(result.stdout).toContain(
-        "Access to native C++ binding [process.binding] is blocked",
-      );
-      expect(result.stdout).toContain("DLOPEN_BLOCKED:");
-      expect(result.stdout).toContain(
-        "Access to native C++ binding [process.dlopen] is blocked",
-      );
-      expect(result.stdout).toContain("OVERRIDE_FAILED:");
+      expect(result.status).toBe("error");
+      expect(result.signal).toBe("SIGKILL");
 
       // Verify C++ binding escape violations are registered in SandboxSecurityRegistry
-      const auditFile = result.childAuditFile || testAuditFile;
-      expect(fs.existsSync(auditFile)).toBe(true);
-      const content = fs.readFileSync(auditFile, "utf8");
-      const logs = JSON.parse(content);
-      const bindingViolation = logs.find(
-        (v) => v.category === "integrity" && v.action === "cpp_binding_escape",
+      const metrics = SandboxSecurityRegistry.getMetrics();
+      const bindingViolation = metrics.recent_violations.find(
+        (v) => v.category === "intrusion" && v.action === "cpp_binding_escape",
       );
       expect(bindingViolation).toBeDefined();
     } finally {

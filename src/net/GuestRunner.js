@@ -128,6 +128,9 @@ export const GuestRunner = {
         // Generate a high-entropy single-use run token for Guest RPC auth verification (SPEC-148)
         const runToken = crypto.randomBytes(32).toString("hex");
 
+        // Generate a high-entropy cryptographic secret for IPC signing (SPEC-175)
+        const hmacSecret = crypto.randomBytes(32).toString("hex");
+
         // Register the main guest script file in the module signatures registry (SPEC-152)
         SecureModuleRegistry.registerFile(resolvedScriptPath);
 
@@ -140,6 +143,7 @@ export const GuestRunner = {
           "GUEST_SANDBOX_DIR",
           "SECURITY_AUDIT_FILE",
           "GUEST_RUN_TOKEN",
+          "GUEST_HMAC_KEY",
           "GUEST_ALLOWED_MODULE_HASHES",
           "GUEST_DNS_ALLOWLIST",
         ];
@@ -156,6 +160,7 @@ export const GuestRunner = {
         childEnv.GUEST_SANDBOX_DIR = sandboxDir || "";
         childEnv.SECURITY_AUDIT_FILE = childAuditFile;
         childEnv.GUEST_RUN_TOKEN = runToken;
+        childEnv.GUEST_HMAC_KEY = hmacSecret;
         childEnv.GUEST_ALLOWED_MODULE_HASHES = JSON.stringify(
           SecureModuleRegistry.getRegistry(),
         );
@@ -397,10 +402,50 @@ export const GuestRunner = {
           });
         }
 
+        function triggerHostAlarm(category, details) {
+          try {
+            SandboxSecurityRegistry.logViolation(
+              "intrusion",
+              category,
+              details,
+            );
+          } catch {
+            // ignore
+          }
+          killIntruder(`${category}: ${JSON.stringify(details)}`);
+        }
+
         // Listen for IPC messages from the bootstrap worker
         child.on("message", async (msg) => {
+          if (!msg || typeof msg !== "object") {
+            triggerHostAlarm("invalid_payload", {
+              reason: "IPC message must be an object",
+            });
+            return;
+          }
+
           const m = /** @type {any} */ (msg);
-          if (m && m.type === "cpu_heartbeat") {
+          const { signature } = m;
+          const payload = { ...m, signature: undefined };
+          const payloadStr = JSON.stringify(payload);
+          const computedSig = crypto
+            .createHmac("sha256", hmacSecret)
+            .update(payloadStr)
+            .digest("hex");
+
+          if (computedSig !== signature) {
+            triggerHostAlarm("signature_mismatch", {
+              reason: "HMAC signature verification failed",
+            });
+            return;
+          }
+
+          if (m.type === "intrusion_alert") {
+            triggerHostAlarm(m.category || "intrusion_alert", m.details || {});
+            return;
+          }
+
+          if (m.type === "cpu_heartbeat") {
             lastHeartbeatTime = Date.now();
             lastCpuTimeMs = m.cpuTimeMs;
             if (child.pid) {
@@ -426,7 +471,7 @@ export const GuestRunner = {
                 DynamicResourceGovernor.evaluateAndThrottle(child.pid, current);
               }
             }
-          } else if (m && m.type === "guest_rpc") {
+          } else if (m.type === "guest_rpc") {
             const response = await GuestRpcSentry.handleMessage(
               m,
               options.rpcHandlers,
@@ -437,14 +482,17 @@ export const GuestRunner = {
                 response.status === "error" &&
                 response.error === "AUTH_FAILURE"
               ) {
-                killIntruder(response.error);
+                triggerHostAlarm("rpc_auth_failure", {
+                  action: m.action,
+                  reason: "Invalid or spoofed guest run token",
+                });
                 return;
               }
               if (child.send) {
                 child.send(response);
               }
             }
-          } else if (m && (m.status === "success" || m.status === "error")) {
+          } else if (m.status === "success" || m.status === "error") {
             IPCData = m;
           }
         });

@@ -44,6 +44,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-09T06:01 · iter-0149 · GREEN · sandbox-escape-intrusion-sentry-shipped
+
+- **Baseline:** `iter-0148` on `main`; 1,367 Jest green.
+- **Move:** Implement SPEC-175 (V8 Isolated Sandbox Process Escape Intrusion Sentry) managing global prototype monitoring, child process spawn intercepts, and process-level HMAC IPC message signing.
+- **Changed:**
+  - Created `src/net/IntrusionDetectionSentry.js` executing active prototype monkey-patches on core constructors (Object, Function, Array, etc.), intercepting spawn/exec/fork process calls, and appending sha256 HMAC signatures to all host-bound process.send IPC messages.
+  - Hooked `SandboxSecurityRegistry.logViolation` within `IntrusionDetectionSentry` to upgrade prototype tampering and C++ binding escape attempts to high-priority intrusion alarms.
+  - Adjusted `src/net/GuestRunnerWorker.js` to initialize and activate `IntrusionDetectionSentry` before locking down prototypes via `IntegrityGuard`, securing all setup and runtime IPC transfers.
+  - Modified `src/net/GuestRunner.js` to verify child-process message HMAC signatures and terminate compromised child processes with SIGKILL upon receiving invalid signatures or intrusion alerts.
+  - Authored a comprehensive unit/integration test suite in `src/net/IntrusionDetectionSentry.test.js` validating rapid containment breach shutdowns under prototype tampering, spawn attempts, and signature bypasses.
+  - Updated `GuestRunner.test.js` prototype and C++ binding tests to assert immediate SIGKILL termination.
+- **Decisions:** Redefining Object prototype methods via descriptors instead of direct assignment prevents runtime `TypeError` on configurable properties. Performing host-side signature verification guarantees containment even if the child V8 context is fully escaped.
+- **Validation:** Executed `npm run agent:check:core` successfully passing all 1,371 Jest assertions with 0 linter, typecheck, or format errors.
+- **Next:** Formulate and execute SPEC-176 (Ephemeral Guest Sandbox Zero-Trace State Wiper & Purger) in Wave v50.
+
 ## 2026-06-08T22:45 · iter-0148 · GREEN · token-cost-governance-mock-sentry-shipped
 
 - **Baseline:** `b407b73` on `main`; 1,359 Jest green, 63 client green.

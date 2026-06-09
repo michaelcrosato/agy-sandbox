@@ -11,6 +11,7 @@ import { IntegrityGuard } from "./IntegrityGuard.js";
 import { SandboxFirewall, activateFirewall } from "./SandboxFirewall.js";
 import { DnsEgressSentry } from "./DnsEgressSentry.js";
 import { TokenCostGovernor } from "./TokenCostGovernor.js";
+import { IntrusionDetectionSentry } from "./IntrusionDetectionSentry.js";
 
 async function bootstrap() {
   const scriptPath = process.env.GUEST_SCRIPT_PATH;
@@ -24,7 +25,11 @@ async function bootstrap() {
   }
 
   try {
-    // 0. Register secure ESM dynamic loader sentry (SPEC-144)
+    // 0. Activate V8 Isolated Sandbox Process Escape Intrusion Sentry (SPEC-175)
+    const hmacSecret = process.env.GUEST_HMAC_KEY || "";
+    IntrusionDetectionSentry.activate(hmacSecret);
+
+    // 0.5 Register secure ESM dynamic loader sentry (SPEC-144)
     const loaderPath = path.join(
       path.dirname(fileURLToPath(import.meta.url)),
       "GuestLoader.js",

@@ -4,8 +4,8 @@
 
 - **CYCLE:** Cycle 52
 - **CURRENT_TASK:** EXECUTE
-- **SPEC_FILE:** plan/specs/174_token_cost_governance_mock_sentry.md
-- **STATUS:** Completed SPEC-174 in Wave v50. Token Cost Governance & Mock Sentry fully integrated and green.
+- **SPEC_FILE:** plan/specs/175_sandbox_escape_intrusion_sentry.md
+- **STATUS:** Completed SPEC-175 in Wave v50. V8 Isolated Sandbox Process Escape Intrusion Sentry fully integrated and green.
 - **VERIFY_COMMAND:** npm run agent:check
-- **LAST_VERIFIED:** 1,367 Jest tests green, linter 0 errors, Prettier verified.
-- **IMMEDIATE_OBJECTIVE:** Implement SPEC-175 (V8 Isolated Sandbox Process Escape Intrusion Sentry) in Wave v50.
+- **LAST_VERIFIED:** 1,371 Jest tests green, typecheck and lint checks verified.
+- **IMMEDIATE_OBJECTIVE:** Implement SPEC-176 (Ephemeral Guest Sandbox Zero-Trace State Wiper & Purger) in Wave v50.

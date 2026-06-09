@@ -297,15 +297,36 @@ Return only a JSON array of file operations with complete file content.`;
   let feedback = "";
   for (let attempt = 1; attempt <= 3; attempt++) {
     console.log(`generation attempt ${attempt}/3 using ${MODEL_NAME}`);
-    const result = await genAI.models.generateContent({
-      model: MODEL_NAME,
-      contents: `${systemPrompt}\n\n${userPrompt}${feedback ? `\n\nPrevious gate output:\n${feedback}` : ""}`,
-      config: generationConfig,
-    });
+    let resultText;
+    if (issueNumber === "0") {
+      const serverPath = "src/server.js";
+      let content = fs.readFileSync(serverPath, "utf-8");
+      const commentPattern = /\/\/ MOCK DRY RUN ACTIVE - \d+/;
+      const commentStr = `// MOCK DRY RUN ACTIVE - ${Date.now()}`;
+      if (commentPattern.test(content)) {
+        content = content.replace(commentPattern, commentStr);
+      } else {
+        content += `\n${commentStr}\n`;
+      }
+      resultText = JSON.stringify([
+        {
+          path: "src/server.js",
+          action: "modify",
+          content: content,
+        },
+      ]);
+    } else {
+      const result = await genAI.models.generateContent({
+        model: MODEL_NAME,
+        contents: `${systemPrompt}\n\n${userPrompt}${feedback ? `\n\nPrevious gate output:\n${feedback}` : ""}`,
+        config: generationConfig,
+      });
+      resultText = result.text;
+    }
 
     let operations;
     try {
-      operations = JSON.parse(result.text);
+      operations = JSON.parse(resultText);
     } catch (error) {
       feedback = `Model response was not valid JSON: ${error.message}`;
       continue;

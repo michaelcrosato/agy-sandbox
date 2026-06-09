@@ -51,3 +51,6 @@ data-test-*/
 # Persistent security audit json ledger and transient sandbox worktrees
 plan/security_audit.json
 .sandbox-worktrees-test/
+
+# Active loop lockfile
+plan/loop_active.lock

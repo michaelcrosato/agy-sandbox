@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-09T06:01:25.408Z",
+  "generatedAt": "2026-06-09T06:51:38.115Z",
   "stats": {
-    "totalSourceFiles": 108,
-    "totalTestFiles": 140,
+    "totalSourceFiles": 109,
+    "totalTestFiles": 142,
     "totalSpecFiles": 183,
-    "totalLoc": 26279,
-    "totalTests": 1788,
+    "totalLoc": 26617,
+    "totalTests": 1799,
     "untestedCoreFilesCount": 6
   },
   "files": [
@@ -1554,14 +1554,14 @@
     },
     {
       "path": "src/net/GuestRunner.js",
-      "loc": 595,
+      "loc": 588,
       "classes": [],
       "exports": [
         {
           "name": "GuestRunner",
           "type": "constant",
           "jsdoc": null,
-          "line": 24
+          "line": 25
         }
       ],
       "testFile": "src/net/GuestRunner.test.js",
@@ -1573,7 +1573,7 @@
         {
           "name": "GuestRunner",
           "type": "constant",
-          "line": 24
+          "line": 25
         }
       ]
     },
@@ -2420,6 +2420,25 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/net/ZeroTraceTeardown.js",
+      "loc": 288,
+      "classes": [],
+      "exports": [
+        {
+          "name": "ZeroTraceTeardown",
+          "type": "constant",
+          "jsdoc": "/**\n* ZeroTraceTeardown.js (SPEC-176)\n* Autonomic, zero-trace post-execution teardown purifier.\n* Sweeps process trees, files, timers, and handles after guest script executions.\n*/",
+          "line": 20
+        }
+      ],
+      "testFile": "src/net/ZeroTraceTeardown.test.js",
+      "testCasesCount": 4,
+      "referencingSpecs": [
+        "plan/specs/176_zero_trace_teardown_purger.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
       "path": "src/persistence/GalacticChronicle.js",
       "loc": 118,
       "classes": [
@@ -2938,14 +2957,14 @@
     },
     {
       "path": "src/server/restHandlers.js",
-      "loc": 638,
+      "loc": 695,
       "classes": [],
       "exports": [
         {
           "name": "handleRestRequest",
           "type": "function",
           "jsdoc": "/**\n* Handles incoming REST API and static file serving requests modularly.\n*\n* @param {import(\"http\").IncomingMessage} req The HTTP request.\n* @param {import(\"http\").ServerResponse} res The HTTP response.\n* @param {Object} options The configuration/dependency singletons option object.\n* @param {Object} options.metrics The core metrics registry.\n* @param {Map} options.instances The active room/sector instances directory.\n* @param {Object} options.matchmakingQueue The active JoinQueue.\n* @param {Object} options.latencyMonitor The LatencyMonitor singleton.\n* @param {Object} options.sandboxTelemetry The SandboxTelemetry singleton.\n* @param {Object} options.apiRateLimiter The ApiRateLimiter singleton.\n* @param {Object} options.sandboxFirewall The SandboxFirewall singleton.\n* @param {Object} options.memoryLeakSentry The MemoryLeakSentry singleton.\n* @param {Object} options.anomalyDetector The AnomalyDetector singleton.\n* @param {Map} options.clients The map of active sockets/clients ws -> clientObj.\n* @param {Object} options.galacticChronicle The GalacticChronicle instance.\n* @param {number} options.PORT The HTTP port the server is listening on.\n* @param {number} options.WORKERS The total number of sharded worker processes.\n* @param {number} options.SHARD_INDEX The current shard index.\n* @param {Object} options.wss The WebSocketServer instance.\n* @param {string} [options.ROOT_DIR] The optional repository root directory path.\n*/",
-          "line": 44
+          "line": 97
         }
       ],
       "testFile": "src/server/restHandlers.test.js",
@@ -5282,7 +5301,7 @@
           {
             "name": "GuestRunner",
             "type": "constant",
-            "line": 24
+            "line": 25
           }
         ]
       },
@@ -5430,13 +5449,6 @@
         "brokenFiles": [
           "src/client/__tests__/CanvasRenderer.browser.test.js",
           "src/client/__tests__/PlaywrightVisual.test.js"
-        ]
-      },
-      {
-        "spec": "plan/specs/176_zero_trace_teardown_purger.md",
-        "brokenFiles": [
-          "src/net/ZeroTraceTeardown.js",
-          "src/net/ZeroTraceTeardown.test.js"
         ]
       }
     ]

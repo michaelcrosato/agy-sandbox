@@ -25,6 +25,12 @@ if (-not (Test-Path "plan/PROGRESS.md")) {
 # Create lock file indicating loop is active
 New-Item -Path "plan/loop_active.lock" -ItemType File -Force | Out-Null
 
+$RunStamp = Get-Date -Format "yyyyMMdd-HHmmss"
+$LogDir = "night-queue/logs"
+if (-not (Test-Path $LogDir)) {
+    New-Item -Path $LogDir -ItemType Directory -Force | Out-Null
+}
+
 $IterationCount = 1
 
 try {
@@ -44,13 +50,15 @@ try {
             exit $LASTEXITCODE
         }
 
+        $LogFile = Join-Path $LogDir "run-afk-cycle-$IterationCount-$RunStamp.log"
+
         Write-Host "[ENGINE] Executing Agent Core Command: $AgentCommand" -ForegroundColor Magenta
-        cmd.exe /c $AgentCommand
+        cmd.exe /c $AgentCommand 2>&1 | Tee-Object -FilePath $LogFile
         $AgentExitCode = $LASTEXITCODE
         Write-Host "[ENGINE] Cycle complete. Exit Code: $AgentExitCode" -ForegroundColor Gray
 
         Write-Host "[VERIFY] Running full validation gate: npm run agent:check" -ForegroundColor Blue
-        npm run agent:check
+        npm run agent:check 2>&1 | Tee-Object -FilePath $LogFile -Append
         if ($LASTEXITCODE -ne 0) {
             Write-Host "[FAIL] Validation gate failed. Preserving workspace for inspection." -ForegroundColor Red
             Write-Host "[NEXT] Archive/log the failed attempt, then manually recover to the last green baseline." -ForegroundColor Yellow

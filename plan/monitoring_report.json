@@ -1,0 +1,11 @@
+{
+  "timestamp": 1780987965519,
+  "timestampIso": "2026-06-09T06:52:45.519Z",
+  "anomalies": [
+    {
+      "type": "wrapper_death",
+      "details": "The loop is locked as active, but no wrapper processes (run-afk-loop, run-autonomous-loop, run-agent, or claude-night) are running."
+    }
+  ],
+  "runningLoops": []
+}

@@ -23,6 +23,66 @@ const LOG_PATH = path.join(repoRoot, "docs/LOG.md");
 const LOCK_PATH = path.join(repoRoot, "plan/loop_active.lock");
 const REPORT_PATH = path.join(repoRoot, "plan/monitoring_report.json");
 
+function getLatestCommitTimeMs() {
+  if (process.env.NODE_ENV === "test") {
+    return 0;
+  }
+  try {
+    const output = childProcess.execSync("git log -1 --format=%ct", {
+      encoding: "utf8",
+    });
+    const seconds = parseInt(output.trim(), 10);
+    return seconds * 1000;
+  } catch {
+    return 0;
+  }
+}
+
+function getLatestFileWriteTimeMs(dir) {
+  if (process.env.NODE_ENV === "test") {
+    return 0;
+  }
+  let maxTime = 0;
+  const ignored = new Set([
+    ".git",
+    "node_modules",
+    "night-queue",
+    "coverage",
+    "data",
+    ".claude",
+    ".sandbox-worktrees-test",
+  ]);
+
+  function scan(currentDir) {
+    let files;
+    try {
+      files = fs.readdirSync(currentDir);
+    } catch {
+      return;
+    }
+    for (const file of files) {
+      if (ignored.has(file)) continue;
+      const fullPath = path.join(currentDir, file);
+      let stats;
+      try {
+        stats = fs.statSync(fullPath);
+      } catch {
+        continue;
+      }
+      if (stats.isDirectory()) {
+        scan(fullPath);
+      } else {
+        if (stats.mtimeMs > maxTime) {
+          maxTime = stats.mtimeMs;
+        }
+      }
+    }
+  }
+
+  scan(dir);
+  return maxTime;
+}
+
 export function getRunningLoopProcesses() {
   try {
     if (process.platform === "win32") {
@@ -97,7 +157,27 @@ export function checkAnomaly() {
     });
   }
 
-  // 2. Stalled Progress
+  // 2. Stalled Progress (Decaying Cadence: every 60s for mins 0-5 [2m threshold], 5m for mins 5-35 [10m threshold], 15m for mins 35-60 [30m threshold], hourly after [2h threshold])
+  let maxStallMs = MAX_STALL_TIME_MS;
+  let elapsed = 0;
+  if (isLockPresent) {
+    try {
+      const lockStats = fs.statSync(LOCK_PATH);
+      elapsed = Date.now() - lockStats.mtimeMs;
+      if (elapsed < 5 * 60 * 1000) {
+        maxStallMs = 2 * 60 * 1000; // 2 minutes (minutes 0–5)
+      } else if (elapsed < 35 * 60 * 1000) {
+        maxStallMs = 10 * 60 * 1000; // 10 minutes (minutes 5–35)
+      } else if (elapsed < 60 * 60 * 1000) {
+        maxStallMs = 30 * 60 * 1000; // 30 minutes (minutes 35–60)
+      } else {
+        maxStallMs = 120 * 60 * 1000; // 120 minutes (2 hours) (after 1 hour)
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   let lastProgressTime = 0;
   if (fs.existsSync(PROGRESS_PATH)) {
     lastProgressTime = fs.statSync(PROGRESS_PATH).mtimeMs;
@@ -106,17 +186,24 @@ export function checkAnomaly() {
   if (fs.existsSync(LOG_PATH)) {
     lastLogTime = fs.statSync(LOG_PATH).mtimeMs;
   }
-  const lastActiveTime = Math.max(lastProgressTime, lastLogTime);
+  const latestCommitTime = getLatestCommitTimeMs();
+  const latestFileWriteTime = getLatestFileWriteTimeMs(repoRoot);
+  const lastActiveTime = Math.max(
+    lastProgressTime,
+    lastLogTime,
+    latestCommitTime,
+    latestFileWriteTime,
+  );
   const msSinceActive = Date.now() - lastActiveTime;
 
-  if (runningLoops.length > 0 && msSinceActive > MAX_STALL_TIME_MS) {
+  if (runningLoops.length > 0 && msSinceActive > maxStallMs) {
     anomalies.push({
       type: "stalled_progress",
-      details: `Loop processes are active, but neither PROGRESS.md nor LOG.md has been modified in the last ${Math.round(msSinceActive / 60000)} minutes.`,
+      details: `Loop processes are active (elapsed: ${Math.round(elapsed / 60000)}m), but neither PROGRESS.md nor LOG.md has been modified, and no new artifacts, commits, or state changes (PROGRESS.md/LOG.md/files) have appeared in the last ${Math.round(msSinceActive / 60000)} minutes (threshold: ${Math.round(maxStallMs / 60000)}m).`,
     });
   }
 
-  // 3. Scan Log Files for Critical Errors
+  // 3. Scan Log Files for Critical Errors (Includes repeated git/push failures, unhandled exceptions)
   if (fs.existsSync(LOGS_DIR)) {
     const logFiles = fs
       .readdirSync(LOGS_DIR)
@@ -141,9 +228,17 @@ export function checkAnomaly() {
           "fatal:",
           "uncaughtException",
           "push failed",
+          "GitError",
+          "git error",
+          "failed to push",
+          "git push failed",
+          "Exception",
+          "Compromised",
+          "compromised",
         ];
 
-        for (const line of lines.slice(-50)) {
+        // Scan the last 200 lines to ensure stack traces or multiple consecutive errors are captured
+        for (const line of lines.slice(-200)) {
           for (const kw of errorKeywords) {
             if (line.includes(kw)) {
               anomalies.push({

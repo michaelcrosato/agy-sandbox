@@ -27,6 +27,10 @@ fi
 touch plan/loop_active.lock
 trap 'rm -f plan/loop_active.lock' EXIT
 
+RUN_STAMP=$(date +'%Y%m%d-%H%M%S')
+LOG_DIR="night-queue/logs"
+mkdir -p "$LOG_DIR"
+
 while true; do
   clear
   echo -e "${CYAN}---------------------------------------------------------${NC}"
@@ -43,14 +47,16 @@ while true; do
     exit 1
   fi
 
+  LOG_FILE="$LOG_DIR/run-afk-cycle-${ITERATION_COUNT}-${RUN_STAMP}.log"
+
   echo -e "${CYAN}[ENGINE] Executing Agent Core Command: ${AGENT_COMMAND}${NC}"
-  ${AGENT_COMMAND}
-  AGENT_EXIT_CODE=$?
+  ${AGENT_COMMAND} 2>&1 | tee "$LOG_FILE"
+  AGENT_EXIT_CODE=${PIPESTATUS[0]}
   echo -e "${GRAY}[ENGINE] Cycle complete. Exit Code: ${AGENT_EXIT_CODE}${NC}"
 
   echo -e "${CYAN}[VERIFY] Running full validation gate: npm run agent:check${NC}"
-  npm run agent:check
-  GATE_EXIT_CODE=$?
+  npm run agent:check 2>&1 | tee -a "$LOG_FILE"
+  GATE_EXIT_CODE=${PIPESTATUS[0]}
   if [ ${GATE_EXIT_CODE} -ne 0 ]; then
     echo -e "${RED}[FAIL] Validation gate failed. Preserving workspace for inspection.${NC}"
     echo -e "${YELLOW}[NEXT] Archive/log the failed attempt, then manually recover to the last green baseline.${NC}"

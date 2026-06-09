@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-09T14:52:17.874Z",
+  "generatedAt": "2026-06-09T14:55:51.364Z",
   "stats": {
     "totalSourceFiles": 109,
     "totalTestFiles": 142,
@@ -3882,7 +3882,7 @@
       "path": "plan/specs/060_autonomy_safety_truth_sync.md",
       "filename": "060_autonomy_safety_truth_sync.md",
       "title": "060 — Autonomy Safety & Truth Sync",
-      "status": "In Progress",
+      "status": "Done",
       "priority": "Critical",
       "pillar": "None",
       "filesMentioned": []

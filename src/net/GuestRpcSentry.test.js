@@ -1,9 +1,5 @@
 import { jest } from "@jest/globals";
-import {
-  validateRpcRequest,
-  GuestRpcSentry,
-  ALLOWED_RPC_ACTIONS,
-} from "./GuestRpcSentry.js";
+import { validateRpcRequest, GuestRpcSentry } from "./GuestRpcSentry.js";
 import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
 
 describe("GuestRpcSentry", () => {

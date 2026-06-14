@@ -1,121 +1,66 @@
-# Starfall: Living Galaxy
+# agy-sandbox
 
-A browser-native multiplayer space-trading and combat game built inside an autonomous-engineering sandbox.
+An empty product repository seeded with the AI operations engine. **There is currently no application code here.**
 
-There are two layers:
-
-- **The game:** an authoritative Node/WebSocket server simulates a persistent galaxy; a Canvas client lets players fly, fight, trade, dock, and take missions in a shared world.
-- **The harness:** a principle-governed autonomous loop uses specs, deterministic gates, and an operational ledger to keep improving the repo.
-
-North Star: **a galaxy that is alive without you** — markets, factions, NPCs, missions, and consequences continue to evolve server-side. See [`docs/GOAL.md`](docs/GOAL.md).
+> **Honest status (2026-06-14):** This repo has no `src/`, no tests, and no runnable product. It contains the autonomous-engineering harness (specs → build → verify → judge → ship) and config only. A prior product — *Starfall: Living Galaxy*, a browser-native multiplayer space sim — used to live here but was **deliberately purged on 2026-06-09**. The full prior codebase is preserved in git history at tag `pre-purge-20260609` and on the remote. See [`docs/ENGINEERING_REVIEW.md`](docs/ENGINEERING_REVIEW.md) for the full assessment.
 
 ---
 
-## Quick start
+## What this does (today)
 
-```powershell
-npm install
-node src/server.js
-```
+Nothing yet, as a product. The repo is a clean sandbox waiting for a product decision:
 
-Open **http://localhost:8080** in a modern browser.
+- **Restore** the purged Starfall codebase (`git reset --hard pre-purge-20260609`), or
+- **Start a new product** under this engine, or
+- **Stay a template/sandbox** for harness experiments.
 
-> `npm run dev` only serves static files. It does not run the authoritative simulation or multiplayer server.
+This decision is unresolved. It is the top item in [`roadmap/ROADMAP.md`](roadmap/ROADMAP.md) and must be recorded in `roadmap/DECISIONS.md` before meaningful feature work begins.
 
-### Play with friends
+## What used to be here (the intended product)
 
-Keep `node src/server.js` running and expose it with a tunnel, for example:
+`GOAL.md` describes the purged vision: **Starfall: Living Galaxy** — a persistent, browser-native multiplayer space sim where "the galaxy is alive without you." An authoritative Node/WebSocket server simulated a persistent galaxy (markets, factions, NPCs, missions, reputation, a server-side "heartbeat" that advanced the world while no one was connected); a Canvas client let players fly, fight, trade, dock, and take missions. At tag `pre-purge-20260609` this was a real ~274-file codebase with co-located tests. **None of it is in the current tree.** Treat `GOAL.md` as an archived vision document, not a description of what exists.
+
+## Architecture
+
+- **Current tree:** no product architecture. Only the operations engine (`.claude/`, `scripts/`, engine docs) and empty state scaffolding (`roadmap/`).
+- **Intended (archived) architecture, from `GOAL.md`:** authoritative server (`src/server.js`) as a thin composition root; pure, deterministic, seeded simulation modules (`src/engine`, `src/physics`, `src/net`, `src/persistence`) with no DOM/socket/timer/filesystem dependencies; a Canvas browser client (`src/client`); a swappable persistence store. This is aspirational relative to the current tree.
+
+## Tech stack
+
+- **Language/tooling present:** TypeScript (`tsc --noEmit` typecheck), [Biome](https://biomejs.dev/) lint, Node (`@types/node` 25), `ts-node`. See `package.json` / `tsconfig.json` / `biome.json`.
+- These tools currently target the **engine scripts** (`scripts/*.ts`), not a product.
+
+## Run / dev commands
+
+There is **no app to run** and **no product test suite**. The only real commands are the ones actually defined in `package.json`:
 
 ```bash
-cloudflared tunnel --url http://localhost:8080
+npm run verify          # bash scripts/verify.sh — the engine gate (typecheck + lint + state + shield)
+npm run typecheck       # tsc --noEmit
+npm run lint            # biome lint scripts
+npm run state           # ts-node scripts/update-state.ts (backlog mutations)
+npm run state:validate  # ts-node scripts/update-state.ts --validate (state-vs-reality drift check)
+npm run shield          # ts-node scripts/assertion-shield.ts (test-assertion tamper guard)
 ```
 
-Send the generated `https://…trycloudflare.com` URL. Other players need only a browser.
+> Ignore the run/validation instructions in older copies of this file — `node src/server.js`, `npm run agent:check`, `npm test`, `npm run test:client`, etc. referenced files and scripts that **do not exist**. They have been removed.
 
-### Controls
+## Current status (what works / what doesn't)
 
-| Action      | Keys              |
-| ----------- | ----------------- |
-| Thrust      | `W` / `↑`         |
-| Brake       | `S` / `↓`         |
-| Turn        | `A` `D` / `←` `→` |
-| Fire        | `Space`           |
-| Afterburner | `Shift`           |
+| Area | Status |
+|---|---|
+| Product application code | **Does not exist** (no `src/`, no `lib/`) |
+| Product tests | **Do not exist** (no `test` script, no Jest/Vitest config) |
+| Runnable server / client | **No** |
+| Backlog (`roadmap/features.json`) | **Empty** (`[]`) |
+| State files (`STATUS.md`, `metrics.jsonl`) | Empty stubs; `PROGRESS.md` top entry is stale carryover |
+| Ops engine + config (`.claude/`, `scripts/`, `package.json`) | Present and coherent (not the review target) |
+| Engine gate (`scripts/verify.sh`) | Targets scripts, not a product |
 
-Approach a planet slowly to land, then use the spaceport UI to trade, outfit, buy ships, and take missions.
+## Pointers
 
----
-
-## Validation
-
-```powershell
-npm run agent:check          # full gate: substrate integrity + format + lint + typecheck + Jest + client tests
-npm run agent:check:core     # faster inner-loop gate, excludes client tests
-npm test                     # Jest suite
-npm run test:client          # Vitest client suite
-npm run lint
-npm run typecheck
-npm run format:check
-```
-
-Do not claim a change is green unless the relevant command actually ran and passed.
-
----
-
-## Canonical docs
-
-| File                                         | Purpose                                                       |
-| -------------------------------------------- | ------------------------------------------------------------- |
-| [`AGENTS.md`](AGENTS.md)                     | Canonical operating manual for agents and humans. Read first. |
-| [`docs/AXIOMS.md`](docs/AXIOMS.md)           | Immutable constitution; substrate, read-only.                 |
-| [`docs/AGENT-LOOP.md`](docs/AGENT-LOOP.md)   | Compliance protocol; substrate, read-only.                    |
-| [`docs/GOAL.md`](docs/GOAL.md)               | Product blueprint and architecture intent.                    |
-| [`plan/PROGRESS.md`](plan/PROGRESS.md)       | Live work queue and resume anchor.                            |
-| [`plan/specs/`](plan/specs/)                 | Atomic implementation specs.                                  |
-| [`docs/ai/REPO_MAP.md`](docs/ai/REPO_MAP.md) | Repo navigation map for agents.                               |
-| [`docs/LOG.md`](docs/LOG.md)                 | Reverse-chronological operational ledger.                     |
-
-`tickets/` is legacy history unless a launch context explicitly says otherwise. The live queue is `plan/PROGRESS.md` plus `plan/specs/`.
-
----
-
-## Repository layout
-
-```text
-├── AGENTS.md                 <- canonical agent/human operating manual
-├── docs/
-│   ├── AXIOMS.md             <- substrate constitution
-│   ├── AGENT-LOOP.md         <- substrate compliance protocol
-│   ├── GOAL.md               <- product blueprint
-│   ├── LOG.md                <- operational ledger
-│   └── ai/REPO_MAP.md        <- agent repo map
-├── plan/
-│   ├── GOAL_PROMPT.md        <- unattended loop prompt
-│   ├── PROGRESS.md           <- live queue / resume anchor
-│   ├── ROADMAP.md            <- current wave plan
-│   └── specs/                <- atomic specs
-├── scripts/
-│   ├── agent/                <- cross-platform agent helpers and gates
-│   ├── run-agent.js          <- GitHub issue-triggered agent
-│   ├── run-afk-loop.*        <- local unattended loop launchers
-│   └── claude-night.ps1      <- overnight task queue runner
-├── src/
-│   ├── server.js             <- authoritative server composition root
-│   ├── server/               <- extracted server modules
-│   ├── engine/               <- pure simulation modules
-│   ├── physics/              <- pure physics primitives
-│   ├── net/                  <- protocol, routing, interest, metrics
-│   ├── persistence/          <- store/persistence abstractions
-│   └── client/               <- browser client logic
-└── index.html, index.css
-```
-
----
-
-## Rules of engagement
-
-- Never modify substrate files listed in `AGENTS.md §0`.
-- Keep main green.
-- Keep simulation logic deterministic and testable.
-- Prefer small vertical slices over broad rewrites.
-- Update the spec/progress/log truthfully when work changes reality.
+- **Full engineering assessment:** [`docs/ENGINEERING_REVIEW.md`](docs/ENGINEERING_REVIEW.md)
+- **Roadmap / priorities:** [`roadmap/ROADMAP.md`](roadmap/ROADMAP.md)
+- **Archived product vision:** [`GOAL.md`](GOAL.md)
+- **How the operations engine works:** `AI_OPERATIONS_PLAN.md`, `OPERATOR_GUIDE.md`, `CLAUDE.md` (not the product)
+- **Optional engine modules (activate when product code lands):** [`docs/optional-modules.md`](docs/optional-modules.md)

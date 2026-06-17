@@ -1097,8 +1097,6 @@ describe("mission + trade faction standings (spec 032)", () => {
         // Set up the onEscortAccepted callback on this client's missionManager
         clientObj.missionManager = new MissionManager();
         clientObj.missionManager.onEscortAccepted = (mission) => {
-          const spawnAngle = 0;
-          const spawnDist = 100;
           const transportShip = {
             id: "diplomatic-transport-test",
             name: "Diplomatic Transport",

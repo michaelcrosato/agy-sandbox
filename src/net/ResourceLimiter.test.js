@@ -1,5 +1,4 @@
 import { ResourceLimiter } from "./ResourceLimiter.js";
-import { jest } from "@jest/globals";
 
 describe("ResourceLimiter (SPEC-116)", () => {
   let originalMemoryUsage;

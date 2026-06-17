@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import { generateCodexGraph } from "./generate-codex.js";
 
 describe("Living Codex & Codebase Ontology Generator (SPEC-101)", () => {

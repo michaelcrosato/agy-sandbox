@@ -14,7 +14,7 @@ describe("ProcessReaper (SPEC-092)", () => {
     expect(ProcessReaper.getWorkerCount()).toBe(0);
 
     // Spawn an infinite loop worker using eval option
-    const worker = ProcessReaper.spawnWorker("setInterval(() => {}, 1000);", {
+    const _worker = ProcessReaper.spawnWorker("setInterval(() => {}, 1000);", {
       eval: true,
     });
 
@@ -42,7 +42,7 @@ describe("ProcessReaper (SPEC-092)", () => {
 
   test("automatically removes exited worker threads and processes", async () => {
     // Spawn a worker that exits instantly
-    const worker = ProcessReaper.spawnWorker("console.log('exiting');", {
+    const _worker = ProcessReaper.spawnWorker("console.log('exiting');", {
       eval: true,
     });
 
@@ -65,7 +65,9 @@ describe("ProcessReaper (SPEC-092)", () => {
     process.env.TEST_SENTINEL_FORCE = "true";
     ProcessSentinel.activate();
     try {
-      const proc = childProcess.spawn("node", ["src/net/temp_port_worker.mjs"]);
+      const _proc = childProcess.spawn("node", [
+        "src/net/temp_port_worker.mjs",
+      ]);
       expect(ProcessReaper.getProcessCount()).toBe(1);
 
       await ProcessReaper.reap();

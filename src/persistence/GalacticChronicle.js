@@ -38,7 +38,7 @@ export class GalacticChronicle {
       } else {
         this.events = [];
       }
-    } catch (err) {
+    } catch (_err) {
       // Defensively fallback to empty if store fails or has corrupt payload
       this.events = [];
     }

@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-06-10T02:39:38.837Z",
+  "generatedAt": "2026-06-17T14:47:17.263Z",
   "stats": {
     "totalSourceFiles": 109,
     "totalTestFiles": 144,
     "totalSpecFiles": 183,
-    "totalLoc": 26652,
+    "totalLoc": 26646,
     "totalTests": 1822,
     "untestedCoreFilesCount": 4
   },
@@ -1917,7 +1917,7 @@
     },
     {
       "path": "src/net/PubSub.js",
-      "loc": 198,
+      "loc": 195,
       "classes": [
         {
           "name": "PubSub",
@@ -1927,12 +1927,12 @@
         {
           "name": "InMemoryPubSub",
           "jsdoc": "/**\n* Headless, process-local PubSub transport.\n* Used for fast in-process tests and single-process execution.\n*/",
-          "line": 58
+          "line": 55
         },
         {
           "name": "RedisPubSub",
           "jsdoc": "/**\n* Redis-backed PubSub transport.\n* Integrates with standard Redis pub/sub and Redis 7+ sharded pub/sub.\n*/",
-          "line": 110
+          "line": 107
         }
       ],
       "exports": [],
@@ -2502,7 +2502,7 @@
     },
     {
       "path": "src/persistence/Store.js",
-      "loc": 172,
+      "loc": 169,
       "classes": [
         {
           "name": "Store",
@@ -2512,12 +2512,12 @@
         {
           "name": "InMemoryStore",
           "jsdoc": "/**\n* Headless, process-local persistence store.\n*\n* Useful for tests, the unit-test gate, and unit-of-work scenarios where\n* survival across process restarts isn't required. Values are deep-cloned on\n* the way in AND the way out, so callers cannot accidentally mutate stored\n* state through a stale reference — load/save behave like a real disk store.\n*/",
-          "line": 62
+          "line": 59
         },
         {
           "name": "JsonFileStore",
           "jsdoc": "/**\n* Filesystem-backed persistence store.\n*\n* Each key gets its own JSON file under `dir` (default `./data`), named after\n* a sanitised version of the key so unusual characters can't escape the\n* directory or trip the filesystem. The directory is created on demand the\n* first time something is written.\n*\n* Writes are atomic: the value is written to a sibling temp file and then\n* renamed into place, so a process crash mid-write never leaves a half-written\n* JSON file that a later `load` would choke on.\n*/",
-          "line": 97
+          "line": 94
         }
       ],
       "exports": [],

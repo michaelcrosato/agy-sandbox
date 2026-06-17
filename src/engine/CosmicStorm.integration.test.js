@@ -172,7 +172,7 @@ describe("CosmicStorm Integration Tests", () => {
         sensorRange: 800,
       });
       // But under the storm influence, sensorRange drops to 400, so it shouldn't perceive target!
-      const jammedOpps = buildPerception(ship, [ship, target, storm], {
+      const _jammedOpps = buildPerception(ship, [ship, target, storm], {
         sensorRange: 800,
       });
 

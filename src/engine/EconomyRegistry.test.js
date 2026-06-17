@@ -149,7 +149,7 @@ describe("GalaxyHeartbeat Economic Invariant Sentry", () => {
       equilibriumRate: 0,
     });
 
-    const changed = hb.pulse();
+    const _changed = hb.pulse();
 
     // Prices should be healed to their baseline
     expect(planets[0].market.food).toBe(100);

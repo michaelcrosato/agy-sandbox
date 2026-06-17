@@ -58,7 +58,7 @@ function persistLog(event) {
       JSON.stringify(existingLogs, null, 2),
       "utf8",
     );
-  } catch (err) {
+  } catch (_err) {
     // Degrade gracefully: fail silently on disk write failure
   }
 }

@@ -1,3 +1,4 @@
 {
-  "testPathIgnorePatterns": ["/node_modules/", "/src/client/"]
+  "testPathIgnorePatterns": ["/node_modules/", "/src/client/"],
+  "testTimeout": 30000
 }

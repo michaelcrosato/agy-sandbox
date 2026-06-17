@@ -6,9 +6,6 @@ import {
   BASE_MARKETS,
 } from "./GameInstance.js";
 import { Ship } from "./Ship.js";
-import { Planet } from "./Planet.js";
-import { CargoPod } from "./CargoPod.js";
-import { CosmicStorm } from "./CosmicStorm.js";
 import { Vector2D } from "../physics/Vector2D.js";
 
 /**

@@ -59,7 +59,7 @@ describe("WebSocket Rate Limiter Integration Tests (SPEC-117)", () => {
         let msg;
         try {
           msg = JSON.parse(data.toString());
-        } catch (e) {
+        } catch (_e) {
           return;
         }
 

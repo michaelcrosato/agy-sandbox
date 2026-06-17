@@ -510,7 +510,7 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
   test("should gracefully degrade and log warning if process priority throttling fails (SPEC-149)", async () => {
     const originalSetPriority = process.setPriority;
     let callCount = 0;
-    process.setPriority = function (pid, priority) {
+    process.setPriority = function (_pid, _priority) {
       callCount++;
       throw new Error("Access denied (mock)");
     };

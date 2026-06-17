@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-06-10T02:39:38.837Z` · Baseline: `26,652 LOC` across `109 source files`
+> Generated: `2026-06-17T14:47:17.263Z` · Baseline: `26,646 LOC` across `109 source files`
 
 ---
 
@@ -9,7 +9,7 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `26,652 LOC` | 🟢 Healthy |
+| **Total Code Volume** | `26,646 LOC` | 🟢 Healthy |
 | **Source Modules** | `109 files` | 🟢 Structured |
 | **Test Suites** | `144 test files` | 🟢 Integrated |
 | **Total Test Cases** | `1822 cases` | 🟢 Deterministic |
@@ -106,7 +106,7 @@
 | [PortReclaimer.js](file:///C:/dev/agy-sandbox/src/net/PortReclaimer.js) | 105 | _None_ | [PortReclaimer.test.js](file:///C:/dev/agy-sandbox/src/net/PortReclaimer.test.js) | [`106_sandbox_containment_sentinel`](file:///C:/dev/agy-sandbox/plan/specs/106_sandbox_containment_sentinel.md) |
 | [ProcessReaper.js](file:///C:/dev/agy-sandbox/src/net/ProcessReaper.js) | 244 | `constant ProcessReaper` | [ProcessReaper.test.js](file:///C:/dev/agy-sandbox/src/net/ProcessReaper.test.js) | [`092_zombie_reaper_orphan_cleanup`](file:///C:/dev/agy-sandbox/plan/specs/092_zombie_reaper_orphan_cleanup.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md)<br>[`170_autonomic_reaper_host_signals`](file:///C:/dev/agy-sandbox/plan/specs/170_autonomic_reaper_host_signals.md) |
 | [ProcessSentinel.js](file:///C:/dev/agy-sandbox/src/net/ProcessSentinel.js) | 1348 | `class for`, `class VirtualWriteStream`, `class for`, `class VirtualReadStream`, `function parseCommandString`, `function validateCommand`, `constant ProcessSentinel` | [ProcessSentinel.test.js](file:///C:/dev/agy-sandbox/src/net/ProcessSentinel.test.js) | [`106_sandbox_containment_sentinel`](file:///C:/dev/agy-sandbox/plan/specs/106_sandbox_containment_sentinel.md)<br>[`138_strict_path_jailing`](file:///C:/dev/agy-sandbox/plan/specs/138_strict_path_jailing.md)<br>[`169_path_sibling_directory_jailing`](file:///C:/dev/agy-sandbox/plan/specs/169_path_sibling_directory_jailing.md) |
-| [PubSub.js](file:///C:/dev/agy-sandbox/src/net/PubSub.js) | 198 | `class PubSub`, `class InMemoryPubSub`, `class RedisPubSub` | [PubSub.test.js](file:///C:/dev/agy-sandbox/src/net/PubSub.test.js) | [`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md)<br>[`162_cross_process_pubsub_sync`](file:///C:/dev/agy-sandbox/plan/specs/162_cross_process_pubsub_sync.md) |
+| [PubSub.js](file:///C:/dev/agy-sandbox/src/net/PubSub.js) | 195 | `class PubSub`, `class InMemoryPubSub`, `class RedisPubSub` | [PubSub.test.js](file:///C:/dev/agy-sandbox/src/net/PubSub.test.js) | [`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md)<br>[`162_cross_process_pubsub_sync`](file:///C:/dev/agy-sandbox/plan/specs/162_cross_process_pubsub_sync.md) |
 | [ResourceLimiter.js](file:///C:/dev/agy-sandbox/src/net/ResourceLimiter.js) | 157 | `class ResourceLimiter` | [ResourceLimiter.test.js](file:///C:/dev/agy-sandbox/src/net/ResourceLimiter.test.js) | [`116_resource_backpressure_limiter`](file:///C:/dev/agy-sandbox/plan/specs/116_resource_backpressure_limiter.md)<br>[`128_adaptive_backpressure`](file:///C:/dev/agy-sandbox/plan/specs/128_adaptive_backpressure.md) |
 | [roomRouter.js](file:///C:/dev/agy-sandbox/src/net/roomRouter.js) | 304 | `class RoomRegistry`, `function hashString`, `function assignShard`, `function routeConnection`, `function planDrain` | [roomRouter.test.js](file:///C:/dev/agy-sandbox/src/net/roomRouter.test.js) | [`019a_scaling_decomposition`](file:///C:/dev/agy-sandbox/plan/specs/019a_scaling_decomposition.md)<br>[`019d_sticky_routing_lb`](file:///C:/dev/agy-sandbox/plan/specs/019d_sticky_routing_lb.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
 | [SandboxFirewall.js](file:///C:/dev/agy-sandbox/src/net/SandboxFirewall.js) | 278 | `class SandboxFirewall`, `function activateFirewall`, `function deactivateFirewall` | [SandboxFirewall.test.js](file:///C:/dev/agy-sandbox/src/net/SandboxFirewall.test.js) | [`120_sandbox_egress_firewall`](file:///C:/dev/agy-sandbox/plan/specs/120_sandbox_egress_firewall.md) |
@@ -133,7 +133,7 @@
 | [RedisStore.js](file:///C:/dev/agy-sandbox/src/persistence/RedisStore.js) | 74 | `class RedisStore` | [RedisStore.test.js](file:///C:/dev/agy-sandbox/src/persistence/RedisStore.test.js) | [`019b_redis_store`](file:///C:/dev/agy-sandbox/plan/specs/019b_redis_store.md) |
 | [serializers.js](file:///C:/dev/agy-sandbox/src/persistence/serializers.js) | 435 | `constant SNAPSHOT_VERSION`, `function serializeGalaxy`, `function applyGalaxy`, `function serializePlayer`, `function applyPlayer` | [serializers.test.js](file:///C:/dev/agy-sandbox/src/persistence/serializers.test.js) | [`108_kill_restart_rejoin_persistence`](file:///C:/dev/agy-sandbox/plan/specs/108_kill_restart_rejoin_persistence.md) |
 | [ShardedStore.js](file:///C:/dev/agy-sandbox/src/persistence/ShardedStore.js) | 96 | `class ShardedStore` | [ShardedStore.test.js](file:///C:/dev/agy-sandbox/src/persistence/ShardedStore.test.js) | [`070_sharded_database_backend`](file:///C:/dev/agy-sandbox/plan/specs/070_sharded_database_backend.md) |
-| [Store.js](file:///C:/dev/agy-sandbox/src/persistence/Store.js) | 172 | `class Store`, `class InMemoryStore`, `class JsonFileStore` | [Store.test.js](file:///C:/dev/agy-sandbox/src/persistence/Store.test.js) | [`070_sharded_database_backend`](file:///C:/dev/agy-sandbox/plan/specs/070_sharded_database_backend.md) |
+| [Store.js](file:///C:/dev/agy-sandbox/src/persistence/Store.js) | 169 | `class Store`, `class InMemoryStore`, `class JsonFileStore` | [Store.test.js](file:///C:/dev/agy-sandbox/src/persistence/Store.test.js) | [`070_sharded_database_backend`](file:///C:/dev/agy-sandbox/plan/specs/070_sharded_database_backend.md) |
 
 ### 📂 Directory: `src/server/`
 

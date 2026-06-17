@@ -1,5 +1,4 @@
 import http from "http";
-import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { WebSocketServer } from "ws";
@@ -39,12 +38,6 @@ import { MemoryLeakSentry } from "./net/MemoryLeakSentry.js";
 import { AnomalyDetector } from "./net/AnomalyDetector.js";
 import { ConfigWatcher } from "./net/ConfigWatcher.js";
 import { ConnectionFloodSentry } from "./net/ConnectionFloodSentry.js";
-import { SandboxSecurityRegistry } from "./net/SandboxSecurityRegistry.js";
-import { GuestRunner } from "./net/GuestRunner.js";
-import { GuestRpcSentry } from "./net/GuestRpcSentry.js";
-import { WorkspaceDriftSentry } from "./net/WorkspaceDriftSentry.js";
-import { ProcessReaper } from "./net/ProcessReaper.js";
-import { ProcessSentinel } from "./net/ProcessSentinel.js";
 import {
   handleOutfitBuy,
   handleShipBuy,
@@ -86,7 +79,6 @@ import {
 import { handleConnectionAction } from "./server/connectionHandlers.js";
 import { handleRestRequest } from "./server/restHandlers.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
-import { COMMODITIES_METADATA, SCHEMAS } from "./net/SchemaRegistry.js";
 import { validateMessage } from "./net/SchemaValidator.js";
 import { sanitizeNickname } from "./server/roomLifecycle.js";
 import {
@@ -96,11 +88,7 @@ import {
   runGalaxyHeartbeatInterval,
 } from "./server/galaxyTicker.js";
 import { runGcSweep } from "./server/roomGc.js";
-import {
-  broadcastLobbySync,
-  sendLobbyList,
-  buildLobbyRoomsList,
-} from "./server/lobbySync.js";
+import { broadcastLobbySync, sendLobbyList } from "./server/lobbySync.js";
 import {
   assignShard,
   RoomRegistry,
@@ -1526,7 +1514,7 @@ wss.on("connection", (ws, req) => {
           type: "rate_limit_exceeded",
           message: `Too many requests. WebSocket message rate limit exceeded (Max ${maxRate}/sec).`,
         });
-      } catch (err) {
+      } catch (_err) {
         // ignore send errors
       }
       return;
@@ -1544,7 +1532,7 @@ wss.on("connection", (ws, req) => {
             if (typeof ws.resume === "function") {
               ws.resume();
             }
-          } catch (err) {
+          } catch (_err) {
             // ignore socket resume errors
           }
         }, 200);
@@ -1556,7 +1544,7 @@ wss.on("connection", (ws, req) => {
             "Server is experiencing transient high resource load. Throttling messages...",
           style: "warning",
         });
-      } catch (err) {
+      } catch (_err) {
         // ignore socket send errors
       }
       return;

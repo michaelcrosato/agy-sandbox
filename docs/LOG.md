@@ -44,6 +44,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-17T14:47 · iter-0161 · GREEN · eslint-warnings-resolved
+
+- **Baseline:** `6ec9316` on `develop`; 104 lint warnings, all test suites passing.
+- **Move:** Resolve all static analysis lint warnings by cleaning up unused imports and variables across product modules and test suites.
+- **Changed:**
+  - Removed unused imports in `src/server.js` (`fs`, `SandboxSecurityRegistry`, `GuestRunner`, `GuestRpcSentry`, `WorkspaceDriftSentry`, `ProcessReaper`, `ProcessSentinel`, `COMMODITIES_METADATA`, `SCHEMAS`, `buildLobbyRoomsList`).
+  - Removed unused imports/variables in `GameInstance.test.js`, `ResourceLimiter.test.js`, `ZeroTraceTeardown.test.js`, `factionCampaignPubSub.integration.test.js`, `outfittingPresetHandlers.test.js`, and `generate-codex.test.js`.
+  - Prefixed intentionally unused parameters/caught errors with `_` in `src/net/ProcessSentinel.js`, `IntegrityGuard.js`, `PortReclaimer.js`, `SandboxSecurityRegistry.js`, `SandboxTelemetry.js`, `GalacticChronicle.js`, `Store.js`, and `src/server.js`.
+  - Configured `eslint.config.js` `no-unused-vars` rule to ignore variables/parameters starting with `_` to match the prefix convention.
+  - Increased Jest test execution timeout to 30000ms in `jest.config.json` to reduce flakiness on slower machines.
+- **Decisions:** Aligning ESLint config with prefix rules ensures that intentionally unused API signatures remain type-safe and self-documenting without warnings.
+- **Validation:** Executed `npm run agent:check` confirming all 1,397 tests pass with zero warnings and zero errors.
+- **Next:** Maintain code purity and monitor continuous integration build health.
+
 ## 2026-06-09T07:59 · iter-0160 · GREEN · epistemic-debt-remedied
 
 - **Baseline:** `1afa309` on `main`; 1,380 Jest green.

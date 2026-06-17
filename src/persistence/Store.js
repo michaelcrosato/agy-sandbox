@@ -25,7 +25,6 @@ export class Store {
    * @param {Object} _obj
    * @returns {Promise<void>}
    */
-  // eslint-disable-next-line no-unused-vars
   async save(_key, _obj) {
     throw new Error("Store.save must be implemented by subclass");
   }
@@ -35,7 +34,6 @@ export class Store {
    * @param {string} _key
    * @returns {Promise<Object|null>}
    */
-  // eslint-disable-next-line no-unused-vars
   async load(_key) {
     throw new Error("Store.load must be implemented by subclass");
   }
@@ -45,7 +43,6 @@ export class Store {
    * @param {string} _key
    * @returns {Promise<boolean>}
    */
-  // eslint-disable-next-line no-unused-vars
   async has(_key) {
     throw new Error("Store.has must be implemented by subclass");
   }

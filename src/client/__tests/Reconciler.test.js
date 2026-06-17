@@ -52,7 +52,7 @@ describe("Client-Side Input Prediction & Server Reconciliation (spec 071)", () =
       { isThrusting: true },
       0.5,
     );
-    const predicted2 = reconciler.predict(
+    const _predicted2 = reconciler.predict(
       predicted1,
       { isThrusting: true, isTurningRight: true },
       0.5,

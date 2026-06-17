@@ -1,4 +1,3 @@
-import { jest } from "@jest/globals";
 import { GameInstance } from "../engine/GameInstance.js";
 import { PersistenceManager } from "../persistence/PersistenceManager.js";
 import { InMemoryStore } from "../persistence/Store.js";

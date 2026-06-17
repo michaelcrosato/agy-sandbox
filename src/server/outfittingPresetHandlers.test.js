@@ -3,7 +3,6 @@ import {
   handlePresetLoad,
   handlePresetDelete,
 } from "./outfittingPresetHandlers.js";
-import { DEFAULT_OUTFITS } from "../engine/outfitCatalog.js";
 
 describe("outfittingPresetHandlers CRUD Integration Suite", () => {
   let mockClient;

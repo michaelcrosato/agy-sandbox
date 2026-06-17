@@ -20,7 +20,7 @@ describe("spaceportMissionHandlers (SPEC-154)", () => {
         activeMissions: [],
         generateWorldMissions: jest
           .fn()
-          .mockImplementation((planetName, world) => {
+          .mockImplementation((planetName, _world) => {
             // Mock generating a dynamic mission if a shortage/surplus mismatch exists
             const list = [
               {

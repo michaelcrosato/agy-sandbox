@@ -3,7 +3,6 @@ import path from "path";
 import childProcess from "child_process";
 import { jest } from "@jest/globals";
 import { ZeroTraceTeardown } from "./ZeroTraceTeardown.js";
-import { GuestRunner } from "./GuestRunner.js";
 
 describe("ZeroTraceTeardown (SPEC-176)", () => {
   afterEach(() => {

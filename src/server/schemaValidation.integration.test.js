@@ -56,7 +56,7 @@ describe("WebSocket Schema Validation Integration Tests (SPEC-089)", () => {
         let msg;
         try {
           msg = JSON.parse(data.toString());
-        } catch (e) {
+        } catch (_e) {
           return; // Ignore binary state broadcasts
         }
         if (msg.type === "init") {
@@ -92,7 +92,7 @@ describe("WebSocket Schema Validation Integration Tests (SPEC-089)", () => {
         let msg;
         try {
           msg = JSON.parse(data.toString());
-        } catch (e) {
+        } catch (_e) {
           return; // Ignore binary state broadcasts
         }
         if (msg.type === "notification") {
@@ -131,7 +131,7 @@ describe("WebSocket Schema Validation Integration Tests (SPEC-089)", () => {
         let msg;
         try {
           msg = JSON.parse(data.toString());
-        } catch (e) {
+        } catch (_e) {
           return; // Ignore binary state broadcasts
         }
         if (msg.type === "init") {
@@ -184,7 +184,7 @@ describe("WebSocket Schema Validation Integration Tests (SPEC-089)", () => {
         let msg;
         try {
           msg = JSON.parse(data.toString());
-        } catch (e) {
+        } catch (_e) {
           return; // Ignore binary state broadcasts
         }
         if (msg.type === "notification") {

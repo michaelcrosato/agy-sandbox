@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-06-19T08:35:21.156Z` · Baseline: `26,677 LOC` across `109 source files`
+> Generated: `2026-06-19T10:11:33.754Z` · Baseline: `26,677 LOC` across `109 source files`
 
 ---
 
@@ -11,9 +11,9 @@
 | --- | --- | --- |
 | **Total Code Volume** | `26,677 LOC` | 🟢 Healthy |
 | **Source Modules** | `109 files` | 🟢 Structured |
-| **Test Suites** | `144 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1823 cases` | 🟢 Deterministic |
-| **Active/Archived Specs** | `183 specifications` | 🟢 Traceable |
+| **Test Suites** | `145 test files` | 🟢 Integrated |
+| **Total Test Cases** | `1831 cases` | 🟢 Deterministic |
+| **Active/Archived Specs** | `184 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `4 files` | ⚠️ Debt Pending |
 
 ---
@@ -175,3 +175,9 @@
 
 ### ⚠️ Missing JSDoc Type Signatures (0 symbols)
 _None! All exported classes and functions have JSDoc type signatures._
+
+### ⚠️ Spec Compliance Warnings (0 files)
+_None! All active specifications are fully compliant with the template standard._
+
+### ⚠️ PROGRESS.md Reconciliation Warnings (0)
+_None! All specs are fully synchronized with PROGRESS.md._

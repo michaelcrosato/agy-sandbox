@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { SpecLinter } from "./validate-specs.js";
 
 /**
  * Self-Synchronizing Codebase "Living Codex" Generator (SPEC-101).
@@ -332,6 +333,9 @@ export function generateCodexGraph() {
   const totalTests = testFiles.reduce((sum, t) => sum + t.testCases.length, 0);
   const untestedFiles = mappedSourceFiles.filter((f) => !f.testFile);
 
+  const linter = new SpecLinter(WORKSPACE_ROOT);
+  const linterResults = linter.validateAll();
+
   const epistemicDebt = {
     untestedCoreFiles: untestedFiles.map((f) => f.path),
     missingJsDocs: mappedSourceFiles
@@ -350,6 +354,8 @@ export function generateCodexGraph() {
           (f) => !fs.existsSync(path.resolve(f)),
         ),
       })),
+    specErrors: linterResults.specErrors,
+    specReconciliationErrors: linterResults.reconciliationErrors,
   };
 
   return {
@@ -471,6 +477,28 @@ ${
               )
               .join("\n"),
         )
+        .join("\n")
+}
+
+### ⚠️ Spec Compliance Warnings (${graph.epistemicDebt.specErrors.length} files)
+${
+  graph.epistemicDebt.specErrors.length === 0
+    ? "_None! All active specifications are fully compliant with the template standard._"
+    : graph.epistemicDebt.specErrors
+        .map(
+          (s) =>
+            `- Spec [\`${path.basename(s.path)}\`](file:///${WORKSPACE_ROOT.replace(/\\/g, "/")}/${s.path}) has issues:\n` +
+            s.errors.map((e) => `  - ${e}`).join("\n"),
+        )
+        .join("\n")
+}
+
+### ⚠️ PROGRESS.md Reconciliation Warnings (${graph.epistemicDebt.specReconciliationErrors.length})
+${
+  graph.epistemicDebt.specReconciliationErrors.length === 0
+    ? "_None! All specs are fully synchronized with PROGRESS.md._"
+    : graph.epistemicDebt.specReconciliationErrors
+        .map((e) => `- ${e}`)
         .join("\n")
 }
 `;

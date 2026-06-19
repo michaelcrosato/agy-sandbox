@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-19T08:35:21.156Z",
+  "generatedAt": "2026-06-19T10:11:33.754Z",
   "stats": {
     "totalSourceFiles": 109,
-    "totalTestFiles": 144,
-    "totalSpecFiles": 183,
+    "totalTestFiles": 145,
+    "totalSpecFiles": 184,
     "totalLoc": 26677,
-    "totalTests": 1823,
+    "totalTests": 1831,
     "untestedCoreFilesCount": 4
   },
   "files": [
@@ -5227,6 +5227,15 @@
         "src/net/ZeroTraceTeardown.js",
         "src/net/ZeroTraceTeardown.test.js"
       ]
+    },
+    {
+      "path": "plan/specs/template.md",
+      "filename": "template.md",
+      "title": "SPEC-XXX: Title Here",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "P1 - Living Universe / None",
+      "filesMentioned": []
     }
   ],
   "epistemicDebt": {
@@ -5251,6 +5260,8 @@
           "src/client/__tests__/PlaywrightVisual.test.js"
         ]
       }
-    ]
+    ],
+    "specErrors": [],
+    "specReconciliationErrors": []
   }
 }

@@ -44,6 +44,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-19T03:12 · iter-0164 · GREEN · spec-template-and-linter-integrated
+
+- **Baseline:** `38719cd` on `develop`; all test suites passing.
+- **Move:** Implement a standardized specification template and a robust spec compliance linter to ensure all specifications remain executable and aligned with progress lists.
+- **Changed:**
+  - Created a reusable specification template at `plan/specs/template.md`.
+  - Built the `SpecLinter` engine in `scripts/agent/validate-specs.js` validating filename format, H1 headings, sections completeness, checkboxes, and PROGRESS.md alignment.
+  - Added a Jest test suite in `scripts/agent/validate-specs.test.js` validating mock correct/malformed specs and performing a full repository check.
+  - Integrated `SpecLinter` into the Living Codex pipeline `scripts/agent/generate-codex.js` to dynamically report compliance warnings in `plan/CODEX.md`.
+- **Decisions:** Skipped structure validation on design documents (decomposition docs) since they focus on epic structuring rather than checklist execution tasks.
+- **Validation:** Executed `npm run agent:check` confirming all 1405 Jest tests and 63 client tests passed completely green.
+- **Next:** Schedule next automated loop iteration or complete task requirements.
+
 ## 2026-06-19T01:36 · iter-0163 · GREEN · codex-jsdoc-type-debt-resolved
 
 - **Baseline:** `5d17490` on `develop`; dynamic repository map generation pipeline.

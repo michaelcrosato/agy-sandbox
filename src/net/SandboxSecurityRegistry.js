@@ -63,6 +63,9 @@ function persistLog(event) {
   }
 }
 
+/**
+ * Centralized registry for registering, auditing, and self-healing security boundary containment violations.
+ */
 export const SandboxSecurityRegistry = {
   /**
    * Log a security breach/violation event.

@@ -44,6 +44,43 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-19T03:12 · iter-0164 · GREEN · spec-template-and-linter-integrated
+
+- **Baseline:** `38719cd` on `develop`; all test suites passing.
+- **Move:** Implement a standardized specification template and a robust spec compliance linter to ensure all specifications remain executable and aligned with progress lists.
+- **Changed:**
+  - Created a reusable specification template at `plan/specs/template.md`.
+  - Built the `SpecLinter` engine in `scripts/agent/validate-specs.js` validating filename format, H1 headings, sections completeness, checkboxes, and PROGRESS.md alignment.
+  - Added a Jest test suite in `scripts/agent/validate-specs.test.js` validating mock correct/malformed specs and performing a full repository check.
+  - Integrated `SpecLinter` into the Living Codex pipeline `scripts/agent/generate-codex.js` to dynamically report compliance warnings in `plan/CODEX.md`.
+- **Decisions:** Skipped structure validation on design documents (decomposition docs) since they focus on epic structuring rather than checklist execution tasks.
+- **Validation:** Executed `npm run agent:check` confirming all 1405 Jest tests and 63 client tests passed completely green.
+- **Next:** Schedule next automated loop iteration or complete task requirements.
+
+## 2026-06-19T01:36 · iter-0163 · GREEN · codex-jsdoc-type-debt-resolved
+
+- **Baseline:** `5d17490` on `develop`; dynamic repository map generation pipeline.
+- **Move:** Resolve all remaining JSDoc missing type signature warnings in net modules and fix comment parser matching to protect codebase integrity.
+- **Changed:**
+  - Added class-level JSDoc comments to `MemoryLeakSentry.js`, `ProcessSentinel.js`, `SandboxFirewall.js`, `SandboxSecurityRegistry.js`, `SecureModuleRegistry.js`, `StaticSecuritySentry.js`, `TokenCostGovernor.js`, and `WorkspaceDriftSentry.js`.
+  - Refined symbol parsing in `scripts/agent/generate-codex.js` to ignore single-line comments starting with `//` and avoid premature sentence truncation on abbreviations like `e.g.`, `i.e.`, and `etc.`
+  - Regenerated `plan/CODEX.md`, `plan/codex.json`, and `plan/monitoring_report.json` resulting in 0 missing type warnings.
+- **Decisions:** Skipping comment lines starting with `//` ensures that mock examples in comment sections are not misinterpreted as live exports.
+- **Validation:** Running `npm run agent:check` confirming all Jest and Vitest test suites pass successfully.
+- **Next:** Schedule next automated loop iteration or complete task requirements.
+
+## 2026-06-19T01:32 · iter-0162 · GREEN · repomap-abbreviations-jsdocs
+
+- **Baseline:** `b6aab3d` on `develop`; all test suites passing.
+- **Move:** Refine cleanJsDocDescription in the generate-codex pipeline to robustly handle common JSDoc abbreviations and add missing top-level JSDocs to ensure fully descriptive REPO_MAP.md generation.
+- **Changed:**
+  - Enhanced `cleanJsDocDescription` to protect abbreviations like `e.g.`, `i.e.`, and `etc.` from prematurely terminating sentence boundary parsing.
+  - Added descriptive module-level JSDocs to the top of `src/engine/GameInstance.js` and `src/engine/LoadoutManager.js`.
+  - Regenerated `docs/ai/REPO_MAP.md` and verified clean sentences for all files.
+- **Decisions:** None.
+- **Validation:** Running `npm run agent:check` confirming all 1,398 tests pass.
+- **Next:** Continue monitoring repo health and feature proposals.
+
 ## 2026-06-17T14:47 · iter-0161 · GREEN · eslint-warnings-resolved
 
 - **Baseline:** `6ec9316` on `develop`; 104 lint warnings, all test suites passing.

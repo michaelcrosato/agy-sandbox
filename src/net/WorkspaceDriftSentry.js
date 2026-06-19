@@ -46,6 +46,9 @@ function scanDirRecursive(dir) {
   return results;
 }
 
+/**
+ * Workspace Snapshot Drift Auditor & Copy-On-Write Self-Healing Restoration (SPEC-146).
+ */
 export const WorkspaceDriftSentry = {
   // Cumulative counters
   totalSelfHeals: 0,

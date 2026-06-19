@@ -58,7 +58,9 @@ let virtualCowActive = false;
 const virtualFiles = new Map(); // resolved absolute path -> Buffer or string
 const virtualDirs = new Set(); // resolved absolute path of directories
 
-// Virtual Write stream class for Zero-Trust COW
+/**
+ * Virtual Write stream class for Zero-Trust COW.
+ */
 class VirtualWriteStream extends Writable {
   constructor(filePath) {
     super();
@@ -92,7 +94,9 @@ class VirtualWriteStream extends Writable {
   }
 }
 
-// Virtual Read stream class for Zero-Trust COW
+/**
+ * Virtual Read stream class for Zero-Trust COW.
+ */
 class VirtualReadStream extends Readable {
   constructor(filePath, data) {
     super();

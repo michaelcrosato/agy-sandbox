@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-06-19T13:18:35.542Z` · Baseline: `26,996 LOC` across `110 source files`
+> Generated: `2026-06-19T13:23:49.985Z` · Baseline: `26,996 LOC` across `110 source files`
 
 ---
 
@@ -11,10 +11,10 @@
 | --- | --- | --- |
 | **Total Code Volume** | `26,996 LOC` | 🟢 Healthy |
 | **Source Modules** | `110 files` | 🟢 Structured |
-| **Test Suites** | `148 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1847 cases` | 🟢 Deterministic |
+| **Test Suites** | `150 test files` | 🟢 Integrated |
+| **Total Test Cases** | `1852 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `185 specifications` | 🟢 Traceable |
-| **Untested Core Modules** | `2 files` | ⚠️ Debt Pending |
+| **Untested Core Modules** | `0 files` | 🟢 100% Covered |
 
 ---
 
@@ -89,7 +89,7 @@
 | [GuestLoader.js](file:///C:/dev/agy-sandbox/src/net/GuestLoader.js) | 117 | _None_ | [GuestLoader.test.js](file:///C:/dev/agy-sandbox/src/net/GuestLoader.test.js) | [`168_loader_native_modules_restriction`](file:///C:/dev/agy-sandbox/plan/specs/168_loader_native_modules_restriction.md) |
 | [GuestRpcSentry.js](file:///C:/dev/agy-sandbox/src/net/GuestRpcSentry.js) | 194 | `constant ALLOWED_RPC_ACTIONS`, `function validateRpcRequest`, `constant GuestRpcSentry` | [GuestRpcSentry.test.js](file:///C:/dev/agy-sandbox/src/net/GuestRpcSentry.test.js) | [`145_secure_guest_rpc_sentry`](file:///C:/dev/agy-sandbox/plan/specs/145_secure_guest_rpc_sentry.md) |
 | [GuestRunner.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.js) | 591 | `constant GuestRunner` | [GuestRunner.test.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.test.js) | [`136_isolated_guest_runner`](file:///C:/dev/agy-sandbox/plan/specs/136_isolated_guest_runner.md) |
-| [GuestRunnerWorker.js](file:///C:/dev/agy-sandbox/src/net/GuestRunnerWorker.js) | 124 | _None_ | ❌ _Untested_ | _None_ |
+| [GuestRunnerWorker.js](file:///C:/dev/agy-sandbox/src/net/GuestRunnerWorker.js) | 124 | _None_ | [GuestRunnerWorker.test.js](file:///C:/dev/agy-sandbox/src/net/GuestRunnerWorker.test.js) | _None_ |
 | [heartbeat.js](file:///C:/dev/agy-sandbox/src/net/heartbeat.js) | 30 | `constant DEFAULT_HEARTBEAT_MS`, `function selectDeadSockets` | [heartbeat.test.js](file:///C:/dev/agy-sandbox/src/net/heartbeat.test.js) | [`003_ws_connection_heartbeat`](file:///C:/dev/agy-sandbox/plan/specs/003_ws_connection_heartbeat.md) |
 | [IntegrityGuard.js](file:///C:/dev/agy-sandbox/src/net/IntegrityGuard.js) | 247 | `constant IntegrityGuard` | [IntegrityGuard.test.js](file:///C:/dev/agy-sandbox/src/net/IntegrityGuard.test.js) | [`134_global_prototype_freeze_sentry`](file:///C:/dev/agy-sandbox/plan/specs/134_global_prototype_freeze_sentry.md)<br>[`167_process_binding_dlopen_lockdown`](file:///C:/dev/agy-sandbox/plan/specs/167_process_binding_dlopen_lockdown.md) |
 | [interest.js](file:///C:/dev/agy-sandbox/src/net/interest.js) | 170 | `constant DEFAULT_INTEREST_RADIUS`, `function interestFilter`, `function buildSpatialGrid` | [interest.test.js](file:///C:/dev/agy-sandbox/src/net/interest.test.js) | [`014_interest_management`](file:///C:/dev/agy-sandbox/plan/specs/014_interest_management.md)<br>[`049_interest_management_grid_optimization`](file:///C:/dev/agy-sandbox/plan/specs/049_interest_management_grid_optimization.md)<br>[`059_alliance_fleets`](file:///C:/dev/agy-sandbox/plan/specs/059_alliance_fleets.md) |
@@ -100,7 +100,7 @@
 | [MainThreadWatchdogWorker.js](file:///C:/dev/agy-sandbox/src/net/MainThreadWatchdogWorker.js) | 66 | _None_ | [MainThreadWatchdogWorker.test.js](file:///C:/dev/agy-sandbox/src/net/MainThreadWatchdogWorker.test.js) | _None_ |
 | [MemoryLeakSentry.js](file:///C:/dev/agy-sandbox/src/net/MemoryLeakSentry.js) | 107 | `class MemoryLeakSentry` | [MemoryLeakSentry.test.js](file:///C:/dev/agy-sandbox/src/net/MemoryLeakSentry.test.js) | [`121_memory_leak_sentry`](file:///C:/dev/agy-sandbox/plan/specs/121_memory_leak_sentry.md) |
 | [metrics.js](file:///C:/dev/agy-sandbox/src/net/metrics.js) | 65 | `function createRegistry` | [metrics.test.js](file:///C:/dev/agy-sandbox/src/net/metrics.test.js) | [`010_observability_metrics`](file:///C:/dev/agy-sandbox/plan/specs/010_observability_metrics.md)<br>[`117_websocket_rate_limiter_telemetry`](file:///C:/dev/agy-sandbox/plan/specs/117_websocket_rate_limiter_telemetry.md) |
-| [mockFreezeScript.js](file:///C:/dev/agy-sandbox/src/net/mockFreezeScript.js) | 22 | _None_ | ❌ _Untested_ | _None_ |
+| [mockFreezeScript.js](file:///C:/dev/agy-sandbox/src/net/mockFreezeScript.js) | 22 | _None_ | [mockFreezeScript.test.js](file:///C:/dev/agy-sandbox/src/net/mockFreezeScript.test.js) | _None_ |
 | [NetworkLatencyInjector.js](file:///C:/dev/agy-sandbox/src/net/NetworkLatencyInjector.js) | 105 | `class NetworkLatencyInjector` | [NetworkLatencyInjector.test.js](file:///C:/dev/agy-sandbox/src/net/NetworkLatencyInjector.test.js) | [`095_concurrency_stress_latency_injector`](file:///C:/dev/agy-sandbox/plan/specs/095_concurrency_stress_latency_injector.md) |
 | [originPolicy.js](file:///C:/dev/agy-sandbox/src/net/originPolicy.js) | 60 | `function isAllowedOrigin` | [originPolicy.test.js](file:///C:/dev/agy-sandbox/src/net/originPolicy.test.js) | [`002_ws_inbound_hardening`](file:///C:/dev/agy-sandbox/plan/specs/002_ws_inbound_hardening.md) |
 | [PortReclaimer.js](file:///C:/dev/agy-sandbox/src/net/PortReclaimer.js) | 105 | _None_ | [PortReclaimer.test.js](file:///C:/dev/agy-sandbox/src/net/PortReclaimer.test.js) | [`106_sandbox_containment_sentinel`](file:///C:/dev/agy-sandbox/plan/specs/106_sandbox_containment_sentinel.md) |
@@ -164,9 +164,8 @@
 
 ## ⚡ EPISTEMIC DEBT & STALE LOGIC REPORT
 
-### ⚠️ Untested Core Modules (2)
-- [ ] `src/net/GuestRunnerWorker.js` is missing a unit test suite.
-- [ ] `src/net/mockFreezeScript.js` is missing a unit test suite.
+### ⚠️ Untested Core Modules (0)
+_None! All core modules have associated test suites._
 
 ### ⚠️ Stale Specification File References (0)
 _None! All specification file references correspond to real paths._

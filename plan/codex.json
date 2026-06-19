@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-06-19T13:18:35.542Z",
+  "generatedAt": "2026-06-19T13:23:49.985Z",
   "stats": {
     "totalSourceFiles": 110,
-    "totalTestFiles": 148,
+    "totalTestFiles": 150,
     "totalSpecFiles": 185,
     "totalLoc": 26996,
-    "totalTests": 1847,
-    "untestedCoreFilesCount": 2
+    "totalTests": 1852,
+    "untestedCoreFilesCount": 0
   },
   "files": [
     {
@@ -1599,8 +1599,8 @@
       "classes": [],
       "exports": [],
       "fileOverview": "/**\n* GuestRunnerWorker.js (SPEC-136) — child-process bootstrap wrapper.\n* Pre-activates all sandbox protections before loading the untrusted guest script.\n*/",
-      "testFile": null,
-      "testCasesCount": 0,
+      "testFile": "src/net/GuestRunnerWorker.test.js",
+      "testCasesCount": 3,
       "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
@@ -1821,8 +1821,8 @@
       "classes": [],
       "exports": [],
       "fileOverview": "/**\n* mockFreezeScript.js (spec 133 test helper)\n* Initializes MainThreadWatchdog and simulates an event loop freeze.\n*/",
-      "testFile": null,
-      "testCasesCount": 0,
+      "testFile": "src/net/mockFreezeScript.test.js",
+      "testCasesCount": 2,
       "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
@@ -5272,10 +5272,7 @@
     }
   ],
   "epistemicDebt": {
-    "untestedCoreFiles": [
-      "src/net/GuestRunnerWorker.js",
-      "src/net/mockFreezeScript.js"
-    ],
+    "untestedCoreFiles": [],
     "missingJsDocs": [],
     "staleSpecReferences": [],
     "specErrors": [],

@@ -65,7 +65,7 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 | GuestLoader. | [`src/net/GuestLoader.js`](file:///C:/dev/agy-sandbox/src/net/GuestLoader.js) | yes | yes |
 | GuestRpcSentry. | [`src/net/GuestRpcSentry.js`](file:///C:/dev/agy-sandbox/src/net/GuestRpcSentry.js) | yes | yes |
 | GuestRunner. | [`src/net/GuestRunner.js`](file:///C:/dev/agy-sandbox/src/net/GuestRunner.js) | yes | yes |
-| GuestRunnerWorker. | [`src/net/GuestRunnerWorker.js`](file:///C:/dev/agy-sandbox/src/net/GuestRunnerWorker.js) | yes | no |
+| GuestRunnerWorker. | [`src/net/GuestRunnerWorker.js`](file:///C:/dev/agy-sandbox/src/net/GuestRunnerWorker.js) | yes | yes |
 | heartbeat (spec 003) — pure helper for the WebSocket liveness sweep. | [`src/net/heartbeat.js`](file:///C:/dev/agy-sandbox/src/net/heartbeat.js) | yes | yes |
 | IntegrityGuard. | [`src/net/IntegrityGuard.js`](file:///C:/dev/agy-sandbox/src/net/IntegrityGuard.js) | yes | yes |
 | interest. | [`src/net/interest.js`](file:///C:/dev/agy-sandbox/src/net/interest.js) | yes | yes |
@@ -76,7 +76,7 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 | MainThreadWatchdogWorker. | [`src/net/MainThreadWatchdogWorker.js`](file:///C:/dev/agy-sandbox/src/net/MainThreadWatchdogWorker.js) | yes | yes |
 | MemoryLeakSentry. | [`src/net/MemoryLeakSentry.js`](file:///C:/dev/agy-sandbox/src/net/MemoryLeakSentry.js) | yes | yes |
 | metrics (spec 010) — a tiny, dependency-free runtime metrics registry: counters (monotonic), gauges (point-in-time), and observations (count/sum/ avg/min/max for things like tick duration). | [`src/net/metrics.js`](file:///C:/dev/agy-sandbox/src/net/metrics.js) | yes | yes |
-| mockFreezeScript. | [`src/net/mockFreezeScript.js`](file:///C:/dev/agy-sandbox/src/net/mockFreezeScript.js) | yes | no |
+| mockFreezeScript. | [`src/net/mockFreezeScript.js`](file:///C:/dev/agy-sandbox/src/net/mockFreezeScript.js) | yes | yes |
 | Network Latency & Packet-Loss Injector (SPEC-095). | [`src/net/NetworkLatencyInjector.js`](file:///C:/dev/agy-sandbox/src/net/NetworkLatencyInjector.js) | yes | yes |
 | originPolicy (spec 002) — pure decision for whether to accept a WebSocket upgrade based on its `Origin` header. | [`src/net/originPolicy.js`](file:///C:/dev/agy-sandbox/src/net/originPolicy.js) | yes | yes |
 | PortReclaimer. | [`src/net/PortReclaimer.js`](file:///C:/dev/agy-sandbox/src/net/PortReclaimer.js) | yes | yes |

@@ -2,8 +2,6 @@ import fs from "fs";
 import path from "path";
 
 const WORKSPACE_ROOT = path.resolve(".");
-const SPECS_DIR = path.resolve("plan/specs");
-const PROGRESS_FILE = path.resolve("plan/PROGRESS.md");
 
 export class SpecLinter {
   constructor(workspaceRoot = WORKSPACE_ROOT) {

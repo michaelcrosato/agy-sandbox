@@ -2,10 +2,10 @@
 
 `plan/PROGRESS.md` is the canonical live queue. This file is only a compact pointer for loop launchers and must not contradict `PROGRESS.md`.
 
-- **CYCLE:** Cycle 53
+- **CYCLE:** Cycle 54
 - **CURRENT_TASK:** IMPROVEMENT_CYCLE
-- **SPEC_FILE:** plan/specs/060_autonomy_safety_truth_sync.md
-- **STATUS:** Completed SPEC-176, SPEC-060, Log Rotation, and Epistemic Debt. All systems green and verified.
+- **SPEC_FILE:** plan/specs/template.md
+- **STATUS:** Spec template and validation linter implemented, covering structural syntax and progress list synchronization.
 - **VERIFY_COMMAND:** npm run agent:check
-- **LAST_VERIFIED:** 1,397 Jest tests green, typecheck and lint checks verified.
-- **IMMEDIATE_OBJECTIVE:** Propose new improvements in REVIEW_QUEUE.md and wait for operator approval/review.
+- **LAST_VERIFIED:** 1405 Jest tests green, typecheck, lint checks, and Spec compliance verified.
+- **IMMEDIATE_OBJECTIVE:** Spec linter fully integrated into codex. Ready for next loop cycle.

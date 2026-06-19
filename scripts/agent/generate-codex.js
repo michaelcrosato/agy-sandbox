@@ -70,6 +70,7 @@ function parseSourceFile(filePath) {
   // Parse JSDocs and symbols line by line
   let inJsDoc = false;
   let jsDocLines = [];
+  let fileOverview = null;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
@@ -84,6 +85,9 @@ function parseSourceFile(filePath) {
       if (line.endsWith("*/")) {
         inJsDoc = false;
         currentJsDoc = jsDocLines.join("\n");
+        if (!fileOverview && classes.length === 0 && exports.length === 0) {
+          fileOverview = currentJsDoc;
+        }
       }
       continue;
     }
@@ -140,6 +144,7 @@ function parseSourceFile(filePath) {
     loc,
     classes,
     exports,
+    fileOverview,
   };
 }
 
@@ -457,6 +462,110 @@ ${
   return md;
 }
 
+// Clean JSDoc text to get the first sentence/paragraph
+function cleanJsDocDescription(jsdoc) {
+  if (!jsdoc) return "";
+  const lines = jsdoc.split(/\r?\n/);
+  const cleanLines = lines
+    .map((l) => {
+      let s = l.trim();
+      if (s.startsWith("/**")) s = s.slice(3);
+      if (s.endsWith("*/")) s = s.slice(0, -2);
+      if (s.startsWith("*")) s = s.slice(1);
+      return s.trim();
+    })
+    .filter((s) => s.length > 0);
+
+  if (cleanLines.length === 0) return "";
+
+  const fullText = cleanLines.join(" ");
+  const sentenceMatch = fullText.match(/^([^.!?]+[.!?])/);
+  if (sentenceMatch) {
+    return sentenceMatch[1].trim();
+  }
+  return cleanLines[0];
+}
+
+// Formats a filename to a clean title
+function formatFilename(filePath) {
+  const base = path.basename(filePath, ".js");
+  return base
+    .replace(/([A-Z])/g, " $1")
+    .trim()
+    .replace(/^./, (str) => str.toUpperCase());
+}
+
+// Generate the beautiful human-readable REPO_MAP.md file contents
+function generateMarkdownRepoMap(graph) {
+  let md = `# Repo Map (for agents)
+
+Where things live, what to read, and what to skip. Pair this with \`git ls-files\` (which already
+excludes \`node_modules/\`) and \`.aiignore\`. Full operating rules: \`../../AGENTS.md\`.
+
+## Entry points
+
+| What | File | Notes |
+| --- | --- | --- |
+| **Game server** (authoritative) | \`src/server.js\` | Node \`ws\` + static HTTP on \`:8080\`. ~1900 lines, **not unit-tested**, organized by lettered section headers (e.g. "J. Authoritative World State Broadcast"). Read the section you need. |
+| **Browser client** bootstrap | \`src/main.js\` | Loaded by \`index.html\`; wires engine + \`src/client/*\`. Not unit-tested. |
+| **Page shell** | \`index.html\`, \`index.css\` | DOM/HUD the client renders into. |
+| \`package.json\` \`main\` | \`src/index.js\` | ⚠️ A demo stub (\`add\`/\`subtract\`/\`greet\`) — **not** a real entry point. Don't be misled. |
+
+## Core product logic — \`src/\` (this is what you improve)
+
+| Area | Path | Pure? | Tested? |
+| --- | --- | --- | --- |
+`;
+
+  // Sort files by path alphabetically
+  const sortedFiles = [...graph.files].sort((a, b) =>
+    a.path.localeCompare(b.path),
+  );
+
+  for (const f of sortedFiles) {
+    const area =
+      cleanJsDocDescription(f.fileOverview) || formatFilename(f.path);
+    const pure =
+      f.path.startsWith("src/server") || f.path.startsWith("src/client")
+        ? "no"
+        : "yes";
+    const tested = f.testFile ? "yes" : "no";
+    const pathLink = `[\`${f.path}\`](file:///${WORKSPACE_ROOT.replace(/\\/g, "/")}/${f.path})`;
+    md += `| ${area} | ${pathLink} | ${pure} | ${tested} |\n`;
+  }
+
+  md += `
+Rule of thumb: anything under \`engine/\`, \`physics/\`, \`net/\`, \`persistence/\` is pure and **must** stay
+that way (no DOM, sockets, timers, or \`Math.random\` in test-reachable paths). Tests sit beside source
+as \`*.test.js\`.
+
+## Config & tooling
+
+- \`package.json\` — scripts (\`test\`, \`lint\`, \`format\`, \`format:check\`, \`agent:bootstrap\`, \`agent:check\`), deps.
+- \`eslint.config.js\` — flat config; \`no-unused-vars: warn\`; globals node+jest+browser.
+- \`.github/workflows/ci.yml\` — the gate of record: prettier **--check** → eslint → jest on push/PR to \`main\`.
+- \`scripts/agent/*.{sh,ps1}\` — agent-facing wrappers; \`check\` mirrors CI exactly.
+- \`.env.example\` — runtime/automation env vars (copy to \`.env\`, which is gitignored).
+
+## Governance / substrate (read; never modify the substrate set)
+
+- \`docs/AXIOMS.md\`, \`docs/AGENT-LOOP.md\` — constitution + loop protocol (**substrate, read-only**).
+- \`docs/GOAL.md\` — product blueprint (writable; the North Star and pillars P1–P8).
+- \`docs/LOG.md\` — append-only ledger, newest-first.
+- \`.github/AGENT_RULES.md\` — coding standards + git workflow (writable).
+- \`scripts/{assert-gate-integrity,local-gate,run-autonomous-loop}.ps1\`, \`scripts/validate-log-compliance.py\`,
+  \`scripts/manifest.txt\` — **substrate, read-only**.
+- \`scripts/{claude-night.ps1, run-agent.js}\` — autonomous launchers (writable, not substrate).
+
+## Skip (don't read into context)
+
+- \`node_modules/\`, \`.git/\`, \`package-lock.json\`, \`coverage/\`, \`data/\` (runtime saves, gitignored),
+  \`night-queue/\` (local task queue, gitignored), \`.claude/\`. See \`.aiignore\`.
+`;
+
+  return md;
+}
+
 // Main execution entrypoint
 export function run() {
   console.log("🔍 Extracting codebase ontology map...");
@@ -464,6 +573,7 @@ export function run() {
 
   const codexJsonPath = path.resolve("plan/codex.json");
   const codexMdPath = path.resolve("plan/CODEX.md");
+  const repoMapPath = path.resolve("docs/ai/REPO_MAP.md");
 
   console.log(
     `💾 Writing structured codebase ontology data to ${codexJsonPath}...`,
@@ -473,6 +583,12 @@ export function run() {
   console.log(`💾 Writing beautiful markdown ontology to ${codexMdPath}...`);
   const md = generateMarkdownCodex(graph);
   fs.writeFileSync(codexMdPath, md, "utf8");
+
+  console.log(
+    `💾 Writing automated codebase repository map to ${repoMapPath}...`,
+  );
+  const repoMapContent = generateMarkdownRepoMap(graph);
+  fs.writeFileSync(repoMapPath, repoMapContent, "utf8");
 
   console.log("✅ Codebase Living Codex successfully synchronized!");
 }

@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-06-17T14:47:17.263Z` · Baseline: `26,646 LOC` across `109 source files`
+> Generated: `2026-06-19T08:23:53.821Z` · Baseline: `26,646 LOC` across `109 source files`
 
 ---
 
@@ -12,7 +12,7 @@
 | **Total Code Volume** | `26,646 LOC` | 🟢 Healthy |
 | **Source Modules** | `109 files` | 🟢 Structured |
 | **Test Suites** | `144 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1822 cases` | 🟢 Deterministic |
+| **Total Test Cases** | `1823 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `183 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `4 files` | ⚠️ Debt Pending |
 

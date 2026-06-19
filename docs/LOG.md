@@ -44,6 +44,18 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-19T01:36 · iter-0163 · GREEN · codex-jsdoc-type-debt-resolved
+
+- **Baseline:** `5d17490` on `develop`; dynamic repository map generation pipeline.
+- **Move:** Resolve all remaining JSDoc missing type signature warnings in net modules and fix comment parser matching to protect codebase integrity.
+- **Changed:**
+  - Added class-level JSDoc comments to `MemoryLeakSentry.js`, `ProcessSentinel.js`, `SandboxFirewall.js`, `SandboxSecurityRegistry.js`, `SecureModuleRegistry.js`, `StaticSecuritySentry.js`, `TokenCostGovernor.js`, and `WorkspaceDriftSentry.js`.
+  - Refined symbol parsing in `scripts/agent/generate-codex.js` to ignore single-line comments starting with `//` and avoid premature sentence truncation on abbreviations like `e.g.`, `i.e.`, and `etc.`
+  - Regenerated `plan/CODEX.md`, `plan/codex.json`, and `plan/monitoring_report.json` resulting in 0 missing type warnings.
+- **Decisions:** Skipping comment lines starting with `//` ensures that mock examples in comment sections are not misinterpreted as live exports.
+- **Validation:** Running `npm run agent:check` confirming all Jest and Vitest test suites pass successfully.
+- **Next:** Schedule next automated loop iteration or complete task requirements.
+
 ## 2026-06-19T01:32 · iter-0162 · GREEN · repomap-abbreviations-jsdocs
 
 - **Baseline:** `b6aab3d` on `develop`; all test suites passing.

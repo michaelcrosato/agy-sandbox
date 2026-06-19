@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-06-19T08:31:31.269Z",
+  "generatedAt": "2026-06-19T08:35:21.156Z",
   "stats": {
     "totalSourceFiles": 109,
     "totalTestFiles": 144,
     "totalSpecFiles": 183,
-    "totalLoc": 26652,
+    "totalLoc": 26677,
     "totalTests": 1823,
     "untestedCoreFilesCount": 4
   },
@@ -1777,12 +1777,12 @@
     },
     {
       "path": "src/net/MemoryLeakSentry.js",
-      "loc": 104,
+      "loc": 107,
       "classes": [
         {
           "name": "MemoryLeakSentry",
-          "jsdoc": null,
-          "line": 10
+          "jsdoc": "/**\n* Lightweight memory leak sentinel and self-healing garbage collector.\n*/",
+          "line": 13
         }
       ],
       "exports": [],
@@ -1792,13 +1792,7 @@
       "referencingSpecs": [
         "plan/specs/121_memory_leak_sentry.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "MemoryLeakSentry",
-          "type": "class",
-          "line": 10
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/metrics.js",
@@ -1908,27 +1902,17 @@
     },
     {
       "path": "src/net/ProcessSentinel.js",
-      "loc": 1348,
+      "loc": 1352,
       "classes": [
         {
-          "name": "for",
-          "jsdoc": null,
-          "line": 61
-        },
-        {
           "name": "VirtualWriteStream",
-          "jsdoc": null,
-          "line": 62
-        },
-        {
-          "name": "for",
-          "jsdoc": null,
-          "line": 95
+          "jsdoc": "/**\n* Virtual Write stream class for Zero-Trust COW.\n*/",
+          "line": 64
         },
         {
           "name": "VirtualReadStream",
-          "jsdoc": null,
-          "line": 96
+          "jsdoc": "/**\n* Virtual Read stream class for Zero-Trust COW.\n*/",
+          "line": 100
         }
       ],
       "exports": [
@@ -1936,19 +1920,19 @@
           "name": "parseCommandString",
           "type": "function",
           "jsdoc": "/**\n* Parses a full command string into a binary name and an array of arguments,\n* respecting basic quotes.\n* @param {string} cmdStr - Full shell command string.\n* @returns {ParsedCommand}\n*/",
-          "line": 349
+          "line": 353
         },
         {
           "name": "validateCommand",
           "type": "function",
           "jsdoc": "/**\n* Validates whether a command and its arguments are permitted under the strict security whitelist.\n* @param {string} command - The command or binary path under evaluation.\n* @param {string[]} [args=[]] - Optional array of arguments passed to the command.\n* @returns {{ allowed: boolean, reason?: string }}\n*/",
-          "line": 393
+          "line": 397
         },
         {
           "name": "ProcessSentinel",
           "type": "constant",
           "jsdoc": "/**\n* ProcessSentinel (spec 106) — child process security sentinel whitelister.\n* @type {object}\n*/",
-          "line": 575
+          "line": 579
         }
       ],
       "fileOverview": "/**\n* ProcessSentinel.js (spec 106) — strict guest containment sentinel that\n* monkey-patches Node's child_process methods to enforce a strict whitelist,\n* preventing malicious process escapes and unauthorized network egress.\n*/",
@@ -1959,28 +1943,7 @@
         "plan/specs/138_strict_path_jailing.md",
         "plan/specs/169_path_sibling_directory_jailing.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "for",
-          "type": "class",
-          "line": 61
-        },
-        {
-          "name": "VirtualWriteStream",
-          "type": "class",
-          "line": 62
-        },
-        {
-          "name": "for",
-          "type": "class",
-          "line": 95
-        },
-        {
-          "name": "VirtualReadStream",
-          "type": "class",
-          "line": 96
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/PubSub.js",
@@ -2080,12 +2043,12 @@
     },
     {
       "path": "src/net/SandboxFirewall.js",
-      "loc": 278,
+      "loc": 281,
       "classes": [
         {
           "name": "SandboxFirewall",
-          "jsdoc": null,
-          "line": 14
+          "jsdoc": "/**\n* High-performance outbound connection packet-filtering firewall.\n*/",
+          "line": 17
         }
       ],
       "exports": [
@@ -2093,13 +2056,13 @@
           "name": "activateFirewall",
           "type": "function",
           "jsdoc": "/**\n* Activates active low-overhead DNS and socket level monkeypatching sentries.\n*\n* @param {SandboxFirewall} firewall\n*/",
-          "line": 178
+          "line": 181
         },
         {
           "name": "deactivateFirewall",
           "type": "function",
           "jsdoc": "/**\n* Restores original native network connection and resolution configurations.\n*/",
-          "line": 248
+          "line": 251
         }
       ],
       "fileOverview": "/**\n* SandboxFirewall.js (SPEC-120)\n* High-performance outbound connection packet-filtering firewall.\n*\n* Governs all network egress requests from Sandboxed runs. Monkey-patches\n* Node's DNS lookups and raw net socket connections to enforce domain allowlists\n* and strictly block private IP subnets (RFC 1918 + AWS metadata).\n*/",
@@ -2108,24 +2071,18 @@
       "referencingSpecs": [
         "plan/specs/120_sandbox_egress_firewall.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "SandboxFirewall",
-          "type": "class",
-          "line": 14
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/SandboxSecurityRegistry.js",
-      "loc": 144,
+      "loc": 147,
       "classes": [],
       "exports": [
         {
           "name": "SandboxSecurityRegistry",
           "type": "constant",
-          "jsdoc": null,
-          "line": 66
+          "jsdoc": "/**\n* Centralized registry for registering, auditing, and self-healing security boundary containment violations.\n*/",
+          "line": 69
         }
       ],
       "fileOverview": "/**\n* SandboxSecurityRegistry.js (spec 131) — centralized, tamper-proof security registry\n* to track, persist, and expose sandbox containment breach events.\n*/",
@@ -2134,13 +2091,7 @@
       "referencingSpecs": [
         "plan/specs/131_centralized_security_audit_ledger.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "SandboxSecurityRegistry",
-          "type": "constant",
-          "line": 66
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/SandboxTelemetry.js",
@@ -2266,7 +2217,7 @@
     },
     {
       "path": "src/net/SecureModuleRegistry.js",
-      "loc": 72,
+      "loc": 75,
       "classes": [],
       "exports": [
         {
@@ -2278,21 +2229,15 @@
         {
           "name": "SecureModuleRegistry",
           "type": "constant",
-          "jsdoc": null,
-          "line": 30
+          "jsdoc": "/**\n* Cryptographically signed secure module verification sentinel.\n*/",
+          "line": 33
         }
       ],
       "fileOverview": "/**\n* SecureModuleRegistry.js (SPEC-152) — Cryptographically Signed Module Registry.\n* Holds SHA-256 integrity checksum mappings for trusted modules and dependency files.\n*/",
       "testFile": "src/net/SecureModuleRegistry.test.js",
       "testCasesCount": 9,
       "referencingSpecs": [],
-      "missingJsDocSymbols": [
-        {
-          "name": "SecureModuleRegistry",
-          "type": "constant",
-          "line": 30
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/StateCodec.js",
@@ -2326,14 +2271,14 @@
     },
     {
       "path": "src/net/StaticSecuritySentry.js",
-      "loc": 310,
+      "loc": 313,
       "classes": [],
       "exports": [
         {
           "name": "StaticSecuritySentry",
           "type": "constant",
-          "jsdoc": null,
-          "line": 35
+          "jsdoc": "/**\n* Static Analysis AST Security Sentry.\n*/",
+          "line": 38
         }
       ],
       "fileOverview": "/**\n* StaticSecuritySentry.js (SPEC-171) — Advanced static analysis AST/lexical sentry.\n* Pre-scans guest script source code to block dangerous language constructs before execution.\n*/",
@@ -2342,13 +2287,7 @@
       "referencingSpecs": [
         "plan/specs/171_ast_static_security_sentry.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "StaticSecuritySentry",
-          "type": "constant",
-          "line": 35
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/statsPayload.js",
@@ -2370,20 +2309,20 @@
     },
     {
       "path": "src/net/TokenCostGovernor.js",
-      "loc": 547,
+      "loc": 550,
       "classes": [
         {
           "name": "MockClientRequest",
           "jsdoc": "/**\n* Mock ClientRequest to simulate HTTP connection flows locally.\n*/",
-          "line": 417
+          "line": 420
         }
       ],
       "exports": [
         {
           "name": "TokenCostGovernor",
           "type": "constant",
-          "jsdoc": null,
-          "line": 37
+          "jsdoc": "/**\n* Automated LLM API Token Cost Governance & Mock Sentry.\n*/",
+          "line": 40
         }
       ],
       "fileOverview": "/**\n* TokenCostGovernor.js (SPEC-174)\n* Centralized LLM API Token Cost Governance & Mock Sentry.\n* Manages runtime budgets, intercepts outbound model queries,\n* and satisfies them locally using deterministic mocks.\n*/",
@@ -2392,24 +2331,18 @@
       "referencingSpecs": [
         "plan/specs/174_token_cost_governance_mock_sentry.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "TokenCostGovernor",
-          "type": "constant",
-          "line": 37
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/WorkspaceDriftSentry.js",
-      "loc": 203,
+      "loc": 206,
       "classes": [],
       "exports": [
         {
           "name": "WorkspaceDriftSentry",
           "type": "constant",
-          "jsdoc": null,
-          "line": 49
+          "jsdoc": "/**\n* Workspace Snapshot Drift Auditor & Copy-On-Write Self-Healing Restoration (SPEC-146).\n*/",
+          "line": 52
         }
       ],
       "fileOverview": "/**\n* WorkspaceDriftSentry.js (SPEC-146)\n* Workspace Drift Auditing Sentinel & Integrity Self-Healer.\n*\n* Takes baseline copy-on-write directory snapshots and purges untracked file leaks\n* or modifications post-execution, preserving environment purity.\n*/",
@@ -2418,13 +2351,7 @@
       "referencingSpecs": [
         "plan/specs/146_workspace_drift_self_healer.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "WorkspaceDriftSentry",
-          "type": "constant",
-          "line": 49
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/wsCompression.js",
@@ -5309,103 +5236,7 @@
       "src/net/MainThreadWatchdogWorker.js",
       "src/net/mockFreezeScript.js"
     ],
-    "missingJsDocs": [
-      {
-        "path": "src/net/MemoryLeakSentry.js",
-        "symbols": [
-          {
-            "name": "MemoryLeakSentry",
-            "type": "class",
-            "line": 10
-          }
-        ]
-      },
-      {
-        "path": "src/net/ProcessSentinel.js",
-        "symbols": [
-          {
-            "name": "for",
-            "type": "class",
-            "line": 61
-          },
-          {
-            "name": "VirtualWriteStream",
-            "type": "class",
-            "line": 62
-          },
-          {
-            "name": "for",
-            "type": "class",
-            "line": 95
-          },
-          {
-            "name": "VirtualReadStream",
-            "type": "class",
-            "line": 96
-          }
-        ]
-      },
-      {
-        "path": "src/net/SandboxFirewall.js",
-        "symbols": [
-          {
-            "name": "SandboxFirewall",
-            "type": "class",
-            "line": 14
-          }
-        ]
-      },
-      {
-        "path": "src/net/SandboxSecurityRegistry.js",
-        "symbols": [
-          {
-            "name": "SandboxSecurityRegistry",
-            "type": "constant",
-            "line": 66
-          }
-        ]
-      },
-      {
-        "path": "src/net/SecureModuleRegistry.js",
-        "symbols": [
-          {
-            "name": "SecureModuleRegistry",
-            "type": "constant",
-            "line": 30
-          }
-        ]
-      },
-      {
-        "path": "src/net/StaticSecuritySentry.js",
-        "symbols": [
-          {
-            "name": "StaticSecuritySentry",
-            "type": "constant",
-            "line": 35
-          }
-        ]
-      },
-      {
-        "path": "src/net/TokenCostGovernor.js",
-        "symbols": [
-          {
-            "name": "TokenCostGovernor",
-            "type": "constant",
-            "line": 37
-          }
-        ]
-      },
-      {
-        "path": "src/net/WorkspaceDriftSentry.js",
-        "symbols": [
-          {
-            "name": "WorkspaceDriftSentry",
-            "type": "constant",
-            "line": 49
-          }
-        ]
-      }
-    ],
+    "missingJsDocs": [],
     "staleSpecReferences": [
       {
         "spec": "plan/specs/158_guided_onboarding_tutorial_mission.md",

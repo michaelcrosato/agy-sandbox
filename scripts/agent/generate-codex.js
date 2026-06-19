@@ -75,6 +75,10 @@ function parseSourceFile(filePath) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
 
+    if (line.startsWith("//")) {
+      continue;
+    }
+
     if (line.startsWith("/**")) {
       inJsDoc = true;
       jsDocLines = [];

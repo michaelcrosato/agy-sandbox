@@ -27,6 +27,9 @@ export function computeFileHash(filePath) {
   }
 }
 
+/**
+ * Cryptographically signed secure module verification sentinel.
+ */
 export const SecureModuleRegistry = {
   /**
    * Register a module signature.

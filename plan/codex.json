@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-19T15:45:02.814Z",
+  "generatedAt": "2026-06-19T15:52:09.658Z",
   "stats": {
-    "totalSourceFiles": 112,
-    "totalTestFiles": 152,
+    "totalSourceFiles": 113,
+    "totalTestFiles": 153,
     "totalSpecFiles": 185,
-    "totalLoc": 27260,
-    "totalTests": 1869,
+    "totalLoc": 27418,
+    "totalTests": 1884,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -2600,6 +2600,30 @@
       "referencingSpecs": [
         "plan/specs/109_server_handler_extraction_round4.md"
       ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/clientConnection.js",
+      "loc": 158,
+      "classes": [],
+      "exports": [
+        {
+          "name": "createClientObject",
+          "type": "function",
+          "jsdoc": "/**\n* Creates and initializes a connection client state object.\n*\n* @param {object} ws - The active WebSocket connection.\n* @param {object} req - The incoming upgrade HTTP request.\n* @param {object} options - Unified context singletons.\n* @returns {object} The initialized client state object.\n*/",
+          "line": 12
+        },
+        {
+          "name": "preprocessMessage",
+          "type": "function",
+          "jsdoc": "/**\n* Runs connection rate limiting, backpressure checking, JSON parsing,\n* and payload schema validation for incoming WebSocket messages.\n*\n* @param {object} clientObj - The target client state object.\n* @param {string} msgStr - The raw incoming message string.\n* @param {object} ws - The raw WebSocket connection.\n* @param {object} options - Refilling and validation singletons.\n* @returns {object|null} The sanitized, validated message, or null if validation/rate limit checks failed.\n*/",
+          "line": 85
+        }
+      ],
+      "fileOverview": "/**\n* Creates and initializes a connection client state object.\n*\n* @param {object} ws - The active WebSocket connection.\n* @param {object} req - The incoming upgrade HTTP request.\n* @param {object} options - Unified context singletons.\n* @returns {object} The initialized client state object.\n*/",
+      "testFile": "src/server/clientConnection.test.js",
+      "testCasesCount": 15,
+      "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
     {

@@ -82,6 +82,10 @@ import {
 } from "./server/connectionLifecycle.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import { sendClientStats } from "./server/clientStats.js";
+import {
+  createClientObject,
+  preprocessMessage,
+} from "./server/clientConnection.js";
 import { validateMessage } from "./net/SchemaValidator.js";
 import {
   runEconomyShortageInterval,
@@ -1037,134 +1041,27 @@ wss.on("connection", (ws, req) => {
   metrics.inc("connections_total");
   logger.info("client_connected", { clients: wss.clients.size });
 
-  const clientIp =
-    req && req.headers
-      ? req.headers["x-forwarded-for"]
-        ? req.headers["x-forwarded-for"].split(",")[0].trim()
-        : req.socket
-          ? req.socket.remoteAddress
-          : "unknown"
-      : "unknown";
-
-  const clientId = "player-" + Math.random().toString(36).substring(2, 9);
-
-  const clientObj = {
-    ws,
-    id: clientId,
-    nickname: "Pilot",
-    ip: clientIp,
-    ship: null,
-    missionManager: new MissionManager(),
-    isLanded: false,
-    planetLandedOn: null,
-    fleetName: null,
-    roomId: null,
-    rateLimitTokens: 100,
-    rateLimitLastRefill: Date.now(),
-    send(data) {
-      if (this.ws && this.ws.readyState === this.ws.OPEN) {
-        // Dynamic Load-Shedding (SPEC-090):
-        if (data) {
-          if (data.type === "chat" && latencyMonitor.shouldShed("chat")) {
-            return; // Drop non-essential chat message
-          }
-          if (
-            data.type === "notification" &&
-            latencyMonitor.shouldShed("chat")
-          ) {
-            return; // Drop verbose system notifications
-          }
-        }
-        this.ws.send(JSON.stringify(data));
-      }
-    },
-    async sendStats() {
-      return sendClientStats(this, {
-        storeInstance,
-        instances,
-        squadManager,
-        getClients: () => Array.from(wss.clients).map((w) => w.clientObj),
-        buildStatsPayload,
-      });
-    },
-  };
+  const clientObj = createClientObject(ws, req, {
+    latencyMonitor,
+    storeInstance,
+    instances,
+    squadManager,
+    getClients: () => Array.from(wss.clients).map((w) => w.clientObj),
+    buildStatsPayload,
+  });
 
   registerMissionSpawnHandlers(clientObj, (roomId) => instances.get(roomId));
 
   clients.set(ws, clientObj);
 
   ws.on("message", async (msgStr) => {
-    // SPEC-117: Zero-Trust WebSocket connection rate limiter (cap dynamic messages/sec)
-    const now = Date.now();
-    const elapsed = (now - clientObj.rateLimitLastRefill) / 1000;
-    clientObj.rateLimitLastRefill = now;
-    const maxRate = wsRateLimitConfig.maxPerSecond;
-    clientObj.rateLimitTokens = Math.min(
-      maxRate,
-      clientObj.rateLimitTokens + elapsed * maxRate,
-    );
-
-    if (clientObj.rateLimitTokens < 1) {
-      metrics.inc("rate_limits_triggered");
-      try {
-        clientObj.send({
-          type: "rate_limit_exceeded",
-          message: `Too many requests. WebSocket message rate limit exceeded (Max ${maxRate}/sec).`,
-        });
-      } catch (_err) {
-        // ignore send errors
-      }
-      return;
-    }
-    clientObj.rateLimitTokens -= 1;
-
-    if (
-      resourceLimiter.isBackpressureActive &&
-      process.env.NODE_ENV !== "test"
-    ) {
-      if (typeof ws.pause === "function") {
-        ws.pause();
-        setTimeout(() => {
-          try {
-            if (typeof ws.resume === "function") {
-              ws.resume();
-            }
-          } catch (_err) {
-            // ignore socket resume errors
-          }
-        }, 200);
-      }
-      try {
-        clientObj.send({
-          type: "notification",
-          message:
-            "Server is experiencing transient high resource load. Throttling messages...",
-          style: "warning",
-        });
-      } catch (_err) {
-        // ignore socket send errors
-      }
-      return;
-    }
-
-    let rawMsg;
-    try {
-      rawMsg = JSON.parse(msgStr);
-    } catch {
-      return;
-    }
-
-    const validation = validateMessage(rawMsg);
-    if (!validation.valid) {
-      clientObj.send({
-        type: "notification",
-        message: "Invalid network payload: " + validation.error,
-        style: "error",
-      });
-      return;
-    }
-
-    const msg = validation.sanitized;
+    const msg = preprocessMessage(clientObj, msgStr, ws, {
+      wsRateLimitConfig,
+      metrics,
+      resourceLimiter,
+      validateMessage,
+    });
+    if (!msg) return;
 
     const room = clientObj.roomId ? instances.get(clientObj.roomId) : null;
 

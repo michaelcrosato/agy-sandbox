@@ -108,6 +108,7 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 | Standard 2D Vector representation for space navigation and physics calculation. | [`src/physics/Vector2D.js`](file:///C:/dev/agy-sandbox/src/physics/Vector2D.js) | yes | yes |
 | Handles trade transaction requests (buying/selling commodities) authoritatively. | [`src/server/actionHandlers.js`](file:///C:/dev/agy-sandbox/src/server/actionHandlers.js) | no | yes |
 | Handles the "chat" WebSocket message. | [`src/server/chatHandler.js`](file:///C:/dev/agy-sandbox/src/server/chatHandler.js) | no | yes |
+| Creates and initializes a connection client state object. | [`src/server/clientConnection.js`](file:///C:/dev/agy-sandbox/src/server/clientConnection.js) | no | yes |
 | Sends player and squad statistics updates to a client. | [`src/server/clientStats.js`](file:///C:/dev/agy-sandbox/src/server/clientStats.js) | no | yes |
 | Handles the "join", "quick_join", "create_room", and "join_room" WebSocket messages. | [`src/server/connectionHandlers.js`](file:///C:/dev/agy-sandbox/src/server/connectionHandlers.js) | no | yes |
 | Handles room joining lifecycle logic including switching cleanup, dynamic instantiations, ship spawning, and initialization syncing. | [`src/server/connectionLifecycle.js`](file:///C:/dev/agy-sandbox/src/server/connectionLifecycle.js) | no | yes |

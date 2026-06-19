@@ -1,3 +1,6 @@
+/**
+ * GameInstance coordinates sector engine simulations, warp portals, entities, and room states.
+ */
 import { Vector2D } from "../physics/Vector2D.js";
 import { Ship } from "./Ship.js";
 import { Planet } from "./Planet.js";

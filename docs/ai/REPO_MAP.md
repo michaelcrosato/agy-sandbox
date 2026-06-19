@@ -16,7 +16,7 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 
 | Area | Path | Pure? | Tested? |
 | --- | --- | --- | --- |
-| @typedef {import(". | [`src/engine/ai/AIController.js`](file:///C:/dev/agy-sandbox/src/engine/ai/AIController.js) | yes | yes |
+| AIController manages NPC behavior states (wander, chase, patrol, trade) and maps them into ship controls. | [`src/engine/ai/AIController.js`](file:///C:/dev/agy-sandbox/src/engine/ai/AIController.js) | yes | yes |
 | buildPerception: pure adapter from live engine state to the `UtilityAI` perception snapshot (spec 017). | [`src/engine/ai/buildPerception.js`](file:///C:/dev/agy-sandbox/src/engine/ai/buildPerception.js) | yes | yes |
 | UtilityAI: pure, headless, deterministic goal-scoring for NPC agents. | [`src/engine/ai/UtilityAI.js`](file:///C:/dev/agy-sandbox/src/engine/ai/UtilityAI.js) | yes | yes |
 | Boarding (EW2) — pure helpers for boarding a disabled ship: plundering a hostile (cargo + a cut of its credits) or repairing a friendly back to life. | [`src/engine/Boarding.js`](file:///C:/dev/agy-sandbox/src/engine/Boarding.js) | yes | yes |
@@ -25,18 +25,18 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 | commodities — the single source of truth for the tradeable commodity set (spec 031). | [`src/engine/commodities.js`](file:///C:/dev/agy-sandbox/src/engine/commodities.js) | yes | yes |
 | Headless representation of a server-authoritative wandering cosmic storm. | [`src/engine/CosmicStorm.js`](file:///C:/dev/agy-sandbox/src/engine/CosmicStorm.js) | yes | yes |
 | High-performance physics-loop determinism auditing utility. | [`src/engine/DeterminismSentry.js`](file:///C:/dev/agy-sandbox/src/engine/DeterminismSentry.js) | yes | yes |
-| @typedef {import(". | [`src/engine/EconomyManager.js`](file:///C:/dev/agy-sandbox/src/engine/EconomyManager.js) | yes | yes |
+| EconomyManager class that encapsulates dynamic market supply/demand, price elasticity, price normalization, and random economic events across all galactic sectors. | [`src/engine/EconomyManager.js`](file:///C:/dev/agy-sandbox/src/engine/EconomyManager.js) | yes | yes |
 | FactionRegistry: pure, deterministic data + logic for per-player faction standings and pairwise faction relations. | [`src/engine/FactionRegistry.js`](file:///C:/dev/agy-sandbox/src/engine/FactionRegistry.js) | yes | yes |
 | FactionWarCampaign. | [`src/engine/FactionWarCampaign.js`](file:///C:/dev/agy-sandbox/src/engine/FactionWarCampaign.js) | yes | yes |
 | GalaxyEventsManager: pure, deterministic class that manages periodic dynamic economic shocks and market events across galactic sectors. | [`src/engine/GalaxyEventsManager.js`](file:///C:/dev/agy-sandbox/src/engine/GalaxyEventsManager.js) | yes | yes |
 | GalaxyHeartbeat advances the galactic economy independently of any connected player. | [`src/engine/GalaxyHeartbeat.js`](file:///C:/dev/agy-sandbox/src/engine/GalaxyHeartbeat.js) | yes | yes |
-| Map defining which sectors share direct warp-gate trade route adjacency links. | [`src/engine/GameInstance.js`](file:///C:/dev/agy-sandbox/src/engine/GameInstance.js) | yes | yes |
+| GameInstance coordinates sector engine simulations, warp portals, entities, and room states. | [`src/engine/GameInstance.js`](file:///C:/dev/agy-sandbox/src/engine/GameInstance.js) | yes | yes |
 | GenerativeMissions: pure, seeded mission generator that composes missions from a snapshot of live world state. | [`src/engine/GenerativeMissions.js`](file:///C:/dev/agy-sandbox/src/engine/GenerativeMissions.js) | yes | yes |
 | Hyperdrive (EW3) — pure helpers for the hyperdrive fuel economy: gating and paying for sector jumps, and regenerating fuel (Ramscoop) / refilling it. | [`src/engine/Hyperdrive.js`](file:///C:/dev/agy-sandbox/src/engine/Hyperdrive.js) | yes | yes |
 | Authoritative Game Invariant Verifier & Self-Healing Loop (SPEC-091). | [`src/engine/InvariantVerifier.js`](file:///C:/dev/agy-sandbox/src/engine/InvariantVerifier.js) | yes | yes |
-| Mapping of ship outfit name strings to their virtual power grid draws in MW. | [`src/engine/LoadoutManager.js`](file:///C:/dev/agy-sandbox/src/engine/LoadoutManager.js) | yes | yes |
+| LoadoutManager coordinates outfitting mass, ship agility scaling, power grid calculations, and presets. | [`src/engine/LoadoutManager.js`](file:///C:/dev/agy-sandbox/src/engine/LoadoutManager.js) | yes | yes |
 | Mining (EW9) — pure, deterministic yield math for shattering asteroids. | [`src/engine/Mining.js`](file:///C:/dev/agy-sandbox/src/engine/Mining.js) | yes | yes |
-| @typedef {import(". | [`src/engine/MissionManager.js`](file:///C:/dev/agy-sandbox/src/engine/MissionManager.js) | yes | yes |
+| Manages the procedural mission generation, active contract tracking, and completion cycles. | [`src/engine/MissionManager.js`](file:///C:/dev/agy-sandbox/src/engine/MissionManager.js) | yes | yes |
 | NameGenerator (EW8) — pure, deterministic pilot and ship name generation. | [`src/engine/NameGenerator.js`](file:///C:/dev/agy-sandbox/src/engine/NameGenerator.js) | yes | yes |
 | Technical configuration for the active Space Tactical Nebula zones. | [`src/engine/Nebulae.js`](file:///C:/dev/agy-sandbox/src/engine/Nebulae.js) | yes | yes |
 | outfitCatalog (spec 020) — the single source of truth for the default outfit catalogue. | [`src/engine/outfitCatalog.js`](file:///C:/dev/agy-sandbox/src/engine/outfitCatalog.js) | yes | yes |
@@ -44,9 +44,9 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 | Planet class representing static celestial hubs with markets, outfitters, and shipyards. | [`src/engine/Planet.js`](file:///C:/dev/agy-sandbox/src/engine/Planet.js) | yes | yes |
 | PortServices (EW5) — pure helpers for paid hull repair and hyperdrive refuel at a port. | [`src/engine/PortServices.js`](file:///C:/dev/agy-sandbox/src/engine/PortServices.js) | yes | yes |
 | ProductionModel: pure, deterministic data + logic for planetary production and consumption pressures on commodity prices. | [`src/engine/ProductionModel.js`](file:///C:/dev/agy-sandbox/src/engine/ProductionModel.js) | yes | yes |
-| Projectile class representing weapon discharges (e. | [`src/engine/Projectile.js`](file:///C:/dev/agy-sandbox/src/engine/Projectile.js) | yes | yes |
+| Projectile class representing weapon discharges (e.g. laser bolts, plasma cells) in space. | [`src/engine/Projectile.js`](file:///C:/dev/agy-sandbox/src/engine/Projectile.js) | yes | yes |
 | Enhanced Ship class representing player and NPC ships with shields, armor, cargo, credits, weapons, and upgrade systems. | [`src/engine/Ship.js`](file:///C:/dev/agy-sandbox/src/engine/Ship.js) | yes | yes |
-| @typedef {import(". | [`src/engine/SpaceEngine.js`](file:///C:/dev/agy-sandbox/src/engine/SpaceEngine.js) | yes | yes |
+| Orchestrator class managing simulation state, entity updates, weapon fires, and circular elastic collisions. | [`src/engine/SpaceEngine.js`](file:///C:/dev/agy-sandbox/src/engine/SpaceEngine.js) | yes | yes |
 | Base class representing a physical object in a 2D top-down space environment. | [`src/engine/SpaceEntity.js`](file:///C:/dev/agy-sandbox/src/engine/SpaceEntity.js) | yes | yes |
 | TerritoryControl. | [`src/engine/TerritoryControl.js`](file:///C:/dev/agy-sandbox/src/engine/TerritoryControl.js) | yes | yes |
 | Trading (spec 025) — pure decision/mutation cores extracted from the server's `trade` and `ship_buy` message handlers, so the credit/cargo/hull math is unit-testable instead of inline in the socket file. | [`src/engine/Trading.js`](file:///C:/dev/agy-sandbox/src/engine/Trading.js) | yes | yes |

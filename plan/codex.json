@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-06-19T08:23:53.821Z",
+  "generatedAt": "2026-06-19T08:31:31.269Z",
   "stats": {
     "totalSourceFiles": 109,
     "totalTestFiles": 144,
     "totalSpecFiles": 183,
-    "totalLoc": 26646,
+    "totalLoc": 26652,
     "totalTests": 1823,
     "untestedCoreFilesCount": 4
   },
@@ -20,7 +20,7 @@
         }
       ],
       "exports": [],
-      "fileOverview": "/**\n* @typedef {import(\"../Ship.js\").Ship} Ship\n* @typedef {import(\"../SpaceEntity.js\").SpaceEntity} SpaceEntity\n*/",
+      "fileOverview": "/**\n* AIController manages NPC behavior states (wander, chase, patrol, trade) and maps them into ship controls.\n*/",
       "testFile": "src/engine/ai/AIController.test.js",
       "testCasesCount": 55,
       "referencingSpecs": [
@@ -399,7 +399,7 @@
         }
       ],
       "exports": [],
-      "fileOverview": "/** @typedef {import(\"./Planet.js\").Planet} Planet */",
+      "fileOverview": "/**\n* EconomyManager class that encapsulates dynamic market supply/demand, price elasticity,\n* price normalization, and random economic events across all galactic sectors.\n*/",
       "testFile": "src/engine/EconomyManager.test.js",
       "testCasesCount": 10,
       "referencingSpecs": [
@@ -536,12 +536,12 @@
     },
     {
       "path": "src/engine/GameInstance.js",
-      "loc": 1931,
+      "loc": 1934,
       "classes": [
         {
           "name": "GameInstance",
           "jsdoc": "/**\n* Authoritative sandbox game instance simulator managing sectors, entities,\n* economies, and dynamic galactic factions.\n*/",
-          "line": 54
+          "line": 57
         }
       ],
       "exports": [
@@ -549,16 +549,16 @@
           "name": "SECTOR_ADJACENCY",
           "type": "constant",
           "jsdoc": "/**\n* Map defining which sectors share direct warp-gate trade route adjacency links.\n* Used for simulated economic and price diffusion.\n* @type {Record<string, Array<string>>}\n*/",
-          "line": 29
+          "line": 32
         },
         {
           "name": "getSectorFromPosition",
           "type": "function",
           "jsdoc": "/**\n* Utility helper to identify a sector ID from 2D vector coordinate bounds.\n* @param {object} pos Coordinate point containing x and y coordinates.\n* @returns {string} The sector name identifier.\n*/",
-          "line": 43
+          "line": 46
         }
       ],
-      "fileOverview": "/**\n* Map defining which sectors share direct warp-gate trade route adjacency links.\n* Used for simulated economic and price diffusion.\n* @type {Record<string, Array<string>>}\n*/",
+      "fileOverview": "/**\n* GameInstance coordinates sector engine simulations, warp portals, entities, and room states.\n*/",
       "testFile": "src/engine/GameInstance.test.js",
       "testCasesCount": 78,
       "referencingSpecs": [
@@ -692,53 +692,53 @@
     },
     {
       "path": "src/engine/LoadoutManager.js",
-      "loc": 360,
+      "loc": 363,
       "classes": [],
       "exports": [
         {
           "name": "OUTFIT_POWER_DRAWS",
           "type": "constant",
           "jsdoc": "/**\n* Mapping of ship outfit name strings to their virtual power grid draws in MW.\n* Reactor modules supply virtual grid power represented by negative values.\n* @type {Record<string, number>}\n*/",
-          "line": 11
+          "line": 14
         },
         {
           "name": "getPresetOutfits",
           "type": "function",
           "jsdoc": "/**\n* Extracts standard list of outfits from a preset input (which can be a simple array or preset object).\n* @param {Array|Object} preset\n* @returns {Array<string>}\n*/",
-          "line": 41
+          "line": 44
         },
         {
           "name": "validatePreset",
           "type": "function",
           "jsdoc": "/**\n* Validates slot availability, virtual power capacity, and max mass limits of a preset configuration on a ship.\n* @param {Object} ship\n* @param {Array|Object} preset\n* @param {ReadonlyArray<any>} [catalog=DEFAULT_OUTFITS]\n* @returns {{ allowed: boolean, reason: string }}\n*/",
-          "line": 55
+          "line": 58
         },
         {
           "name": "calculatePresetCost",
           "type": "function",
           "jsdoc": "/**\n* Calculates total purchase and sell adjustments for outfits in a preset.\n* @param {Object} ship\n* @param {Array|Object} preset\n* @param {ReadonlyArray<any>} [catalog=DEFAULT_OUTFITS]\n* @param {string|null} playerId\n* @param {Object|null} factionRegistry\n* @param {string|null} planetFaction\n* @param {string|null} sectorId\n* @returns {{\n*   totalCost: number,\n*   totalRefund: number,\n*   netCreditsChange: number,\n*   toBuy: Array<string>,\n*   toSell: Array<string>\n* }}\n*/",
-          "line": 154
+          "line": 157
         },
         {
           "name": "canLoadPreset",
           "type": "function",
           "jsdoc": "/**\n* High-level check if player can load a preset (checking slot/power/mass safety, stock levels, rank constraints).\n* @param {Object} ship\n* @param {Array|Object} preset\n* @param {Object} planet\n* @param {string|null} playerId\n* @param {Object|null} factionRegistry\n* @param {string|null} sectorId\n* @param {ReadonlyArray<any>} [catalog=DEFAULT_OUTFITS]\n* @returns {{ allowed: boolean, reason: string, details?: Object }}\n*/",
-          "line": 249
+          "line": 252
         },
         {
           "name": "calculatePresetTotalMass",
           "type": "function",
           "jsdoc": "/**\n* Calculates total ship mass (hull mass + active outfits mass) for a ship.\n* @param {Object} ship\n* @param {Array|Object} preset\n* @param {ReadonlyArray<any>} [catalog=DEFAULT_OUTFITS]\n* @returns {number} Total mass in kg.\n*/",
-          "line": 331
+          "line": 334
         },
         {
           "name": "calculatePresetOutfitMass",
           "type": "function",
           "jsdoc": "/**\n* Calculates total outfit mass for a given preset setup.\n* @param {Array|Object} preset\n* @param {ReadonlyArray<any>} [catalog=DEFAULT_OUTFITS]\n* @returns {number} Outfit mass in kg.\n*/",
-          "line": 348
+          "line": 351
         }
       ],
-      "fileOverview": "/**\n* Mapping of ship outfit name strings to their virtual power grid draws in MW.\n* Reactor modules supply virtual grid power represented by negative values.\n* @type {Record<string, number>}\n*/",
+      "fileOverview": "/**\n* LoadoutManager coordinates outfitting mass, ship agility scaling, power grid calculations, and presets.\n*/",
       "testFile": "src/engine/LoadoutManager.test.js",
       "testCasesCount": 23,
       "referencingSpecs": [
@@ -783,7 +783,7 @@
         }
       ],
       "exports": [],
-      "fileOverview": "/** @typedef {import(\"./Planet.js\").Planet} Planet */",
+      "fileOverview": "/**\n* Manages the procedural mission generation, active contract tracking, and completion cycles.\n*/",
       "testFile": "src/engine/MissionManager.test.js",
       "testCasesCount": 25,
       "referencingSpecs": [
@@ -1085,7 +1085,7 @@
         }
       ],
       "exports": [],
-      "fileOverview": "/**\n* @typedef {import(\"./SpaceEntity.js\").SpaceEntity} SpaceEntity\n* @typedef {import(\"./Ship.js\").Ship} Ship\n*/",
+      "fileOverview": "/**\n* Orchestrator class managing simulation state, entity updates, weapon fires, and circular elastic collisions.\n*/",
       "testFile": "src/engine/SpaceEngine.test.js",
       "testCasesCount": 36,
       "referencingSpecs": [

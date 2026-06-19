@@ -85,11 +85,23 @@ function parseSourceFile(filePath) {
       if (line.endsWith("*/")) {
         inJsDoc = false;
         currentJsDoc = jsDocLines.join("\n");
-        if (!fileOverview && classes.length === 0 && exports.length === 0) {
-          fileOverview = currentJsDoc;
-        }
       }
       continue;
+    }
+
+    // Simple heuristic: the first non-trivial JSDoc that is NOT a typedef or member JSDoc
+    // and is encountered before we parse classes or exports is treated as the fileOverview.
+    if (
+      currentJsDoc &&
+      !fileOverview &&
+      classes.length === 0 &&
+      exports.length === 0
+    ) {
+      const cleaned = currentJsDoc.trim();
+      // Skip simple typedefs/member annotations
+      if (!cleaned.includes("@typedef") && !cleaned.includes("@type")) {
+        fileOverview = currentJsDoc;
+      }
     }
 
     // Check for class declaration
@@ -479,9 +491,18 @@ function cleanJsDocDescription(jsdoc) {
   if (cleanLines.length === 0) return "";
 
   const fullText = cleanLines.join(" ");
-  const sentenceMatch = fullText.match(/^([^.!?]+[.!?])/);
+  // Protect common abbreviations from being treated as sentence boundaries
+  const normalized = fullText
+    .replace(/e\.g\./g, "e_g_")
+    .replace(/i\.e\./g, "i_e_")
+    .replace(/etc\./g, "etc_");
+  const sentenceMatch = normalized.match(/^([^.!?]+[.!?])/);
   if (sentenceMatch) {
-    return sentenceMatch[1].trim();
+    return sentenceMatch[1]
+      .replace(/e_g_/g, "e.g.")
+      .replace(/i_e_/g, "i.e.")
+      .replace(/etc_/g, "etc.")
+      .trim();
   }
   return cleanLines[0];
 }

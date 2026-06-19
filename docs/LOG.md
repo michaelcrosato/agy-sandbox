@@ -44,6 +44,18 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-19T01:32 · iter-0162 · GREEN · repomap-abbreviations-jsdocs
+
+- **Baseline:** `b6aab3d` on `develop`; all test suites passing.
+- **Move:** Refine cleanJsDocDescription in the generate-codex pipeline to robustly handle common JSDoc abbreviations and add missing top-level JSDocs to ensure fully descriptive REPO_MAP.md generation.
+- **Changed:**
+  - Enhanced `cleanJsDocDescription` to protect abbreviations like `e.g.`, `i.e.`, and `etc.` from prematurely terminating sentence boundary parsing.
+  - Added descriptive module-level JSDocs to the top of `src/engine/GameInstance.js` and `src/engine/LoadoutManager.js`.
+  - Regenerated `docs/ai/REPO_MAP.md` and verified clean sentences for all files.
+- **Decisions:** None.
+- **Validation:** Running `npm run agent:check` confirming all 1,398 tests pass.
+- **Next:** Continue monitoring repo health and feature proposals.
+
 ## 2026-06-17T14:47 · iter-0161 · GREEN · eslint-warnings-resolved
 
 - **Baseline:** `6ec9316` on `develop`; 104 lint warnings, all test suites passing.

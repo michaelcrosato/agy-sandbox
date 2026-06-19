@@ -1,3 +1,6 @@
+/**
+ * LoadoutManager coordinates outfitting mass, ship agility scaling, power grid calculations, and presets.
+ */
 import { DEFAULT_OUTFITS } from "./outfitCatalog.js";
 import { getOutfitCategory } from "./Outfitting.js";
 import { getModifiedUpgradePrice, getTransactionTaxRate } from "./Trading.js";

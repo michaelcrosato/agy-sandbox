@@ -84,7 +84,6 @@ import {
 } from "./server/connectionLifecycle.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import { validateMessage } from "./net/SchemaValidator.js";
-import { sanitizeNickname } from "./server/roomLifecycle.js";
 import {
   runEconomyShortageInterval,
   runEnvironmentalSiegeInterval,

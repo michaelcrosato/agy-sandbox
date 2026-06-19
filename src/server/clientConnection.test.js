@@ -1,6 +1,5 @@
 import { jest } from "@jest/globals";
 import { createClientObject, preprocessMessage } from "./clientConnection.js";
-import { sendClientStats } from "./clientStats.js";
 
 // Mock the imported sendClientStats function
 jest.unstable_mockModule("./clientStats.js", () => ({

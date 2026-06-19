@@ -121,6 +121,7 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 | Registers callback handlers on a player's missionManager to handle storylines, bounties, and escort target spawns within the player's active sector room. | [`src/server/missionSpawnHandlers.js`](file:///C:/dev/agy-sandbox/src/server/missionSpawnHandlers.js) | no | yes |
 | Saves current outfitting configuration to a custom preset slot. | [`src/server/outfittingPresetHandlers.js`](file:///C:/dev/agy-sandbox/src/server/outfittingPresetHandlers.js) | no | yes |
 | Handles purchase of an outfit from a planet. | [`src/server/portHandlers.js`](file:///C:/dev/agy-sandbox/src/server/portHandlers.js) | no | yes |
+| Registers global Redis/InMemory PubSub message subscribers. | [`src/server/pubsubSubscriptions.js`](file:///C:/dev/agy-sandbox/src/server/pubsubSubscriptions.js) | no | yes |
 | Reads a file synchronously with retries on lock contention. | [`src/server/restHandlers.js`](file:///C:/dev/agy-sandbox/src/server/restHandlers.js) | no | yes |
 | Sweeps room instances and reaps idle custom sectors. | [`src/server/roomGc.js`](file:///C:/dev/agy-sandbox/src/server/roomGc.js) | no | yes |
 | roomLifecycle (spec 007) — pure room-lifecycle decisions extracted from the server: whether an idle non-public room should be garbage-collected, and how a player nickname is sanitized. | [`src/server/roomLifecycle.js`](file:///C:/dev/agy-sandbox/src/server/roomLifecycle.js) | no | yes |

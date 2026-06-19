@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-19T15:52:09.658Z",
+  "generatedAt": "2026-06-19T18:23:42.473Z",
   "stats": {
-    "totalSourceFiles": 113,
-    "totalTestFiles": 153,
+    "totalSourceFiles": 114,
+    "totalTestFiles": 155,
     "totalSpecFiles": 185,
-    "totalLoc": 27418,
-    "totalTests": 1884,
+    "totalLoc": 27568,
+    "totalTests": 1915,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -3002,6 +3002,17 @@
         "plan/specs/060_naval_campaigns.md",
         "plan/specs/077_refinement_mining_laser_industrial_dock.md"
       ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/pubsubSubscriptions.js",
+      "loc": 150,
+      "classes": [],
+      "exports": [],
+      "fileOverview": "/**\n* Registers global Redis/InMemory PubSub message subscribers.\n*\n* @param {object} options - Unified singletons and caches context.\n*/",
+      "testFile": "src/server/pubsubSubscriptions.test.js",
+      "testCasesCount": 19,
+      "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
     {

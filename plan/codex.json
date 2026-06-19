@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-19T13:23:49.985Z",
+  "generatedAt": "2026-06-19T14:42:06.299Z",
   "stats": {
-    "totalSourceFiles": 110,
-    "totalTestFiles": 150,
+    "totalSourceFiles": 111,
+    "totalTestFiles": 151,
     "totalSpecFiles": 185,
-    "totalLoc": 26996,
-    "totalTests": 1852,
+    "totalLoc": 27169,
+    "totalTests": 1862,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -2856,6 +2856,24 @@
         "plan/specs/043_matchmaking_queue_lifecycle.md",
         "plan/specs/069_matchmaking_queues_ratings.md"
       ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/missionSpawnHandlers.js",
+      "loc": 173,
+      "classes": [],
+      "exports": [
+        {
+          "name": "registerMissionSpawnHandlers",
+          "type": "function",
+          "jsdoc": "/**\n* Registers callback handlers on a player's missionManager to handle storylines,\n* bounties, and escort target spawns within the player's active sector room.\n* @param {Object} clientObj\n* @param {Function} getRoom - Function to retrieve a room instance by ID\n*/",
+          "line": 11
+        }
+      ],
+      "fileOverview": "/**\n* Registers callback handlers on a player's missionManager to handle storylines,\n* bounties, and escort target spawns within the player's active sector room.\n* @param {Object} clientObj\n* @param {Function} getRoom - Function to retrieve a room instance by ID\n*/",
+      "testFile": "src/server/missionSpawnHandlers.test.js",
+      "testCasesCount": 10,
+      "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
     {

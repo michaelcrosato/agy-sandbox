@@ -81,6 +81,7 @@ import {
   handleClientDisconnect,
 } from "./server/connectionLifecycle.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
+import { sendClientStats } from "./server/clientStats.js";
 import { validateMessage } from "./net/SchemaValidator.js";
 import {
   runEconomyShortageInterval,
@@ -1078,78 +1079,13 @@ wss.on("connection", (ws, req) => {
       }
     },
     async sendStats() {
-      // Save local player stats to the shared presence store so other shards can read them
-      if (this.ship) {
-        try {
-          const presencePayload = {
-            id: this.id,
-            nickname: this.nickname,
-            roomId: this.roomId,
-            ship: {
-              shield: this.ship.shield,
-              maxShield: this.ship.maxShield,
-              armor: this.ship.armor,
-              maxArmor: this.ship.maxArmor,
-              targetName: this.ship.target ? this.ship.target.name : null,
-              position: { x: this.ship.position.x, y: this.ship.position.y },
-            },
-          };
-          await storeInstance.save(
-            `presence:player:${this.id}`,
-            presencePayload,
-          );
-        } catch (_err) {
-          // swallow store write failures safely
-        }
-      }
-
-      const room = instances.get(this.roomId);
-      const registry = room ? room.factionRegistry : null;
-
-      let squadMembers = [];
-      const squad = squadManager.getSquadForPlayer(this.id);
-      if (squad) {
-        for (const memberId of squad.memberIds) {
-          if (memberId === this.id) continue;
-
-          let smClient = Array.from(wss.clients)
-            .map((w) => w.clientObj)
-            .find((c) => c && c.id === memberId);
-
-          if (!smClient) {
-            try {
-              const remotePresence = await storeInstance.load(
-                `presence:player:${memberId}`,
-              );
-              if (remotePresence) {
-                smClient = {
-                  id: remotePresence.id,
-                  nickname: remotePresence.nickname,
-                  ship: {
-                    shield: remotePresence.ship.shield,
-                    maxShield: remotePresence.ship.maxShield,
-                    armor: remotePresence.ship.armor,
-                    maxArmor: remotePresence.ship.maxArmor,
-                    target: remotePresence.ship.targetName
-                      ? { name: remotePresence.ship.targetName }
-                      : null,
-                    position: remotePresence.ship.position,
-                  },
-                };
-              }
-            } catch (_err) {
-              // safe fallback
-            }
-          }
-
-          if (smClient) {
-            squadMembers.push(smClient);
-          }
-        }
-      }
-
-      const payload = buildStatsPayload(this, registry, squadMembers);
-      if (payload) this.send(payload);
+      return sendClientStats(this, {
+        storeInstance,
+        instances,
+        squadManager,
+        getClients: () => Array.from(wss.clients).map((w) => w.clientObj),
+        buildStatsPayload,
+      });
     },
   };
 

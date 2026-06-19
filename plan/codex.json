@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-19T14:42:06.299Z",
+  "generatedAt": "2026-06-19T15:45:02.814Z",
   "stats": {
-    "totalSourceFiles": 111,
-    "totalTestFiles": 151,
+    "totalSourceFiles": 112,
+    "totalTestFiles": 152,
     "totalSpecFiles": 185,
-    "totalLoc": 27169,
-    "totalTests": 1862,
+    "totalLoc": 27260,
+    "totalTests": 1869,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -2600,6 +2600,17 @@
       "referencingSpecs": [
         "plan/specs/109_server_handler_extraction_round4.md"
       ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/clientStats.js",
+      "loc": 91,
+      "classes": [],
+      "exports": [],
+      "fileOverview": "/**\n* Sends player and squad statistics updates to a client.\n* Saves active ship state in the persistent presence registry.\n*\n* @param {object} clientObj - The target client connection object.\n* @param {object} options - Unified context containing stores, singletons, and helper callbacks.\n*/",
+      "testFile": "src/server/clientStats.test.js",
+      "testCasesCount": 7,
+      "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
     {

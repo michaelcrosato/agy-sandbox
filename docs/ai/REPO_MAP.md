@@ -109,6 +109,7 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 | Handles trade transaction requests (buying/selling commodities) authoritatively. | [`src/server/actionHandlers.js`](file:///C:/dev/agy-sandbox/src/server/actionHandlers.js) | no | yes |
 | Handles the "chat" WebSocket message. | [`src/server/chatHandler.js`](file:///C:/dev/agy-sandbox/src/server/chatHandler.js) | no | yes |
 | Handles the "join", "quick_join", "create_room", and "join_room" WebSocket messages. | [`src/server/connectionHandlers.js`](file:///C:/dev/agy-sandbox/src/server/connectionHandlers.js) | no | yes |
+| Handles room joining lifecycle logic including switching cleanup, dynamic instantiations, ship spawning, and initialization syncing. | [`src/server/connectionLifecycle.js`](file:///C:/dev/agy-sandbox/src/server/connectionLifecycle.js) | no | yes |
 | Handles "escort_command" and "escort_formation" WebSocket messages. | [`src/server/escortHandlers.js`](file:///C:/dev/agy-sandbox/src/server/escortHandlers.js) | no | yes |
 | Handles "fleet_create", "fleet_join", and "fleet_leave" WebSocket messages. | [`src/server/fleetHandlers.js`](file:///C:/dev/agy-sandbox/src/server/fleetHandlers.js) | no | yes |
 | Executes the economy tick (shortage/surplus events) for a room. | [`src/server/galaxyTicker.js`](file:///C:/dev/agy-sandbox/src/server/galaxyTicker.js) | no | yes |

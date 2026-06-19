@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-06-19T10:13:22.415Z` · Baseline: `26,677 LOC` across `109 source files`
+> Generated: `2026-06-19T11:04:42.373Z` · Baseline: `26,996 LOC` across `110 source files`
 
 ---
 
@@ -9,11 +9,11 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `26,677 LOC` | 🟢 Healthy |
-| **Source Modules** | `109 files` | 🟢 Structured |
-| **Test Suites** | `145 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1831 cases` | 🟢 Deterministic |
-| **Active/Archived Specs** | `184 specifications` | 🟢 Traceable |
+| **Total Code Volume** | `26,996 LOC` | 🟢 Healthy |
+| **Source Modules** | `110 files` | 🟢 Structured |
+| **Test Suites** | `146 test files` | 🟢 Integrated |
+| **Total Test Cases** | `1837 cases` | 🟢 Deterministic |
+| **Active/Archived Specs** | `185 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `4 files` | ⚠️ Debt Pending |
 
 ---
@@ -142,6 +142,7 @@
 | [actionHandlers.js](file:///C:/dev/agy-sandbox/src/server/actionHandlers.js) | 425 | `function handleTrade`, `function handlePortService`, `function handleJettison`, `function handleWarpJump`, `function handleBoardingAction` | [actionHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/actionHandlers.test.js) | [`103_modularize_server_actions`](file:///C:/dev/agy-sandbox/plan/specs/103_modularize_server_actions.md) |
 | [chatHandler.js](file:///C:/dev/agy-sandbox/src/server/chatHandler.js) | 76 | _None_ | [chatHandler.test.js](file:///C:/dev/agy-sandbox/src/server/chatHandler.test.js) | [`109_server_handler_extraction_round4`](file:///C:/dev/agy-sandbox/plan/specs/109_server_handler_extraction_round4.md) |
 | [connectionHandlers.js](file:///C:/dev/agy-sandbox/src/server/connectionHandlers.js) | 228 | `function handleConnectionAction` | [connectionHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/connectionHandlers.test.js) | [`111_connection_lifecycle_decomposition`](file:///C:/dev/agy-sandbox/plan/specs/111_connection_lifecycle_decomposition.md)<br>[`117_websocket_rate_limiter_telemetry`](file:///C:/dev/agy-sandbox/plan/specs/117_websocket_rate_limiter_telemetry.md) |
+| [connectionLifecycle.js](file:///C:/dev/agy-sandbox/src/server/connectionLifecycle.js) | 319 | `function handleClientDisconnect` | [connectionLifecycle.test.js](file:///C:/dev/agy-sandbox/src/server/connectionLifecycle.test.js) | [`177_connection_lifecycle_modularization`](file:///C:/dev/agy-sandbox/plan/specs/177_connection_lifecycle_modularization.md) |
 | [escortHandlers.js](file:///C:/dev/agy-sandbox/src/server/escortHandlers.js) | 32 | `function handleEscortAction` | [escortHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/escortHandlers.test.js) | [`110_server_handler_extraction_round5`](file:///C:/dev/agy-sandbox/plan/specs/110_server_handler_extraction_round5.md) |
 | [fleetHandlers.js](file:///C:/dev/agy-sandbox/src/server/fleetHandlers.js) | 52 | `function handleFleetAction` | [fleetHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/fleetHandlers.test.js) | [`109_server_handler_extraction_round4`](file:///C:/dev/agy-sandbox/plan/specs/109_server_handler_extraction_round4.md) |
 | [galaxyTicker.js](file:///C:/dev/agy-sandbox/src/server/galaxyTicker.js) | 434 | `function runEconomyTickForRoom`, `function broadcastEventSyncForRoom`, `function runSectorEventTickForRoom`, `function runEconomyNormalizationForRoom`, `function runEconomyShortageInterval`, `function runEnvironmentalSiegeInterval`, `function runEconomyNormalizationInterval`, `function runGalaxyHeartbeatInterval` | [galaxyTicker.test.js](file:///C:/dev/agy-sandbox/src/server/galaxyTicker.test.js) | [`042_server_monolith_extraction_galaxy_ticker`](file:///C:/dev/agy-sandbox/plan/specs/042_server_monolith_extraction_galaxy_ticker.md)<br>[`078_reputation_decay_heartbeat`](file:///C:/dev/agy-sandbox/plan/specs/078_reputation_decay_heartbeat.md)<br>[`114_faction_decay_chronicle`](file:///C:/dev/agy-sandbox/plan/specs/114_faction_decay_chronicle.md)<br>[`156_faction_vengeance_bounty_hunters`](file:///C:/dev/agy-sandbox/plan/specs/156_faction_vengeance_bounty_hunters.md) |

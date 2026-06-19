@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-19T10:13:22.415Z",
+  "generatedAt": "2026-06-19T11:04:42.373Z",
   "stats": {
-    "totalSourceFiles": 109,
-    "totalTestFiles": 145,
-    "totalSpecFiles": 184,
-    "totalLoc": 26677,
-    "totalTests": 1831,
+    "totalSourceFiles": 110,
+    "totalTestFiles": 146,
+    "totalSpecFiles": 185,
+    "totalLoc": 26996,
+    "totalTests": 1837,
     "untestedCoreFilesCount": 4
   },
   "files": [
@@ -2624,6 +2624,26 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/server/connectionLifecycle.js",
+      "loc": 319,
+      "classes": [],
+      "exports": [
+        {
+          "name": "handleClientDisconnect",
+          "type": "function",
+          "jsdoc": "/**\n* Handles raw WebSocket disconnect close events by deregistering IPs, removing matchmaking queue\n* entries, and scheduling delayed sector evictions and data saving.\n*\n* @param {object} ws - The raw WebSocket instance.\n* @param {object} clientObj - Fallback client object.\n* @param {object} options - Unified singletons and helper callbacks context.\n*/",
+          "line": 239
+        }
+      ],
+      "fileOverview": "/**\n* Handles room joining lifecycle logic including switching cleanup, dynamic instantiations,\n* ship spawning, and initialization syncing.\n*\n* @param {object} clientObj - The active client connection object.\n* @param {string} roomId - Target room identifier.\n* @param {string} nickname - Client nickname candidate.\n* @param {object} options - Unified singletons and helper callbacks context.\n*/",
+      "testFile": "src/server/connectionLifecycle.test.js",
+      "testCasesCount": 6,
+      "referencingSpecs": [
+        "plan/specs/177_connection_lifecycle_modularization.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
       "path": "src/server/escortHandlers.js",
       "loc": 32,
       "classes": [],
@@ -5226,6 +5246,19 @@
       "filesMentioned": [
         "src/net/ZeroTraceTeardown.js",
         "src/net/ZeroTraceTeardown.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/177_connection_lifecycle_modularization.md",
+      "filename": "177_connection_lifecycle_modularization.md",
+      "title": "SPEC-177: Connection Lifecycle & Disconnect Cleanup Extraction",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "P7 — Netcode & Scale",
+      "filesMentioned": [
+        "src/server.js",
+        "src/server/connectionLifecycle.js",
+        "src/server/connectionLifecycle.test.js"
       ]
     },
     {

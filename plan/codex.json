@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-06-19T13:07:26.837Z",
+  "generatedAt": "2026-06-19T13:16:55.700Z",
   "stats": {
     "totalSourceFiles": 110,
-    "totalTestFiles": 146,
+    "totalTestFiles": 147,
     "totalSpecFiles": 185,
     "totalLoc": 26996,
-    "totalTests": 1837,
-    "untestedCoreFilesCount": 4
+    "totalTests": 1844,
+    "untestedCoreFilesCount": 3
   },
   "files": [
     {
@@ -1534,8 +1534,8 @@
       "classes": [],
       "exports": [],
       "fileOverview": "/**\n* GuestLoader.js (SPEC-144 / SPEC-152) — ESM Import Loader Hook.\n* Intercepts dynamic and static imports inside the guest process, asserting strict path boundaries\n* and verifying cryptographic SHA-256 module signatures.\n*/",
-      "testFile": null,
-      "testCasesCount": 0,
+      "testFile": "src/net/GuestLoader.test.js",
+      "testCasesCount": 7,
       "referencingSpecs": [
         "plan/specs/168_loader_native_modules_restriction.md"
       ],
@@ -5030,7 +5030,7 @@
       "pillar": "None",
       "filesMentioned": [
         "src/server/tutorialHandlers.test.js",
-        "src/client/tutorialUI.test.js"
+        "src/client/__tests/TutorialManager.test.js"
       ]
     },
     {
@@ -5090,8 +5090,8 @@
       "priority": "Normal",
       "pillar": "None",
       "filesMentioned": [
-        "src/client/__tests__/CanvasRenderer.browser.test.js",
-        "src/client/__tests__/PlaywrightVisual.test.js"
+        "src/client/__tests/CanvasRenderer.browser.test.js",
+        "src/server/PlaywrightVisual.integration.test.js"
       ]
     },
     {
@@ -5273,27 +5273,12 @@
   ],
   "epistemicDebt": {
     "untestedCoreFiles": [
-      "src/net/GuestLoader.js",
       "src/net/GuestRunnerWorker.js",
       "src/net/MainThreadWatchdogWorker.js",
       "src/net/mockFreezeScript.js"
     ],
     "missingJsDocs": [],
-    "staleSpecReferences": [
-      {
-        "spec": "plan/specs/158_guided_onboarding_tutorial_mission.md",
-        "brokenFiles": [
-          "src/client/tutorialUI.test.js"
-        ]
-      },
-      {
-        "spec": "plan/specs/163_playwright_e2e_regression_guard.md",
-        "brokenFiles": [
-          "src/client/__tests__/CanvasRenderer.browser.test.js",
-          "src/client/__tests__/PlaywrightVisual.test.js"
-        ]
-      }
-    ],
+    "staleSpecReferences": [],
     "specErrors": [],
     "specReconciliationErrors": []
   }

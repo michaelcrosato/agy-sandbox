@@ -62,7 +62,7 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 | DnsEgressSentry. | [`src/net/DnsEgressSentry.js`](file:///C:/dev/agy-sandbox/src/net/DnsEgressSentry.js) | yes | yes |
 | DynamicResourceGovernor. | [`src/net/DynamicResourceGovernor.js`](file:///C:/dev/agy-sandbox/src/net/DynamicResourceGovernor.js) | yes | yes |
 | EphemeralSandbox (spec 115) — copy-on-write virtual workspace sandboxing cloner. | [`src/net/EphemeralSandbox.js`](file:///C:/dev/agy-sandbox/src/net/EphemeralSandbox.js) | yes | yes |
-| GuestLoader. | [`src/net/GuestLoader.js`](file:///C:/dev/agy-sandbox/src/net/GuestLoader.js) | yes | no |
+| GuestLoader. | [`src/net/GuestLoader.js`](file:///C:/dev/agy-sandbox/src/net/GuestLoader.js) | yes | yes |
 | GuestRpcSentry. | [`src/net/GuestRpcSentry.js`](file:///C:/dev/agy-sandbox/src/net/GuestRpcSentry.js) | yes | yes |
 | GuestRunner. | [`src/net/GuestRunner.js`](file:///C:/dev/agy-sandbox/src/net/GuestRunner.js) | yes | yes |
 | GuestRunnerWorker. | [`src/net/GuestRunnerWorker.js`](file:///C:/dev/agy-sandbox/src/net/GuestRunnerWorker.js) | yes | no |

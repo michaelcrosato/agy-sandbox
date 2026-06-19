@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-06-19T13:07:26.837Z` · Baseline: `26,996 LOC` across `110 source files`
+> Generated: `2026-06-19T13:16:55.700Z` · Baseline: `26,996 LOC` across `110 source files`
 
 ---
 
@@ -11,10 +11,10 @@
 | --- | --- | --- |
 | **Total Code Volume** | `26,996 LOC` | 🟢 Healthy |
 | **Source Modules** | `110 files` | 🟢 Structured |
-| **Test Suites** | `146 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1837 cases` | 🟢 Deterministic |
+| **Test Suites** | `147 test files` | 🟢 Integrated |
+| **Total Test Cases** | `1844 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `185 specifications` | 🟢 Traceable |
-| **Untested Core Modules** | `4 files` | ⚠️ Debt Pending |
+| **Untested Core Modules** | `3 files` | ⚠️ Debt Pending |
 
 ---
 
@@ -86,7 +86,7 @@
 | [DnsEgressSentry.js](file:///C:/dev/agy-sandbox/src/net/DnsEgressSentry.js) | 259 | `function loadAllowlist`, `constant DnsEgressSentry` | [DnsEgressSentry.test.js](file:///C:/dev/agy-sandbox/src/net/DnsEgressSentry.test.js) | [`173_dns_resolution_egress_sentry`](file:///C:/dev/agy-sandbox/plan/specs/173_dns_resolution_egress_sentry.md) |
 | [DynamicResourceGovernor.js](file:///C:/dev/agy-sandbox/src/net/DynamicResourceGovernor.js) | 226 | `constant DynamicResourceGovernor` | [DynamicResourceGovernor.test.js](file:///C:/dev/agy-sandbox/src/net/DynamicResourceGovernor.test.js) | [`172_dynamic_memory_priority_scheduler`](file:///C:/dev/agy-sandbox/plan/specs/172_dynamic_memory_priority_scheduler.md) |
 | [EphemeralSandbox.js](file:///C:/dev/agy-sandbox/src/net/EphemeralSandbox.js) | 115 | `class EphemeralSandbox` | [EphemeralSandbox.test.js](file:///C:/dev/agy-sandbox/src/net/EphemeralSandbox.test.js) | [`115_ephemeral_workspace_sandbox`](file:///C:/dev/agy-sandbox/plan/specs/115_ephemeral_workspace_sandbox.md) |
-| [GuestLoader.js](file:///C:/dev/agy-sandbox/src/net/GuestLoader.js) | 117 | _None_ | ❌ _Untested_ | [`168_loader_native_modules_restriction`](file:///C:/dev/agy-sandbox/plan/specs/168_loader_native_modules_restriction.md) |
+| [GuestLoader.js](file:///C:/dev/agy-sandbox/src/net/GuestLoader.js) | 117 | _None_ | [GuestLoader.test.js](file:///C:/dev/agy-sandbox/src/net/GuestLoader.test.js) | [`168_loader_native_modules_restriction`](file:///C:/dev/agy-sandbox/plan/specs/168_loader_native_modules_restriction.md) |
 | [GuestRpcSentry.js](file:///C:/dev/agy-sandbox/src/net/GuestRpcSentry.js) | 194 | `constant ALLOWED_RPC_ACTIONS`, `function validateRpcRequest`, `constant GuestRpcSentry` | [GuestRpcSentry.test.js](file:///C:/dev/agy-sandbox/src/net/GuestRpcSentry.test.js) | [`145_secure_guest_rpc_sentry`](file:///C:/dev/agy-sandbox/plan/specs/145_secure_guest_rpc_sentry.md) |
 | [GuestRunner.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.js) | 591 | `constant GuestRunner` | [GuestRunner.test.js](file:///C:/dev/agy-sandbox/src/net/GuestRunner.test.js) | [`136_isolated_guest_runner`](file:///C:/dev/agy-sandbox/plan/specs/136_isolated_guest_runner.md) |
 | [GuestRunnerWorker.js](file:///C:/dev/agy-sandbox/src/net/GuestRunnerWorker.js) | 124 | _None_ | ❌ _Untested_ | _None_ |
@@ -164,15 +164,13 @@
 
 ## ⚡ EPISTEMIC DEBT & STALE LOGIC REPORT
 
-### ⚠️ Untested Core Modules (4)
-- [ ] `src/net/GuestLoader.js` is missing a unit test suite.
+### ⚠️ Untested Core Modules (3)
 - [ ] `src/net/GuestRunnerWorker.js` is missing a unit test suite.
 - [ ] `src/net/MainThreadWatchdogWorker.js` is missing a unit test suite.
 - [ ] `src/net/mockFreezeScript.js` is missing a unit test suite.
 
-### ⚠️ Stale Specification File References (2)
-- [ ] Spec [`158_guided_onboarding_tutorial_mission.md`](file:///C:/dev/agy-sandbox/plan/specs/158_guided_onboarding_tutorial_mission.md) references missing files: `src/client/tutorialUI.test.js`
-- [ ] Spec [`163_playwright_e2e_regression_guard.md`](file:///C:/dev/agy-sandbox/plan/specs/163_playwright_e2e_regression_guard.md) references missing files: `src/client/__tests__/CanvasRenderer.browser.test.js`, `src/client/__tests__/PlaywrightVisual.test.js`
+### ⚠️ Stale Specification File References (0)
+_None! All specification file references correspond to real paths._
 
 ### ⚠️ Missing JSDoc Type Signatures (0 symbols)
 _None! All exported classes and functions have JSDoc type signatures._

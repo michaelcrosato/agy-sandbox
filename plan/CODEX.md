@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-06-19T13:16:55.700Z` · Baseline: `26,996 LOC` across `110 source files`
+> Generated: `2026-06-19T13:18:35.542Z` · Baseline: `26,996 LOC` across `110 source files`
 
 ---
 
@@ -11,10 +11,10 @@
 | --- | --- | --- |
 | **Total Code Volume** | `26,996 LOC` | 🟢 Healthy |
 | **Source Modules** | `110 files` | 🟢 Structured |
-| **Test Suites** | `147 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1844 cases` | 🟢 Deterministic |
+| **Test Suites** | `148 test files` | 🟢 Integrated |
+| **Total Test Cases** | `1847 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `185 specifications` | 🟢 Traceable |
-| **Untested Core Modules** | `3 files` | ⚠️ Debt Pending |
+| **Untested Core Modules** | `2 files` | ⚠️ Debt Pending |
 
 ---
 
@@ -97,7 +97,7 @@
 | [LatencyMonitor.js](file:///C:/dev/agy-sandbox/src/net/LatencyMonitor.js) | 108 | `class LatencyMonitor` | [LatencyMonitor.test.js](file:///C:/dev/agy-sandbox/src/net/LatencyMonitor.test.js) | [`090_event_loop_latency_backpressure`](file:///C:/dev/agy-sandbox/plan/specs/090_event_loop_latency_backpressure.md) |
 | [logger.js](file:///C:/dev/agy-sandbox/src/net/logger.js) | 42 | `function createLogger` | [logger.test.js](file:///C:/dev/agy-sandbox/src/net/logger.test.js) | [`010_observability_metrics`](file:///C:/dev/agy-sandbox/plan/specs/010_observability_metrics.md) |
 | [MainThreadWatchdog.js](file:///C:/dev/agy-sandbox/src/net/MainThreadWatchdog.js) | 83 | `constant MainThreadWatchdog` | [MainThreadWatchdog.test.js](file:///C:/dev/agy-sandbox/src/net/MainThreadWatchdog.test.js) | [`133_main_thread_cpu_watchdog`](file:///C:/dev/agy-sandbox/plan/specs/133_main_thread_cpu_watchdog.md) |
-| [MainThreadWatchdogWorker.js](file:///C:/dev/agy-sandbox/src/net/MainThreadWatchdogWorker.js) | 66 | _None_ | ❌ _Untested_ | _None_ |
+| [MainThreadWatchdogWorker.js](file:///C:/dev/agy-sandbox/src/net/MainThreadWatchdogWorker.js) | 66 | _None_ | [MainThreadWatchdogWorker.test.js](file:///C:/dev/agy-sandbox/src/net/MainThreadWatchdogWorker.test.js) | _None_ |
 | [MemoryLeakSentry.js](file:///C:/dev/agy-sandbox/src/net/MemoryLeakSentry.js) | 107 | `class MemoryLeakSentry` | [MemoryLeakSentry.test.js](file:///C:/dev/agy-sandbox/src/net/MemoryLeakSentry.test.js) | [`121_memory_leak_sentry`](file:///C:/dev/agy-sandbox/plan/specs/121_memory_leak_sentry.md) |
 | [metrics.js](file:///C:/dev/agy-sandbox/src/net/metrics.js) | 65 | `function createRegistry` | [metrics.test.js](file:///C:/dev/agy-sandbox/src/net/metrics.test.js) | [`010_observability_metrics`](file:///C:/dev/agy-sandbox/plan/specs/010_observability_metrics.md)<br>[`117_websocket_rate_limiter_telemetry`](file:///C:/dev/agy-sandbox/plan/specs/117_websocket_rate_limiter_telemetry.md) |
 | [mockFreezeScript.js](file:///C:/dev/agy-sandbox/src/net/mockFreezeScript.js) | 22 | _None_ | ❌ _Untested_ | _None_ |
@@ -164,9 +164,8 @@
 
 ## ⚡ EPISTEMIC DEBT & STALE LOGIC REPORT
 
-### ⚠️ Untested Core Modules (3)
+### ⚠️ Untested Core Modules (2)
 - [ ] `src/net/GuestRunnerWorker.js` is missing a unit test suite.
-- [ ] `src/net/MainThreadWatchdogWorker.js` is missing a unit test suite.
 - [ ] `src/net/mockFreezeScript.js` is missing a unit test suite.
 
 ### ⚠️ Stale Specification File References (0)

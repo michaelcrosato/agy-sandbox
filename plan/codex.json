@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-06-19T13:16:55.700Z",
+  "generatedAt": "2026-06-19T13:18:35.542Z",
   "stats": {
     "totalSourceFiles": 110,
-    "totalTestFiles": 147,
+    "totalTestFiles": 148,
     "totalSpecFiles": 185,
     "totalLoc": 26996,
-    "totalTests": 1844,
-    "untestedCoreFilesCount": 3
+    "totalTests": 1847,
+    "untestedCoreFilesCount": 2
   },
   "files": [
     {
@@ -1770,8 +1770,8 @@
       "classes": [],
       "exports": [],
       "fileOverview": "/**\n* MainThreadWatchdogWorker.js (spec 133) — background worker thread\n* that monitors the responsiveness of Node's main event loop.\n*/",
-      "testFile": null,
-      "testCasesCount": 0,
+      "testFile": "src/net/MainThreadWatchdogWorker.test.js",
+      "testCasesCount": 3,
       "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
@@ -5274,7 +5274,6 @@
   "epistemicDebt": {
     "untestedCoreFiles": [
       "src/net/GuestRunnerWorker.js",
-      "src/net/MainThreadWatchdogWorker.js",
       "src/net/mockFreezeScript.js"
     ],
     "missingJsDocs": [],

@@ -73,7 +73,7 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 | Event-Loop Latency Monitor & Dynamic Backpressure Shedding (SPEC-090). | [`src/net/LatencyMonitor.js`](file:///C:/dev/agy-sandbox/src/net/LatencyMonitor.js) | yes | yes |
 | logger (spec 010) — a tiny structured (JSON-line) logger with level filtering and no dependencies. | [`src/net/logger.js`](file:///C:/dev/agy-sandbox/src/net/logger.js) | yes | yes |
 | MainThreadWatchdog. | [`src/net/MainThreadWatchdog.js`](file:///C:/dev/agy-sandbox/src/net/MainThreadWatchdog.js) | yes | yes |
-| MainThreadWatchdogWorker. | [`src/net/MainThreadWatchdogWorker.js`](file:///C:/dev/agy-sandbox/src/net/MainThreadWatchdogWorker.js) | yes | no |
+| MainThreadWatchdogWorker. | [`src/net/MainThreadWatchdogWorker.js`](file:///C:/dev/agy-sandbox/src/net/MainThreadWatchdogWorker.js) | yes | yes |
 | MemoryLeakSentry. | [`src/net/MemoryLeakSentry.js`](file:///C:/dev/agy-sandbox/src/net/MemoryLeakSentry.js) | yes | yes |
 | metrics (spec 010) — a tiny, dependency-free runtime metrics registry: counters (monotonic), gauges (point-in-time), and observations (count/sum/ avg/min/max for things like tick duration). | [`src/net/metrics.js`](file:///C:/dev/agy-sandbox/src/net/metrics.js) | yes | yes |
 | mockFreezeScript. | [`src/net/mockFreezeScript.js`](file:///C:/dev/agy-sandbox/src/net/mockFreezeScript.js) | yes | no |

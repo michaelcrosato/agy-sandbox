@@ -131,6 +131,9 @@ setInterval(() => {}, 1000);`,
     // Reap
     await ProcessReaper.reap();
 
+    // Give the OS a moment to finish process termination
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     // Verify both are dead
     expect(() => process.kill(childPid, 0)).toThrow();
     expect(() => process.kill(grandchildPid, 0)).toThrow();

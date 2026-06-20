@@ -364,6 +364,18 @@ export class MissionManager {
           mission.type === "escort_ambassador") &&
         mission.destination === destinationName
       ) {
+        // Verify cargo if required
+        if (
+          mission.cargoItem &&
+          mission.cargoAmount &&
+          player.cargo &&
+          (!player.cargo[mission.cargoItem] ||
+            player.cargo[mission.cargoItem] < mission.cargoAmount)
+        ) {
+          remaining.push(mission);
+          continue;
+        }
+
         // Complete the delivery
         mission.isCompleted = true;
         player.credits += mission.reward;
@@ -440,6 +452,18 @@ export class MissionManager {
         mission.destination === destinationName &&
         mission.stage === 1
       ) {
+        // Verify cargo
+        if (
+          mission.cargoItem &&
+          mission.cargoAmount &&
+          player.cargo &&
+          (!player.cargo[mission.cargoItem] ||
+            player.cargo[mission.cargoItem] < mission.cargoAmount)
+        ) {
+          remaining.push(mission);
+          continue;
+        }
+
         // Advance to Stage 2!
         player.removeCargo(mission.cargoItem, mission.cargoAmount); // remove logs
 

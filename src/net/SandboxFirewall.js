@@ -11,6 +11,9 @@ import dns from "dns";
 import net from "net";
 import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
 
+/**
+ * High-performance outbound connection packet-filtering firewall.
+ */
 export class SandboxFirewall {
   /**
    * @param {Object} [options]

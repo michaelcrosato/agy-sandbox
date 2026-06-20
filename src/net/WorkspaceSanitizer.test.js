@@ -49,7 +49,10 @@ describe("WorkspaceSanitizer (SPEC-093)", () => {
       "agent",
       "workspace-sanitize.ps1",
     );
-    const cmd = `powershell -NoProfile -ExecutionPolicy Bypass -File "${scriptPath}"`;
+    const cmd =
+      process.platform === "win32"
+        ? `powershell -NoProfile -ExecutionPolicy Bypass -File "${scriptPath}"`
+        : `pwsh -NoProfile -File "${scriptPath}"`;
 
     let output;
     try {

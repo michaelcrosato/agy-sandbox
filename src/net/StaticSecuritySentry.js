@@ -32,6 +32,9 @@ function isUnauthorizedCoreModule(specifier) {
   return !SAFE_CORE_MODULES.has(specifier);
 }
 
+/**
+ * Static Analysis AST Security Sentry.
+ */
 export const StaticSecuritySentry = {
   /**
    * Statically scans guest script source code for dangerous language constructs.

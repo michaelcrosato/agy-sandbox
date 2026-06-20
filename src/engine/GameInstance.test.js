@@ -6,6 +6,7 @@ import {
   BASE_MARKETS,
 } from "./GameInstance.js";
 import { Ship } from "./Ship.js";
+import { Projectile } from "./Projectile.js";
 import { Vector2D } from "../physics/Vector2D.js";
 
 /**
@@ -380,6 +381,23 @@ describe("Broadcast Methods", () => {
     const r2 = sent.roster.find((r) => r.id === "p2");
     expect(r2.status).toBe("orbit");
   });
+
+  test("broadcasts projectile_fired with damage and shieldPierce on engine fire event", () => {
+    const c1 = mockClient("p1", "Alpha");
+    room.clients.set(c1.ws, c1);
+
+    const ship = new Ship({ id: "p1", position: new Vector2D(0, 0) });
+    const proj = { damage: 45, shieldPierce: 0.25 };
+
+    room.engine.onProjectileFired(proj, ship);
+
+    expect(c1.ws.send).toHaveBeenCalledTimes(1);
+    const sent = JSON.parse(c1.ws.send.mock.calls[0][0]);
+    expect(sent.type).toBe("projectile_fired");
+    expect(sent.ownerId).toBe("p1");
+    expect(sent.damage).toBe(45);
+    expect(sent.shieldPierce).toBe(0.25);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -699,6 +717,13 @@ describe("Serialization", () => {
     }
   });
 
+  test("ship serialization includes outfits", () => {
+    const serialized = room.serializeEntities();
+    const ship = serialized.find((e) => e.type === "ship");
+    expect(ship.outfits).toBeDefined();
+    expect(Array.isArray(ship.outfits)).toBe(true);
+  });
+
   test("warp gate serialization includes sector routing fields", () => {
     const serialized = room.serializeEntities();
     const gate = serialized.find((e) => e.type === "warp_gate");
@@ -718,6 +743,28 @@ describe("Serialization", () => {
     expect(storm.hazardType).toBeDefined();
     expect(storm.color).toBeDefined();
     expect(storm.particleColor).toBeDefined();
+  });
+
+  test("projectile serialization includes ownerId, damage, and shieldPierce", () => {
+    const proj = new Projectile({
+      ownerId: "player-123",
+      damage: 25,
+      startPosition: new Vector2D(10, 20),
+      heading: 1.0,
+      speed: 400,
+      range: 800,
+      shieldPierce: 0.5,
+    });
+    room.engine.addEntity(proj);
+
+    const serialized = room.serializeEntities();
+    const serializedProj = serialized.find(
+      (e) => e.type === "projectile" && e.id === proj.id,
+    );
+    expect(serializedProj).toBeDefined();
+    expect(serializedProj.ownerId).toBe("player-123");
+    expect(serializedProj.damage).toBe(25);
+    expect(serializedProj.shieldPierce).toBe(0.5);
   });
 });
 

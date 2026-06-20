@@ -3,6 +3,7 @@ import { Planet } from "./Planet.js";
 import { MissionManager } from "./MissionManager.js";
 import { Vector2D } from "../physics/Vector2D.js";
 import { CargoPod } from "./CargoPod.js";
+import { GameInstance } from "./GameInstance.js";
 
 describe("Commodity Trading and Economy Mechanics", () => {
   let player;
@@ -1174,5 +1175,31 @@ describe("Galactic Navigation System", () => {
   test("calculateShortestPath returns empty for null inputs", () => {
     expect(calculateShortestPath(null, "core")).toEqual([]);
     expect(calculateShortestPath("core", null)).toEqual([]);
+  });
+});
+
+describe("Player Ship Destruction Cargo Clearing", () => {
+  test("clears ship cargo and ejects cargo pods on ship destruction", () => {
+    const room = new GameInstance("room-test-death", "Death Sector");
+    try {
+      const ship = new Ship({ name: "Cargo Hauler" });
+      ship.addCargo("food", 5);
+      expect(ship.cargo.food).toBe(5);
+
+      room.engine.addEntity(ship);
+      room.handleEntityDestroyed(ship);
+
+      // Cargo on ship must be completely cleared
+      expect(ship.cargo.food).toBe(0);
+
+      // Cargo pods must have been spawned in the engine
+      const pods = room.engine.entities.filter((e) => e.type === "cargo_pod");
+      expect(pods.length).toBe(5);
+      for (const pod of pods) {
+        expect(pod.resourceType).toBe("food");
+      }
+    } finally {
+      room.destroy();
+    }
   });
 });

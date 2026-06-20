@@ -7,6 +7,9 @@
  * memory growth exceeds configured thresholds.
  */
 
+/**
+ * Lightweight memory leak sentinel and self-healing garbage collector.
+ */
 export class MemoryLeakSentry {
   /**
    * @param {Object} options

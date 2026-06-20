@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-06-17T14:47:17.263Z",
+  "generatedAt": "2026-06-20T13:09:31.143Z",
   "stats": {
-    "totalSourceFiles": 109,
-    "totalTestFiles": 144,
-    "totalSpecFiles": 183,
-    "totalLoc": 26646,
-    "totalTests": 1822,
-    "untestedCoreFilesCount": 4
+    "totalSourceFiles": 126,
+    "totalTestFiles": 167,
+    "totalSpecFiles": 185,
+    "totalLoc": 29339,
+    "totalTests": 2075,
+    "untestedCoreFilesCount": 0
   },
   "files": [
     {
@@ -20,6 +20,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* AIController manages NPC behavior states (wander, chase, patrol, trade) and maps them into ship controls.\n*/",
       "testFile": "src/engine/ai/AIController.test.js",
       "testCasesCount": 55,
       "referencingSpecs": [
@@ -91,6 +92,7 @@
           "line": 354
         }
       ],
+      "fileOverview": "/**\n* buildPerception: pure adapter from live engine state to the `UtilityAI`\n* perception snapshot (spec 017).\n*\n* `UtilityAI.selectGoal` scores goals from a normalized snapshot\n* (`{ self, threats, opportunities: { prey, trades } }`) but says nothing about\n* where that snapshot comes from. This module is that missing bridge: given the\n* perceiving ship and the live entity list, it classifies nearby entities into\n* threats / prey / trade opportunities and measures their distance, so the\n* scorer can turn \"the world right now\" into an advisory goal.\n*\n* Design constraints (mirrors `UtilityAI`):\n* - Pure: no DOM, no sockets, no `Math.random`. A given world always produces\n*   the same snapshot, so goal selection downstream is deterministic.\n* - Decoupled: the default classifiers key off duck-typed `role`/`type`/`faction`\n*   fields and never import `AIController`, so there is no engine import cycle.\n*   Every classifier is overridable via `options` for faction-aware callers.\n*\n* Default classification (the perceiving ship's role decides what it cares about):\n* - threats  — pirates threaten non-pirates; guards threaten pirates.\n* - prey     — only pirates hunt prey: soft, non-combatant ships of another faction.\n* - trades   — only non-pirates trade: nearby dockable planets.\n*/",
       "testFile": "src/engine/ai/buildPerception.test.js",
       "testCasesCount": 21,
       "referencingSpecs": [
@@ -208,6 +210,7 @@
           "line": 388
         }
       ],
+      "fileOverview": "/**\n* UtilityAI: pure, headless, deterministic goal-scoring for NPC agents.\n*\n* The module groundwork for evolving role-FSMs (see `AIController`) into\n* goal-driven agents. Given a `perception` snapshot of an agent's situation\n* (its own health/energy/cargo, nearby threats, nearby opportunities) it\n* scores a small fixed catalogue of high-level goals and returns the\n* highest-scoring one with its score and the full score table.\n*\n* The scoring functions are intentionally legible and tunable: each goal's\n* utility is a small algebraic combination of perception fields and named\n* weights in `DEFAULT_UTILITY_OPTIONS`. A caller can override one knob\n* without losing the rest, and the formulas are simple enough that a human\n* can predict the winner from the inputs.\n*\n* Constraints enforced here:\n* - No DOM, no sockets, no `Math.random`. Pure functions of the snapshot.\n* - Determinism: ties between goal scores are broken by a fixed iteration\n*   order so the same snapshot always selects the same goal.\n* - Shape compatibility: this is a *consultable helper*, not a replacement\n*   for `AIController`. It returns advisory goals; the FSM (or a future\n*   planner) decides how to act on them.\n*\n* Perception snapshot shape:\n*   {\n*     self: {\n*       shield: number in [0,1],   // fraction of max shield remaining\n*       armor:  number in [0,1],   // fraction of max armor remaining\n*       energy: number in [0,1],   // fraction of max energy remaining\n*       cargoFill: number in [0,1] // fraction of cargo capacity occupied\n*     },\n*     threats: [\n*       { distance: number, threat: number in [0,1] }\n*     ],\n*     opportunities: {\n*       prey:   [{ distance: number, weakness: number in [0,1] }],\n*       trades: [{ distance: number, profit:   number in [0,1] }]\n*     }\n*   }\n*\n* All distance comparisons are made through `proximityFactor`, which maps\n* `distance` to a 1.0-at-touch, 0.0-at-sensor-edge factor; entities beyond\n* `sensorRange` contribute nothing.\n*/",
       "testFile": "src/engine/ai/UtilityAI.test.js",
       "testCasesCount": 37,
       "referencingSpecs": [],
@@ -255,6 +258,7 @@
           "line": 142
         }
       ],
+      "fileOverview": "/**\n* Boarding (EW2) — pure helpers for boarding a disabled ship: plundering a\n* hostile (cargo + a cut of its credits) or repairing a friendly back to life.\n*\n* Faction-agnostic by design: the caller decides whether a given target is a\n* plunder or a repair candidate; this module only enforces the physical board\n* conditions and moves the goods. No DOM, sockets, timers, or `Math.random`;\n* functions mutate only the boarder/target passed in.\n*/",
       "testFile": "src/engine/Boarding.test.js",
       "testCasesCount": 19,
       "referencingSpecs": [],
@@ -271,6 +275,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* Class representing physical floating cargo pods ejected from shattered asteroids or destroyed ships.\n*/",
       "testFile": "src/engine/CargoPod.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [],
@@ -312,6 +317,7 @@
           "line": 96
         }
       ],
+      "fileOverview": "/**\n* CombatRating (EW1) — pure, deterministic helpers for valuing ships and rating\n* pilots by the credit-worth of what they have destroyed.\n*\n* Inspired by the Endless Sky / Elite convention: a pilot's combat rating grows\n* with the cumulative value of ships they destroy, but **logarithmically** — each\n* additional kill of the same value is worth progressively less, so reaching the\n* next rank takes exponentially more destruction.\n*\n* No DOM, sockets, timers, or `Math.random` — every function is referentially\n* transparent given its inputs (`recordKill` mutates only the object passed to it).\n*/",
       "testFile": "src/engine/CombatRating.test.js",
       "testCasesCount": 20,
       "referencingSpecs": [],
@@ -329,6 +335,7 @@
           "line": 25
         }
       ],
+      "fileOverview": "/**\n* commodities — the single source of truth for the tradeable commodity set\n* (spec 031).\n*\n* Before this module, the seven commodities were hand-listed in every cargo and\n* market literal (`Ship.cargo`, the hull-purchase reset, `Planet`'s default\n* market, the 8 `BASE_MARKETS`), so adding one (e.g. `ore` in spec 018) meant\n* touching every site — drift-prone. The **zero-init** cargo maps now derive\n* from `COMMODITIES`, and a table-invariant test asserts every market/cargo map\n* covers exactly this set, so the list can no longer silently drift.\n*\n* Priced maps (per-planet markets) keep their explicit per-commodity values —\n* only the *set of keys* is centralized here.\n*/",
       "testFile": "src/engine/commodities.test.js",
       "testCasesCount": 6,
       "referencingSpecs": [
@@ -349,6 +356,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* Headless representation of a server-authoritative wandering cosmic storm.\n* Moves dynamically across sector space and affects ships that enter its radius.\n* Extends SpaceEntity for physics engine compatibility and static analysis compliance.\n*/",
       "testFile": "src/engine/CosmicStorm.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [
@@ -367,6 +375,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* High-performance physics-loop determinism auditing utility.\n* Computes tick-by-tick state hashes of entity positions, velocities, and faction standings\n* using FNV-1a to detect coordinate jumps, drifts, and corruptions.\n*/",
       "testFile": "src/engine/DeterminismSentry.test.js",
       "testCasesCount": 11,
       "referencingSpecs": [
@@ -390,6 +399,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* EconomyManager class that encapsulates dynamic market supply/demand, price elasticity,\n* price normalization, and random economic events across all galactic sectors.\n*/",
       "testFile": "src/engine/EconomyManager.test.js",
       "testCasesCount": 10,
       "referencingSpecs": [
@@ -446,6 +456,7 @@
           "line": 150
         }
       ],
+      "fileOverview": "/**\n* FactionRegistry: pure, deterministic data + logic for per-player faction\n* standings and pairwise faction relations.\n*\n* The galaxy has a fixed roster of factions (e.g. Federation, Frontier League,\n* Pirates, Independents). Every player carries a numeric standing with each\n* faction, clamped to a configurable band (default `[-100, 100]`). Adjusting\n* one standing PROPAGATES through pairwise relations: helping a faction gives\n* a fraction of that gain to its allies and inflicts a matching loss on its\n* enemies. A configurable decay helper pulls standings toward neutral (zero),\n* so reputations heal over time when left alone.\n*\n* The module is pure: no DOM, no sockets, no `Math.random`. All state lives\n* in plain JSON-serializable maps so the P1 persistence layer can save and\n* restore reputations alongside markets.\n*/",
       "testFile": "src/engine/FactionRegistry.test.js",
       "testCasesCount": 71,
       "referencingSpecs": [
@@ -477,6 +488,7 @@
           "line": 30
         }
       ],
+      "fileOverview": "/**\n* FactionWarCampaign.js — pure, headless strategy engine simulating dynamic faction conflicts.\n* Tracks military power ratios, active sector sieges, caravan blockades, and battle history logs.\n*\n* Designed to be 100% deterministic and unit-testable via seeded PRNG.\n*/",
       "testFile": "src/engine/FactionWarCampaign.test.js",
       "testCasesCount": 6,
       "referencingSpecs": [
@@ -495,6 +507,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* GalaxyEventsManager: pure, deterministic class that manages periodic\n* dynamic economic shocks and market events across galactic sectors.\n*/",
       "testFile": "src/engine/GalaxyEventsManager.test.js",
       "testCasesCount": 6,
       "referencingSpecs": [
@@ -513,6 +526,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* GalaxyHeartbeat advances the galactic economy independently of any connected\n* player. Each pulse first lets every planet's producer/consumer profile push\n* its local prices (surplus down, demand up, bounded around baseline), then\n* lets prices flow along trade lanes toward the prices of connected systems\n* (simulated arbitrage) while drifting gently back toward each market's\n* baseline. Over many pulses, production creates real supply pressure that\n* the lane-diffusion ripple then propagates to neighbors — the world keeps\n* living, and producing, when no one watches.\n*\n* The class is pure and deterministic: it owns no timers, sockets, or randomness.\n*/",
       "testFile": "src/engine/GalaxyHeartbeat.test.js",
       "testCasesCount": 15,
       "referencingSpecs": [
@@ -522,12 +536,12 @@
     },
     {
       "path": "src/engine/GameInstance.js",
-      "loc": 1931,
+      "loc": 1944,
       "classes": [
         {
           "name": "GameInstance",
           "jsdoc": "/**\n* Authoritative sandbox game instance simulator managing sectors, entities,\n* economies, and dynamic galactic factions.\n*/",
-          "line": 54
+          "line": 58
         }
       ],
       "exports": [
@@ -535,17 +549,18 @@
           "name": "SECTOR_ADJACENCY",
           "type": "constant",
           "jsdoc": "/**\n* Map defining which sectors share direct warp-gate trade route adjacency links.\n* Used for simulated economic and price diffusion.\n* @type {Record<string, Array<string>>}\n*/",
-          "line": 29
+          "line": 33
         },
         {
           "name": "getSectorFromPosition",
           "type": "function",
           "jsdoc": "/**\n* Utility helper to identify a sector ID from 2D vector coordinate bounds.\n* @param {object} pos Coordinate point containing x and y coordinates.\n* @returns {string} The sector name identifier.\n*/",
-          "line": 43
+          "line": 47
         }
       ],
+      "fileOverview": "/**\n* GameInstance coordinates sector engine simulations, warp portals, entities, and room states.\n*/",
       "testFile": "src/engine/GameInstance.test.js",
-      "testCasesCount": 78,
+      "testCasesCount": 81,
       "referencingSpecs": [
         "plan/specs/047_dynamic_reputation_patrol_spawns.md",
         "plan/specs/048_contraband_space_patrol_scans.md",
@@ -587,6 +602,7 @@
           "line": 353
         }
       ],
+      "fileOverview": "/**\n* GenerativeMissions: pure, seeded mission generator that composes missions\n* from a snapshot of live world state.\n*\n* A real price shortage on planet X is what produces a delivery contract\n* routed to X; a notable bounty target in the world is what produces a hunt\n* mission against that target. Rewards, descriptions, and faction-standing\n* consequences are all derived from the live numbers the caller hands in.\n*\n* Determinism: callers MUST inject a seeded RNG via `options.rng`. The module\n* never calls `Math.random`, so identical world snapshots + identical seeds\n* produce byte-identical mission lists. A small `createSeededRng(seed)` helper\n* (mulberry32) is exported for convenience.\n*\n* Graceful degradation: missing economy data (`planets`/`baseMarkets` absent\n* or empty) suppresses delivery missions; missing `bountyTargets` suppresses\n* hunt missions; missing `factionRegistry` skips faction-standing\n* consequences. In every degraded shape the generator returns a (possibly\n* empty) array — it never throws on missing world state.\n*/",
       "testFile": "src/engine/GenerativeMissions.test.js",
       "testCasesCount": 39,
       "referencingSpecs": [],
@@ -646,6 +662,7 @@
           "line": 177
         }
       ],
+      "fileOverview": "/**\n* Hyperdrive (EW3) — pure helpers for the hyperdrive fuel economy: gating and\n* paying for sector jumps, and regenerating fuel (Ramscoop) / refilling it.\n*\n* `Ship.hyperFuel` / `maxHyperFuel` already exist; this module is the single,\n* testable home for the jump-cost and fuel-regen math so the server's warp\n* handler and `Ship.update` stay thin. No DOM, sockets, timers, or `Math.random`;\n* functions mutate only the ship passed to them.\n*/",
       "testFile": "src/engine/Hyperdrive.test.js",
       "testCasesCount": 26,
       "referencingSpecs": [
@@ -665,6 +682,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* Authoritative Game Invariant Verifier & Self-Healing Loop (SPEC-091).\n* Audits credit, cargo, physics, and fittings invariants of game entities and self-heals anomalies.\n*/",
       "testFile": "src/engine/InvariantVerifier.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [
@@ -674,52 +692,53 @@
     },
     {
       "path": "src/engine/LoadoutManager.js",
-      "loc": 360,
+      "loc": 363,
       "classes": [],
       "exports": [
         {
           "name": "OUTFIT_POWER_DRAWS",
           "type": "constant",
           "jsdoc": "/**\n* Mapping of ship outfit name strings to their virtual power grid draws in MW.\n* Reactor modules supply virtual grid power represented by negative values.\n* @type {Record<string, number>}\n*/",
-          "line": 11
+          "line": 14
         },
         {
           "name": "getPresetOutfits",
           "type": "function",
           "jsdoc": "/**\n* Extracts standard list of outfits from a preset input (which can be a simple array or preset object).\n* @param {Array|Object} preset\n* @returns {Array<string>}\n*/",
-          "line": 41
+          "line": 44
         },
         {
           "name": "validatePreset",
           "type": "function",
           "jsdoc": "/**\n* Validates slot availability, virtual power capacity, and max mass limits of a preset configuration on a ship.\n* @param {Object} ship\n* @param {Array|Object} preset\n* @param {ReadonlyArray<any>} [catalog=DEFAULT_OUTFITS]\n* @returns {{ allowed: boolean, reason: string }}\n*/",
-          "line": 55
+          "line": 58
         },
         {
           "name": "calculatePresetCost",
           "type": "function",
           "jsdoc": "/**\n* Calculates total purchase and sell adjustments for outfits in a preset.\n* @param {Object} ship\n* @param {Array|Object} preset\n* @param {ReadonlyArray<any>} [catalog=DEFAULT_OUTFITS]\n* @param {string|null} playerId\n* @param {Object|null} factionRegistry\n* @param {string|null} planetFaction\n* @param {string|null} sectorId\n* @returns {{\n*   totalCost: number,\n*   totalRefund: number,\n*   netCreditsChange: number,\n*   toBuy: Array<string>,\n*   toSell: Array<string>\n* }}\n*/",
-          "line": 154
+          "line": 157
         },
         {
           "name": "canLoadPreset",
           "type": "function",
           "jsdoc": "/**\n* High-level check if player can load a preset (checking slot/power/mass safety, stock levels, rank constraints).\n* @param {Object} ship\n* @param {Array|Object} preset\n* @param {Object} planet\n* @param {string|null} playerId\n* @param {Object|null} factionRegistry\n* @param {string|null} sectorId\n* @param {ReadonlyArray<any>} [catalog=DEFAULT_OUTFITS]\n* @returns {{ allowed: boolean, reason: string, details?: Object }}\n*/",
-          "line": 249
+          "line": 252
         },
         {
           "name": "calculatePresetTotalMass",
           "type": "function",
           "jsdoc": "/**\n* Calculates total ship mass (hull mass + active outfits mass) for a ship.\n* @param {Object} ship\n* @param {Array|Object} preset\n* @param {ReadonlyArray<any>} [catalog=DEFAULT_OUTFITS]\n* @returns {number} Total mass in kg.\n*/",
-          "line": 331
+          "line": 334
         },
         {
           "name": "calculatePresetOutfitMass",
           "type": "function",
           "jsdoc": "/**\n* Calculates total outfit mass for a given preset setup.\n* @param {Array|Object} preset\n* @param {ReadonlyArray<any>} [catalog=DEFAULT_OUTFITS]\n* @returns {number} Outfit mass in kg.\n*/",
-          "line": 348
+          "line": 351
         }
       ],
+      "fileOverview": "/**\n* LoadoutManager coordinates outfitting mass, ship agility scaling, power grid calculations, and presets.\n*/",
       "testFile": "src/engine/LoadoutManager.test.js",
       "testCasesCount": 23,
       "referencingSpecs": [
@@ -747,6 +766,7 @@
           "line": 29
         }
       ],
+      "fileOverview": "/**\n* Mining (EW9) — pure, deterministic yield math for shattering asteroids.\n*\n* The asteroid→cargo-pod loop already lives in `GameInstance.handleEntityDestroyed`;\n* this module owns the \"what + how much\" decision so it can be unit-tested and a\n* Mining Laser can scale it. The caller supplies the RNG (`() => [0,1)`) so the\n* result is reproducible — no `Math.random` in here.\n*/",
       "testFile": "src/engine/Mining.test.js",
       "testCasesCount": 8,
       "referencingSpecs": [],
@@ -754,7 +774,7 @@
     },
     {
       "path": "src/engine/MissionManager.js",
-      "loc": 715,
+      "loc": 739,
       "classes": [
         {
           "name": "MissionManager",
@@ -763,8 +783,9 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* Manages the procedural mission generation, active contract tracking, and completion cycles.\n*/",
       "testFile": "src/engine/MissionManager.test.js",
-      "testCasesCount": 25,
+      "testCasesCount": 26,
       "referencingSpecs": [
         "plan/specs/060_naval_campaigns.md",
         "plan/specs/065_procedural_mission_completions.md",
@@ -790,6 +811,7 @@
           "line": 108
         }
       ],
+      "fileOverview": "/**\n* NameGenerator (EW8) — pure, deterministic pilot and ship name generation.\n*\n* Names make NPCs, bounty targets (EW1), and encounters legible. Generation is\n* driven by an injected RNG (`() => [0,1)`), so output is fully reproducible for\n* tests — no `Math.random`. Reuses `createSeededRng` (mulberry32) so callers can\n* seed by any integer.\n*/",
       "testFile": "src/engine/NameGenerator.test.js",
       "testCasesCount": 7,
       "referencingSpecs": [],
@@ -807,6 +829,7 @@
           "line": 5
         }
       ],
+      "fileOverview": "/**\n* Technical configuration for the active Space Tactical Nebula zones.\n* Coordinates are positioned strategically in intermediate zones between planetary sectors.\n*/",
       "testFile": "src/engine/Nebulae.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [],
@@ -824,6 +847,7 @@
           "line": 10
         }
       ],
+      "fileOverview": "/**\n* outfitCatalog (spec 020) — the single source of truth for the default outfit\n* catalogue. Previously this array was duplicated inline in both `Planet`'s\n* constructor and the server's salvage handler (and the salvage copy was a stale\n* subset missing the EW pierce/ramscoop/fuel/miner outfits). Both now import this.\n*\n* Each entry carries an optional `mass` (kg) that the server bolts onto the hull\n* on install (handling tradeoff). Frozen so the shared reference can't be mutated.\n*/",
       "testFile": "src/engine/outfitCatalog.test.js",
       "testCasesCount": 6,
       "referencingSpecs": [
@@ -863,6 +887,7 @@
           "line": 193
         }
       ],
+      "fileOverview": "/**\n* Outfitting (spec 007) — pure application of an outfit's stat effects onto a\n* ship. Extracted verbatim from the server's `outfit_buy` handler so the\n* type→stat mapping is unit-testable instead of buried in a 2,000-line socket\n* file. Mutates the ship; returns whether a known outfit type was applied.\n*/",
       "testFile": "src/engine/Outfitting.test.js",
       "testCasesCount": 13,
       "referencingSpecs": [
@@ -883,6 +908,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* Planet class representing static celestial hubs with markets, outfitters, and shipyards.\n*/",
       "testFile": "src/engine/Planet.test.js",
       "testCasesCount": 20,
       "referencingSpecs": [],
@@ -966,6 +992,7 @@
           "line": 402
         }
       ],
+      "fileOverview": "/**\n* PortServices (EW5) — pure helpers for paid hull repair and hyperdrive refuel at\n* a port. Cost scales with the deficit; applying restores to max, charges the\n* ship's credits, and clamps. Insufficient credits is a no-op (full-or-nothing).\n*\n* Shields and heat already self-recover in `Ship.update`, so repair targets the\n* persistent damage: structural `armor`. Refuel tops off `hyperFuel`.\n*\n* No DOM, sockets, timers, or `Math.random`. Functions mutate only the ship\n* passed to `applyRepair` / `applyRefuel`.\n*/",
       "testFile": "src/engine/PortServices.test.js",
       "testCasesCount": 32,
       "referencingSpecs": [
@@ -1004,6 +1031,7 @@
           "line": 131
         }
       ],
+      "fileOverview": "/**\n* ProductionModel: pure, deterministic data + logic for planetary production\n* and consumption pressures on commodity prices.\n*\n* Each planet has a profile describing the commodities it produces (which push\n* local price DOWN as supply outpaces demand) and consumes (which push local\n* price UP as demand outpaces supply). Each pulse, those pressures shift the\n* planet's market by a configurable fraction of baseline, bounded by a\n* [minFactor, maxFactor] band around baseline so a producer cannot drive a\n* commodity to zero nor a consumer to infinity.\n*\n* The module is pure: no timers, no sockets, no randomness. It is consumed by\n* `GalaxyHeartbeat` which applies one production step per pulse before the\n* existing lane-diffusion and equilibrium-drift passes.\n*/",
       "testFile": "src/engine/ProductionModel.test.js",
       "testCasesCount": 30,
       "referencingSpecs": [],
@@ -1020,6 +1048,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* Projectile class representing weapon discharges (e.g. laser bolts, plasma cells) in space.\n*/",
       "testFile": "src/engine/Projectile.test.js",
       "testCasesCount": 14,
       "referencingSpecs": [],
@@ -1036,6 +1065,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* Enhanced Ship class representing player and NPC ships with shields, armor, cargo, credits, weapons, and upgrade systems.\n*/",
       "testFile": "src/engine/Ship.test.js",
       "testCasesCount": 70,
       "referencingSpecs": [
@@ -1055,6 +1085,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* Orchestrator class managing simulation state, entity updates, weapon fires, and circular elastic collisions.\n*/",
       "testFile": "src/engine/SpaceEngine.test.js",
       "testCasesCount": 36,
       "referencingSpecs": [
@@ -1073,6 +1104,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* Base class representing a physical object in a 2D top-down space environment.\n*/",
       "testFile": "src/engine/SpaceEntity.test.js",
       "testCasesCount": 20,
       "referencingSpecs": [],
@@ -1089,6 +1121,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* TerritoryControl.js — pure, deterministic faction territory control and sector influence\n* tracking engine (SPEC-098).\n*\n* It manages influence maps per sector (core, frontier, rim), decays non-controlling\n* factions' influence over time, triggers control shifts when rival influence exceeds\n* the owner by 10 points, and maps the controlling faction to dynamic sector parameters.\n*/",
       "testFile": "src/engine/TerritoryControl.test.js",
       "testCasesCount": 9,
       "referencingSpecs": [
@@ -1138,6 +1171,7 @@
           "line": 171
         }
       ],
+      "fileOverview": "/**\n* Trading (spec 025) — pure decision/mutation cores extracted from the server's\n* `trade` and `ship_buy` message handlers, so the credit/cargo/hull math is\n* unit-testable instead of inline in the socket file. Each returns a\n* `{ ok, reason }` result; the server keeps the market side-effects (registerBuy/\n* Sell), notifications, and broadcasts. Mutates only the ship passed in.\n*/",
       "testFile": "src/engine/Trading.test.js",
       "testCasesCount": 14,
       "referencingSpecs": [
@@ -1194,6 +1228,7 @@
           "line": 172
         }
       ],
+      "fileOverview": "/**\n* WeaponArchetypes: pure data model of unified weapon archetypes.\n*\n* Every weapon in the game shares one physical lifecycle — a `Projectile`\n* fired by `SpaceEngine.fireWeapon`. Archetypes are tuning profiles that\n* scale a ship's base weapon stats (damage, speed, range, cooldown) and\n* set its shield-pierce fraction and per-shot energy/heat costs. Picking\n* an archetype is a build-tradeoff knob; the simulation itself stays\n* stat-driven so the client doesn't need to know about archetypes at all.\n*\n* Backward compatibility: a ship with no archetype keeps its existing\n* stats and uses the legacy 6-energy / 8-heat per-shot cost. The engine\n* already reads `weaponDamage` / `weaponRange` / `weaponSpeed` /\n* `weaponCooldown` / `weaponShieldPierce` off the ship, so applying an\n* archetype simply rewrites those fields in place.\n*\n* The five archetypes:\n*  - KINETIC: cheap, fast, low damage, no shield pierce, snappy cooldown.\n*  - ENERGY:  balanced baseline, modest shield pierce, standard heat.\n*  - BEAM:    near-instant short-range hits, high damage per shot, but\n*             long cooldown and severe heat — modeled as a very fast,\n*             short-lived projectile so no client lifecycle changes.\n*  - MISSILE: slow, long-range, heavy damage, strong shield pierce,\n*             long cooldown, expensive in energy.\n*  - FLAK:    rapid-fire, very short range, low damage, no pierce — a\n*             cheap point-defense / swarm weapon. Cheapest heat per shot.\n*/",
       "testFile": "src/engine/WeaponArchetypes.test.js",
       "testCasesCount": 30,
       "referencingSpecs": [],
@@ -1210,6 +1245,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* Standard 2D Vector representation for space navigation and physics calculation.\n*/",
       "testFile": "src/physics/Vector2D.test.js",
       "testCasesCount": 10,
       "referencingSpecs": [],
@@ -1226,6 +1262,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* Low-overhead rolling window statistical anomaly detection sentry.\n* Tracks active connections, event-loop latency, and memory utilization variations\n* using Z-score statistics (standard deviations from the rolling mean) to detect anomalies.\n*/",
       "testFile": "src/net/AnomalyDetector.test.js",
       "testCasesCount": 10,
       "referencingSpecs": [
@@ -1267,6 +1304,7 @@
           "line": 292
         }
       ],
+      "fileOverview": "/**\n* ApiRateLimiter (P0).\n*\n* Active sliding-window API rate limiter and outbound network sentinel.\n* Protects host budgets from runaway recursive LLM API calls and restricts\n* egress destinations to a secure, developer-configured allowlist.\n*/",
       "testFile": "src/net/ApiRateLimiter.test.js",
       "testCasesCount": 13,
       "referencingSpecs": [
@@ -1292,6 +1330,7 @@
           "line": 29
         }
       ],
+      "fileOverview": "/**\n* backpressure (spec 004) — pure decision for whether to send a frame to a\n* client given how much data is already queued on its socket (`bufferedAmount`).\n*\n* The 30Hz broadcast serializes once and fans out to every client. A slow client\n* cannot drain that fast, so its socket buffer grows without bound → server OOM.\n* Policy: below the soft limit, always send. At/above the soft limit, send only\n* keyframes (skip deltas — the client self-heals on the next scheduled keyframe).\n* At/above the hard limit, the client is unrecoverably slow → drop it.\n*\n* Pure: no sockets, timers, or `Math.random`.\n*/",
       "testFile": "src/net/backpressure.test.js",
       "testCasesCount": 7,
       "referencingSpecs": [
@@ -1334,6 +1373,7 @@
           "line": 245
         }
       ],
+      "fileOverview": "/**\n* BinaryCodec — pure, versioned binary encoder/decoder for the P7 world-state\n* broadcast frames (spec 015).\n*\n* The server currently ships `state_snapshot` / `state_delta` frames as JSON\n* text. JSON repeats every object key as a string on every entity, which\n* dominates the payload for entity-heavy frames. This codec encodes the same\n* `{type, seq, ...}` frame object into a compact binary buffer whose single\n* biggest win is a per-frame **key dictionary**: each distinct object key (the\n* entity field names `id`/`x`/`y`/`type`/… that repeat across dozens of\n* entities) is written once in a table and referenced by a small varint index\n* everywhere it occurs. Integers use zig-zag varints; floats use IEEE-754\n* float64 (so the round-trip is bit-exact, matching the JSON path); strings are\n* length-prefixed UTF-8.\n*\n* Invariant: `decode(encode(x))` deep-equals `x` for any JSON-shaped value\n* (null, undefined, boolean, finite number, string, array, plain object) —\n* including the `undefined`-valued fields a delta uses to signal field removal,\n* which JSON would silently drop.\n*\n* Pure: no DOM, sockets, timers, or randomness. A `version` byte leads every\n* buffer so the wire format can migrate without ambiguity.\n*/",
       "testFile": "src/net/BinaryCodec.test.js",
       "testCasesCount": 17,
       "referencingSpecs": [
@@ -1360,6 +1400,7 @@
           "line": 54
         }
       ],
+      "fileOverview": "/**\n* BroadcastFramer — pure framing helper for the P7 snapshot/delta world-state\n* broadcast pipeline.\n*\n* Wraps StateCodec into a stateless transition function the server calls once\n* per tick. Given the live entity list and the previous broadcast state, it\n* decides whether the next wire payload is a full keyframe (`state_snapshot`)\n* or a delta (`state_delta`) against the previous keyframe-or-delta, and\n* returns both the payload and the next state so the caller can fold it back\n* into per-room state without leaking any mutation.\n*\n* Keyframe cadence: the framer emits a keyframe on the first call (no prior\n* state), every `keyframeInterval` ticks thereafter, and whenever the caller\n* sets `forceKeyframe: true` (used when a client newly joins/reconnects so\n* the room re-syncs immediately rather than waiting up to ~1s for the next\n* scheduled keyframe). Between keyframes the framer emits deltas computed\n* against the previous snapshot, tagged with `baseSeq` so the receiver can\n* detect desync (`baseSeq !== client.seq` → ignore until the next keyframe).\n*/",
       "testFile": "src/net/BroadcastFramer.test.js",
       "testCasesCount": 15,
       "referencingSpecs": [],
@@ -1376,6 +1417,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* Monitors and hot-reloads configurations from a target file (defaults to `plan/config.json`).\n* Features a zero-downtime secure design that validates properties through the SchemaValidator\n* before applying updates to active registry, firewall, and rate limiter instances,\n* safely swallowing any syntax errors.\n*/",
       "testFile": "src/net/ConfigWatcher.test.js",
       "testCasesCount": 7,
       "referencingSpecs": [
@@ -1394,6 +1436,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* ConnectionFloodSentry.js (SPEC-127)\n* High-performance inbound connection rate-limiting and concurrent IP sentry.\n* Enforces strict ceilings on concurrent WebSocket connections per unique client remote IP,\n* and tracks socket bounds to prevent distributed flood attacks and host memory exhaustion.\n*/",
       "testFile": "src/net/ConnectionFloodSentry.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [
@@ -1412,6 +1455,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* DeltaStateCodec — snapshot delta compression utility (spec 072).\n*\n* Computes difference-only updates (deltas) between the current frame and an\n* acknowledged baseline frame of a client. This drastically reduces the egress\n* network bandwidth payload since only modified fields and deletions are sent.\n*/",
       "testFile": "src/net/DeltaStateCodec.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [
@@ -1437,6 +1481,7 @@
           "line": 76
         }
       ],
+      "fileOverview": "/**\n* DnsEgressSentry.js (SPEC-173) — DNS Egress Firewall & Tunneling Sentry.\n* Intercepts all Node dns resolution methods inside sandboxed guest workers\n* to enforce domain allowlists and block data exfiltration via DNS tunneling.\n*/",
       "testFile": "src/net/DnsEgressSentry.test.js",
       "testCasesCount": 20,
       "referencingSpecs": [
@@ -1456,6 +1501,7 @@
           "line": 29
         }
       ],
+      "fileOverview": "/**\n* DynamicResourceGovernor.js (SPEC-172) — Dynamic host resource governor & scheduler.\n* Monitors host system resources (CPU load, free memory) to queue guest process launches,\n* and dynamically down-throttles near-budget guest processes to low OS priorities.\n*/",
       "testFile": "src/net/DynamicResourceGovernor.test.js",
       "testCasesCount": 12,
       "referencingSpecs": [
@@ -1474,6 +1520,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* EphemeralSandbox (spec 115) — copy-on-write virtual workspace sandboxing cloner.\n* Provisions strictly-contained transient workspaces and restricts file mutations.\n*/",
       "testFile": "src/net/EphemeralSandbox.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [
@@ -1486,8 +1533,9 @@
       "loc": 117,
       "classes": [],
       "exports": [],
-      "testFile": null,
-      "testCasesCount": 0,
+      "fileOverview": "/**\n* GuestLoader.js (SPEC-144 / SPEC-152) — ESM Import Loader Hook.\n* Intercepts dynamic and static imports inside the guest process, asserting strict path boundaries\n* and verifying cryptographic SHA-256 module signatures.\n*/",
+      "testFile": "src/net/GuestLoader.test.js",
+      "testCasesCount": 7,
       "referencingSpecs": [
         "plan/specs/168_loader_native_modules_restriction.md"
       ],
@@ -1517,6 +1565,7 @@
           "line": 117
         }
       ],
+      "fileOverview": "/**\n* GuestRpcSentry.js (SPEC-145)\n* Secure Sandboxed Guest RPC Sentry validating all child process communication.\n*/",
       "testFile": "src/net/GuestRpcSentry.test.js",
       "testCasesCount": 14,
       "referencingSpecs": [
@@ -1536,6 +1585,7 @@
           "line": 28
         }
       ],
+      "fileOverview": "/**\n* GuestRunner.js (SPEC-136) — secure host-isolated guest execution runner.\n* Spawns untrusted scripts in low-privilege child processes with environment and timeout controls.\n*/",
       "testFile": "src/net/GuestRunner.test.js",
       "testCasesCount": 23,
       "referencingSpecs": [
@@ -1548,8 +1598,9 @@
       "loc": 124,
       "classes": [],
       "exports": [],
-      "testFile": null,
-      "testCasesCount": 0,
+      "fileOverview": "/**\n* GuestRunnerWorker.js (SPEC-136) — child-process bootstrap wrapper.\n* Pre-activates all sandbox protections before loading the untrusted guest script.\n*/",
+      "testFile": "src/net/GuestRunnerWorker.test.js",
+      "testCasesCount": 3,
       "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
@@ -1571,6 +1622,7 @@
           "line": 22
         }
       ],
+      "fileOverview": "/**\n* heartbeat (spec 003) — pure helper for the WebSocket liveness sweep.\n*\n* The server pings every socket on an interval and flips `isAlive=false`; a\n* `pong` handler flips it back to true. A socket still `isAlive===false` at the\n* next sweep never responded and is dead (half-open TCP) — it should be\n* terminated so its room/fleet state and file descriptor are reclaimed. This\n* module owns the *selection* (pure, testable); the server owns the timer and\n* the side-effecting ping/terminate.\n*/",
       "testFile": "src/net/heartbeat.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [
@@ -1590,6 +1642,7 @@
           "line": 54
         }
       ],
+      "fileOverview": "/**\n* IntegrityGuard.js (spec 134) — global prototype freeze sentry\n* and global scope pollution protection registry.\n*/",
       "testFile": "src/net/IntegrityGuard.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [
@@ -1622,6 +1675,7 @@
           "line": 149
         }
       ],
+      "fileOverview": "/**\n* interest.js — pure area-of-interest (AOI) filtering for the P7 world-state\n* broadcast (spec 014).\n*\n* The authoritative server frames one snapshot/delta per client; this module\n* decides WHICH entities belong in a given client's frame: only those within a\n* radius of the client's viewpoint, plus a set of always-relevant ids (the\n* client's own ship and any caller-supplied globally-relevant entities such as\n* a combat target). Culling distant entities makes per-client bandwidth scale\n* with what a player can actually see rather than with the whole room — the\n* single biggest lever for higher entity/player counts.\n*\n* Pure: no DOM, sockets, timers, or randomness — deterministic and testable.\n* Entities entering/leaving the returned set across ticks become natural\n* add/remove deltas downstream (StateCodec.diff), so nothing lingers client-side.\n*/",
       "testFile": "src/net/interest.test.js",
       "testCasesCount": 15,
       "referencingSpecs": [
@@ -1643,6 +1697,7 @@
           "line": 50
         }
       ],
+      "fileOverview": "/**\n* IntrusionDetectionSentry.js (SPEC-175)\n* Real-time global hook scanner and sandbox process escape intrusion detection.\n* Monitors prototype tampering, unauthorized command executions, and verifies IPC signatures.\n*/",
       "testFile": "src/net/IntrusionDetectionSentry.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [
@@ -1661,6 +1716,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* Event-Loop Latency Monitor & Dynamic Backpressure Shedding (SPEC-090).\n* Actively monitors event loop delays using high-resolution timers and computes a rolling average.\n*/",
       "testFile": "src/net/LatencyMonitor.test.js",
       "testCasesCount": 6,
       "referencingSpecs": [
@@ -1680,6 +1736,7 @@
           "line": 17
         }
       ],
+      "fileOverview": "/**\n* logger (spec 010) — a tiny structured (JSON-line) logger with level filtering\n* and no dependencies. Each call emits one `{level, ts, msg, ...fields}` line via\n* an injectable sink (defaults to `console.log`). Resilient: if `fields` can't be\n* serialized it falls back to a bare line rather than throwing on the hot path.\n*/",
       "testFile": "src/net/logger.test.js",
       "testCasesCount": 4,
       "referencingSpecs": [
@@ -1699,6 +1756,7 @@
           "line": 19
         }
       ],
+      "fileOverview": "/**\n* MainThreadWatchdog.js (spec 133) — main-thread watchdog orchestrator\n* that spawns a background watchdog worker thread to prevent Event Loop freezes.\n*/",
       "testFile": "src/net/MainThreadWatchdog.test.js",
       "testCasesCount": 4,
       "referencingSpecs": [
@@ -1711,34 +1769,30 @@
       "loc": 66,
       "classes": [],
       "exports": [],
-      "testFile": null,
-      "testCasesCount": 0,
+      "fileOverview": "/**\n* MainThreadWatchdogWorker.js (spec 133) — background worker thread\n* that monitors the responsiveness of Node's main event loop.\n*/",
+      "testFile": "src/net/MainThreadWatchdogWorker.test.js",
+      "testCasesCount": 3,
       "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
     {
       "path": "src/net/MemoryLeakSentry.js",
-      "loc": 104,
+      "loc": 107,
       "classes": [
         {
           "name": "MemoryLeakSentry",
-          "jsdoc": null,
-          "line": 10
+          "jsdoc": "/**\n* Lightweight memory leak sentinel and self-healing garbage collector.\n*/",
+          "line": 13
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* MemoryLeakSentry.js (SPEC-121)\n* Lightweight memory leak sentinel and self-healing garbage collector.\n*\n* Monitors memory growth rates using SandboxTelemetry, registers leak alert counts,\n* and automatically triggers global.gc() sweeps under active workloads when\n* memory growth exceeds configured thresholds.\n*/",
       "testFile": "src/net/MemoryLeakSentry.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [
         "plan/specs/121_memory_leak_sentry.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "MemoryLeakSentry",
-          "type": "class",
-          "line": 10
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/metrics.js",
@@ -1752,6 +1806,7 @@
           "line": 14
         }
       ],
+      "fileOverview": "/**\n* metrics (spec 010) — a tiny, dependency-free runtime metrics registry:\n* counters (monotonic), gauges (point-in-time), and observations (count/sum/\n* avg/min/max for things like tick duration). `snapshot()` returns a plain\n* JSON-safe object for a `/metrics` endpoint. Pure aside from its own state;\n* inject `now` for deterministic tests.\n*/",
       "testFile": "src/net/metrics.test.js",
       "testCasesCount": 6,
       "referencingSpecs": [
@@ -1765,8 +1820,9 @@
       "loc": 22,
       "classes": [],
       "exports": [],
-      "testFile": null,
-      "testCasesCount": 0,
+      "fileOverview": "/**\n* mockFreezeScript.js (spec 133 test helper)\n* Initializes MainThreadWatchdog and simulates an event loop freeze.\n*/",
+      "testFile": "src/net/mockFreezeScript.test.js",
+      "testCasesCount": 2,
       "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
@@ -1781,6 +1837,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* Network Latency & Packet-Loss Injector (SPEC-095).\n* Wraps WebSocket sockets to inject application-level latency and drops outbound/inbound frames.\n*/",
       "testFile": "src/net/NetworkLatencyInjector.test.js",
       "testCasesCount": 7,
       "referencingSpecs": [
@@ -1800,6 +1857,7 @@
           "line": 40
         }
       ],
+      "fileOverview": "/**\n* originPolicy (spec 002) — pure decision for whether to accept a WebSocket\n* upgrade based on its `Origin` header. Defends against Cross-Site WebSocket\n* Hijacking (CSWSH): a browser always sends `Origin`, and it cannot be spoofed\n* from page script, so we accept only same-origin connections (the page host\n* equals the WS host — true for localhost AND any tunnel the game is served\n* through) plus an explicit allowlist. Non-browser tools (no `Origin`) are\n* allowed by default so CLIs/tests still work.\n*\n* Pure: no DOM, sockets, env, or `Math.random`.\n*/",
       "testFile": "src/net/originPolicy.test.js",
       "testCasesCount": 8,
       "referencingSpecs": [
@@ -1812,6 +1870,7 @@
       "loc": 105,
       "classes": [],
       "exports": [],
+      "fileOverview": "/**\n* PortReclaimer.js (spec 106) — cross-platform utility to detect and aggressively\n* terminate zombie processes holding a specific socket port, preventing EADDRINUSE crashes.\n*/",
       "testFile": "src/net/PortReclaimer.test.js",
       "testCasesCount": 3,
       "referencingSpecs": [
@@ -1831,6 +1890,7 @@
           "line": 110
         }
       ],
+      "fileOverview": "/**\n* ProcessReaper.js (spec 092) — pure, modular lifecycle manager to track\n* and aggressively terminate background workers, child processes, and\n* sockets to prevent memory leaks and zombie locks in AI sandbox.\n*/",
       "testFile": "src/net/ProcessReaper.test.js",
       "testCasesCount": 7,
       "referencingSpecs": [
@@ -1842,27 +1902,17 @@
     },
     {
       "path": "src/net/ProcessSentinel.js",
-      "loc": 1348,
+      "loc": 1352,
       "classes": [
         {
-          "name": "for",
-          "jsdoc": null,
-          "line": 61
-        },
-        {
           "name": "VirtualWriteStream",
-          "jsdoc": null,
-          "line": 62
-        },
-        {
-          "name": "for",
-          "jsdoc": null,
-          "line": 95
+          "jsdoc": "/**\n* Virtual Write stream class for Zero-Trust COW.\n*/",
+          "line": 64
         },
         {
           "name": "VirtualReadStream",
-          "jsdoc": null,
-          "line": 96
+          "jsdoc": "/**\n* Virtual Read stream class for Zero-Trust COW.\n*/",
+          "line": 100
         }
       ],
       "exports": [
@@ -1870,21 +1920,22 @@
           "name": "parseCommandString",
           "type": "function",
           "jsdoc": "/**\n* Parses a full command string into a binary name and an array of arguments,\n* respecting basic quotes.\n* @param {string} cmdStr - Full shell command string.\n* @returns {ParsedCommand}\n*/",
-          "line": 349
+          "line": 353
         },
         {
           "name": "validateCommand",
           "type": "function",
           "jsdoc": "/**\n* Validates whether a command and its arguments are permitted under the strict security whitelist.\n* @param {string} command - The command or binary path under evaluation.\n* @param {string[]} [args=[]] - Optional array of arguments passed to the command.\n* @returns {{ allowed: boolean, reason?: string }}\n*/",
-          "line": 393
+          "line": 397
         },
         {
           "name": "ProcessSentinel",
           "type": "constant",
           "jsdoc": "/**\n* ProcessSentinel (spec 106) — child process security sentinel whitelister.\n* @type {object}\n*/",
-          "line": 575
+          "line": 579
         }
       ],
+      "fileOverview": "/**\n* ProcessSentinel.js (spec 106) — strict guest containment sentinel that\n* monkey-patches Node's child_process methods to enforce a strict whitelist,\n* preventing malicious process escapes and unauthorized network egress.\n*/",
       "testFile": "src/net/ProcessSentinel.test.js",
       "testCasesCount": 15,
       "referencingSpecs": [
@@ -1892,28 +1943,7 @@
         "plan/specs/138_strict_path_jailing.md",
         "plan/specs/169_path_sibling_directory_jailing.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "for",
-          "type": "class",
-          "line": 61
-        },
-        {
-          "name": "VirtualWriteStream",
-          "type": "class",
-          "line": 62
-        },
-        {
-          "name": "for",
-          "type": "class",
-          "line": 95
-        },
-        {
-          "name": "VirtualReadStream",
-          "type": "class",
-          "line": 96
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/PubSub.js",
@@ -1936,6 +1966,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* PubSub — process-agnostic publish-subscribe transport abstraction (spec 019e).\n*\n* Provides a uniform pub/sub interface that supports both local in-memory\n* delivery (ideal for unit/integration tests) and Redis-backed sharded/global\n* messaging (for production multi-worker clusters).\n*/",
       "testFile": "src/net/PubSub.test.js",
       "testCasesCount": 7,
       "referencingSpecs": [
@@ -1955,6 +1986,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* ResourceLimiter (spec 116) — light-overhead resource monitor and backpressure sentinel\n* that regularly polls host system/thread health metrics (memory usage, CPU event loop latency)\n* and actively prevents runaway infinite loops or Out-Of-Memory (OOM) failures.\n*/",
       "testFile": "src/net/ResourceLimiter.test.js",
       "testCasesCount": 6,
       "referencingSpecs": [
@@ -1999,6 +2031,7 @@
           "line": 280
         }
       ],
+      "fileOverview": "/**\n* roomRouter — pure room→shard assignment and a process-agnostic room ownership\n* registry (spec 019, horizontal-scaling first slice).\n*\n* The server is a single Node process today. Scaling rooms across processes or\n* hosts needs two orchestration primitives that are independent of any one\n* process and therefore unit-testable in isolation:\n*\n*  1. A deterministic router: given a `roomId` and a shard count, decide which\n*     shard/process should own that room. Stable (same room → same shard) and\n*     evenly distributed, so a stateless front door can route a client to the\n*     right node without coordination.\n*\n*  2. A room registry: the authoritative map of which node currently owns which\n*     room (presence), with claim / release / hand-off operations. In a real\n*     deployment this map lives in the shared backend (Redis/the `Store`); here\n*     it is a plain serializable structure so the same logic can be exercised\n*     headlessly and persisted through the existing `Store` interface.\n*\n* Pure: no sockets, processes, or randomness. The engine stays process-agnostic;\n* only orchestration consumes these helpers. Single-process mode never calls\n* them, so it is unaffected.\n*/",
       "testFile": "src/net/roomRouter.test.js",
       "testCasesCount": 25,
       "referencingSpecs": [
@@ -2010,12 +2043,12 @@
     },
     {
       "path": "src/net/SandboxFirewall.js",
-      "loc": 278,
+      "loc": 281,
       "classes": [
         {
           "name": "SandboxFirewall",
-          "jsdoc": null,
-          "line": 14
+          "jsdoc": "/**\n* High-performance outbound connection packet-filtering firewall.\n*/",
+          "line": 17
         }
       ],
       "exports": [
@@ -2023,52 +2056,42 @@
           "name": "activateFirewall",
           "type": "function",
           "jsdoc": "/**\n* Activates active low-overhead DNS and socket level monkeypatching sentries.\n*\n* @param {SandboxFirewall} firewall\n*/",
-          "line": 178
+          "line": 181
         },
         {
           "name": "deactivateFirewall",
           "type": "function",
           "jsdoc": "/**\n* Restores original native network connection and resolution configurations.\n*/",
-          "line": 248
+          "line": 251
         }
       ],
+      "fileOverview": "/**\n* SandboxFirewall.js (SPEC-120)\n* High-performance outbound connection packet-filtering firewall.\n*\n* Governs all network egress requests from Sandboxed runs. Monkey-patches\n* Node's DNS lookups and raw net socket connections to enforce domain allowlists\n* and strictly block private IP subnets (RFC 1918 + AWS metadata).\n*/",
       "testFile": "src/net/SandboxFirewall.test.js",
       "testCasesCount": 6,
       "referencingSpecs": [
         "plan/specs/120_sandbox_egress_firewall.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "SandboxFirewall",
-          "type": "class",
-          "line": 14
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/SandboxSecurityRegistry.js",
-      "loc": 144,
+      "loc": 147,
       "classes": [],
       "exports": [
         {
           "name": "SandboxSecurityRegistry",
           "type": "constant",
-          "jsdoc": null,
-          "line": 66
+          "jsdoc": "/**\n* Centralized registry for registering, auditing, and self-healing security boundary containment violations.\n*/",
+          "line": 69
         }
       ],
+      "fileOverview": "/**\n* SandboxSecurityRegistry.js (spec 131) — centralized, tamper-proof security registry\n* to track, persist, and expose sandbox containment breach events.\n*/",
       "testFile": "src/net/SandboxSecurityRegistry.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [
         "plan/specs/131_centralized_security_audit_ledger.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "SandboxSecurityRegistry",
-          "type": "constant",
-          "line": 66
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/SandboxTelemetry.js",
@@ -2081,6 +2104,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* Sandbox Resource Telemetry Recorder (SPEC-094).\n* Compiles and exposes real-time CPU, memory, and repository disk utilization.\n*/",
       "testFile": "src/net/SandboxTelemetry.test.js",
       "testCasesCount": 6,
       "referencingSpecs": [
@@ -2123,6 +2147,7 @@
           "line": 263
         }
       ],
+      "fileOverview": "/**\n* SchemaCodec — an evaluation codec (spec 038) that extends the spec-015\n* `BinaryCodec` with a **value-string dictionary**.\n*\n* `BinaryCodec` already interns object *keys* (the repeated `id`/`x`/`y`/`type`\n* field names) into a per-frame table. But it still writes repeated string\n* *values* inline — e.g. `\"ship\"` appears once per entity, dozens of times in a\n* snapshot. SchemaCodec interns **every** string (keys AND values) into a single\n* table and references each occurrence by a small varint index, so a frame with\n* 40 `\"ship\"` entities pays for `\"ship\"` exactly once. This trades a slightly\n* larger header (one table) for removing all string repetition in the body — a\n* net win on entity-dense frames (measured in SchemaCodec.test.js).\n*\n* Same guarantees as `BinaryCodec`: a leading version byte, integers as zig-zag\n* varints, floats as bit-exact float64, and `decode(encode(x))` deep-equals `x`\n* for any JSON-shaped value (including `undefined`-valued delta-removal fields).\n*\n* Status: this is an EVAL prototype, not wired into the live broadcast. See the\n* recommendation in SchemaCodec.test.js / plan/BACKLOG.md.\n*\n* Pure: no DOM, sockets, timers, or randomness.\n*/",
       "testFile": "src/net/SchemaCodec.test.js",
       "testCasesCount": 8,
       "referencingSpecs": [
@@ -2160,6 +2185,7 @@
           "line": 149
         }
       ],
+      "fileOverview": "/**\n* SchemaRegistry.js — a centralized registry for all core commodities dictionary\n* configurations and WebSocket network command structures (SPEC-099).\n*\n* This serves as the single source of truth to prevent drift between client and server.\n*/",
       "testFile": "src/net/SchemaRegistry.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [
@@ -2179,6 +2205,7 @@
           "line": 19
         }
       ],
+      "fileOverview": "/**\n* SchemaValidator.js — pure, zero-dependency, zero-trust schema validation\n* for authoritative server WebSocket messages (SPEC-089).\n*\n* It validates that client-provided JSON messages contain correct types,\n* formats, and constraints, and strips undeclared keys to prevent prototype\n* pollution and malicious injections.\n*/",
       "testFile": "src/net/SchemaValidator.test.js",
       "testCasesCount": 11,
       "referencingSpecs": [
@@ -2190,7 +2217,7 @@
     },
     {
       "path": "src/net/SecureModuleRegistry.js",
-      "loc": 72,
+      "loc": 75,
       "classes": [],
       "exports": [
         {
@@ -2202,20 +2229,15 @@
         {
           "name": "SecureModuleRegistry",
           "type": "constant",
-          "jsdoc": null,
-          "line": 30
+          "jsdoc": "/**\n* Cryptographically signed secure module verification sentinel.\n*/",
+          "line": 33
         }
       ],
+      "fileOverview": "/**\n* SecureModuleRegistry.js (SPEC-152) — Cryptographically Signed Module Registry.\n* Holds SHA-256 integrity checksum mappings for trusted modules and dependency files.\n*/",
       "testFile": "src/net/SecureModuleRegistry.test.js",
       "testCasesCount": 9,
       "referencingSpecs": [],
-      "missingJsDocSymbols": [
-        {
-          "name": "SecureModuleRegistry",
-          "type": "constant",
-          "line": 30
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/StateCodec.js",
@@ -2241,6 +2263,7 @@
           "line": 164
         }
       ],
+      "fileOverview": "/**\n* StateCodec — pure, deterministic snapshot + delta codec for the authoritative\n* world broadcast pipeline (P7: Netcode & Scale).\n*\n* The server currently ships the full serialized entity list every tick. This\n* module is the headless foundation for replacing that with snapshot/delta sync:\n* encode a keyframe from the current entities, compute a structural diff against\n* the previous snapshot, and reconstruct the next snapshot on the receiving end\n* from (previous snapshot + delta).\n*\n* Invariant:\n*   applyDelta(prev, diff(prev, next)) deep-equals next\n* for any sets of adds, removes, and partial field updates.\n*\n* The module is intentionally free of DOM, sockets, timers, and randomness so it\n* can be unit-tested deterministically and reused wherever pure state-sync helps.\n*/",
       "testFile": "src/net/StateCodec.test.js",
       "testCasesCount": 27,
       "referencingSpecs": [],
@@ -2248,28 +2271,23 @@
     },
     {
       "path": "src/net/StaticSecuritySentry.js",
-      "loc": 310,
+      "loc": 313,
       "classes": [],
       "exports": [
         {
           "name": "StaticSecuritySentry",
           "type": "constant",
-          "jsdoc": null,
-          "line": 35
+          "jsdoc": "/**\n* Static Analysis AST Security Sentry.\n*/",
+          "line": 38
         }
       ],
+      "fileOverview": "/**\n* StaticSecuritySentry.js (SPEC-171) — Advanced static analysis AST/lexical sentry.\n* Pre-scans guest script source code to block dangerous language constructs before execution.\n*/",
       "testFile": "src/net/StaticSecuritySentry.test.js",
       "testCasesCount": 8,
       "referencingSpecs": [
         "plan/specs/171_ast_static_security_sentry.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "StaticSecuritySentry",
-          "type": "constant",
-          "line": 35
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/statsPayload.js",
@@ -2283,6 +2301,7 @@
           "line": 12
         }
       ],
+      "fileOverview": "/**\n* statsPayload (spec 007) — builds the per-client `stats` message from a live\n* client object. Extracted from the server's `sendStats` so the payload shape is\n* a pure, testable function of the ship + mission manager rather than inline in\n* the socket layer.\n*/",
       "testFile": "src/net/statsPayload.test.js",
       "testCasesCount": 4,
       "referencingSpecs": [],
@@ -2290,59 +2309,49 @@
     },
     {
       "path": "src/net/TokenCostGovernor.js",
-      "loc": 547,
+      "loc": 550,
       "classes": [
         {
           "name": "MockClientRequest",
           "jsdoc": "/**\n* Mock ClientRequest to simulate HTTP connection flows locally.\n*/",
-          "line": 417
+          "line": 420
         }
       ],
       "exports": [
         {
           "name": "TokenCostGovernor",
           "type": "constant",
-          "jsdoc": null,
-          "line": 37
+          "jsdoc": "/**\n* Automated LLM API Token Cost Governance & Mock Sentry.\n*/",
+          "line": 40
         }
       ],
+      "fileOverview": "/**\n* TokenCostGovernor.js (SPEC-174)\n* Centralized LLM API Token Cost Governance & Mock Sentry.\n* Manages runtime budgets, intercepts outbound model queries,\n* and satisfies them locally using deterministic mocks.\n*/",
       "testFile": "src/net/TokenCostGovernor.test.js",
       "testCasesCount": 9,
       "referencingSpecs": [
         "plan/specs/174_token_cost_governance_mock_sentry.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "TokenCostGovernor",
-          "type": "constant",
-          "line": 37
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/WorkspaceDriftSentry.js",
-      "loc": 203,
+      "loc": 206,
       "classes": [],
       "exports": [
         {
           "name": "WorkspaceDriftSentry",
           "type": "constant",
-          "jsdoc": null,
-          "line": 49
+          "jsdoc": "/**\n* Workspace Snapshot Drift Auditor & Copy-On-Write Self-Healing Restoration (SPEC-146).\n*/",
+          "line": 52
         }
       ],
+      "fileOverview": "/**\n* WorkspaceDriftSentry.js (SPEC-146)\n* Workspace Drift Auditing Sentinel & Integrity Self-Healer.\n*\n* Takes baseline copy-on-write directory snapshots and purges untracked file leaks\n* or modifications post-execution, preserving environment purity.\n*/",
       "testFile": "src/net/WorkspaceDriftSentry.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [
         "plan/specs/146_workspace_drift_self_healer.md"
       ],
-      "missingJsDocSymbols": [
-        {
-          "name": "WorkspaceDriftSentry",
-          "type": "constant",
-          "line": 49
-        }
-      ]
+      "missingJsDocSymbols": []
     },
     {
       "path": "src/net/wsCompression.js",
@@ -2362,6 +2371,7 @@
           "line": 39
         }
       ],
+      "fileOverview": "/**\n* wsCompression — `permessage-deflate` configuration + evaluation helper (spec 037).\n*\n* `ws` supports the permessage-deflate extension but disables it server-side by\n* default, because (per 2026 guidance) it trades wire size for real CPU/memory:\n* Node's zlib can fragment memory badly at high concurrency. Since the broadcast\n* is already shrunk by AoI (spec 014) + the binary protocol (spec 015), this is\n* an **opt-in, measure-first** knob, not a default.\n*\n* This module owns the (data-only) deflate option so the decision is unit-testable\n* and the server just consumes it behind the `WS_COMPRESSION` flag.\n*\n* Recommendation (measured in wsCompression.test.js): deflate meaningfully\n* shrinks large text frames, but the binary state channel is already compact, so\n* the CPU/memory cost rarely pays off for the hot path. Keep it OFF by default;\n* enable only if profiling shows egress bandwidth (not CPU) is the bottleneck —\n* and consider scoping it to the JSON channels (chat/market) rather than the\n* binary state broadcast.\n*/",
       "testFile": "src/net/wsCompression.test.js",
       "testCasesCount": 6,
       "referencingSpecs": [],
@@ -2379,6 +2389,7 @@
           "line": 20
         }
       ],
+      "fileOverview": "/**\n* ZeroTraceTeardown.js (SPEC-176)\n* Autonomic, zero-trace post-execution teardown purifier.\n* Sweeps process trees, files, timers, and handles after guest script executions.\n*/",
       "testFile": "src/net/ZeroTraceTeardown.test.js",
       "testCasesCount": 4,
       "referencingSpecs": [
@@ -2397,6 +2408,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* GalacticChronicle (P1 / P2).\n*\n* A persistent ledger recording macro simulation events in the living galaxy\n* (e.g., commodity shortages, faction clashes, stargate interdictions).\n* Exposes chronicle history dynamically to the observability dashboard.\n*\n* Uses the active Store instance to persist history under the key 'chronicle'.\n* Implements standard memory caching and an ordered write queue to prevent\n* concurrent file/database race conditions.\n*/",
       "testFile": "src/persistence/GalacticChronicle.test.js",
       "testCasesCount": 7,
       "referencingSpecs": [
@@ -2416,6 +2428,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* PersistenceManager (P1).\n*\n* Glue between the live server runtime and a {@link Store}. The server holds\n* one of these; the engine layer never touches a store directly. All disk\n* paths come back through `save…` / `load…` here, which:\n*   - serialize the live world via {@link serializeGalaxy} / {@link serializePlayer},\n*   - wrap player snapshots with the room id the player was in so a returning\n*     pilot can be auto-routed to the right sector after a restart,\n*   - swallow + log errors so missing or corrupted save files NEVER take down\n*     the live server.\n*\n* Nothing in this class touches sockets, randomness, or the global clock —\n* it is unit-testable against any {@link Store} backend.\n*/",
       "testFile": "src/persistence/PersistenceManager.test.js",
       "testCasesCount": 19,
       "referencingSpecs": [],
@@ -2432,6 +2445,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* Redis-backed persistence store (spec 019b).\n*\n* Implements the Store interface against a shared Redis backend. To keep\n* the package clean and the unit-test gate headless, the redis client is\n* injected in the constructor. This allows passing a fake/mock client in\n* tests while wiring a real client in production.\n*\n* All operations are async and return Promises, matching the Store contract.\n*/",
       "testFile": "src/persistence/RedisStore.test.js",
       "testCasesCount": 9,
       "referencingSpecs": [
@@ -2475,6 +2489,7 @@
           "line": 286
         }
       ],
+      "fileOverview": "/**\n* Persistence serializers (P1).\n*\n* Pure, side-effect-free helpers that translate the live in-memory `GameInstance`\n* and per-client objects into plain JSON-safe shapes (and back). These shapes\n* are what the swappable `Store` writes and reads — keeping the conversion\n* out of the store keeps both layers small and independently testable.\n*\n* The contract that matters for P1 restart-survival:\n*   `applyGalaxy(instanceB, serializeGalaxy(instanceA))`\n*   leaves B's markets, events, heartbeat pulses, and faction state equal to A's.\n*   `applyPlayer(clientB, serializePlayer(clientA))`\n*   leaves B's credits, cargo, outfits, hull stats, mission progress, etc. equal to A's.\n*\n* Nothing in here touches sockets, the filesystem, or `Math.random`. All inputs\n* are passed in; missing pieces are tolerated so partial snapshots restore\n* gracefully.\n*/",
       "testFile": "src/persistence/serializers.test.js",
       "testCasesCount": 15,
       "referencingSpecs": [
@@ -2493,6 +2508,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* ShardedStore — horizontal database partition-sharding adapter (spec 070).\n*\n* Implements the Store interface by distributing keys horizontally across multiple\n* underlying Store instances (shards). It resolves shard ownership by running a\n* uniform 32-bit FNV-1a hashing algorithm over keys and modulo-indexing them.\n*\n* This allows distributed sharding of player and galaxy states without single-node bottlenecks.\n*/",
       "testFile": "src/persistence/ShardedStore.test.js",
       "testCasesCount": 7,
       "referencingSpecs": [
@@ -2521,6 +2537,7 @@
         }
       ],
       "exports": [],
+      "fileOverview": "/**\n* Persistence Store interface (P1).\n*\n* The world-state persistence layer is intentionally decoupled from any\n* concrete storage backend. A Store is a tiny async key/value box:\n*   - `save(key, obj)` writes a JSON-serialisable value under `key`.\n*   - `load(key)`     reads it back (or returns `null` if absent).\n*   - `has(key)`      reports whether a value exists for `key`.\n*\n* Keys are opaque strings. Implementations sanitise them where their\n* underlying storage demands it (e.g. the filesystem). Values must round-trip\n* cleanly through `JSON.stringify` / `JSON.parse`; the serializers in\n* `serializers.js` guarantee this for galaxy and player snapshots.\n*\n* Adding a new backend (Redis, SQLite, S3...) means subclassing `Store` and\n* implementing the three methods — nothing else in the engine needs to know.\n*/",
       "testFile": "src/persistence/Store.test.js",
       "testCasesCount": 17,
       "referencingSpecs": [
@@ -2564,6 +2581,7 @@
           "line": 301
         }
       ],
+      "fileOverview": "/**\n* Handles trade transaction requests (buying/selling commodities) authoritatively.\n* @param {object} clientObj The client object representing the active player connection.\n* @param {object} msg The inbound WebSocket command details.\n* @param {object} room The active server sector instance (room).\n* @returns {void}\n*/",
       "testFile": "src/server/actionHandlers.test.js",
       "testCasesCount": 18,
       "referencingSpecs": [
@@ -2576,11 +2594,53 @@
       "loc": 76,
       "classes": [],
       "exports": [],
+      "fileOverview": "/**\n* Handles the \"chat\" WebSocket message.\n* Supports global, squad, and fleet chat channels.\n*\n* @param {object} clientObj - The active client connection object.\n* @param {object} msg - The incoming chat message payload.\n* @param {object} room - The current GameInstance room context.\n* @param {object} pubsub - The PubSub instance for cross-process/cross-server events.\n* @param {object} squadManager - The squad manager instance.\n*/",
       "testFile": "src/server/chatHandler.test.js",
       "testCasesCount": 8,
       "referencingSpecs": [
         "plan/specs/109_server_handler_extraction_round4.md"
       ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/clientConnection.js",
+      "loc": 285,
+      "classes": [],
+      "exports": [
+        {
+          "name": "createClientObject",
+          "type": "function",
+          "jsdoc": "/**\n* Creates and initializes a connection client state object.\n*\n* @param {object} ws - The active WebSocket connection.\n* @param {object} req - The incoming upgrade HTTP request.\n* @param {object} options - Unified context singletons.\n* @returns {object} The initialized client state object.\n*/",
+          "line": 12
+        },
+        {
+          "name": "preprocessMessage",
+          "type": "function",
+          "jsdoc": "/**\n* Runs connection rate limiting, backpressure checking, JSON parsing,\n* and payload schema validation for incoming WebSocket messages.\n*\n* @param {object} clientObj - The target client state object.\n* @param {string} msgStr - The raw incoming message string.\n* @param {object} ws - The raw WebSocket connection.\n* @param {object} options - Refilling and validation singletons.\n* @returns {object|null} The sanitized, validated message, or null if validation/rate limit checks failed.\n*/",
+          "line": 85
+        },
+        {
+          "name": "registerWebSocketConnection",
+          "type": "function",
+          "jsdoc": "/**\n* Registers WebSocket connection event handlers (pong, message, close),\n* constructs and registers the player client state object, and routes incoming messages.\n*\n* @param {object} ws - The active WebSocket connection.\n* @param {object} req - The incoming upgrade HTTP request.\n* @param {object} options - Unified context singletons.\n* @param {object} options.metrics - The metrics registry.\n* @param {object} options.logger - Leveled logger.\n* @param {object} options.latencyMonitor - The latency monitor.\n* @param {object} options.storeInstance - Swappable database store.\n* @param {object} options.instances - Authoritative world-state room map.\n* @param {object} options.squadManager - The squads manager.\n* @param {object} options.buildStatsPayload - Helper to build stats payload.\n* @param {function} options.registerMissionSpawnHandlers - Mission spawn registrator.\n* @param {Map} options.clients - Client lookup maps.\n* @param {object} options.wsRateLimitConfig - WebSocket rate limit config.\n* @param {object} options.resourceLimiter - Backpressure and resource monitor.\n* @param {function} options.validateMessage - Payload validator.\n* @param {function} options.routeMessage - Asynchronous message router.\n* @param {Map} options.persistentSessions - Session lookup maps.\n* @param {object} options.persistenceManager - Swappable database/persistence manager.\n* @param {object} options.galacticChronicle - Chronicle persistence.\n* @param {object} options.pubsub - Sharded pub/sub pipeline.\n* @param {object} options.wss - WebSocket server.\n* @param {number} options.WORKERS - Sharded worker count.\n* @param {number} options.SHARD_INDEX - Active worker shard index.\n* @param {object} options.matchmakingQueue - Player matching queue.\n* @param {function} options.joinRoom - Join room orchestrator.\n* @param {function} options.sendLobbyList - Lobby list sender.\n* @param {function} options.broadcastLobbySync - Lobby sync broadcaster.\n* @param {object} options.connectionFloodSentry - Connection flood protector.\n* @param {function} options.handleClientDisconnect - Client disconnect handler.\n* @param {function} options.processMatchmakingQueueForRoom - Matchmaking queue processor.\n*/",
+          "line": 194
+        }
+      ],
+      "fileOverview": "/**\n* Creates and initializes a connection client state object.\n*\n* @param {object} ws - The active WebSocket connection.\n* @param {object} req - The incoming upgrade HTTP request.\n* @param {object} options - Unified context singletons.\n* @returns {object} The initialized client state object.\n*/",
+      "testFile": "src/server/clientConnection.test.js",
+      "testCasesCount": 21,
+      "referencingSpecs": [],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/clientStats.js",
+      "loc": 91,
+      "classes": [],
+      "exports": [],
+      "fileOverview": "/**\n* Sends player and squad statistics updates to a client.\n* Saves active ship state in the persistent presence registry.\n*\n* @param {object} clientObj - The target client connection object.\n* @param {object} options - Unified context containing stores, singletons, and helper callbacks.\n*/",
+      "testFile": "src/server/clientStats.test.js",
+      "testCasesCount": 7,
+      "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
     {
@@ -2595,11 +2655,32 @@
           "line": 14
         }
       ],
+      "fileOverview": "/**\n* Handles the \"join\", \"quick_join\", \"create_room\", and \"join_room\" WebSocket messages.\n*\n* @param {object} clientObj - The active client connection object.\n* @param {object} msg - The incoming action message payload.\n* @param {object} ws - The raw WebSocket connection.\n* @param {object} options - Unified singletons and callbacks from server context.\n*/",
       "testFile": "src/server/connectionHandlers.test.js",
       "testCasesCount": 12,
       "referencingSpecs": [
         "plan/specs/111_connection_lifecycle_decomposition.md",
         "plan/specs/117_websocket_rate_limiter_telemetry.md"
+      ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/connectionLifecycle.js",
+      "loc": 319,
+      "classes": [],
+      "exports": [
+        {
+          "name": "handleClientDisconnect",
+          "type": "function",
+          "jsdoc": "/**\n* Handles raw WebSocket disconnect close events by deregistering IPs, removing matchmaking queue\n* entries, and scheduling delayed sector evictions and data saving.\n*\n* @param {object} ws - The raw WebSocket instance.\n* @param {object} clientObj - Fallback client object.\n* @param {object} options - Unified singletons and helper callbacks context.\n*/",
+          "line": 239
+        }
+      ],
+      "fileOverview": "/**\n* Handles room joining lifecycle logic including switching cleanup, dynamic instantiations,\n* ship spawning, and initialization syncing.\n*\n* @param {object} clientObj - The active client connection object.\n* @param {string} roomId - Target room identifier.\n* @param {string} nickname - Client nickname candidate.\n* @param {object} options - Unified singletons and helper callbacks context.\n*/",
+      "testFile": "src/server/connectionLifecycle.test.js",
+      "testCasesCount": 6,
+      "referencingSpecs": [
+        "plan/specs/177_connection_lifecycle_modularization.md"
       ],
       "missingJsDocSymbols": []
     },
@@ -2615,6 +2696,7 @@
           "line": 10
         }
       ],
+      "fileOverview": "/**\n* Handles \"escort_command\" and \"escort_formation\" WebSocket messages.\n*\n* @param {object} clientObj - The active client connection object.\n* @param {object} msg - The incoming action message payload.\n* @param {object} room - The current GameInstance room context.\n*/",
       "testFile": "src/server/escortHandlers.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [
@@ -2634,6 +2716,7 @@
           "line": 8
         }
       ],
+      "fileOverview": "/**\n* Handles \"fleet_create\", \"fleet_join\", and \"fleet_leave\" WebSocket messages.\n*\n* @param {object} clientObj - The active client connection object.\n* @param {object} msg - The incoming action message payload.\n* @param {object} room - The current GameInstance room context.\n*/",
       "testFile": "src/server/fleetHandlers.test.js",
       "testCasesCount": 6,
       "referencingSpecs": [
@@ -2695,6 +2778,7 @@
           "line": 349
         }
       ],
+      "fileOverview": "/**\n* Executes the economy tick (shortage/surplus events) for a room.\n* @param {Object} room\n*/",
       "testFile": "src/server/galaxyTicker.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [
@@ -2707,7 +2791,7 @@
     },
     {
       "path": "src/server/gameplayHandlers.js",
-      "loc": 370,
+      "loc": 395,
       "classes": [],
       "exports": [
         {
@@ -2726,9 +2810,10 @@
           "name": "handleLaunch",
           "type": "function",
           "jsdoc": "/**\n* Handles the \"launch\" message: taking off from a planet, repositioning ship.\n*\n* @param {object} clientObj - The authenticated client object.\n* @param {object} room - The current GameInstance room.\n*/",
-          "line": 347
+          "line": 372
         }
       ],
+      "fileOverview": "/**\n* Handles the \"controls\" message: updates ship controls and heading.\n*\n* @param {object} clientObj - The authenticated client object.\n* @param {object} msg - The controls payload.\n*/",
       "testFile": "src/server/gameplayHandlers.test.js",
       "testCasesCount": 12,
       "referencingSpecs": [
@@ -2760,6 +2845,7 @@
           "line": 52
         }
       ],
+      "fileOverview": "/**\n* Compiles metadata for all active room instances.\n*\n* @param {Map} instances - Active room instances.\n* @returns {Array<Object>} List of room metadata payloads.\n*/",
       "testFile": "src/server/lobbySync.test.js",
       "testCasesCount": 4,
       "referencingSpecs": [
@@ -2803,6 +2889,7 @@
           "line": 218
         }
       ],
+      "fileOverview": "/**\n* matchmaking — pure room matchmaking + a join queue (spec 036, upgraded spec 069).\n*\n* Rooms are joined today by a fixed id; there is no metadata-filtered\n* matchmaking. The market reference (Colyseus) ships room filtering, capacity,\n* and queuing out of the box. This module is the pure decision core: given the\n* live rooms' metadata and a client's criteria, pick the best joinable room (or\n* signal \"create a new one\" / \"queue\"), and FIFO-queue clients for a full room\n* until a slot frees.\n*\n* Pure: no sockets, timers, or randomness. The server consults these helpers;\n* the transport (actually joining/creating a room) stays in the handler.\n*\n* Room metadata shape (duck-typed): `{ id, mode?, maxPlayers?, players?, tags?, combatRating? }`\n* where `players` is the current population and `tags` an array of strings.\n*/",
       "testFile": "src/server/matchmaking.test.js",
       "testCasesCount": 20,
       "referencingSpecs": [
@@ -2810,6 +2897,53 @@
         "plan/specs/043_matchmaking_queue_lifecycle.md",
         "plan/specs/069_matchmaking_queues_ratings.md"
       ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/matchmakingQueueProcessor.js",
+      "loc": 60,
+      "classes": [],
+      "exports": [
+        {
+          "name": "processMatchmakingQueueForRoom",
+          "type": "function",
+          "jsdoc": "/**\n* Sweeps the matchmaking queue for players waiting to join the specified room.\n*\n* @param {Object} room - The room instance to admit players to.\n* @param {Object} options - Options context dependencies.\n* @param {Object} options.matchmakingQueue - The JoinQueue instance.\n* @param {Function} options.joinRoom - The function to join a room.\n* @param {Function} options.broadcastLobbySync - The function to broadcast lobby sync.\n* @param {Map} options.instances - Map of active room instances.\n* @param {Map} options.clients - Map of connected clients.\n*/",
+          "line": 14
+        }
+      ],
+      "fileOverview": "/**\n* Sweeps the matchmaking queue for players waiting to join the specified room.\n*\n* @param {Object} room - The room instance to admit players to.\n* @param {Object} options - Options context dependencies.\n* @param {Object} options.matchmakingQueue - The JoinQueue instance.\n* @param {Function} options.joinRoom - The function to join a room.\n* @param {Function} options.broadcastLobbySync - The function to broadcast lobby sync.\n* @param {Map} options.instances - Map of active room instances.\n* @param {Map} options.clients - Map of connected clients.\n*/",
+      "testFile": "src/server/matchmakingQueueProcessor.test.js",
+      "testCasesCount": 5,
+      "referencingSpecs": [],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/messageRouter.js",
+      "loc": 240,
+      "classes": [],
+      "exports": [],
+      "fileOverview": "/**\n* Routes and dispatches incoming WebSocket message payloads to their corresponding modular handlers.\n*\n* @param {object} clientObj - The target client state object.\n* @param {object} msg - The sanitized, preprocessed message payload.\n* @param {object} ws - The raw WebSocket connection.\n* @param {object} options - Unified context singletons and configuration dependencies.\n* @param {Map} options.instances - The active world instances Map.\n* @param {Map} options.clients - The active clients Map.\n* @param {Map} options.persistentSessions - The persistent session tokens Map.\n* @param {object} options.persistenceManager - The persistence manager instance.\n* @param {object} options.galacticChronicle - The galactic chronicle ledger.\n* @param {object} options.squadManager - The squad manager instance.\n* @param {object} options.pubsub - The pub/sub messenger instance.\n* @param {object} options.wss - The WebSocket server instance.\n* @param {number} options.WORKERS - Sharded cluster worker count.\n* @param {number} options.SHARD_INDEX - Sharded cluster worker index.\n* @param {object} options.matchmakingQueue - The matchmaking JoinQueue.\n* @param {function} options.joinRoom - Function to join a room.\n* @param {function} options.sendLobbyList - Function to broadcast the active lobby list.\n* @param {function} options.broadcastLobbySync - Function to synchronize active lobby lists.\n* @param {object} [options.handlers] - Custom action/routing message handlers mapping override.\n* @returns {Promise<void>}\n*/",
+      "testFile": "src/server/messageRouter.test.js",
+      "testCasesCount": 30,
+      "referencingSpecs": [],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/missionSpawnHandlers.js",
+      "loc": 173,
+      "classes": [],
+      "exports": [
+        {
+          "name": "registerMissionSpawnHandlers",
+          "type": "function",
+          "jsdoc": "/**\n* Registers callback handlers on a player's missionManager to handle storylines,\n* bounties, and escort target spawns within the player's active sector room.\n* @param {Object} clientObj\n* @param {Function} getRoom - Function to retrieve a room instance by ID\n*/",
+          "line": 11
+        }
+      ],
+      "fileOverview": "/**\n* Registers callback handlers on a player's missionManager to handle storylines,\n* bounties, and escort target spawns within the player's active sector room.\n* @param {Object} clientObj\n* @param {Function} getRoom - Function to retrieve a room instance by ID\n*/",
+      "testFile": "src/server/missionSpawnHandlers.test.js",
+      "testCasesCount": 10,
+      "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
     {
@@ -2836,11 +2970,102 @@
           "line": 164
         }
       ],
+      "fileOverview": "/**\n* Saves current outfitting configuration to a custom preset slot.\n* @param {Object} clientObj - The socket client connection object.\n* @param {number} presetIndex - Index of the preset to save (0, 1, or 2).\n* @param {string|null} [presetName=null] - Custom name for the preset.\n*/",
       "testFile": "src/server/outfittingPresetHandlers.test.js",
       "testCasesCount": 14,
       "referencingSpecs": [
         "plan/specs/157_outfitting_presets_modularization.md"
       ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/periodicIntervals.js",
+      "loc": 197,
+      "classes": [],
+      "exports": [
+        {
+          "name": "startPeriodicIntervals",
+          "type": "function",
+          "jsdoc": "/**\n* Starts all periodic background intervals for the server.\n* @param {Object} options\n* @param {Map} options.instances\n* @param {Object} options.pubsub\n* @param {Object} options.wss\n* @param {Map} options.clients\n* @param {Object} options.metrics\n* @param {Object} options.latencyMonitor\n* @param {Object} options.anomalyDetector\n* @param {Object} options.connectionFloodSentry\n* @param {Object} options.resourceLimiter\n* @param {Function} options.loadRegistry\n* @param {Function} options.saveRegistry\n* @param {number} options.shardIndex\n* @param {number} options.workers\n* @param {number} [options.heartbeatMs]\n* @returns {Object} Handles for all started intervals\n*/",
+          "line": 31
+        },
+        {
+          "name": "stopPeriodicIntervals",
+          "type": "function",
+          "jsdoc": "/**\n* Clears all periodic background intervals.\n* @param {Object} handles Handles returned by startPeriodicIntervals\n*/",
+          "line": 189
+        }
+      ],
+      "fileOverview": "/**\n* Starts all periodic background intervals for the server.\n* @param {Object} options\n* @param {Map} options.instances\n* @param {Object} options.pubsub\n* @param {Object} options.wss\n* @param {Map} options.clients\n* @param {Object} options.metrics\n* @param {Object} options.latencyMonitor\n* @param {Object} options.anomalyDetector\n* @param {Object} options.connectionFloodSentry\n* @param {Object} options.resourceLimiter\n* @param {Function} options.loadRegistry\n* @param {Function} options.saveRegistry\n* @param {number} options.shardIndex\n* @param {number} options.workers\n* @param {number} [options.heartbeatMs]\n* @returns {Object} Handles for all started intervals\n*/",
+      "testFile": "src/server/periodicIntervals.test.js",
+      "testCasesCount": 5,
+      "referencingSpecs": [],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/physicsTickHandlers.js",
+      "loc": 282,
+      "classes": [],
+      "exports": [
+        {
+          "name": "updateAILogic",
+          "type": "function",
+          "jsdoc": "/**\n* Updates AI entities in the room, handles caravan refueling and merchant destination routing.\n* @param {Object} room The active GameInstance room.\n* @param {number} dt The simulation tick time delta.\n*/",
+          "line": 8
+        },
+        {
+          "name": "applyTractorForces",
+          "type": "function",
+          "jsdoc": "/**\n* Applies pull forces from Tractor Beam Matrix to cargo pods.\n* @param {Object} room The active GameInstance room.\n*/",
+          "line": 68
+        },
+        {
+          "name": "handleCargoCollection",
+          "type": "function",
+          "jsdoc": "/**\n* Handles cargo pod ingestion and collision, adding resources and sending alerts.\n* @param {Object} room The active GameInstance room.\n*/",
+          "line": 94
+        },
+        {
+          "name": "applyNebulaHazards",
+          "type": "function",
+          "jsdoc": "/**\n* Applies drag multiplier and shield dampening from Nebulae to ships.\n* @param {Object} room The active GameInstance room.\n* @param {Map<Object, number>} originalRegens Map storing original shield regens to restore.\n*/",
+          "line": 187
+        },
+        {
+          "name": "applyCosmicStormHazards",
+          "type": "function",
+          "jsdoc": "/**\n* Applies energy drain, weapon cooldown double, and armor decay from Cosmic Storms.\n* @param {Object} room The active GameInstance room.\n* @param {number} dt The simulation tick time delta.\n* @param {Map<Object, number>} originalCooldowns Map storing original weapon cooldowns to restore.\n*/",
+          "line": 227
+        },
+        {
+          "name": "applySolarEmpHazards",
+          "type": "function",
+          "jsdoc": "/**\n* Shuts down shield regeneration on ships within range of a solar EMP planet event.\n* @param {Object} room The active GameInstance room.\n* @param {Map<Object, number>} originalRegens Map storing original shield regens to restore.\n*/",
+          "line": 262
+        }
+      ],
+      "fileOverview": "/**\n* Updates AI entities in the room, handles caravan refueling and merchant destination routing.\n* @param {Object} room The active GameInstance room.\n* @param {number} dt The simulation tick time delta.\n*/",
+      "testFile": "src/server/physicsTickHandlers.test.js",
+      "testCasesCount": 21,
+      "referencingSpecs": [],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/physicsTickProcessor.js",
+      "loc": 169,
+      "classes": [],
+      "exports": [
+        {
+          "name": "processPhysicsTickForRoom",
+          "type": "function",
+          "jsdoc": "/**\n* Executes a single authoritative physics and simulation tick for a given room.\n* @param {Object} room The GameInstance room.\n* @param {number} dt The simulation tick time delta.\n* @param {Object} options Options containing metrics, observers, and config settings.\n* @param {Object} options.squadManager\n* @param {Object} options.latencyMonitor\n* @param {Object} options.metrics\n* @param {boolean} options.interestEnabled\n* @param {number} options.interestRadius\n* @param {boolean} options.binaryProtocol\n*/",
+          "line": 23
+        }
+      ],
+      "fileOverview": "/**\n* Executes a single authoritative physics and simulation tick for a given room.\n* @param {Object} room The GameInstance room.\n* @param {number} dt The simulation tick time delta.\n* @param {Object} options Options containing metrics, observers, and config settings.\n* @param {Object} options.squadManager\n* @param {Object} options.latencyMonitor\n* @param {Object} options.metrics\n* @param {boolean} options.interestEnabled\n* @param {number} options.interestRadius\n* @param {boolean} options.binaryProtocol\n*/",
+      "testFile": "src/server/physicsTickProcessor.test.js",
+      "testCasesCount": 4,
+      "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
     {
@@ -2891,6 +3116,7 @@
           "line": 409
         }
       ],
+      "fileOverview": "/**\n* Handles purchase of an outfit from a planet.\n* @param {Object} clientObj - The socket client connection object.\n* @param {string} outfitName - Name of the outfit to purchase.\n* @param {Object} targetPlanet - The planet entity.\n* @param {Object|null} [room=null] - Dynamic GameInstance room.\n*/",
       "testFile": "src/server/portHandlers.test.js",
       "testCasesCount": 32,
       "referencingSpecs": [
@@ -2901,6 +3127,46 @@
         "plan/specs/060_naval_campaigns.md",
         "plan/specs/077_refinement_mining_laser_industrial_dock.md"
       ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/pubsubSubscriptions.js",
+      "loc": 150,
+      "classes": [],
+      "exports": [],
+      "fileOverview": "/**\n* Registers global Redis/InMemory PubSub message subscribers.\n*\n* @param {object} options - Unified singletons and caches context.\n*/",
+      "testFile": "src/server/pubsubSubscriptions.test.js",
+      "testCasesCount": 19,
+      "referencingSpecs": [],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/redisSetup.js",
+      "loc": 65,
+      "classes": [],
+      "exports": [],
+      "fileOverview": "/**\n* Initializes and connects the storage and Pub/Sub adapters based on environment variables.\n*\n* @param {object} options - Configuration options.\n* @param {string} [options.redisUrl] - Redis connection URL.\n* @param {string} [options.redisScaleOut] - Redis scale out flag.\n* @param {string} [options.persistenceDir] - Local persistence directory.\n* @param {object} [options.redisLib] - Optional injected Redis library for testing.\n* @param {object} [options.redisStoreLib] - Optional injected RedisStore library for testing.\n* @param {object} [options.redisPubSubLib] - Optional injected RedisPubSub library for testing.\n* @returns {Promise<{storeInstance: object, pubsub: object}>} The resolved storage and pubsub instances.\n*/",
+      "testFile": "src/server/redisSetup.test.js",
+      "testCasesCount": 5,
+      "referencingSpecs": [],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/registryHeartbeat.js",
+      "loc": 68,
+      "classes": [],
+      "exports": [
+        {
+          "name": "startRegistryHeartbeat",
+          "type": "function",
+          "jsdoc": "/**\n* Starts the periodic multi-worker room registry heartbeat loop.\n*\n* @param {object} options - Options context dependencies.\n* @param {Map<string, object>} options.instances - Map of active room instances on this node.\n* @param {string} options.nodeId - The identifier of this sharded worker node.\n* @param {function} options.loadRegistry - Asynchronous function loading the RoomRegistry.\n* @param {function} options.saveRegistry - Asynchronous function saving the RoomRegistry.\n* @param {number} [options.intervalMs=4000] - Interval period in milliseconds.\n* @returns {any} The interval handle.\n*/",
+          "line": 61
+        }
+      ],
+      "fileOverview": "/**\n* Executes a single heartbeat tick of the room registry lease renewal.\n* Claims active rooms on the current node and reaps expired rooms from dead workers.\n*\n* @param {object} options - Options context dependencies.\n* @param {Map<string, object>} options.instances - Map of active room instances on this node.\n* @param {string} options.nodeId - The identifier of this sharded worker node.\n* @param {function} options.loadRegistry - Asynchronous function loading the RoomRegistry.\n* @param {function} options.saveRegistry - Asynchronous function saving the RoomRegistry.\n* @param {number} [options.now] - Optional timestamp (defaults to Date.now()).\n* @returns {Promise<void>}\n*/",
+      "testFile": "src/server/registryHeartbeat.test.js",
+      "testCasesCount": 7,
+      "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
     {
@@ -2915,6 +3181,7 @@
           "line": 97
         }
       ],
+      "fileOverview": "/**\n* Reads a file synchronously with retries on lock contention.\n* @param {string} filePath\n* @param {BufferEncoding} options\n* @param {number} [retries]\n* @param {number} [delay]\n* @returns {string}\n*/",
       "testFile": "src/server/restHandlers.test.js",
       "testCasesCount": 25,
       "referencingSpecs": [
@@ -2924,15 +3191,45 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/server/roomBroadcast.js",
+      "loc": 116,
+      "classes": [],
+      "exports": [
+        {
+          "name": "broadcastRoomState",
+          "type": "function",
+          "jsdoc": "/**\n* Broadcasts the current room world state to all connected clients.\n*\n* @param {object} room - The authoritative room instance.\n* @param {object} options - Configuration and dependency options.\n* @param {object} options.squadManager - The squad manager instance.\n* @param {object} options.latencyMonitor - The latency monitor instance.\n* @param {object} options.metrics - The metrics registry.\n* @param {boolean} options.interestEnabled - Whether Area-of-Interest filtering is enabled.\n* @param {number} options.interestRadius - The radius of viewport visibility.\n* @param {boolean} options.binaryProtocol - Whether to format frames as binary payload.\n*/",
+          "line": 18
+        }
+      ],
+      "fileOverview": "/**\n* Broadcasts the current room world state to all connected clients.\n*\n* @param {object} room - The authoritative room instance.\n* @param {object} options - Configuration and dependency options.\n* @param {object} options.squadManager - The squad manager instance.\n* @param {object} options.latencyMonitor - The latency monitor instance.\n* @param {object} options.metrics - The metrics registry.\n* @param {boolean} options.interestEnabled - Whether Area-of-Interest filtering is enabled.\n* @param {number} options.interestRadius - The radius of viewport visibility.\n* @param {boolean} options.binaryProtocol - Whether to format frames as binary payload.\n*/",
+      "testFile": "src/server/roomBroadcast.test.js",
+      "testCasesCount": 8,
+      "referencingSpecs": [],
+      "missingJsDocSymbols": []
+    },
+    {
       "path": "src/server/roomGc.js",
       "loc": 57,
       "classes": [],
       "exports": [],
+      "fileOverview": "/**\n* Sweeps room instances and reaps idle custom sectors.\n*\n* @param {Map} instances - Active room instances.\n* @param {Object} options\n* @param {number} [options.now=Date.now()] - Current timestamp.\n* @param {number} [options.workersCount=1] - Dynamic worker processes limit.\n* @param {string} [options.nodeId=\"node-0\"] - Server node identifier.\n* @param {Function} [options.loadRegistry] - Callback to retrieve multi-worker registry.\n* @param {Function} [options.saveRegistry] - Callback to persist multi-worker registry.\n* @param {Function} [options.onRoomGc] - GC sweep notification hook.\n* @returns {Promise<Array<string>>} Reaped room IDs list.\n*/",
       "testFile": "src/server/roomGc.test.js",
       "testCasesCount": 3,
       "referencingSpecs": [
         "plan/specs/042_server_monolith_extraction_galaxy_ticker.md"
       ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/roomInitializer.js",
+      "loc": 45,
+      "classes": [],
+      "exports": [],
+      "fileOverview": "/**\n* Initializes default permanent rooms (like the \"public\" Arena) on their designated shards\n* and restores their saved states from the persistence manager.\n*\n* @param {object} options - Configuration and dependencies.\n* @param {number} options.workers - Total worker/shard count.\n* @param {number} options.shardIndex - This process's shard index.\n* @param {Map} options.instances - Authoritative world-state room map.\n* @param {object} options.galacticChronicle - Shared chronicle database.\n* @param {object} options.persistenceManager - Persistent storage manager.\n* @returns {Promise<void>}\n*/",
+      "testFile": "src/server/roomInitializer.test.js",
+      "testCasesCount": 6,
+      "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
     {
@@ -2959,8 +3256,51 @@
           "line": 35
         }
       ],
+      "fileOverview": "/**\n* roomLifecycle (spec 007) — pure room-lifecycle decisions extracted from the\n* server: whether an idle non-public room should be garbage-collected, and how a\n* player nickname is sanitized. Pure and unit-testable.\n*/",
       "testFile": "src/server/roomLifecycle.test.js",
       "testCasesCount": 9,
+      "referencingSpecs": [],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/roomRegistryStore.js",
+      "loc": 46,
+      "classes": [],
+      "exports": [
+        {
+          "name": "REGISTRY_KEY",
+          "type": "constant",
+          "jsdoc": null,
+          "line": 3
+        }
+      ],
+      "fileOverview": null,
+      "testFile": "src/server/roomRegistryStore.test.js",
+      "testCasesCount": 9,
+      "referencingSpecs": [],
+      "missingJsDocSymbols": [
+        {
+          "name": "REGISTRY_KEY",
+          "type": "constant",
+          "line": 3
+        }
+      ]
+    },
+    {
+      "path": "src/server/shutdownHandler.js",
+      "loc": 227,
+      "classes": [],
+      "exports": [
+        {
+          "name": "createShutdownHandler",
+          "type": "function",
+          "jsdoc": "/**\n* Creates a graceful shutdown lifecycle handler for the server process.\n* @param {Object} options Options containing all server references\n* @returns {Function} Async function that triggers graceful shutdown\n*/",
+          "line": 9
+        }
+      ],
+      "fileOverview": "/**\n* Creates a graceful shutdown lifecycle handler for the server process.\n* @param {Object} options Options containing all server references\n* @returns {Function} Async function that triggers graceful shutdown\n*/",
+      "testFile": "src/server/shutdownHandler.test.js",
+      "testCasesCount": 4,
       "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
@@ -2982,6 +3322,7 @@
           "line": 127
         }
       ],
+      "fileOverview": "/**\n* Handles accepting a dynamic generative mission.\n* @param {Object} clientObj - The socket client connection object representing the active player.\n* @param {string} planetName - Governing planet where the mission resides.\n* @param {string} missionId - The unique ID of the mission.\n* @param {Object} targetPlanet - The planet entity.\n* @param {Object} room - The dynamic GameInstance room.\n* @returns {void}\n*/",
       "testFile": "src/server/spaceportMissionHandlers.test.js",
       "testCasesCount": 3,
       "referencingSpecs": [
@@ -3001,6 +3342,7 @@
           "line": 10
         }
       ],
+      "fileOverview": "/**\n* Handles \"squad_invite\", \"squad_join\", and \"squad_leave\" WebSocket messages.\n*\n* @param {object} clientObj - The active client connection object.\n* @param {object} msg - The incoming action message payload.\n* @param {object} wss - The WebSocketServer instance to access other connected clients.\n* @param {object} squadManager - The squad manager instance.\n* @param {object} [pubsub] - The optional PubSub instance for cross-process events.\n*/",
       "testFile": "src/server/squadHandlers.test.js",
       "testCasesCount": 16,
       "referencingSpecs": [
@@ -3031,6 +3373,7 @@
           "line": 135
         }
       ],
+      "fileOverview": "/**\n* SquadManager — manages co-op player party squads (SPEC-059).\n* Keeps track of squad memberships, leaders, invitations, and culls empty squads.\n*/",
       "testFile": "src/server/SquadManager.test.js",
       "testCasesCount": 5,
       "referencingSpecs": [
@@ -3057,6 +3400,7 @@
           "line": 51
         }
       ],
+      "fileOverview": "/**\n* Pure supervisor worker planner (spec 019c).\n* Given the desired shard count and the currently alive workers, decide\n* what processes need to be spawned or terminated.\n*\n* @param {Object} params\n* @param {number} params.shardCount - Total number of shards (WORKERS)\n* @param {Array<{ id: string, shardIndex: number }>} params.liveWorkers - List of currently running workers\n* @returns {{ spawn: Array<number>, terminate: Array<string> }} The plan of action.\n*/",
       "testFile": "src/server/supervisor.test.js",
       "testCasesCount": 6,
       "referencingSpecs": [
@@ -3077,11 +3421,30 @@
           "line": 104
         }
       ],
+      "fileOverview": "/**\n* Handles starting the dynamic interactive tutorial.\n* Spawns a dedicated private sector room, seeds a Training Drone,\n* and sets the client tutorialStep to thrust_maneuver.\n*\n* @param {Object} clientObj - The active client connection object.\n* @param {Map} instances - Map of active room instances on server.\n* @param {Function} joinRoom - Function to join a client to a room.\n*/",
       "testFile": "src/server/tutorialHandlers.test.js",
       "testCasesCount": 6,
       "referencingSpecs": [
         "plan/specs/110_server_handler_extraction_round5.md"
       ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/verifyWebSocketClient.js",
+      "loc": 70,
+      "classes": [],
+      "exports": [
+        {
+          "name": "verifyWebSocketClient",
+          "type": "function",
+          "jsdoc": "/**\n* Validates WebSocket connection upgrades (URI length, payload length, allowed origins, flood sentry).\n* @param {Object} info Connection info metadata.\n* @param {Function} cb Callback function to accept or reject.\n* @param {Object} options Configuration dependencies.\n* @param {string[]} options.allowedOrigins Allowlisted client origins.\n* @param {Object} options.connectionFloodSentry Sentry instance managing IP connection counts.\n* @returns {*}\n*/",
+          "line": 12
+        }
+      ],
+      "fileOverview": "/**\n* Validates WebSocket connection upgrades (URI length, payload length, allowed origins, flood sentry).\n* @param {Object} info Connection info metadata.\n* @param {Function} cb Callback function to accept or reject.\n* @param {Object} options Configuration dependencies.\n* @param {string[]} options.allowedOrigins Allowlisted client origins.\n* @param {Object} options.connectionFloodSentry Sentry instance managing IP connection counts.\n* @returns {*}\n*/",
+      "testFile": "src/server/verifyWebSocketClient.test.js",
+      "testCasesCount": 5,
+      "referencingSpecs": [],
       "missingJsDocSymbols": []
     }
   ],
@@ -4974,7 +5337,7 @@
       "pillar": "None",
       "filesMentioned": [
         "src/server/tutorialHandlers.test.js",
-        "src/client/tutorialUI.test.js"
+        "src/client/__tests/TutorialManager.test.js"
       ]
     },
     {
@@ -5034,8 +5397,8 @@
       "priority": "Normal",
       "pillar": "None",
       "filesMentioned": [
-        "src/client/__tests__/CanvasRenderer.browser.test.js",
-        "src/client/__tests__/PlaywrightVisual.test.js"
+        "src/client/__tests/CanvasRenderer.browser.test.js",
+        "src/server/PlaywrightVisual.integration.test.js"
       ]
     },
     {
@@ -5191,126 +5554,46 @@
         "src/net/ZeroTraceTeardown.js",
         "src/net/ZeroTraceTeardown.test.js"
       ]
+    },
+    {
+      "path": "plan/specs/177_connection_lifecycle_modularization.md",
+      "filename": "177_connection_lifecycle_modularization.md",
+      "title": "SPEC-177: Connection Lifecycle & Disconnect Cleanup Extraction",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "P7 — Netcode & Scale",
+      "filesMentioned": [
+        "src/server.js",
+        "src/server/connectionLifecycle.js",
+        "src/server/connectionLifecycle.test.js"
+      ]
+    },
+    {
+      "path": "plan/specs/template.md",
+      "filename": "template.md",
+      "title": "SPEC-XXX: Title Here",
+      "status": "Todo",
+      "priority": "Normal",
+      "pillar": "P1 - Living Universe / None",
+      "filesMentioned": []
     }
   ],
   "epistemicDebt": {
-    "untestedCoreFiles": [
-      "src/net/GuestLoader.js",
-      "src/net/GuestRunnerWorker.js",
-      "src/net/MainThreadWatchdogWorker.js",
-      "src/net/mockFreezeScript.js"
-    ],
+    "untestedCoreFiles": [],
     "missingJsDocs": [
       {
-        "path": "src/net/MemoryLeakSentry.js",
+        "path": "src/server/roomRegistryStore.js",
         "symbols": [
           {
-            "name": "MemoryLeakSentry",
-            "type": "class",
-            "line": 10
-          }
-        ]
-      },
-      {
-        "path": "src/net/ProcessSentinel.js",
-        "symbols": [
-          {
-            "name": "for",
-            "type": "class",
-            "line": 61
-          },
-          {
-            "name": "VirtualWriteStream",
-            "type": "class",
-            "line": 62
-          },
-          {
-            "name": "for",
-            "type": "class",
-            "line": 95
-          },
-          {
-            "name": "VirtualReadStream",
-            "type": "class",
-            "line": 96
-          }
-        ]
-      },
-      {
-        "path": "src/net/SandboxFirewall.js",
-        "symbols": [
-          {
-            "name": "SandboxFirewall",
-            "type": "class",
-            "line": 14
-          }
-        ]
-      },
-      {
-        "path": "src/net/SandboxSecurityRegistry.js",
-        "symbols": [
-          {
-            "name": "SandboxSecurityRegistry",
+            "name": "REGISTRY_KEY",
             "type": "constant",
-            "line": 66
-          }
-        ]
-      },
-      {
-        "path": "src/net/SecureModuleRegistry.js",
-        "symbols": [
-          {
-            "name": "SecureModuleRegistry",
-            "type": "constant",
-            "line": 30
-          }
-        ]
-      },
-      {
-        "path": "src/net/StaticSecuritySentry.js",
-        "symbols": [
-          {
-            "name": "StaticSecuritySentry",
-            "type": "constant",
-            "line": 35
-          }
-        ]
-      },
-      {
-        "path": "src/net/TokenCostGovernor.js",
-        "symbols": [
-          {
-            "name": "TokenCostGovernor",
-            "type": "constant",
-            "line": 37
-          }
-        ]
-      },
-      {
-        "path": "src/net/WorkspaceDriftSentry.js",
-        "symbols": [
-          {
-            "name": "WorkspaceDriftSentry",
-            "type": "constant",
-            "line": 49
+            "line": 3
           }
         ]
       }
     ],
-    "staleSpecReferences": [
-      {
-        "spec": "plan/specs/158_guided_onboarding_tutorial_mission.md",
-        "brokenFiles": [
-          "src/client/tutorialUI.test.js"
-        ]
-      },
-      {
-        "spec": "plan/specs/163_playwright_e2e_regression_guard.md",
-        "brokenFiles": [
-          "src/client/__tests__/CanvasRenderer.browser.test.js",
-          "src/client/__tests__/PlaywrightVisual.test.js"
-        ]
-      }
-    ]
+    "staleSpecReferences": [],
+    "specErrors": [],
+    "specReconciliationErrors": []
   }
 }

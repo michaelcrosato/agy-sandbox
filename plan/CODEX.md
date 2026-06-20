@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-06-20T08:18:11.859Z` · Baseline: `29,058 LOC` across `123 source files`
+> Generated: `2026-06-20T08:38:51.725Z` · Baseline: `29,185 LOC` across `123 source files`
 
 ---
 
@@ -9,10 +9,10 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `29,058 LOC` | 🟢 Healthy |
+| **Total Code Volume** | `29,185 LOC` | 🟢 Healthy |
 | **Source Modules** | `123 files` | 🟢 Structured |
 | **Test Suites** | `164 test files` | 🟢 Integrated |
-| **Total Test Cases** | `2049 cases` | 🟢 Deterministic |
+| **Total Test Cases** | `2055 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `185 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `0 files` | 🟢 100% Covered |
 
@@ -141,7 +141,7 @@
 | --- | --- | --- | --- | --- |
 | [actionHandlers.js](file:///C:/dev/agy-sandbox/src/server/actionHandlers.js) | 425 | `function handleTrade`, `function handlePortService`, `function handleJettison`, `function handleWarpJump`, `function handleBoardingAction` | [actionHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/actionHandlers.test.js) | [`103_modularize_server_actions`](file:///C:/dev/agy-sandbox/plan/specs/103_modularize_server_actions.md) |
 | [chatHandler.js](file:///C:/dev/agy-sandbox/src/server/chatHandler.js) | 76 | _None_ | [chatHandler.test.js](file:///C:/dev/agy-sandbox/src/server/chatHandler.test.js) | [`109_server_handler_extraction_round4`](file:///C:/dev/agy-sandbox/plan/specs/109_server_handler_extraction_round4.md) |
-| [clientConnection.js](file:///C:/dev/agy-sandbox/src/server/clientConnection.js) | 158 | `function createClientObject`, `function preprocessMessage` | [clientConnection.test.js](file:///C:/dev/agy-sandbox/src/server/clientConnection.test.js) | _None_ |
+| [clientConnection.js](file:///C:/dev/agy-sandbox/src/server/clientConnection.js) | 285 | `function createClientObject`, `function preprocessMessage`, `function registerWebSocketConnection` | [clientConnection.test.js](file:///C:/dev/agy-sandbox/src/server/clientConnection.test.js) | _None_ |
 | [clientStats.js](file:///C:/dev/agy-sandbox/src/server/clientStats.js) | 91 | _None_ | [clientStats.test.js](file:///C:/dev/agy-sandbox/src/server/clientStats.test.js) | _None_ |
 | [connectionHandlers.js](file:///C:/dev/agy-sandbox/src/server/connectionHandlers.js) | 228 | `function handleConnectionAction` | [connectionHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/connectionHandlers.test.js) | [`111_connection_lifecycle_decomposition`](file:///C:/dev/agy-sandbox/plan/specs/111_connection_lifecycle_decomposition.md)<br>[`117_websocket_rate_limiter_telemetry`](file:///C:/dev/agy-sandbox/plan/specs/117_websocket_rate_limiter_telemetry.md) |
 | [connectionLifecycle.js](file:///C:/dev/agy-sandbox/src/server/connectionLifecycle.js) | 319 | `function handleClientDisconnect` | [connectionLifecycle.test.js](file:///C:/dev/agy-sandbox/src/server/connectionLifecycle.test.js) | [`177_connection_lifecycle_modularization`](file:///C:/dev/agy-sandbox/plan/specs/177_connection_lifecycle_modularization.md) |

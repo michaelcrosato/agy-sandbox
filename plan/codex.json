@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-20T08:18:11.859Z",
+  "generatedAt": "2026-06-20T08:38:51.725Z",
   "stats": {
     "totalSourceFiles": 123,
     "totalTestFiles": 164,
     "totalSpecFiles": 185,
-    "totalLoc": 29058,
-    "totalTests": 2049,
+    "totalLoc": 29185,
+    "totalTests": 2055,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -2604,7 +2604,7 @@
     },
     {
       "path": "src/server/clientConnection.js",
-      "loc": 158,
+      "loc": 285,
       "classes": [],
       "exports": [
         {
@@ -2618,11 +2618,17 @@
           "type": "function",
           "jsdoc": "/**\n* Runs connection rate limiting, backpressure checking, JSON parsing,\n* and payload schema validation for incoming WebSocket messages.\n*\n* @param {object} clientObj - The target client state object.\n* @param {string} msgStr - The raw incoming message string.\n* @param {object} ws - The raw WebSocket connection.\n* @param {object} options - Refilling and validation singletons.\n* @returns {object|null} The sanitized, validated message, or null if validation/rate limit checks failed.\n*/",
           "line": 85
+        },
+        {
+          "name": "registerWebSocketConnection",
+          "type": "function",
+          "jsdoc": "/**\n* Registers WebSocket connection event handlers (pong, message, close),\n* constructs and registers the player client state object, and routes incoming messages.\n*\n* @param {object} ws - The active WebSocket connection.\n* @param {object} req - The incoming upgrade HTTP request.\n* @param {object} options - Unified context singletons.\n* @param {object} options.metrics - The metrics registry.\n* @param {object} options.logger - Leveled logger.\n* @param {object} options.latencyMonitor - The latency monitor.\n* @param {object} options.storeInstance - Swappable database store.\n* @param {object} options.instances - Authoritative world-state room map.\n* @param {object} options.squadManager - The squads manager.\n* @param {object} options.buildStatsPayload - Helper to build stats payload.\n* @param {function} options.registerMissionSpawnHandlers - Mission spawn registrator.\n* @param {Map} options.clients - Client lookup maps.\n* @param {object} options.wsRateLimitConfig - WebSocket rate limit config.\n* @param {object} options.resourceLimiter - Backpressure and resource monitor.\n* @param {function} options.validateMessage - Payload validator.\n* @param {function} options.routeMessage - Asynchronous message router.\n* @param {Map} options.persistentSessions - Session lookup maps.\n* @param {object} options.persistenceManager - Swappable database/persistence manager.\n* @param {object} options.galacticChronicle - Chronicle persistence.\n* @param {object} options.pubsub - Sharded pub/sub pipeline.\n* @param {object} options.wss - WebSocket server.\n* @param {number} options.WORKERS - Sharded worker count.\n* @param {number} options.SHARD_INDEX - Active worker shard index.\n* @param {object} options.matchmakingQueue - Player matching queue.\n* @param {function} options.joinRoom - Join room orchestrator.\n* @param {function} options.sendLobbyList - Lobby list sender.\n* @param {function} options.broadcastLobbySync - Lobby sync broadcaster.\n* @param {object} options.connectionFloodSentry - Connection flood protector.\n* @param {function} options.handleClientDisconnect - Client disconnect handler.\n* @param {function} options.processMatchmakingQueueForRoom - Matchmaking queue processor.\n*/",
+          "line": 194
         }
       ],
       "fileOverview": "/**\n* Creates and initializes a connection client state object.\n*\n* @param {object} ws - The active WebSocket connection.\n* @param {object} req - The incoming upgrade HTTP request.\n* @param {object} options - Unified context singletons.\n* @returns {object} The initialized client state object.\n*/",
       "testFile": "src/server/clientConnection.test.js",
-      "testCasesCount": 15,
+      "testCasesCount": 21,
       "referencingSpecs": [],
       "missingJsDocSymbols": []
     },

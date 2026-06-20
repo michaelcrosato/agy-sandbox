@@ -45,10 +45,7 @@ import { processPhysicsTickForRoom } from "./server/physicsTickProcessor.js";
 import { startPeriodicIntervals } from "./server/periodicIntervals.js";
 import { createShutdownHandler } from "./server/shutdownHandler.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
-import {
-  createClientObject,
-  preprocessMessage,
-} from "./server/clientConnection.js";
+import { registerWebSocketConnection } from "./server/clientConnection.js";
 import { validateMessage } from "./net/SchemaValidator.js";
 import { registerPubSubSubscriptions } from "./server/pubsubSubscriptions.js";
 import { broadcastLobbySync, sendLobbyList } from "./server/lobbySync.js";
@@ -398,64 +395,34 @@ periodicIntervalHandles = startPeriodicIntervals({
 });
 
 wss.on("connection", (ws, req) => {
-  ws.isAlive = true;
-  ws.on("pong", () => {
-    ws.isAlive = true;
-  });
-  metrics.inc("connections_total");
-  logger.info("client_connected", { clients: wss.clients.size });
-
-  const clientObj = createClientObject(ws, req, {
+  registerWebSocketConnection(ws, req, {
+    metrics,
+    logger,
     latencyMonitor,
     storeInstance,
     instances,
     squadManager,
-    getClients: () => Array.from(wss.clients).map((w) => w.clientObj),
     buildStatsPayload,
-  });
-
-  registerMissionSpawnHandlers(clientObj, (roomId) => instances.get(roomId));
-
-  clients.set(ws, clientObj);
-
-  ws.on("message", async (msgStr) => {
-    const msg = preprocessMessage(clientObj, msgStr, ws, {
-      wsRateLimitConfig,
-      metrics,
-      resourceLimiter,
-      validateMessage,
-    });
-    if (!msg) return;
-
-    await routeMessage(clientObj, msg, ws, {
-      instances,
-      clients,
-      persistentSessions,
-      persistenceManager,
-      galacticChronicle,
-      squadManager,
-      pubsub,
-      wss,
-      WORKERS,
-      SHARD_INDEX,
-      matchmakingQueue,
-      joinRoom,
-      sendLobbyList,
-      broadcastLobbySync,
-    });
-  });
-
-  ws.on("close", () => {
-    handleClientDisconnect(ws, clientObj, {
-      clients,
-      connectionFloodSentry,
-      matchmakingQueue,
-      instances,
-      persistenceManager,
-      persistentSessions,
-      processMatchmakingQueueForRoom,
-      broadcastLobbySync,
-    });
+    registerMissionSpawnHandlers,
+    clients,
+    wsRateLimitConfig,
+    resourceLimiter,
+    validateMessage,
+    routeMessage,
+    persistentSessions,
+    persistenceManager,
+    galacticChronicle,
+    pubsub,
+    wss,
+    WORKERS,
+    SHARD_INDEX,
+    matchmakingQueue,
+    joinRoom,
+    sendLobbyList,
+    broadcastLobbySync,
+    connectionFloodSentry,
+    handleClientDisconnect,
+    processMatchmakingQueueForRoom,
   });
 });
 

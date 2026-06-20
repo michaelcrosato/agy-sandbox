@@ -1,5 +1,9 @@
 import { jest } from "@jest/globals";
-import { createClientObject, preprocessMessage } from "./clientConnection.js";
+import {
+  createClientObject,
+  preprocessMessage,
+  registerWebSocketConnection,
+} from "./clientConnection.js";
 
 // Mock the imported sendClientStats function
 jest.unstable_mockModule("./clientStats.js", () => ({
@@ -222,6 +226,130 @@ describe("clientConnection", () => {
         message: "Invalid network payload: Missing required type parameter",
         style: "error",
       });
+    });
+  });
+
+  describe("registerWebSocketConnection", () => {
+    let ws;
+    let req;
+    let options;
+    let eventListeners;
+
+    beforeEach(() => {
+      eventListeners = {};
+      ws = {
+        isAlive: false,
+        on: jest.fn((event, cb) => {
+          eventListeners[event] = cb;
+        }),
+        send: jest.fn(),
+        readyState: 1, // OPEN
+        OPEN: 1,
+      };
+
+      req = {
+        headers: {
+          "x-forwarded-for": "1.2.3.4",
+        },
+      };
+
+      options = {
+        metrics: { inc: jest.fn() },
+        logger: { info: jest.fn() },
+        latencyMonitor: { shouldShed: jest.fn().mockReturnValue(false) },
+        storeInstance: {},
+        instances: new Map(),
+        squadManager: {},
+        buildStatsPayload: jest.fn(),
+        registerMissionSpawnHandlers: jest.fn(),
+        clients: new Map(),
+        wsRateLimitConfig: { maxPerSecond: 100 },
+        resourceLimiter: { isBackpressureActive: false },
+        validateMessage: jest.fn().mockReturnValue({
+          valid: true,
+          sanitized: { type: "chat", message: "hello" },
+        }),
+        routeMessage: jest.fn(),
+        persistentSessions: new Map(),
+        persistenceManager: {},
+        galacticChronicle: {},
+        pubsub: {},
+        wss: { clients: new Set([ws]) },
+        WORKERS: 1,
+        SHARD_INDEX: 0,
+        matchmakingQueue: {},
+        joinRoom: jest.fn(),
+        sendLobbyList: jest.fn(),
+        broadcastLobbySync: jest.fn(),
+        connectionFloodSentry: {},
+        handleClientDisconnect: jest.fn(),
+        processMatchmakingQueueForRoom: jest.fn(),
+      };
+    });
+
+    test("should initialize connection state and register listeners", () => {
+      registerWebSocketConnection(ws, req, options);
+
+      expect(ws.isAlive).toBe(true);
+      expect(options.metrics.inc).toHaveBeenCalledWith("connections_total");
+      expect(options.logger.info).toHaveBeenCalledWith("client_connected", {
+        clients: 1,
+      });
+      expect(options.registerMissionSpawnHandlers).toHaveBeenCalled();
+      expect(options.clients.get(ws)).toBeDefined();
+
+      expect(ws.on).toHaveBeenCalledWith("pong", expect.any(Function));
+      expect(ws.on).toHaveBeenCalledWith("message", expect.any(Function));
+      expect(ws.on).toHaveBeenCalledWith("close", expect.any(Function));
+    });
+
+    test("should set isAlive on pong", () => {
+      registerWebSocketConnection(ws, req, options);
+      ws.isAlive = false;
+
+      // Trigger pong callback
+      eventListeners["pong"]();
+      expect(ws.isAlive).toBe(true);
+    });
+
+    test("should preprocess and route incoming messages", async () => {
+      registerWebSocketConnection(ws, req, options);
+
+      const msgStr = JSON.stringify({ type: "chat", message: "hello" });
+      await eventListeners["message"](msgStr);
+
+      expect(options.validateMessage).toHaveBeenCalled();
+      expect(options.routeMessage).toHaveBeenCalledWith(
+        options.clients.get(ws),
+        { type: "chat", message: "hello" },
+        ws,
+        expect.any(Object),
+      );
+    });
+
+    test("should not route messages if validation or preprocessing fails", async () => {
+      options.validateMessage.mockReturnValueOnce({
+        valid: false,
+        error: "invalid",
+      });
+      registerWebSocketConnection(ws, req, options);
+
+      await eventListeners["message"]('{"bad":true}');
+
+      expect(options.routeMessage).not.toHaveBeenCalled();
+    });
+
+    test("should handle client disconnect on close", () => {
+      registerWebSocketConnection(ws, req, options);
+      const clientObj = options.clients.get(ws);
+
+      eventListeners["close"]();
+
+      expect(options.handleClientDisconnect).toHaveBeenCalledWith(
+        ws,
+        clientObj,
+        expect.any(Object),
+      );
     });
   });
 });

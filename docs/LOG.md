@@ -44,6 +44,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-20T08:40 · iter-0180 · GREEN · connection-callback-modularized-tested
+
+- **Baseline:** `49037df` on `chore/agent-cleaner`; working tree modified.
+- **Move:** Decompose the WebSocket connection event callback and routing lifecycle from the server monolith into
+  a dedicated, unit-tested module.
+- **Changed:**
+  - Added `registerWebSocketConnection(ws, req, options)` to `src/server/clientConnection.js` with
+    dependency-injected singletons.
+  - Refactored `src/server.js` to import and delegate the `connection` callback directly to the modular handler.
+  - Authored a comprehensive unit test suite in `src/server/clientConnection.test.js` validating connection
+    setups, pong resets, message preprocessing/routing, and close disconnect handlers.
+- **Decisions:** none.
+- **Validation:** `npm run agent:check` completed successfully with 1,543 Jest and 94 Vitest tests passing green.
+- **Next:** Continue modularizing inline routers or other handlers in server.js.
+
 ## 2026-06-20T08:18 · iter-0179 · GREEN · shutdown-handler-modularized-tested
 
 - **Baseline:** `e776e2c` on `chore/agent-cleaner`; working tree modified.

@@ -44,6 +44,18 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-20T07:35 · iter-0171 · GREEN · verify-websocket-client-modularized-tested
+
+- **Baseline:** `710b465` on `chore/agent-cleaner`; working tree clean.
+- **Move:** Extract verifyWebSocketClient from the server monolith into a modular, dependency-injected utility and update its test suite to assert validations in isolation.
+- **Changed:**
+  - Designed and implemented `src/server/verifyWebSocketClient.js` accepting connection info, a callback, and a configuration context (allowedOrigins, connectionFloodSentry).
+  - Refactored `verifyWebSocketClient` inside `src/server.js` to delegate to this utility.
+  - Rewrote the unit test suite in `src/server/verifyWebSocketClient.test.js` to test the modular handler in complete isolation.
+- **Decisions:** none.
+- **Validation:** `npm run agent:check` completed successfully with 1,480 Jest and 94 Vitest tests passing green.
+- **Next:** Extract more handlers from server.js or design additional gameplay/visual mechanics.
+
 ## 2026-06-20T07:32 · iter-0170 · GREEN · physics-tick-loop-modularized-tested
 
 - **Baseline:** `18cbae7` on `chore/agent-cleaner`; working tree clean.

@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-06-20T07:31:14.267Z` · Baseline: `27,857 LOC` across `115 source files`
+> Generated: `2026-06-20T07:35:10.507Z` · Baseline: `27,927 LOC` across `116 source files`
 
 ---
 
@@ -9,8 +9,8 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `27,857 LOC` | 🟢 Healthy |
-| **Source Modules** | `115 files` | 🟢 Structured |
+| **Total Code Volume** | `27,927 LOC` | 🟢 Healthy |
+| **Source Modules** | `116 files` | 🟢 Structured |
 | **Test Suites** | `157 test files` | 🟢 Integrated |
 | **Total Test Cases** | `1983 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `185 specifications` | 🟢 Traceable |
@@ -164,6 +164,7 @@
 | [SquadManager.js](file:///C:/dev/agy-sandbox/src/server/SquadManager.js) | 136 | `class Squad`, `class SquadManager`, `constant squadManager` | [SquadManager.test.js](file:///C:/dev/agy-sandbox/src/server/SquadManager.test.js) | [`059_alliance_fleets`](file:///C:/dev/agy-sandbox/plan/specs/059_alliance_fleets.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md) |
 | [supervisor.js](file:///C:/dev/agy-sandbox/src/server/supervisor.js) | 111 | `function planWorkers`, `function runSupervisor` | [supervisor.test.js](file:///C:/dev/agy-sandbox/src/server/supervisor.test.js) | [`019c_worker_process_model`](file:///C:/dev/agy-sandbox/plan/specs/019c_worker_process_model.md)<br>[`062_redis_cluster_integration`](file:///C:/dev/agy-sandbox/plan/specs/062_redis_cluster_integration.md) |
 | [tutorialHandlers.js](file:///C:/dev/agy-sandbox/src/server/tutorialHandlers.js) | 210 | `function handleTutorialProgress` | [tutorialHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/tutorialHandlers.test.js) | [`110_server_handler_extraction_round5`](file:///C:/dev/agy-sandbox/plan/specs/110_server_handler_extraction_round5.md) |
+| [verifyWebSocketClient.js](file:///C:/dev/agy-sandbox/src/server/verifyWebSocketClient.js) | 70 | `function verifyWebSocketClient` | [verifyWebSocketClient.test.js](file:///C:/dev/agy-sandbox/src/server/verifyWebSocketClient.test.js) | _None_ |
 
 ---
 

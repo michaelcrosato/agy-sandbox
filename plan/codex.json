@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-06-20T07:31:14.267Z",
+  "generatedAt": "2026-06-20T07:35:10.507Z",
   "stats": {
-    "totalSourceFiles": 115,
+    "totalSourceFiles": 116,
     "totalTestFiles": 157,
     "totalSpecFiles": 185,
-    "totalLoc": 27857,
+    "totalLoc": 27927,
     "totalTests": 1983,
     "untestedCoreFilesCount": 0
   },
@@ -3250,6 +3250,24 @@
       "referencingSpecs": [
         "plan/specs/110_server_handler_extraction_round5.md"
       ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/verifyWebSocketClient.js",
+      "loc": 70,
+      "classes": [],
+      "exports": [
+        {
+          "name": "verifyWebSocketClient",
+          "type": "function",
+          "jsdoc": "/**\n* Validates WebSocket connection upgrades (URI length, payload length, allowed origins, flood sentry).\n* @param {Object} info Connection info metadata.\n* @param {Function} cb Callback function to accept or reject.\n* @param {Object} options Configuration dependencies.\n* @param {string[]} options.allowedOrigins Allowlisted client origins.\n* @param {Object} options.connectionFloodSentry Sentry instance managing IP connection counts.\n* @returns {*}\n*/",
+          "line": 12
+        }
+      ],
+      "fileOverview": "/**\n* Validates WebSocket connection upgrades (URI length, payload length, allowed origins, flood sentry).\n* @param {Object} info Connection info metadata.\n* @param {Function} cb Callback function to accept or reject.\n* @param {Object} options Configuration dependencies.\n* @param {string[]} options.allowedOrigins Allowlisted client origins.\n* @param {Object} options.connectionFloodSentry Sentry instance managing IP connection counts.\n* @returns {*}\n*/",
+      "testFile": "src/server/verifyWebSocketClient.test.js",
+      "testCasesCount": 5,
+      "referencingSpecs": [],
       "missingJsDocSymbols": []
     }
   ],

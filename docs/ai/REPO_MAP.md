@@ -131,6 +131,7 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 | SquadManager — manages co-op player party squads (SPEC-059). | [`src/server/SquadManager.js`](file:///C:/dev/agy-sandbox/src/server/SquadManager.js) | no | yes |
 | Pure supervisor worker planner (spec 019c). | [`src/server/supervisor.js`](file:///C:/dev/agy-sandbox/src/server/supervisor.js) | no | yes |
 | Handles starting the dynamic interactive tutorial. | [`src/server/tutorialHandlers.js`](file:///C:/dev/agy-sandbox/src/server/tutorialHandlers.js) | no | yes |
+| Validates WebSocket connection upgrades (URI length, payload length, allowed origins, flood sentry). | [`src/server/verifyWebSocketClient.js`](file:///C:/dev/agy-sandbox/src/server/verifyWebSocketClient.js) | no | yes |
 
 Rule of thumb: anything under `engine/`, `physics/`, `net/`, `persistence/` is pure and **must** stay
 that way (no DOM, sockets, timers, or `Math.random` in test-reachable paths). Tests sit beside source

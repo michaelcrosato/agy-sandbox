@@ -381,6 +381,23 @@ describe("Broadcast Methods", () => {
     const r2 = sent.roster.find((r) => r.id === "p2");
     expect(r2.status).toBe("orbit");
   });
+
+  test("broadcasts projectile_fired with damage and shieldPierce on engine fire event", () => {
+    const c1 = mockClient("p1", "Alpha");
+    room.clients.set(c1.ws, c1);
+
+    const ship = new Ship({ id: "p1", position: new Vector2D(0, 0) });
+    const proj = { damage: 45, shieldPierce: 0.25 };
+
+    room.engine.onProjectileFired(proj, ship);
+
+    expect(c1.ws.send).toHaveBeenCalledTimes(1);
+    const sent = JSON.parse(c1.ws.send.mock.calls[0][0]);
+    expect(sent.type).toBe("projectile_fired");
+    expect(sent.ownerId).toBe("p1");
+    expect(sent.damage).toBe(45);
+    expect(sent.shieldPierce).toBe(0.25);
+  });
 });
 
 // ---------------------------------------------------------------------------

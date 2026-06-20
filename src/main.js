@@ -541,11 +541,17 @@ engine.onProjectileFired = (proj, ship) => {
   const dir = ship.getDirectionVector();
   const muzzleX = ship.position.x + dir.x * (ship.radius + 2);
   const muzzleY = ship.position.y + dir.y * (ship.radius + 2);
-  renderer.spawnExplosion(
-    muzzleX,
-    muzzleY,
-    ship.id === "player" ? "#00ffcc" : "#ff3333",
-  );
+  let color;
+  if (proj.shieldPierce > 0) {
+    color = "#ffff33";
+  } else if (proj.damage >= 50) {
+    color = "#d03ffc";
+  } else if (proj.damage >= 25) {
+    color = "#00ff66";
+  } else {
+    color = ship.id === player.id ? "#00ffcc" : "#ff3333";
+  }
+  renderer.spawnExplosion(muzzleX, muzzleY, color);
 
   let weaponType = "laser";
   if (ship && ship.outfits) {
@@ -1668,7 +1674,17 @@ network.onProjectileFired = (msg) => {
     const dir = new Vector2D(Math.cos(msg.heading), Math.sin(msg.heading));
     const muzzleX = msg.x + dir.x * (shooter.radius + 2);
     const muzzleY = msg.y + dir.y * (shooter.radius + 2);
-    renderer.spawnExplosion(muzzleX, muzzleY, "#00ffcc");
+    let color;
+    if (msg.shieldPierce > 0) {
+      color = "#ffff33";
+    } else if (msg.damage >= 50) {
+      color = "#d03ffc";
+    } else if (msg.damage >= 25) {
+      color = "#00ff66";
+    } else {
+      color = msg.ownerId === player.id ? "#00ffcc" : "#ff3333";
+    }
+    renderer.spawnExplosion(muzzleX, muzzleY, color);
   }
 };
 

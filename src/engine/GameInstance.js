@@ -89,6 +89,8 @@ export class GameInstance {
         heading: ship.heading,
         radius: ship.radius,
         ownerId: ship.id,
+        damage: proj.damage,
+        shieldPierce: proj.shieldPierce,
       });
     };
 

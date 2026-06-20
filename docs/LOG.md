@@ -44,6 +44,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-20T07:26 · iter-0169 · GREEN · custom-weapon-muzzle-flash-colors-rendered
+
+- **Baseline:** `8775701` on `chore/agent-cleaner`; working tree clean.
+- **Move:** Implement dynamic weapon muzzle flashes with custom colors (Ion, Neutron, Plasma) based on fired projectile traits.
+- **Changed:**
+  - Modified `onProjectileFired` in `src/engine/GameInstance.js` to broadcast projectile `damage` and `shieldPierce` fields.
+  - Updated both local and network projectile firing event handlers in `src/main.js` to dynamically determine the muzzle flash explosion color from these attributes.
+  - Declared muzzle flash color variables uninitialized to prevent ESLint `no-useless-assignment` warnings.
+  - Added a new unit test in `src/engine/GameInstance.test.js` validating custom event payload property serialization.
+- **Decisions:** none.
+- **Validation:** `npm run agent:check` completed successfully with 1,466 Jest and 94 Vitest tests passing green.
+- **Next:** Decompose more server message handlers to reduce monolith footprint or implement new gameplay features.
+
 ## 2026-06-20T07:16 · iter-0168 · GREEN · custom-weapon-projectile-colors-glows-rendered
 
 - **Baseline:** `284cb2f` on `chore/agent-cleaner`; working tree clean.

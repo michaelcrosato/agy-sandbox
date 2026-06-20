@@ -44,6 +44,18 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-20T07:32 · iter-0170 · GREEN · physics-tick-loop-modularized-tested
+
+- **Baseline:** `18cbae7` on `chore/agent-cleaner`; working tree clean.
+- **Move:** Decompose the inline physics tick loop sub-routines from the server monolith into a dedicated, unit-tested physicsTickHandlers.js module.
+- **Changed:**
+  - Designed and implemented `src/server/physicsTickHandlers.js` containing updateAILogic, applyTractorForces, handleCargoCollection, applyNebulaHazards, applyCosmicStormHazards, and applySolarEmpHazards.
+  - Refactored `src/server.js` physicsInterval loop to call the modularized handlers.
+  - Authored a comprehensive unit test suite in `src/server/physicsTickHandlers.test.js` validating refuels, scoops, tractor pull ranges, nebulae, cosmic storms, and solar EMP.
+- **Decisions:** none.
+- **Validation:** `npm run agent:check` completed successfully with 1,480 Jest and 94 Vitest tests passing green.
+- **Next:** Extract more handlers from server.js or design additional gameplay/visual mechanics.
+
 ## 2026-06-20T07:26 · iter-0169 · GREEN · custom-weapon-muzzle-flash-colors-rendered
 
 - **Baseline:** `8775701` on `chore/agent-cleaner`; working tree clean.

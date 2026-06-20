@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-06-20T07:24:17.251Z` · Baseline: `27,575 LOC` across `114 source files`
+> Generated: `2026-06-20T07:31:14.267Z` · Baseline: `27,857 LOC` across `115 source files`
 
 ---
 
@@ -9,10 +9,10 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `27,575 LOC` | 🟢 Healthy |
-| **Source Modules** | `114 files` | 🟢 Structured |
-| **Test Suites** | `156 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1962 cases` | 🟢 Deterministic |
+| **Total Code Volume** | `27,857 LOC` | 🟢 Healthy |
+| **Source Modules** | `115 files` | 🟢 Structured |
+| **Test Suites** | `157 test files` | 🟢 Integrated |
+| **Total Test Cases** | `1983 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `185 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `0 files` | 🟢 100% Covered |
 
@@ -153,6 +153,7 @@
 | [matchmaking.js](file:///C:/dev/agy-sandbox/src/server/matchmaking.js) | 255 | `class JoinQueue`, `function roomMatches`, `function freeSlots`, `function matchRoom`, `function matchQueueToRooms` | [matchmaking.test.js](file:///C:/dev/agy-sandbox/src/server/matchmaking.test.js) | [`036_matchmaking_room_filters`](file:///C:/dev/agy-sandbox/plan/specs/036_matchmaking_room_filters.md)<br>[`043_matchmaking_queue_lifecycle`](file:///C:/dev/agy-sandbox/plan/specs/043_matchmaking_queue_lifecycle.md)<br>[`069_matchmaking_queues_ratings`](file:///C:/dev/agy-sandbox/plan/specs/069_matchmaking_queues_ratings.md) |
 | [missionSpawnHandlers.js](file:///C:/dev/agy-sandbox/src/server/missionSpawnHandlers.js) | 173 | `function registerMissionSpawnHandlers` | [missionSpawnHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/missionSpawnHandlers.test.js) | _None_ |
 | [outfittingPresetHandlers.js](file:///C:/dev/agy-sandbox/src/server/outfittingPresetHandlers.js) | 192 | `function handlePresetSave`, `function handlePresetLoad`, `function handlePresetDelete` | [outfittingPresetHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/outfittingPresetHandlers.test.js) | [`157_outfitting_presets_modularization`](file:///C:/dev/agy-sandbox/plan/specs/157_outfitting_presets_modularization.md) |
+| [physicsTickHandlers.js](file:///C:/dev/agy-sandbox/src/server/physicsTickHandlers.js) | 282 | `function updateAILogic`, `function applyTractorForces`, `function handleCargoCollection`, `function applyNebulaHazards`, `function applyCosmicStormHazards`, `function applySolarEmpHazards` | [physicsTickHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/physicsTickHandlers.test.js) | _None_ |
 | [portHandlers.js](file:///C:/dev/agy-sandbox/src/server/portHandlers.js) | 529 | `function handleOutfitBuy`, `function handleShipBuy`, `function handleEscortCommand`, `function handleVoucherRedeem`, `function handleOutfitSell`, `function handleOreRefine`, `function handleDistressBeacon` | [portHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/portHandlers.test.js) | [`046_modularize_port_mission_handlers`](file:///C:/dev/agy-sandbox/plan/specs/046_modularize_port_mission_handlers.md)<br>[`050_wingman_tactical_formation_controls`](file:///C:/dev/agy-sandbox/plan/specs/050_wingman_tactical_formation_controls.md)<br>[`055_naval_command_decks`](file:///C:/dev/agy-sandbox/plan/specs/055_naval_command_decks.md)<br>[`058_loadout_presets`](file:///C:/dev/agy-sandbox/plan/specs/058_loadout_presets.md)<br>[`060_naval_campaigns`](file:///C:/dev/agy-sandbox/plan/specs/060_naval_campaigns.md)<br>[`077_refinement_mining_laser_industrial_dock`](file:///C:/dev/agy-sandbox/plan/specs/077_refinement_mining_laser_industrial_dock.md) |
 | [pubsubSubscriptions.js](file:///C:/dev/agy-sandbox/src/server/pubsubSubscriptions.js) | 150 | _None_ | [pubsubSubscriptions.test.js](file:///C:/dev/agy-sandbox/src/server/pubsubSubscriptions.test.js) | _None_ |
 | [restHandlers.js](file:///C:/dev/agy-sandbox/src/server/restHandlers.js) | 695 | `function handleRestRequest` | [restHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/restHandlers.test.js) | [`161_decompose_http_rest_endpoints`](file:///C:/dev/agy-sandbox/plan/specs/161_decompose_http_rest_endpoints.md)<br>[`164_faction_war_campaign_engine`](file:///C:/dev/agy-sandbox/plan/specs/164_faction_war_campaign_engine.md) |

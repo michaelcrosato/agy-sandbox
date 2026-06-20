@@ -79,6 +79,14 @@ import {
   joinRoom as joinRoomExt,
   handleClientDisconnect,
 } from "./server/connectionLifecycle.js";
+import {
+  updateAILogic,
+  applyTractorForces,
+  handleCargoCollection,
+  applyNebulaHazards,
+  applyCosmicStormHazards,
+  applySolarEmpHazards,
+} from "./server/physicsTickHandlers.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import {
   createClientObject,
@@ -376,61 +384,7 @@ const physicsInterval = setInterval(() => {
     // A. Drive AI merchant itineraries and update active AIs
     const prevOres = new Map(room.planets.map((p) => [p.name, p.market.ore]));
 
-    for (const ai of room.ais) {
-      if (ai.ship.isDestroyed) continue;
-
-      if (ai.isRefuelTanker && ai.refuelTargetId) {
-        const targetClient = room.clients.get(ai.refuelTargetId);
-        if (
-          targetClient &&
-          targetClient.ship &&
-          !targetClient.ship.isDestroyed
-        ) {
-          ai.destination = targetClient.ship.position.clone();
-
-          const dist = ai.ship.position.distance(targetClient.ship.position);
-          if (dist < 90) {
-            targetClient.ship.hyperFuel = targetClient.ship.maxHyperFuel;
-            targetClient.send({
-              type: "notification",
-              message:
-                "Rescue Caravan: Allied Refuel Tanker transferred maximum hyperFuel!",
-              style: "success",
-            });
-            targetClient.sendStats();
-
-            const alertMsg = `RESCUE: ${targetClient.nickname} has been refueled by an allied Refuel Tanker.`;
-            room.broadcastNotification(alertMsg, "info");
-            room.broadcast({
-              type: "chat",
-              channel: "global",
-              sender: "GALAXY-NEWS",
-              text: alertMsg,
-            });
-
-            ai.ship.isDestroyed = true;
-            room.engine.removeEntity(ai.ship.id);
-            continue;
-          }
-        } else {
-          ai.ship.isDestroyed = true;
-          room.engine.removeEntity(ai.ship.id);
-          continue;
-        }
-      }
-
-      if (ai.role === "merchant" && !ai.destination) {
-        const potentialHubs = room.planets.filter(
-          (p) => p.position.distance(ai.ship.position) > 250,
-        );
-        if (potentialHubs.length > 0) {
-          const nextHub =
-            potentialHubs[Math.floor(Math.random() * potentialHubs.length)];
-          ai.destination = nextHub.position.clone();
-        }
-      }
-      ai.update(dt, room.engine.entities);
-    }
+    updateAILogic(room, dt);
 
     for (const p of room.planets) {
       const prevVal = prevOres.get(p.name);
@@ -443,195 +397,15 @@ const physicsInterval = setInterval(() => {
       }
     }
 
-    // B. Apply Solar EMP Events Shield Regen nerfing
+    // B. Apply Solar EMP, Tractor, Cargo, Nebulae, and Cosmic Storm Hazards
     const originalRegens = new Map();
     const originalCooldowns = new Map();
-    if (room.activeSectorEvent && room.activeSectorEvent.type === "emp") {
-      const empPlanet = room.planets.find(
-        (p) => p.name === room.activeSectorEvent.planetName,
-      );
-      if (empPlanet) {
-        for (const ent of room.engine.entities) {
-          if (ent.type === "ship" && !ent.isDestroyed) {
-            const dist = ent.position.distance(empPlanet.position);
-            if (dist <= 400) {
-              originalRegens.set(ent, ent.shieldRegen);
-              ent.shieldRegen = 0;
-            }
-          }
-        }
-      }
-    }
 
-    // C. Apply Tractor Beam Matrix pull forces
-    for (const ent of room.engine.entities) {
-      if (ent.type === "ship" && !ent.isDestroyed) {
-        if (ent.outfits && ent.outfits.includes("Tractor Beam Matrix")) {
-          for (const pod of room.engine.entities) {
-            if (pod.type === "cargo_pod") {
-              const toShip = ent.position.subtract(pod.position);
-              const dist = toShip.magnitude();
-              if (dist > 1 && dist <= 250) {
-                const forceMag = 400000 / (dist * dist + 100);
-                const pullForce = toShip
-                  .normalize()
-                  .multiply(forceMag * pod.mass);
-                pod.applyForce(pullForce);
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // D. Cargo collection ingestion
-    const podsToRemove = [];
-    for (const pod of room.engine.entities) {
-      if (pod.type === "cargo_pod") {
-        for (const ship of room.engine.entities) {
-          if (ship.type === "ship" && !ship.isDestroyed) {
-            const dist = ship.position.distance(pod.position);
-            if (dist <= ship.radius + pod.radius) {
-              if (pod.isTrainingSalvage) {
-                podsToRemove.push(pod);
-                const client = Array.from(room.clients.values()).find(
-                  (c) => c.ship === ship,
-                );
-                if (client) {
-                  client.tutorialStep = "dock_at_port";
-                  client.send({
-                    type: "notification",
-                    message:
-                      "Salvage harvested! Return to the spaceport and land [L] to complete onboarding.",
-                    style: "success",
-                  });
-                  client.send({
-                    type: "tutorial_state",
-                    step: "dock_at_port",
-                  });
-                  client.send({
-                    type: "cargo_pickup",
-                    resourceType: pod.resourceType,
-                    amount: pod.amount,
-                    x: pod.position.x,
-                    y: pod.position.y,
-                  });
-                  client.sendStats();
-                }
-                break;
-              }
-
-              const success = ship.addCargo(pod.resourceType, pod.amount);
-              if (success) {
-                podsToRemove.push(pod);
-                const client = Array.from(room.clients.values()).find(
-                  (c) => c.ship === ship,
-                );
-                if (client) {
-                  client.send({
-                    type: "notification",
-                    message: `+${pod.amount} ${pod.resourceType.toUpperCase()} collected!`,
-                    style: "success",
-                  });
-                  client.send({
-                    type: "cargo_pickup",
-                    resourceType: pod.resourceType,
-                    amount: pod.amount,
-                    x: pod.position.x,
-                    y: pod.position.y,
-                  });
-                  client.sendStats();
-                }
-                break;
-              } else {
-                const client = Array.from(room.clients.values()).find(
-                  (c) => c.ship === ship,
-                );
-                if (
-                  client &&
-                  (!ship.lastCargoFullAlert ||
-                    Date.now() - ship.lastCargoFullAlert > 2000)
-                ) {
-                  ship.lastCargoFullAlert = Date.now();
-                  client.send({
-                    type: "notification",
-                    message:
-                      "Cargo bay is FULL! Upgrade cargo holds or sell commodities.",
-                    style: "error",
-                  });
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    for (const pod of podsToRemove) {
-      room.engine.removeEntity(pod);
-    }
-
-    // E. Apply Nebula Hazards
-    for (const ent of room.engine.entities) {
-      if (ent.type === "ship" && !ent.isDestroyed) {
-        let activeNebula = null;
-        for (const neb of NEBULAE) {
-          const dx = ent.position.x - neb.position.x;
-          const dy = ent.position.y - neb.position.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist <= neb.radius) {
-            activeNebula = neb;
-            break;
-          }
-        }
-
-        if (activeNebula) {
-          if (room.engine.globalDrag > 0 && ent.velocity.magnitude() > 0) {
-            const extraDragCoef = activeNebula.dragMultiplier - 1.0;
-            const extraDragForce = ent.velocity.multiply(
-              -extraDragCoef * room.engine.globalDrag * ent.mass,
-            );
-            ent.applyForce(extraDragForce);
-          }
-          if (activeNebula.hazardType === "shield_dampen") {
-            const currentRegen = originalRegens.has(ent) ? 0 : ent.shieldRegen;
-            if (!originalRegens.has(ent)) {
-              originalRegens.set(ent, ent.shieldRegen);
-            }
-            ent.shieldRegen = currentRegen * 0.5;
-          }
-        }
-      }
-    }
-
-    // E2. Apply Authoritative Cosmic Storm Hazards
-    for (const ent of room.engine.entities) {
-      if (ent.type === "ship" && !ent.isDestroyed) {
-        for (const storm of room.engine.entities) {
-          if (storm.type === "cosmic_storm") {
-            const dx = ent.position.x - storm.position.x;
-            const dy = ent.position.y - storm.position.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist <= storm.radius) {
-              if (storm.hazardType === "emp_storm") {
-                // Drain ship energy reserves (-15 energy/sec)
-                ent.energy = Math.max(0, ent.energy - 15 * dt);
-                // Double weapon cooldown delay
-                if (!originalCooldowns.has(ent)) {
-                  originalCooldowns.set(ent, ent.weaponCooldown);
-                }
-                ent.weaponCooldown = originalCooldowns.get(ent) * 2.0;
-              } else if (storm.hazardType === "radioactive_cloud") {
-                // Deals slow, direct armor decay if shields are depleted (-5 armor/sec)
-                if (ent.shield <= 0) {
-                  ent.armor = Math.max(0, ent.armor - 5 * dt);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+    applySolarEmpHazards(room, originalRegens);
+    applyTractorForces(room);
+    handleCargoCollection(room);
+    applyNebulaHazards(room, originalRegens);
+    applyCosmicStormHazards(room, dt, originalCooldowns);
 
     // F. Scramble aggressive interceptor patrols for hostile players
     room.checkReputationPatrolSpawns(dt);

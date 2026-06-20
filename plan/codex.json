@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-20T07:24:17.251Z",
+  "generatedAt": "2026-06-20T07:31:14.267Z",
   "stats": {
-    "totalSourceFiles": 114,
-    "totalTestFiles": 156,
+    "totalSourceFiles": 115,
+    "totalTestFiles": 157,
     "totalSpecFiles": 185,
-    "totalLoc": 27575,
-    "totalTests": 1962,
+    "totalLoc": 27857,
+    "totalTests": 1983,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -2941,6 +2941,54 @@
       "referencingSpecs": [
         "plan/specs/157_outfitting_presets_modularization.md"
       ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/physicsTickHandlers.js",
+      "loc": 282,
+      "classes": [],
+      "exports": [
+        {
+          "name": "updateAILogic",
+          "type": "function",
+          "jsdoc": "/**\n* Updates AI entities in the room, handles caravan refueling and merchant destination routing.\n* @param {Object} room The active GameInstance room.\n* @param {number} dt The simulation tick time delta.\n*/",
+          "line": 8
+        },
+        {
+          "name": "applyTractorForces",
+          "type": "function",
+          "jsdoc": "/**\n* Applies pull forces from Tractor Beam Matrix to cargo pods.\n* @param {Object} room The active GameInstance room.\n*/",
+          "line": 68
+        },
+        {
+          "name": "handleCargoCollection",
+          "type": "function",
+          "jsdoc": "/**\n* Handles cargo pod ingestion and collision, adding resources and sending alerts.\n* @param {Object} room The active GameInstance room.\n*/",
+          "line": 94
+        },
+        {
+          "name": "applyNebulaHazards",
+          "type": "function",
+          "jsdoc": "/**\n* Applies drag multiplier and shield dampening from Nebulae to ships.\n* @param {Object} room The active GameInstance room.\n* @param {Map<Object, number>} originalRegens Map storing original shield regens to restore.\n*/",
+          "line": 187
+        },
+        {
+          "name": "applyCosmicStormHazards",
+          "type": "function",
+          "jsdoc": "/**\n* Applies energy drain, weapon cooldown double, and armor decay from Cosmic Storms.\n* @param {Object} room The active GameInstance room.\n* @param {number} dt The simulation tick time delta.\n* @param {Map<Object, number>} originalCooldowns Map storing original weapon cooldowns to restore.\n*/",
+          "line": 227
+        },
+        {
+          "name": "applySolarEmpHazards",
+          "type": "function",
+          "jsdoc": "/**\n* Shuts down shield regeneration on ships within range of a solar EMP planet event.\n* @param {Object} room The active GameInstance room.\n* @param {Map<Object, number>} originalRegens Map storing original shield regens to restore.\n*/",
+          "line": 262
+        }
+      ],
+      "fileOverview": "/**\n* Updates AI entities in the room, handles caravan refueling and merchant destination routing.\n* @param {Object} room The active GameInstance room.\n* @param {number} dt The simulation tick time delta.\n*/",
+      "testFile": "src/server/physicsTickHandlers.test.js",
+      "testCasesCount": 21,
+      "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
     {

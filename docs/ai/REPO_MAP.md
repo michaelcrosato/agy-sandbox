@@ -120,6 +120,7 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 | matchmaking — pure room matchmaking + a join queue (spec 036, upgraded spec 069). | [`src/server/matchmaking.js`](file:///C:/dev/agy-sandbox/src/server/matchmaking.js) | no | yes |
 | Registers callback handlers on a player's missionManager to handle storylines, bounties, and escort target spawns within the player's active sector room. | [`src/server/missionSpawnHandlers.js`](file:///C:/dev/agy-sandbox/src/server/missionSpawnHandlers.js) | no | yes |
 | Saves current outfitting configuration to a custom preset slot. | [`src/server/outfittingPresetHandlers.js`](file:///C:/dev/agy-sandbox/src/server/outfittingPresetHandlers.js) | no | yes |
+| Updates AI entities in the room, handles caravan refueling and merchant destination routing. | [`src/server/physicsTickHandlers.js`](file:///C:/dev/agy-sandbox/src/server/physicsTickHandlers.js) | no | yes |
 | Handles purchase of an outfit from a planet. | [`src/server/portHandlers.js`](file:///C:/dev/agy-sandbox/src/server/portHandlers.js) | no | yes |
 | Registers global Redis/InMemory PubSub message subscribers. | [`src/server/pubsubSubscriptions.js`](file:///C:/dev/agy-sandbox/src/server/pubsubSubscriptions.js) | no | yes |
 | Reads a file synchronously with retries on lock contention. | [`src/server/restHandlers.js`](file:///C:/dev/agy-sandbox/src/server/restHandlers.js) | no | yes |

@@ -5,11 +5,9 @@ import { WebSocketServer } from "ws";
 import { exec } from "child_process";
 
 import { registerMissionSpawnHandlers } from "./server/missionSpawnHandlers.js";
-import { NEBULAE } from "./engine/Nebulae.js";
+
 import { GameInstance } from "./engine/GameInstance.js";
-import { nextFrame } from "./net/BroadcastFramer.js";
-import { interestFilter, buildSpatialGrid } from "./net/interest.js";
-import { encode as encodeFrame } from "./net/BinaryCodec.js";
+
 import { perMessageDeflateOption } from "./net/wsCompression.js";
 import { squadManager } from "./server/SquadManager.js";
 import { JoinQueue, freeSlots, roomMatches } from "./server/matchmaking.js";
@@ -23,9 +21,9 @@ import {
 import { SandboxFirewall, activateFirewall } from "./net/SandboxFirewall.js";
 import { applyGalaxy } from "./persistence/serializers.js";
 import { InMemoryPubSub } from "./net/PubSub.js";
-import { isAllowedOrigin } from "./net/originPolicy.js";
+
 import { selectDeadSockets, DEFAULT_HEARTBEAT_MS } from "./net/heartbeat.js";
-import { sendDecision } from "./net/backpressure.js";
+
 import { createRegistry } from "./net/metrics.js";
 import { createLogger } from "./net/logger.js";
 import { LatencyMonitor } from "./net/LatencyMonitor.js";
@@ -88,6 +86,7 @@ import {
   applyCosmicStormHazards,
   applySolarEmpHazards,
 } from "./server/physicsTickHandlers.js";
+import { broadcastRoomState } from "./server/roomBroadcast.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import {
   createClientObject,
@@ -486,95 +485,15 @@ const physicsInterval = setInterval(() => {
     }
 
     // J. Authoritative World State Broadcast (P7: snapshots + deltas).
-    // Frame this tick as either a full keyframe (`state_snapshot`) or a delta
-    // against the previous broadcast (`state_delta`). The wire string is built
-    // ONCE per tick and reused for every client so cost stays O(clients) on the
-    // socket layer alone, not O(clients * entities) on JSON.stringify.
-    // Interest management (spec 014): serialize the room's entities once, then
-    // frame PER CLIENT against that client's area-of-interest filter and its own
-    // keyframe/delta baseline. A client receives only entities near its ship
-    // (plus its own), so bandwidth scales with what a player can see rather than
-    // with room size. Entities entering/leaving the AOI surface as natural
-    // add/remove deltas via StateCodec, so nothing lingers client-side.
-    const allEntities = room.serializeEntities();
-    const spatialGrid = INTEREST_ENABLED
-      ? buildSpatialGrid(allEntities, INTEREST_RADIUS)
-      : null;
-    const roomForceKeyframe = !!room.needsKeyframe;
-    room.needsKeyframe = false;
-    for (const client of room.clients.values()) {
-      if (client.ws.readyState !== client.ws.OPEN) continue;
-
-      const viewer = client.ship;
-      let squadmates = [];
-      if (viewer) {
-        const squad = squadManager.getSquadForPlayer(client.id);
-        if (squad) {
-          for (const memberId of squad.memberIds) {
-            if (memberId === client.id) continue;
-            const smClient = room.clients.get(memberId);
-            if (smClient && smClient.ship && smClient.ship.position) {
-              squadmates.push({
-                x: smClient.ship.position.x,
-                y: smClient.ship.position.y,
-              });
-            }
-          }
-        }
-      }
-
-      let visible =
-        INTEREST_ENABLED && viewer && viewer.position
-          ? interestFilter(
-              allEntities,
-              { x: viewer.position.x, y: viewer.position.y },
-              {
-                radius: INTEREST_RADIUS,
-                alwaysIncludeId: client.id,
-                spatialGrid,
-                squadmates,
-              },
-            )
-          : allEntities;
-
-      // Event-Loop Latency Backpressure load-shedding (SPEC-090):
-      if (latencyMonitor.shouldShed("optional")) {
-        visible = visible.filter(
-          (ent) => ent.type !== "asteroid" && ent.type !== "projectile",
-        );
-      }
-
-      const frame = nextFrame({
-        entities: visible,
-        prev: client.broadcastState,
-        forceKeyframe:
-          roomForceKeyframe || !client.broadcastState || !!client.needsKeyframe,
-      });
-
-      // Backpressure (spec 004): a slow client's send buffer must not grow
-      // unbounded. Skip deltas to a backed-up client (it resyncs on the next
-      // keyframe); drop one that is hopelessly behind. The per-client baseline
-      // advances ONLY on a successful send, so a skipped client's next delta is
-      // computed against the state it actually holds — no desync.
-      const decision = sendDecision(client.ws.bufferedAmount, {
-        isKeyframe: frame.isKeyframe,
-      });
-      if (decision === "drop") {
-        client.ws.terminate();
-        metrics.inc("slow_client_drops");
-      } else if (decision === "send") {
-        client.broadcastState = frame.nextState;
-        client.needsKeyframe = false;
-        const statePayload = BINARY_PROTOCOL
-          ? encodeFrame(frame.payload)
-          : JSON.stringify(frame.payload);
-        client.ws.send(statePayload);
-        metrics.inc(
-          "broadcast_bytes",
-          BINARY_PROTOCOL ? statePayload.byteLength : statePayload.length,
-        );
-      }
-    }
+    // Delegated to roomBroadcast utility module for testability and clean separation of concerns.
+    broadcastRoomState(room, {
+      squadManager,
+      latencyMonitor,
+      metrics,
+      interestEnabled: INTEREST_ENABLED,
+      interestRadius: INTEREST_RADIUS,
+      binaryProtocol: BINARY_PROTOCOL,
+    });
   }
   metrics.observe("tick_ms", Date.now() - now);
   metrics.gauge("rooms", instances.size);

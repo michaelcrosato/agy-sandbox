@@ -44,6 +44,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-20T07:44 · iter-0172 · GREEN · room-state-broadcast-modularized-tested
+
+- **Baseline:** `0197304` on `chore/agent-cleaner`; working tree clean.
+- **Move:** Extract room state broadcast and Area-of-Interest culling logic from the server monolith into a dedicated, unit-tested roomBroadcast.js module.
+- **Changed:**
+  - Designed and implemented `src/server/roomBroadcast.js` containing state serialization, squadmate resolution, Area-of-Interest culling, latency-triggered load shedding, backpressure skipping/dropping, and socket send operations.
+  - Refactored `src/server.js` physicsInterval loop to call the modular `broadcastRoomState` utility.
+  - Removed unused imports `nextFrame`, `interestFilter`, `buildSpatialGrid`, `encodeFrame`, `sendDecision`, `NEBULAE`, and `isAllowedOrigin` from `src/server.js`.
+  - Authored a comprehensive unit test suite in `src/server/roomBroadcast.test.js` validating client state snapshot/delta transitions, culling radii, backpressure decisions, and binary protocol formats.
+- **Decisions:** none.
+- **Validation:** `npm run agent:check` completed successfully with 1,487 Jest and 94 Vitest tests passing green.
+- **Next:** Modularize more message handling routing logic in server.js or implement new gameplay features.
+
 ## 2026-06-20T07:35 · iter-0171 · GREEN · verify-websocket-client-modularized-tested
 
 - **Baseline:** `710b465` on `chore/agent-cleaner`; working tree clean.

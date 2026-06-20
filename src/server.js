@@ -46,14 +46,14 @@ import { startPeriodicIntervals } from "./server/periodicIntervals.js";
 import { createShutdownHandler } from "./server/shutdownHandler.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import { registerWebSocketConnection } from "./server/clientConnection.js";
+import {
+  loadRegistry as loadRegistryStore,
+  saveRegistry as saveRegistryStore,
+} from "./server/roomRegistryStore.js";
 import { validateMessage } from "./net/SchemaValidator.js";
 import { registerPubSubSubscriptions } from "./server/pubsubSubscriptions.js";
 import { broadcastLobbySync, sendLobbyList } from "./server/lobbySync.js";
-import {
-  assignShard,
-  RoomRegistry,
-  routeConnection,
-} from "./net/roomRouter.js";
+import { assignShard, routeConnection } from "./net/roomRouter.js";
 
 // Interest management (spec 014): per-client area-of-interest filtering of the
 // world-state broadcast — a client receives only entities near its ship (plus
@@ -310,37 +310,8 @@ const physicsInterval = setInterval(() => {
 // Room economy shortage, environmental siege, normalization, and galaxy heartbeat intervals
 // are managed under startPeriodicIntervals.
 
-// Shared presence/registry keys & helpers (spec 019e)
-const REGISTRY_KEY = "presence:registry";
-
-async function loadRegistry() {
-  try {
-    const data = await storeInstance.load(REGISTRY_KEY);
-    return RoomRegistry.fromJSON(data || {});
-  } catch (err) {
-    console.error(`⚠️ Failed to load RoomRegistry from store: ${err.message}`);
-    return new RoomRegistry();
-  }
-}
-
-async function saveRegistry(registry) {
-  let attempts = 0;
-  while (attempts < 5) {
-    try {
-      await storeInstance.save(REGISTRY_KEY, registry.serialize());
-      return;
-    } catch (err) {
-      attempts++;
-      if (attempts >= 5) {
-        console.error(
-          `⚠️ Failed to save RoomRegistry to store after 5 attempts: ${err.message}`,
-        );
-      } else {
-        await new Promise((resolve) => setTimeout(resolve, 50 * attempts));
-      }
-    }
-  }
-}
+const loadRegistry = () => loadRegistryStore(storeInstance);
+const saveRegistry = (registry) => saveRegistryStore(storeInstance, registry);
 
 // Custom GC, lobby sync, and multi-worker registry heartbeat intervals
 // are managed under startPeriodicIntervals.

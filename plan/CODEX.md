@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-06-20T08:38:51.725Z` · Baseline: `29,185 LOC` across `123 source files`
+> Generated: `2026-06-20T08:41:58.757Z` · Baseline: `29,231 LOC` across `124 source files`
 
 ---
 
@@ -9,10 +9,10 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `29,185 LOC` | 🟢 Healthy |
-| **Source Modules** | `123 files` | 🟢 Structured |
-| **Test Suites** | `164 test files` | 🟢 Integrated |
-| **Total Test Cases** | `2055 cases` | 🟢 Deterministic |
+| **Total Code Volume** | `29,231 LOC` | 🟢 Healthy |
+| **Source Modules** | `124 files` | 🟢 Structured |
+| **Test Suites** | `165 test files` | 🟢 Integrated |
+| **Total Test Cases** | `2064 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `185 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `0 files` | 🟢 100% Covered |
 
@@ -165,6 +165,7 @@
 | [roomBroadcast.js](file:///C:/dev/agy-sandbox/src/server/roomBroadcast.js) | 116 | `function broadcastRoomState` | [roomBroadcast.test.js](file:///C:/dev/agy-sandbox/src/server/roomBroadcast.test.js) | _None_ |
 | [roomGc.js](file:///C:/dev/agy-sandbox/src/server/roomGc.js) | 57 | _None_ | [roomGc.test.js](file:///C:/dev/agy-sandbox/src/server/roomGc.test.js) | [`042_server_monolith_extraction_galaxy_ticker`](file:///C:/dev/agy-sandbox/plan/specs/042_server_monolith_extraction_galaxy_ticker.md) |
 | [roomLifecycle.js](file:///C:/dev/agy-sandbox/src/server/roomLifecycle.js) | 38 | `constant DEFAULT_ROOM_IDLE_MS`, `function shouldGcRoom`, `function sanitizeNickname` | [roomLifecycle.test.js](file:///C:/dev/agy-sandbox/src/server/roomLifecycle.test.js) | _None_ |
+| [roomRegistryStore.js](file:///C:/dev/agy-sandbox/src/server/roomRegistryStore.js) | 46 | `constant REGISTRY_KEY` | [roomRegistryStore.test.js](file:///C:/dev/agy-sandbox/src/server/roomRegistryStore.test.js) | _None_ |
 | [shutdownHandler.js](file:///C:/dev/agy-sandbox/src/server/shutdownHandler.js) | 227 | `function createShutdownHandler` | [shutdownHandler.test.js](file:///C:/dev/agy-sandbox/src/server/shutdownHandler.test.js) | _None_ |
 | [spaceportMissionHandlers.js](file:///C:/dev/agy-sandbox/src/server/spaceportMissionHandlers.js) | 149 | `function handleMissionAccept`, `function handleMissionAbandon` | [spaceportMissionHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/spaceportMissionHandlers.test.js) | [`154_world_derived_missions_landing_flow`](file:///C:/dev/agy-sandbox/plan/specs/154_world_derived_missions_landing_flow.md) |
 | [squadHandlers.js](file:///C:/dev/agy-sandbox/src/server/squadHandlers.js) | 156 | `function handleSquadAction` | [squadHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/squadHandlers.test.js) | [`110_server_handler_extraction_round5`](file:///C:/dev/agy-sandbox/plan/specs/110_server_handler_extraction_round5.md) |
@@ -183,8 +184,9 @@ _None! All core modules have associated test suites._
 ### ⚠️ Stale Specification File References (0)
 _None! All specification file references correspond to real paths._
 
-### ⚠️ Missing JSDoc Type Signatures (0 symbols)
-_None! All exported classes and functions have JSDoc type signatures._
+### ⚠️ Missing JSDoc Type Signatures (1 symbols)
+- `src/server/roomRegistryStore.js`:
+  - Line 3: Missing JSDoc for `constant REGISTRY_KEY`
 
 ### ⚠️ Spec Compliance Warnings (0 files)
 _None! All active specifications are fully compliant with the template standard._

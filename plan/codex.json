@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-20T08:38:51.725Z",
+  "generatedAt": "2026-06-20T08:41:58.757Z",
   "stats": {
-    "totalSourceFiles": 123,
-    "totalTestFiles": 164,
+    "totalSourceFiles": 124,
+    "totalTestFiles": 165,
     "totalSpecFiles": 185,
-    "totalLoc": 29185,
-    "totalTests": 2055,
+    "totalLoc": 29231,
+    "totalTests": 2064,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -3241,6 +3241,30 @@
       "missingJsDocSymbols": []
     },
     {
+      "path": "src/server/roomRegistryStore.js",
+      "loc": 46,
+      "classes": [],
+      "exports": [
+        {
+          "name": "REGISTRY_KEY",
+          "type": "constant",
+          "jsdoc": null,
+          "line": 3
+        }
+      ],
+      "fileOverview": null,
+      "testFile": "src/server/roomRegistryStore.test.js",
+      "testCasesCount": 9,
+      "referencingSpecs": [],
+      "missingJsDocSymbols": [
+        {
+          "name": "REGISTRY_KEY",
+          "type": "constant",
+          "line": 3
+        }
+      ]
+    },
+    {
       "path": "src/server/shutdownHandler.js",
       "loc": 227,
       "classes": [],
@@ -5534,7 +5558,18 @@
   ],
   "epistemicDebt": {
     "untestedCoreFiles": [],
-    "missingJsDocs": [],
+    "missingJsDocs": [
+      {
+        "path": "src/server/roomRegistryStore.js",
+        "symbols": [
+          {
+            "name": "REGISTRY_KEY",
+            "type": "constant",
+            "line": 3
+          }
+        ]
+      }
+    ],
     "staleSpecReferences": [],
     "specErrors": [],
     "specReconciliationErrors": []

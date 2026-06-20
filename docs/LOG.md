@@ -44,6 +44,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-20T08:42 · iter-0181 · GREEN · registry-store-modularized-tested
+
+- **Baseline:** `885b0f3` on `chore/agent-cleaner`; working tree clean.
+- **Move:** Decompose the RoomRegistry database storage interaction handlers from the server monolith into a dedicated,
+  unit-tested module.
+- **Changed:**
+  - Designed and implemented `src/server/roomRegistryStore.js` encapsulating `loadRegistry` and `saveRegistry`
+    with store parameter injection.
+  - Refactored `src/server.js` to delegate registry persistence routines to `roomRegistryStore.js`.
+  - Authored a comprehensive unit test suite in `src/server/roomRegistryStore.test.js` validating database loadings,
+    save serializations, retry behaviors, and error fallback recoveries.
+- **Decisions:** none.
+- **Validation:** `npm run agent:check` completed successfully with 1,549 Jest and 94 Vitest tests passing green.
+- **Next:** Continue modularizing server routers or handlers to keep server.js lean.
+
 ## 2026-06-20T08:40 · iter-0180 · GREEN · connection-callback-modularized-tested
 
 - **Baseline:** `49037df` on `chore/agent-cleaner`; working tree modified.

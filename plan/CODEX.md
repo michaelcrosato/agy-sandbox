@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-06-20T08:01:18.338Z` · Baseline: `28,403 LOC` across `119 source files`
+> Generated: `2026-06-20T08:03:37.450Z` · Baseline: `28,463 LOC` across `120 source files`
 
 ---
 
@@ -9,10 +9,10 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `28,403 LOC` | 🟢 Healthy |
-| **Source Modules** | `119 files` | 🟢 Structured |
-| **Test Suites** | `160 test files` | 🟢 Integrated |
-| **Total Test Cases** | `2031 cases` | 🟢 Deterministic |
+| **Total Code Volume** | `28,463 LOC` | 🟢 Healthy |
+| **Source Modules** | `120 files` | 🟢 Structured |
+| **Test Suites** | `161 test files` | 🟢 Integrated |
+| **Total Test Cases** | `2036 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `185 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `0 files` | 🟢 100% Covered |
 
@@ -151,6 +151,7 @@
 | [gameplayHandlers.js](file:///C:/dev/agy-sandbox/src/server/gameplayHandlers.js) | 395 | `function handleControls`, `function handleLand`, `function handleLaunch` | [gameplayHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/gameplayHandlers.test.js) | [`109_server_handler_extraction_round4`](file:///C:/dev/agy-sandbox/plan/specs/109_server_handler_extraction_round4.md) |
 | [lobbySync.js](file:///C:/dev/agy-sandbox/src/server/lobbySync.js) | 59 | `function buildLobbyRoomsList`, `function broadcastLobbySync`, `function sendLobbyList` | [lobbySync.test.js](file:///C:/dev/agy-sandbox/src/server/lobbySync.test.js) | [`042_server_monolith_extraction_galaxy_ticker`](file:///C:/dev/agy-sandbox/plan/specs/042_server_monolith_extraction_galaxy_ticker.md) |
 | [matchmaking.js](file:///C:/dev/agy-sandbox/src/server/matchmaking.js) | 255 | `class JoinQueue`, `function roomMatches`, `function freeSlots`, `function matchRoom`, `function matchQueueToRooms` | [matchmaking.test.js](file:///C:/dev/agy-sandbox/src/server/matchmaking.test.js) | [`036_matchmaking_room_filters`](file:///C:/dev/agy-sandbox/plan/specs/036_matchmaking_room_filters.md)<br>[`043_matchmaking_queue_lifecycle`](file:///C:/dev/agy-sandbox/plan/specs/043_matchmaking_queue_lifecycle.md)<br>[`069_matchmaking_queues_ratings`](file:///C:/dev/agy-sandbox/plan/specs/069_matchmaking_queues_ratings.md) |
+| [matchmakingQueueProcessor.js](file:///C:/dev/agy-sandbox/src/server/matchmakingQueueProcessor.js) | 60 | `function processMatchmakingQueueForRoom` | [matchmakingQueueProcessor.test.js](file:///C:/dev/agy-sandbox/src/server/matchmakingQueueProcessor.test.js) | _None_ |
 | [messageRouter.js](file:///C:/dev/agy-sandbox/src/server/messageRouter.js) | 240 | _None_ | [messageRouter.test.js](file:///C:/dev/agy-sandbox/src/server/messageRouter.test.js) | _None_ |
 | [missionSpawnHandlers.js](file:///C:/dev/agy-sandbox/src/server/missionSpawnHandlers.js) | 173 | `function registerMissionSpawnHandlers` | [missionSpawnHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/missionSpawnHandlers.test.js) | _None_ |
 | [outfittingPresetHandlers.js](file:///C:/dev/agy-sandbox/src/server/outfittingPresetHandlers.js) | 192 | `function handlePresetSave`, `function handlePresetLoad`, `function handlePresetDelete` | [outfittingPresetHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/outfittingPresetHandlers.test.js) | [`157_outfitting_presets_modularization`](file:///C:/dev/agy-sandbox/plan/specs/157_outfitting_presets_modularization.md) |

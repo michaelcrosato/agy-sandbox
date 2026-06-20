@@ -118,6 +118,7 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 | Handles the "controls" message: updates ship controls and heading. | [`src/server/gameplayHandlers.js`](file:///C:/dev/agy-sandbox/src/server/gameplayHandlers.js) | no | yes |
 | Compiles metadata for all active room instances. | [`src/server/lobbySync.js`](file:///C:/dev/agy-sandbox/src/server/lobbySync.js) | no | yes |
 | matchmaking — pure room matchmaking + a join queue (spec 036, upgraded spec 069). | [`src/server/matchmaking.js`](file:///C:/dev/agy-sandbox/src/server/matchmaking.js) | no | yes |
+| Sweeps the matchmaking queue for players waiting to join the specified room. | [`src/server/matchmakingQueueProcessor.js`](file:///C:/dev/agy-sandbox/src/server/matchmakingQueueProcessor.js) | no | yes |
 | Routes and dispatches incoming WebSocket message payloads to their corresponding modular handlers. | [`src/server/messageRouter.js`](file:///C:/dev/agy-sandbox/src/server/messageRouter.js) | no | yes |
 | Registers callback handlers on a player's missionManager to handle storylines, bounties, and escort target spawns within the player's active sector room. | [`src/server/missionSpawnHandlers.js`](file:///C:/dev/agy-sandbox/src/server/missionSpawnHandlers.js) | no | yes |
 | Saves current outfitting configuration to a custom preset slot. | [`src/server/outfittingPresetHandlers.js`](file:///C:/dev/agy-sandbox/src/server/outfittingPresetHandlers.js) | no | yes |

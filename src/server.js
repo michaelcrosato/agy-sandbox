@@ -40,6 +40,7 @@ import {
   handleClientDisconnect,
 } from "./server/connectionLifecycle.js";
 import { verifyWebSocketClient as verifyWebSocketClientExt } from "./server/verifyWebSocketClient.js";
+import { processMatchmakingQueueForRoom as processMatchmakingQueueForRoomExt } from "./server/matchmakingQueueProcessor.js";
 import {
   updateAILogic,
   applyTractorForces,
@@ -203,47 +204,13 @@ const matchmakingQueue = new JoinQueue();
  * @param {Object} room
  */
 function processMatchmakingQueueForRoom(room) {
-  const free = freeSlots(room.metadata());
-  if (free <= 0) return;
-
-  const admitted = [];
-  // Scan the queue for any matching candidates
-  for (let i = 0; i < matchmakingQueue.waiting.length; i++) {
-    const candidate = matchmakingQueue.waiting[i];
-
-    // Prune dead/disconnected client sockets from the queue
-    if (
-      !candidate.clientObj.ws ||
-      candidate.clientObj.ws.readyState !== 1 /* OPEN */
-    ) {
-      matchmakingQueue.waiting.splice(i, 1);
-      i--;
-      continue;
-    }
-
-    if (roomMatches(room.metadata(), candidate.criteria)) {
-      admitted.push(candidate);
-      matchmakingQueue.waiting.splice(i, 1);
-      i--;
-      if (admitted.length >= free) break;
-    }
-  }
-
-  // Admit candidates
-  for (const candidate of admitted) {
-    console.log(
-      `📡 Queue: Admitting queued player ${candidate.nickname} to sector ${room.name} (${room.id})`,
-    );
-    joinRoom(candidate.clientObj, room.id, candidate.nickname);
-    candidate.clientObj.send({
-      type: "match_admitted",
-      roomId: room.id,
-    });
-  }
-
-  if (admitted.length > 0) {
-    broadcastLobbySync(instances, clients);
-  }
+  processMatchmakingQueueForRoomExt(room, {
+    matchmakingQueue,
+    joinRoom,
+    broadcastLobbySync,
+    instances,
+    clients,
+  });
 }
 const persistentSessions = new Map(); // sessionToken -> clientObj
 const clients = new Map(); // ws -> clientObj

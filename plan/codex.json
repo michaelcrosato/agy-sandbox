@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-20T08:01:18.338Z",
+  "generatedAt": "2026-06-20T08:03:37.450Z",
   "stats": {
-    "totalSourceFiles": 119,
-    "totalTestFiles": 160,
+    "totalSourceFiles": 120,
+    "totalTestFiles": 161,
     "totalSpecFiles": 185,
-    "totalLoc": 28403,
-    "totalTests": 2031,
+    "totalLoc": 28463,
+    "totalTests": 2036,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -2891,6 +2891,24 @@
         "plan/specs/043_matchmaking_queue_lifecycle.md",
         "plan/specs/069_matchmaking_queues_ratings.md"
       ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/matchmakingQueueProcessor.js",
+      "loc": 60,
+      "classes": [],
+      "exports": [
+        {
+          "name": "processMatchmakingQueueForRoom",
+          "type": "function",
+          "jsdoc": "/**\n* Sweeps the matchmaking queue for players waiting to join the specified room.\n*\n* @param {Object} room - The room instance to admit players to.\n* @param {Object} options - Options context dependencies.\n* @param {Object} options.matchmakingQueue - The JoinQueue instance.\n* @param {Function} options.joinRoom - The function to join a room.\n* @param {Function} options.broadcastLobbySync - The function to broadcast lobby sync.\n* @param {Map} options.instances - Map of active room instances.\n* @param {Map} options.clients - Map of connected clients.\n*/",
+          "line": 14
+        }
+      ],
+      "fileOverview": "/**\n* Sweeps the matchmaking queue for players waiting to join the specified room.\n*\n* @param {Object} room - The room instance to admit players to.\n* @param {Object} options - Options context dependencies.\n* @param {Object} options.matchmakingQueue - The JoinQueue instance.\n* @param {Function} options.joinRoom - The function to join a room.\n* @param {Function} options.broadcastLobbySync - The function to broadcast lobby sync.\n* @param {Map} options.instances - Map of active room instances.\n* @param {Map} options.clients - Map of connected clients.\n*/",
+      "testFile": "src/server/matchmakingQueueProcessor.test.js",
+      "testCasesCount": 5,
+      "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
     {

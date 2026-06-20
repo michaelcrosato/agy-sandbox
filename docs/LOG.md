@@ -44,6 +44,18 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-20T08:04 · iter-0176 · GREEN · matchmaking-queue-processor-modularized-tested
+
+- **Baseline:** `4c1d423` on `chore/agent-cleaner`; working tree modified.
+- **Move:** Decompose the matchmaking queue processing loop from the server monolith into a dedicated, unit-tested module.
+- **Changed:**
+  - Designed and implemented `src/server/matchmakingQueueProcessor.js` containing the isolated `processMatchmakingQueueForRoom` routine with dependency injection options.
+  - Refactored `src/server.js` to delegate the matchmaking queue sweeps to the modular processor.
+  - Authored a comprehensive unit test suite in `src/server/matchmakingQueueProcessor.test.js` validating slot bounds, criteria filters, socket pruning, and lobby sync triggers.
+- **Decisions:** none.
+- **Validation:** `npm run agent:check` completed successfully with 1,528 Jest and 94 Vitest tests passing green.
+- **Next:** Modularize more inline tick loops in server.js or design additional visual asteroid shattering particles.
+
 ## 2026-06-20T08:01 · iter-0175 · GREEN · mission-cargo-verification-ship-death-clearing
 
 - **Baseline:** `4ae38ff` on `chore/agent-cleaner`; working tree modified.

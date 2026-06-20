@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-20T07:45:51.150Z",
+  "generatedAt": "2026-06-20T07:49:51.001Z",
   "stats": {
-    "totalSourceFiles": 118,
-    "totalTestFiles": 159,
+    "totalSourceFiles": 119,
+    "totalTestFiles": 160,
     "totalSpecFiles": 185,
-    "totalLoc": 28283,
-    "totalTests": 2021,
+    "totalLoc": 28351,
+    "totalTests": 2028,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -3071,6 +3071,24 @@
       "fileOverview": "/**\n* Registers global Redis/InMemory PubSub message subscribers.\n*\n* @param {object} options - Unified singletons and caches context.\n*/",
       "testFile": "src/server/pubsubSubscriptions.test.js",
       "testCasesCount": 19,
+      "referencingSpecs": [],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/registryHeartbeat.js",
+      "loc": 68,
+      "classes": [],
+      "exports": [
+        {
+          "name": "startRegistryHeartbeat",
+          "type": "function",
+          "jsdoc": "/**\n* Starts the periodic multi-worker room registry heartbeat loop.\n*\n* @param {object} options - Options context dependencies.\n* @param {Map<string, object>} options.instances - Map of active room instances on this node.\n* @param {string} options.nodeId - The identifier of this sharded worker node.\n* @param {function} options.loadRegistry - Asynchronous function loading the RoomRegistry.\n* @param {function} options.saveRegistry - Asynchronous function saving the RoomRegistry.\n* @param {number} [options.intervalMs=4000] - Interval period in milliseconds.\n* @returns {any} The interval handle.\n*/",
+          "line": 61
+        }
+      ],
+      "fileOverview": "/**\n* Executes a single heartbeat tick of the room registry lease renewal.\n* Claims active rooms on the current node and reaps expired rooms from dead workers.\n*\n* @param {object} options - Options context dependencies.\n* @param {Map<string, object>} options.instances - Map of active room instances on this node.\n* @param {string} options.nodeId - The identifier of this sharded worker node.\n* @param {function} options.loadRegistry - Asynchronous function loading the RoomRegistry.\n* @param {function} options.saveRegistry - Asynchronous function saving the RoomRegistry.\n* @param {number} [options.now] - Optional timestamp (defaults to Date.now()).\n* @returns {Promise<void>}\n*/",
+      "testFile": "src/server/registryHeartbeat.test.js",
+      "testCasesCount": 7,
       "referencingSpecs": [],
       "missingJsDocSymbols": []
     },

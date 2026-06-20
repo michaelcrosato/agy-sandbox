@@ -49,6 +49,7 @@ import {
   applySolarEmpHazards,
 } from "./server/physicsTickHandlers.js";
 import { broadcastRoomState } from "./server/roomBroadcast.js";
+import { startRegistryHeartbeat } from "./server/registryHeartbeat.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import {
   createClientObject,
@@ -559,31 +560,12 @@ const lobbySyncInterval = setInterval(() => {
 // 7. Periodic Multi-worker Room Registry Heartbeat, Lease Renewal & Reaping Loop (4 seconds)
 let registryHeartbeatInterval = null;
 if (WORKERS > 1 || process.env.REDIS_SCALE_OUT === "1") {
-  registryHeartbeatInterval = setInterval(async () => {
-    const now = Date.now();
-    const registry = await loadRegistry();
-
-    // 1. Reap any expired rooms hosted by dead workers
-    const reaped = registry.reapExpired(now);
-    if (reaped > 0) {
-      console.log(`🧹 Presence heartbeat: reaped ${reaped} expired rooms.`);
-    }
-
-    // 2. Renew lease/TTL for all active rooms owned by this worker
-    let changed = false;
-    const nodeId = `node-${SHARD_INDEX}`;
-    for (const roomId of instances.keys()) {
-      const leaseTime = 10000; // 10-second lease/TTL
-      const success = registry.claim(roomId, nodeId, now + leaseTime, now);
-      if (success) {
-        changed = true;
-      }
-    }
-
-    if (changed || reaped > 0) {
-      await saveRegistry(registry);
-    }
-  }, 4000);
+  registryHeartbeatInterval = startRegistryHeartbeat({
+    instances,
+    nodeId: `node-${SHARD_INDEX}`,
+    loadRegistry,
+    saveRegistry,
+  });
 }
 
 // Note: Heartbeat economy ticks, room GC, and lobby synchronization helper functions

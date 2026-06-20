@@ -44,6 +44,18 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-20T07:50 · iter-0174 · GREEN · room-registry-heartbeat-modularized-tested
+
+- **Baseline:** `0f559db` on `chore/agent-cleaner`; working tree modified.
+- **Move:** Decompose the periodic room registry heartbeat, lease renewal, and reaping loop from the server monolith into a dedicated, unit-tested module.
+- **Changed:**
+  - Designed and implemented `src/server/registryHeartbeat.js` isolating `tickRegistryHeartbeat` and `startRegistryHeartbeat` functions.
+  - Refactored `src/server.js` to delegate room registry intervals to `startRegistryHeartbeat`.
+  - Authored a comprehensive unit test suite in `src/server/registryHeartbeat.test.js` validating claims, reaps, and graceful error boundaries.
+- **Decisions:** none.
+- **Validation:** `npm run agent:check` completed successfully with 1,522 Jest and 94 Vitest tests passing green.
+- **Next:** Modularize more periodic intervals in `src/server.js` or identify other codebase cleanup areas.
+
 ## 2026-06-20T07:47 · iter-0173 · GREEN · websocket-message-router-modularized-tested
 
 - **Baseline:** `49ff73c` on `chore/agent-cleaner`; working tree clean.

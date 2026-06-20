@@ -2,9 +2,9 @@ name: Continuous Integration
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, develop]
   pull_request:
-    branches: [main, master]
+    branches: [main, master, develop]
 
 jobs:
   build-and-test:
@@ -66,3 +66,10 @@ jobs:
 
       - name: Run Client Tests
         run: npm run test:client
+
+  verify:
+    runs-on: ubuntu-latest
+    needs: [build-and-test, client-tests]
+    steps:
+      - name: All checks passed
+        run: echo "Verification successful"

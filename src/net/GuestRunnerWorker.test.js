@@ -147,7 +147,7 @@ describe("GuestRunnerWorker", () => {
     expect(typeof globalThis.guestRpcQuery).toBe("function");
 
     // Verify it communicates over IPC correctly
-    const rpcPromise = globalThis.guestRpcQuery("TEST_ACTION", { foo: "bar" });
+    globalThis.guestRpcQuery("TEST_ACTION", { foo: "bar" });
     expect(processSendSpy).toHaveBeenCalledWith({
       type: "guest_rpc",
       requestId: expect.any(String),

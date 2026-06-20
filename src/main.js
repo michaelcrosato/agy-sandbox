@@ -13,6 +13,7 @@ import { NetworkHandler } from "./client/NetworkHandler.js";
 import { NEBULAE } from "./engine/Nebulae.js";
 import { EntityInterpolator } from "./client/Interpolator.js";
 import { TutorialManager } from "./client/TutorialManager.js";
+import SoundEngine from "./client/audio/SoundEngine.js";
 
 // Global game variables
 let isLanded = false;
@@ -89,6 +90,9 @@ function getNextWarpGate(entities) {
 }
 
 const uiController = new UIController();
+const initialMuted = localStorage.getItem("audio_muted") === "true";
+const soundEffectsEngine = new SoundEngine({ muted: initialMuted });
+uiController.soundEffectsEngine = soundEffectsEngine;
 const missionManager = new MissionManager();
 const spaceportUI = new SpaceportUI(uiController, missionManager);
 
@@ -197,6 +201,17 @@ missionManager.onStorylineStageAdvanced = (mission) => {
 const canvas = document.getElementById("space-canvas");
 const renderer = new CanvasRenderer(canvas);
 const inputHandler = new InputHandler();
+
+// Start sound engine on first user gesture
+const initAudioOnGesture = () => {
+  soundEffectsEngine.start();
+  window.removeEventListener("click", initAudioOnGesture);
+  window.removeEventListener("keydown", initAudioOnGesture);
+  window.removeEventListener("touchstart", initAudioOnGesture);
+};
+window.addEventListener("click", initAudioOnGesture);
+window.addEventListener("keydown", initAudioOnGesture);
+window.addEventListener("touchstart", initAudioOnGesture);
 
 // Trigger initial viewport size calculations
 renderer.resize();
@@ -531,6 +546,14 @@ engine.onProjectileFired = (proj, ship) => {
     muzzleY,
     ship.id === "player" ? "#00ffcc" : "#ff3333",
   );
+
+  const isPlasma =
+    ship &&
+    ship.outfits &&
+    ship.outfits.some(
+      (o) => typeof o === "string" && o.toLowerCase().includes("plasma"),
+    );
+  soundEffectsEngine.playWeapon(isPlasma ? "plasma" : "laser", ship.position);
 };
 
 engine.onEntityDestroyed = (ent) => {
@@ -718,6 +741,7 @@ inputHandler.onWarpPressed = () => {
     renderer.warpTimer = 0;
     renderer.warpTunnelStars = [];
     player.clearControls();
+    soundEffectsEngine.playWarpJump();
 
     uiController.notify(
       `Entering Hyperlane Warp Drive to ${gate.targetSector.toUpperCase()} Sector!`,
@@ -1533,6 +1557,7 @@ network.onWarpSuccess = (msg) => {
   // Disable user input and autopilot
   player.clearControls();
   autopilotActive = false;
+  soundEffectsEngine.playWarpJump();
 
   // Display visual transition notification
   uiController.notify(
@@ -1902,6 +1927,13 @@ function gameLoop(time) {
   // Calculate elapsed frame step in seconds
   let dt = (time - lastTime) / 1000;
   lastTime = time;
+
+  if (player && player.position) {
+    soundEffectsEngine.setListenerPosition(
+      player.position.x,
+      player.position.y,
+    );
+  }
 
   // Prune stale entities from interpolator
   interpolator.prune(Date.now() - 5000);
@@ -2540,3 +2572,32 @@ window.addEventListener("resize", () => {
     renderGalaxyMap();
   }
 });
+
+// Bind Audio Toggle
+const audioToggleBtn = document.getElementById("btn-audio-toggle");
+if (audioToggleBtn) {
+  if (initialMuted) {
+    audioToggleBtn.classList.add("muted");
+    audioToggleBtn.innerText = "AUDIO: OFF";
+  } else {
+    audioToggleBtn.classList.remove("muted");
+    audioToggleBtn.innerText = "AUDIO: ON";
+  }
+
+  audioToggleBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    soundEffectsEngine.start();
+
+    if (soundEffectsEngine.muted) {
+      soundEffectsEngine.unmute();
+      localStorage.setItem("audio_muted", "false");
+      audioToggleBtn.classList.remove("muted");
+      audioToggleBtn.innerText = "AUDIO: ON";
+    } else {
+      soundEffectsEngine.mute();
+      localStorage.setItem("audio_muted", "true");
+      audioToggleBtn.classList.add("muted");
+      audioToggleBtn.innerText = "AUDIO: OFF";
+    }
+  });
+}

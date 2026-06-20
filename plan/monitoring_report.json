@@ -1,11 +1,16 @@
 {
-  "timestamp": 1781875507222,
-  "timestampIso": "2026-06-19T13:25:07.222Z",
+  "timestamp": 1781931985208,
+  "timestampIso": "2026-06-20T05:06:25.208Z",
   "anomalies": [
     {
-      "type": "wrapper_death",
-      "details": "The loop is locked as active, but no wrapper processes (run-afk-loop, run-autonomous-loop, run-agent, or claude-night) are running."
+      "type": "stalled_progress",
+      "details": "Loop processes are active (elapsed: 0m), but neither PROGRESS.md nor LOG.md has been modified, and no new artifacts, commits, or state changes (PROGRESS.md/LOG.md/files) have appeared in the last 960 minutes (threshold: 25m)."
     }
   ],
-  "runningLoops": []
+  "runningLoops": [
+    {
+      "ProcessId": 1234,
+      "CommandLine": "powershell -File scripts/run-afk-loop.ps1"
+    }
+  ]
 }

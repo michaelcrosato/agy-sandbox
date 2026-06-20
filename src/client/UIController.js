@@ -1,4 +1,6 @@
 import { COMMODITIES } from "../net/SchemaRegistry.js";
+// eslint-disable-next-line no-unused-vars
+import SoundEngine from "./audio/SoundEngine.js";
 
 /**
  * Bridges the background space physics engine variables with the HTML HUD dashboard elements.
@@ -32,6 +34,8 @@ export class UIController {
     this._hitFlashKind = null; // "shield" | "armor"
     this._shieldLockoutMs = 0; // local countdown matching engine shieldRegenDelay
     this._lastUpdateTs = 0;
+    /** @type {SoundEngine|null} */
+    this.soundEffectsEngine = null;
 
     this.speedDisplay = document.getElementById("stat-speed");
     this.coordDisplay = document.getElementById("stat-coords");
@@ -851,6 +855,14 @@ export class UIController {
       this._hitFlashKind = shieldDropped ? "shield" : "armor";
       // Combat lockout matches the engine's shieldRegenDelay (default 3s).
       this._shieldLockoutMs = (player.shieldRegenDelay || 3) * 1000;
+
+      if (this.soundEffectsEngine) {
+        if (shieldDropped) {
+          this.soundEffectsEngine.playShieldImpact();
+        } else {
+          this.soundEffectsEngine.playArmorImpact();
+        }
+      }
     }
     this._lastShieldTotal = currentTotal;
     this._lastShield = player.shield || 0;
@@ -932,6 +944,34 @@ export class UIController {
     }
     if (this.heatWarningPip) {
       this.heatWarningPip.style.display = heatCritical ? "block" : "none";
+    }
+
+    if (this.soundEffectsEngine) {
+      // 7. Modulate continuous thruster sound
+      const isThrusting = !!controls.isThrusting;
+      this.soundEffectsEngine.setThrusterState(
+        isThrusting ? 1.0 : 0.0,
+        isBoosting,
+      );
+
+      // 8. Update alarm warning states
+      const armorPct = Math.max(0, (player.armor / player.maxArmor) * 100);
+      const lowShield =
+        shieldPct > 0 &&
+        shieldPct < 25 &&
+        !player.isDestroyed &&
+        !player.isDisabled;
+      const lowArmor =
+        armorPct > 0 &&
+        armorPct < 25 &&
+        !player.isDestroyed &&
+        !player.isDisabled;
+      const overheat =
+        (player.isOverheated || heatCritical) &&
+        !player.isDestroyed &&
+        !player.isDisabled;
+
+      this.soundEffectsEngine.updateAlarms({ lowShield, lowArmor, overheat });
     }
   }
 

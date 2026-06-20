@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-20T08:03:37.450Z",
+  "generatedAt": "2026-06-20T08:09:49.964Z",
   "stats": {
-    "totalSourceFiles": 120,
-    "totalTestFiles": 161,
+    "totalSourceFiles": 121,
+    "totalTestFiles": 162,
     "totalSpecFiles": 185,
-    "totalLoc": 28463,
-    "totalTests": 2036,
+    "totalLoc": 28662,
+    "totalTests": 2041,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -2970,6 +2970,30 @@
       "referencingSpecs": [
         "plan/specs/157_outfitting_presets_modularization.md"
       ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/periodicIntervals.js",
+      "loc": 199,
+      "classes": [],
+      "exports": [
+        {
+          "name": "startPeriodicIntervals",
+          "type": "function",
+          "jsdoc": "/**\n* Starts all periodic background intervals for the server.\n* @param {Object} options\n* @param {Map} options.instances\n* @param {Object} options.pubsub\n* @param {Object} options.wss\n* @param {Map} options.clients\n* @param {Object} options.metrics\n* @param {Object} options.latencyMonitor\n* @param {Object} options.anomalyDetector\n* @param {Object} options.connectionFloodSentry\n* @param {Object} options.resourceLimiter\n* @param {Function} options.loadRegistry\n* @param {Function} options.saveRegistry\n* @param {number} options.shardIndex\n* @param {number} options.workers\n* @param {number} [options.heartbeatMs]\n* @returns {Object} Handles for all started intervals\n*/",
+          "line": 31
+        },
+        {
+          "name": "stopPeriodicIntervals",
+          "type": "function",
+          "jsdoc": "/**\n* Clears all periodic background intervals.\n* @param {Object} handles Handles returned by startPeriodicIntervals\n*/",
+          "line": 191
+        }
+      ],
+      "fileOverview": "/**\n* Starts all periodic background intervals for the server.\n* @param {Object} options\n* @param {Map} options.instances\n* @param {Object} options.pubsub\n* @param {Object} options.wss\n* @param {Map} options.clients\n* @param {Object} options.metrics\n* @param {Object} options.latencyMonitor\n* @param {Object} options.anomalyDetector\n* @param {Object} options.connectionFloodSentry\n* @param {Object} options.resourceLimiter\n* @param {Function} options.loadRegistry\n* @param {Function} options.saveRegistry\n* @param {number} options.shardIndex\n* @param {number} options.workers\n* @param {number} [options.heartbeatMs]\n* @returns {Object} Handles for all started intervals\n*/",
+      "testFile": "src/server/periodicIntervals.test.js",
+      "testCasesCount": 5,
+      "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
     {

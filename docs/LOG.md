@@ -44,6 +44,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-20T08:10 · iter-0177 · GREEN · periodic-intervals-modularized-tested
+
+- **Baseline:** `c06d4f5` on `chore/agent-cleaner`; working tree clean.
+- **Move:** Decompose and consolidate the periodic background simulation and housekeeping intervals from the server monolith into a dedicated, unit-tested module.
+- **Changed:**
+  - Created `src/server/periodicIntervals.js` managing anomaly detection, economy shortages, environmental sieges, normalizations, galaxy heartbeats, room GC, lobby syncs, registry heartbeats, and client socket sweeps.
+  - Refactored `src/server.js` to delegate housekeeping intervals start and teardown loops to the modular starter.
+  - Authored a comprehensive unit test suite in `src/server/periodicIntervals.test.js` validating timers, module calls, error resiliency, and stopping scenarios under Jest fake timers.
+- **Decisions:** none.
+- **Validation:** `npm run agent:check` completed successfully with 1,532 Jest and 94 Vitest tests passing green.
+- **Next:** Continue modularizing inline ticks or gameplay handlers inside server.js.
+
+
 ## 2026-06-20T08:04 · iter-0176 · GREEN · matchmaking-queue-processor-modularized-tested
 
 - **Baseline:** `4c1d423` on `chore/agent-cleaner`; working tree modified.

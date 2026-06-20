@@ -122,6 +122,7 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 | Routes and dispatches incoming WebSocket message payloads to their corresponding modular handlers. | [`src/server/messageRouter.js`](file:///C:/dev/agy-sandbox/src/server/messageRouter.js) | no | yes |
 | Registers callback handlers on a player's missionManager to handle storylines, bounties, and escort target spawns within the player's active sector room. | [`src/server/missionSpawnHandlers.js`](file:///C:/dev/agy-sandbox/src/server/missionSpawnHandlers.js) | no | yes |
 | Saves current outfitting configuration to a custom preset slot. | [`src/server/outfittingPresetHandlers.js`](file:///C:/dev/agy-sandbox/src/server/outfittingPresetHandlers.js) | no | yes |
+| Starts all periodic background intervals for the server. | [`src/server/periodicIntervals.js`](file:///C:/dev/agy-sandbox/src/server/periodicIntervals.js) | no | yes |
 | Updates AI entities in the room, handles caravan refueling and merchant destination routing. | [`src/server/physicsTickHandlers.js`](file:///C:/dev/agy-sandbox/src/server/physicsTickHandlers.js) | no | yes |
 | Handles purchase of an outfit from a planet. | [`src/server/portHandlers.js`](file:///C:/dev/agy-sandbox/src/server/portHandlers.js) | no | yes |
 | Registers global Redis/InMemory PubSub message subscribers. | [`src/server/pubsubSubscriptions.js`](file:///C:/dev/agy-sandbox/src/server/pubsubSubscriptions.js) | no | yes |

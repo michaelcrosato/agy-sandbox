@@ -50,7 +50,10 @@ import {
   applySolarEmpHazards,
 } from "./server/physicsTickHandlers.js";
 import { broadcastRoomState } from "./server/roomBroadcast.js";
-import { startRegistryHeartbeat } from "./server/registryHeartbeat.js";
+import {
+  startPeriodicIntervals,
+  stopPeriodicIntervals,
+} from "./server/periodicIntervals.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import {
   createClientObject,
@@ -58,13 +61,6 @@ import {
 } from "./server/clientConnection.js";
 import { validateMessage } from "./net/SchemaValidator.js";
 import { registerPubSubSubscriptions } from "./server/pubsubSubscriptions.js";
-import {
-  runEconomyShortageInterval,
-  runEnvironmentalSiegeInterval,
-  runEconomyNormalizationInterval,
-  runGalaxyHeartbeatInterval,
-} from "./server/galaxyTicker.js";
-import { runGcSweep } from "./server/roomGc.js";
 import { broadcastLobbySync, sendLobbyList } from "./server/lobbySync.js";
 import {
   assignShard,
@@ -110,17 +106,7 @@ const memoryLeakSentry = new MemoryLeakSentry({
 memoryLeakSentry.start();
 
 const anomalyDetector = new AnomalyDetector(60, 3.0);
-const anomalyInterval = setInterval(() => {
-  try {
-    const clients =
-      typeof wss !== "undefined" && wss && wss.clients ? wss.clients.size : 0;
-    const latency = latencyMonitor.getLatency();
-    const heapUsed = process.memoryUsage().heapUsed;
-    anomalyDetector.observe(clients, latency, heapUsed);
-  } catch (_e) {
-    // safe catch-all
-  }
-}, 1000);
+let periodicIntervalHandles = null;
 const resourceLimiter = new ResourceLimiter({
   onHardLimit: () => {
     if (process.env.NODE_ENV === "test") {
@@ -439,39 +425,8 @@ const physicsInterval = setInterval(() => {
   metrics.gauge("economy_drift_violations", totalEconomyDrifts);
 }, 1000 / TICK_RATE);
 
-// 2. Room Economy Shortage/Surplus events loops (45 seconds)
-const economyShortageInterval = setInterval(() => {
-  runEconomyShortageInterval(instances);
-}, 45000);
-
-// 3. Room Environmental Siege/EMP events loops (90 seconds)
-const environmentalSiegeInterval = setInterval(() => {
-  runEnvironmentalSiegeInterval(instances);
-}, 90000);
-
-// 4. Room Economy Normalization drift loops (6 seconds)
-const economyNormalizationInterval = setInterval(() => {
-  runEconomyNormalizationInterval(instances);
-}, 6000);
-
-// 4b. Galaxy Heartbeat: age the economy and diffuse prices across trade lanes
-// even when nobody is in the sector (8 seconds).
-const galaxyHeartbeatInterval = setInterval(() => {
-  if (latencyMonitor.shouldShed("cosmetic")) {
-    return; // Pause cosmetic/non-essential heartbeat updates when loop is degraded/critical
-  }
-  runGalaxyHeartbeatInterval(instances);
-
-  // SPEC-165: Synchronize campaign state across all worker processes on heartbeat pulses
-  for (const [roomId, room] of instances.entries()) {
-    if (room.factionWarCampaign) {
-      pubsub.publish("faction:campaign", {
-        roomId,
-        campaignState: room.factionWarCampaign.save(),
-      });
-    }
-  }
-}, 8000);
+// Room economy shortage, environmental siege, normalization, and galaxy heartbeat intervals
+// are managed under startPeriodicIntervals.
 
 // Shared presence/registry keys & helpers (spec 019e)
 const REGISTRY_KEY = "presence:registry";
@@ -505,35 +460,8 @@ async function saveRegistry(registry) {
   }
 }
 
-// 5. Inactive Custom Rooms Garbage Collection (10 seconds)
-const gcInterval = setInterval(() => {
-  runGcSweep(instances, {
-    now: Date.now(),
-    workersCount: WORKERS,
-    nodeId: `node-${SHARD_INDEX}`,
-    loadRegistry,
-    saveRegistry,
-    onRoomGc: () => {
-      broadcastLobbySync(instances, clients);
-    },
-  });
-}, 10000);
-
-// 6. Periodic Lobby Sync Refresh for clients still on the lobby screen (5 seconds)
-const lobbySyncInterval = setInterval(() => {
-  broadcastLobbySync(instances, clients);
-}, 5000);
-
-// 7. Periodic Multi-worker Room Registry Heartbeat, Lease Renewal & Reaping Loop (4 seconds)
-let registryHeartbeatInterval = null;
-if (WORKERS > 1 || process.env.REDIS_SCALE_OUT === "1") {
-  registryHeartbeatInterval = startRegistryHeartbeat({
-    instances,
-    nodeId: `node-${SHARD_INDEX}`,
-    loadRegistry,
-    saveRegistry,
-  });
-}
+// Custom GC, lobby sync, and multi-worker registry heartbeat intervals
+// are managed under startPeriodicIntervals.
 
 // Note: Heartbeat economy ticks, room GC, and lobby synchronization helper functions
 // have been extracted to modular sub-modules under ./server/ for testability (spec 042).
@@ -568,26 +496,21 @@ const wss = new WebSocketServer({
   verifyClient: verifyWebSocketClient,
 });
 
-// Liveness heartbeat (spec 003): ping every socket each interval; any socket that
-// has not ponged since the last sweep is dead (half-open TCP) and is terminated,
-// which routes through the normal disconnect cleanup via its "close" event.
-const heartbeatInterval = setInterval(() => {
-  const sockets = [...wss.clients];
-  for (const dead of selectDeadSockets(sockets)) {
-    dead.terminate();
-    metrics.inc("heartbeat_reaps");
-  }
-  for (const ws of sockets) {
-    if (ws.isAlive === false) continue; // just terminated above
-    ws.isAlive = false;
-    try {
-      ws.ping();
-    } catch {
-      /* socket already closing */
-    }
-  }
-}, DEFAULT_HEARTBEAT_MS);
-heartbeatInterval.unref();
+periodicIntervalHandles = startPeriodicIntervals({
+  instances,
+  pubsub,
+  wss,
+  clients,
+  metrics,
+  latencyMonitor,
+  anomalyDetector,
+  connectionFloodSentry,
+  resourceLimiter,
+  loadRegistry,
+  saveRegistry,
+  shardIndex: SHARD_INDEX,
+  workers: WORKERS,
+});
 
 wss.on("connection", (ws, req) => {
   ws.isAlive = true;
@@ -670,17 +593,7 @@ const shutdown = async () => {
 
   // Clear all heartbeat and simulation intervals immediately to prevent race conditions during teardown (spec 019f)
   clearInterval(physicsInterval);
-  clearInterval(economyShortageInterval);
-  clearInterval(environmentalSiegeInterval);
-  clearInterval(economyNormalizationInterval);
-  clearInterval(galaxyHeartbeatInterval);
-  clearInterval(gcInterval);
-  clearInterval(lobbySyncInterval);
-  if (registryHeartbeatInterval) {
-    clearInterval(registryHeartbeatInterval);
-  }
-  clearInterval(heartbeatInterval);
-  clearInterval(anomalyInterval);
+  stopPeriodicIntervals(periodicIntervalHandles);
 
   // Graceful Drain (spec 019f)
   if (WORKERS > 1) {

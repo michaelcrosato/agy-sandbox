@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-06-20T08:03:37.450Z` · Baseline: `28,463 LOC` across `120 source files`
+> Generated: `2026-06-20T08:09:49.964Z` · Baseline: `28,662 LOC` across `121 source files`
 
 ---
 
@@ -9,10 +9,10 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `28,463 LOC` | 🟢 Healthy |
-| **Source Modules** | `120 files` | 🟢 Structured |
-| **Test Suites** | `161 test files` | 🟢 Integrated |
-| **Total Test Cases** | `2036 cases` | 🟢 Deterministic |
+| **Total Code Volume** | `28,662 LOC` | 🟢 Healthy |
+| **Source Modules** | `121 files` | 🟢 Structured |
+| **Test Suites** | `162 test files` | 🟢 Integrated |
+| **Total Test Cases** | `2041 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `185 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `0 files` | 🟢 100% Covered |
 
@@ -155,6 +155,7 @@
 | [messageRouter.js](file:///C:/dev/agy-sandbox/src/server/messageRouter.js) | 240 | _None_ | [messageRouter.test.js](file:///C:/dev/agy-sandbox/src/server/messageRouter.test.js) | _None_ |
 | [missionSpawnHandlers.js](file:///C:/dev/agy-sandbox/src/server/missionSpawnHandlers.js) | 173 | `function registerMissionSpawnHandlers` | [missionSpawnHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/missionSpawnHandlers.test.js) | _None_ |
 | [outfittingPresetHandlers.js](file:///C:/dev/agy-sandbox/src/server/outfittingPresetHandlers.js) | 192 | `function handlePresetSave`, `function handlePresetLoad`, `function handlePresetDelete` | [outfittingPresetHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/outfittingPresetHandlers.test.js) | [`157_outfitting_presets_modularization`](file:///C:/dev/agy-sandbox/plan/specs/157_outfitting_presets_modularization.md) |
+| [periodicIntervals.js](file:///C:/dev/agy-sandbox/src/server/periodicIntervals.js) | 199 | `function startPeriodicIntervals`, `function stopPeriodicIntervals` | [periodicIntervals.test.js](file:///C:/dev/agy-sandbox/src/server/periodicIntervals.test.js) | _None_ |
 | [physicsTickHandlers.js](file:///C:/dev/agy-sandbox/src/server/physicsTickHandlers.js) | 282 | `function updateAILogic`, `function applyTractorForces`, `function handleCargoCollection`, `function applyNebulaHazards`, `function applyCosmicStormHazards`, `function applySolarEmpHazards` | [physicsTickHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/physicsTickHandlers.test.js) | _None_ |
 | [portHandlers.js](file:///C:/dev/agy-sandbox/src/server/portHandlers.js) | 529 | `function handleOutfitBuy`, `function handleShipBuy`, `function handleEscortCommand`, `function handleVoucherRedeem`, `function handleOutfitSell`, `function handleOreRefine`, `function handleDistressBeacon` | [portHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/portHandlers.test.js) | [`046_modularize_port_mission_handlers`](file:///C:/dev/agy-sandbox/plan/specs/046_modularize_port_mission_handlers.md)<br>[`050_wingman_tactical_formation_controls`](file:///C:/dev/agy-sandbox/plan/specs/050_wingman_tactical_formation_controls.md)<br>[`055_naval_command_decks`](file:///C:/dev/agy-sandbox/plan/specs/055_naval_command_decks.md)<br>[`058_loadout_presets`](file:///C:/dev/agy-sandbox/plan/specs/058_loadout_presets.md)<br>[`060_naval_campaigns`](file:///C:/dev/agy-sandbox/plan/specs/060_naval_campaigns.md)<br>[`077_refinement_mining_laser_industrial_dock`](file:///C:/dev/agy-sandbox/plan/specs/077_refinement_mining_laser_industrial_dock.md) |
 | [pubsubSubscriptions.js](file:///C:/dev/agy-sandbox/src/server/pubsubSubscriptions.js) | 150 | _None_ | [pubsubSubscriptions.test.js](file:///C:/dev/agy-sandbox/src/server/pubsubSubscriptions.test.js) | _None_ |

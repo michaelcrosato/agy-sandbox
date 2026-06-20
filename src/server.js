@@ -41,15 +41,7 @@ import {
 } from "./server/connectionLifecycle.js";
 import { verifyWebSocketClient as verifyWebSocketClientExt } from "./server/verifyWebSocketClient.js";
 import { processMatchmakingQueueForRoom as processMatchmakingQueueForRoomExt } from "./server/matchmakingQueueProcessor.js";
-import {
-  updateAILogic,
-  applyTractorForces,
-  handleCargoCollection,
-  applyNebulaHazards,
-  applyCosmicStormHazards,
-  applySolarEmpHazards,
-} from "./server/physicsTickHandlers.js";
-import { broadcastRoomState } from "./server/roomBroadcast.js";
+import { processPhysicsTickForRoom } from "./server/physicsTickProcessor.js";
 import {
   startPeriodicIntervals,
   stopPeriodicIntervals,
@@ -297,112 +289,7 @@ const physicsInterval = setInterval(() => {
       room.lastActiveTime = now;
     }
 
-    // A. Drive AI merchant itineraries and update active AIs
-    const prevOres = new Map(room.planets.map((p) => [p.name, p.market.ore]));
-
-    updateAILogic(room, dt);
-
-    for (const p of room.planets) {
-      const prevVal = prevOres.get(p.name);
-      if (prevVal !== undefined && p.market.ore !== prevVal) {
-        room.broadcast({
-          type: "market_sync",
-          planetName: p.name,
-          market: p.market,
-        });
-      }
-    }
-
-    // B. Apply Solar EMP, Tractor, Cargo, Nebulae, and Cosmic Storm Hazards
-    const originalRegens = new Map();
-    const originalCooldowns = new Map();
-
-    applySolarEmpHazards(room, originalRegens);
-    applyTractorForces(room);
-    handleCargoCollection(room);
-    applyNebulaHazards(room, originalRegens);
-    applyCosmicStormHazards(room, dt, originalCooldowns);
-
-    // F. Scramble aggressive interceptor patrols for hostile players
-    room.checkReputationPatrolSpawns(dt);
-    room.checkEliteHunterSpawns(dt);
-    room.checkEscortAmbushSpawns(dt);
-    room.checkContrabandSpaceScans(dt);
-
-    // G. Update local room physical kinematics
-    room.engine.update(dt);
-
-    // Audit physics loop determinism (SPEC-123)
-    if (room.determinismSentry) {
-      room.determinismSentry.audit(room);
-    }
-
-    // G. Restore shield regens and weapon cooldowns
-    for (const [ship, origRegen] of originalRegens.entries()) {
-      ship.shieldRegen = origRegen;
-    }
-    for (const [ship, origCooldown] of originalCooldowns.entries()) {
-      ship.weaponCooldown = origCooldown;
-    }
-
-    // H. Replenish Asteroids
-    const activeAsteroids = room.engine.entities.filter(
-      (e) => e.type === "generic" || e.type === "gem_asteroid",
-    );
-    if (activeAsteroids.length < 35) {
-      room.spawnNewAsteroid(false);
-    }
-
-    // I. Update active fleets coordinates
-    for (const code of room.fleets.keys()) {
-      room.broadcastFleetUpdate(code);
-    }
-
-    // K. Tick down sector-wide Galaxy Dynamic Economic Events (SPEC-057)
-    if (room.galaxyEventsManager && room.galaxyEventsManager.activeEvent) {
-      const expired = room.galaxyEventsManager.tick(dt);
-      if (expired) {
-        // Restore all planet prices to pre-event values
-        for (const p of room.planets) {
-          if (p.preEventMarket) {
-            p.market = { ...p.preEventMarket };
-            delete p.preEventMarket;
-          }
-        }
-
-        // Broadcast event clear
-        room.broadcast({
-          type: "galaxy_event_announcement",
-          event: null,
-        });
-
-        const alertMsg = `GALAXY SHOCK OVER: The dynamic economic shock has subsided. Sector markets returned to baseline.`;
-        room.broadcastNotification(alertMsg, "success");
-
-        const chatPayload = {
-          type: "chat",
-          channel: "global",
-          sender: "SYSTEM-ECONOMY",
-          text: alertMsg,
-        };
-        for (const c of room.clients.values()) {
-          c.send(chatPayload);
-        }
-
-        // Broadcast market synchronizations
-        for (const p of room.planets) {
-          room.broadcast({
-            type: "market_sync",
-            planetName: p.name,
-            market: p.market,
-          });
-        }
-      }
-    }
-
-    // J. Authoritative World State Broadcast (P7: snapshots + deltas).
-    // Delegated to roomBroadcast utility module for testability and clean separation of concerns.
-    broadcastRoomState(room, {
+    processPhysicsTickForRoom(room, dt, {
       squadManager,
       latencyMonitor,
       metrics,

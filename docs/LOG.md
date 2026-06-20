@@ -44,6 +44,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-20T08:14 · iter-0178 · GREEN · physics-tick-processor-modularized-tested
+
+- **Baseline:** `e9d5cb8` on `chore/agent-cleaner`; working tree modified.
+- **Move:** Decompose the room-level physics tick updates loop from the server monolith into a dedicated, unit-tested module.
+- **Changed:**
+  - Created `src/server/physicsTickProcessor.js` to orchestrate AI updates, hazards, spawners, kinematics, economic events, and broadcasters.
+  - Refactored `src/server.js` to delegate room tick updates in `physicsInterval` to the modular orchestrator.
+  - Authored a comprehensive unit test suite in `src/server/physicsTickProcessor.test.js` validating sequencing, shock expiration price restorations, and asteroid limits.
+- **Decisions:** none.
+- **Validation:** `npm run agent:check` completed successfully with 1,535 Jest and 94 Vitest tests passing green.
+- **Next:** Continue modularizing inline handlers inside server.js.
+
+
 ## 2026-06-20T08:10 · iter-0177 · GREEN · periodic-intervals-modularized-tested
 
 - **Baseline:** `c06d4f5` on `chore/agent-cleaner`; working tree clean.

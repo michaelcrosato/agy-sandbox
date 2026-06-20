@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-20T08:09:49.964Z",
+  "generatedAt": "2026-06-20T08:14:05.913Z",
   "stats": {
-    "totalSourceFiles": 121,
-    "totalTestFiles": 162,
+    "totalSourceFiles": 122,
+    "totalTestFiles": 163,
     "totalSpecFiles": 185,
-    "totalLoc": 28662,
-    "totalTests": 2041,
+    "totalLoc": 28831,
+    "totalTests": 2045,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -3041,6 +3041,24 @@
       "fileOverview": "/**\n* Updates AI entities in the room, handles caravan refueling and merchant destination routing.\n* @param {Object} room The active GameInstance room.\n* @param {number} dt The simulation tick time delta.\n*/",
       "testFile": "src/server/physicsTickHandlers.test.js",
       "testCasesCount": 21,
+      "referencingSpecs": [],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/physicsTickProcessor.js",
+      "loc": 169,
+      "classes": [],
+      "exports": [
+        {
+          "name": "processPhysicsTickForRoom",
+          "type": "function",
+          "jsdoc": "/**\n* Executes a single authoritative physics and simulation tick for a given room.\n* @param {Object} room The GameInstance room.\n* @param {number} dt The simulation tick time delta.\n* @param {Object} options Options containing metrics, observers, and config settings.\n* @param {Object} options.squadManager\n* @param {Object} options.latencyMonitor\n* @param {Object} options.metrics\n* @param {boolean} options.interestEnabled\n* @param {number} options.interestRadius\n* @param {boolean} options.binaryProtocol\n*/",
+          "line": 23
+        }
+      ],
+      "fileOverview": "/**\n* Executes a single authoritative physics and simulation tick for a given room.\n* @param {Object} room The GameInstance room.\n* @param {number} dt The simulation tick time delta.\n* @param {Object} options Options containing metrics, observers, and config settings.\n* @param {Object} options.squadManager\n* @param {Object} options.latencyMonitor\n* @param {Object} options.metrics\n* @param {boolean} options.interestEnabled\n* @param {number} options.interestRadius\n* @param {boolean} options.binaryProtocol\n*/",
+      "testFile": "src/server/physicsTickProcessor.test.js",
+      "testCasesCount": 4,
       "referencingSpecs": [],
       "missingJsDocSymbols": []
     },

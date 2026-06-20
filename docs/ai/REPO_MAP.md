@@ -124,6 +124,7 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 | Saves current outfitting configuration to a custom preset slot. | [`src/server/outfittingPresetHandlers.js`](file:///C:/dev/agy-sandbox/src/server/outfittingPresetHandlers.js) | no | yes |
 | Starts all periodic background intervals for the server. | [`src/server/periodicIntervals.js`](file:///C:/dev/agy-sandbox/src/server/periodicIntervals.js) | no | yes |
 | Updates AI entities in the room, handles caravan refueling and merchant destination routing. | [`src/server/physicsTickHandlers.js`](file:///C:/dev/agy-sandbox/src/server/physicsTickHandlers.js) | no | yes |
+| Executes a single authoritative physics and simulation tick for a given room. | [`src/server/physicsTickProcessor.js`](file:///C:/dev/agy-sandbox/src/server/physicsTickProcessor.js) | no | yes |
 | Handles purchase of an outfit from a planet. | [`src/server/portHandlers.js`](file:///C:/dev/agy-sandbox/src/server/portHandlers.js) | no | yes |
 | Registers global Redis/InMemory PubSub message subscribers. | [`src/server/pubsubSubscriptions.js`](file:///C:/dev/agy-sandbox/src/server/pubsubSubscriptions.js) | no | yes |
 | Executes a single heartbeat tick of the room registry lease renewal. | [`src/server/registryHeartbeat.js`](file:///C:/dev/agy-sandbox/src/server/registryHeartbeat.js) | no | yes |

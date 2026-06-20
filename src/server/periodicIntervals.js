@@ -36,8 +36,6 @@ export function startPeriodicIntervals({
   metrics,
   latencyMonitor,
   anomalyDetector,
-  connectionFloodSentry,
-  resourceLimiter,
   loadRegistry,
   saveRegistry,
   shardIndex,

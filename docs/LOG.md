@@ -43,6 +43,17 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - Entries **SHOULD** target 150–350 words, and **MUST NOT** exceed 500 words unless labeled an `INCIDENT` or `ROLLBACK`.
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
+## 2026-06-20T11:09 · iter-0183 · GREEN · redis-setup-modularized-tested
+
+- **Baseline:** `221862b` on `chore/agent-cleaner`; working tree modified.
+- **Move:** Decompose the Redis store and Pub/Sub initialization and lazy loading logic from the server monolith into a dedicated, unit-tested module.
+- **Changed:**
+  - Designed and implemented `src/server/redisSetup.js` containing the `setupRedis` orchestrator.
+  - Refactored `src/server.js` to delegate Redis and Pub/Sub setup to `redisSetup.js`.
+  - Authored a comprehensive unit test suite in `src/server/redisSetup.test.js` verifying fallbacks, scale-out Pub/Sub, and connection errors.
+- **Decisions:** none.
+- **Validation:** `npm run agent:check` completed successfully with 1558 Jest tests and 94 Vitest tests passing green.
+- **Next:** Continue modularizing other inline handlers or routines in server.js to maintain system health.
 
 ## 2026-06-20T10:56 · iter-0182 · GREEN · room-initializer-modularized-tested
 

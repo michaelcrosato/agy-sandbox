@@ -127,6 +127,7 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 | Executes a single authoritative physics and simulation tick for a given room. | [`src/server/physicsTickProcessor.js`](file:///C:/dev/agy-sandbox/src/server/physicsTickProcessor.js) | no | yes |
 | Handles purchase of an outfit from a planet. | [`src/server/portHandlers.js`](file:///C:/dev/agy-sandbox/src/server/portHandlers.js) | no | yes |
 | Registers global Redis/InMemory PubSub message subscribers. | [`src/server/pubsubSubscriptions.js`](file:///C:/dev/agy-sandbox/src/server/pubsubSubscriptions.js) | no | yes |
+| Initializes and connects the storage and Pub/Sub adapters based on environment variables. | [`src/server/redisSetup.js`](file:///C:/dev/agy-sandbox/src/server/redisSetup.js) | no | yes |
 | Executes a single heartbeat tick of the room registry lease renewal. | [`src/server/registryHeartbeat.js`](file:///C:/dev/agy-sandbox/src/server/registryHeartbeat.js) | no | yes |
 | Reads a file synchronously with retries on lock contention. | [`src/server/restHandlers.js`](file:///C:/dev/agy-sandbox/src/server/restHandlers.js) | no | yes |
 | Broadcasts the current room world state to all connected clients. | [`src/server/roomBroadcast.js`](file:///C:/dev/agy-sandbox/src/server/roomBroadcast.js) | no | yes |

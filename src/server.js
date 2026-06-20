@@ -8,7 +8,7 @@ import { registerMissionSpawnHandlers } from "./server/missionSpawnHandlers.js";
 
 import { perMessageDeflateOption } from "./net/wsCompression.js";
 import { squadManager } from "./server/SquadManager.js";
-import { JoinQueue, freeSlots, roomMatches } from "./server/matchmaking.js";
+import { JoinQueue } from "./server/matchmaking.js";
 import { JsonFileStore } from "./persistence/Store.js";
 import { PersistenceManager } from "./persistence/PersistenceManager.js";
 import { GalacticChronicle } from "./persistence/GalacticChronicle.js";
@@ -19,8 +19,6 @@ import {
 import { SandboxFirewall, activateFirewall } from "./net/SandboxFirewall.js";
 import { initializeDefaultRooms } from "./server/roomInitializer.js";
 import { InMemoryPubSub } from "./net/PubSub.js";
-
-import { selectDeadSockets, DEFAULT_HEARTBEAT_MS } from "./net/heartbeat.js";
 
 import { createRegistry } from "./net/metrics.js";
 import { createLogger } from "./net/logger.js";
@@ -48,10 +46,11 @@ import {
   loadRegistry as loadRegistryStore,
   saveRegistry as saveRegistryStore,
 } from "./server/roomRegistryStore.js";
+import { setupRedis } from "./server/redisSetup.js";
 import { validateMessage } from "./net/SchemaValidator.js";
 import { registerPubSubSubscriptions } from "./server/pubsubSubscriptions.js";
 import { broadcastLobbySync, sendLobbyList } from "./server/lobbySync.js";
-import { assignShard, routeConnection } from "./net/roomRouter.js";
+import { routeConnection } from "./net/roomRouter.js";
 
 // Interest management (spec 014): per-client area-of-interest filtering of the
 // world-state broadcast — a client receives only entities near its ship (plus
@@ -445,32 +444,10 @@ export async function startServer({
   shardIndex = SHARD_INDEX,
   workers = WORKERS,
 } = {}) {
-  // 1. Lazy load RedisStore if REDIS_URL is provided
-  if (process.env.REDIS_URL) {
-    try {
-      const { createClient } = await import("redis");
-      const { RedisStore } = await import("./persistence/RedisStore.js");
-      const client = createClient({ url: process.env.REDIS_URL });
-      await client.connect();
-      storeInstance = new RedisStore({ client });
-      console.log(
-        `🔌 Connected to shared RedisStore at ${process.env.REDIS_URL}`,
-      );
-
-      if (process.env.REDIS_SCALE_OUT === "1") {
-        const { RedisPubSub } = await import("./net/PubSub.js");
-        const pubClient = createClient({ url: process.env.REDIS_URL });
-        const subClient = createClient({ url: process.env.REDIS_URL });
-        await Promise.all([pubClient.connect(), subClient.connect()]);
-        pubsub = new RedisPubSub({ pubClient, subClient });
-        console.log(`🔌 Wired sharded RedisPubSub for multi-worker routing`);
-      }
-    } catch (err) {
-      console.error(
-        `⚠️ Failed to connect to Redis, falling back to JsonFileStore: ${err.message}`,
-      );
-    }
-  }
+  // 1. Initialize storage and Pub/Sub connections
+  const redisSetup = await setupRedis();
+  storeInstance = redisSetup.storeInstance;
+  pubsub = redisSetup.pubsub;
 
   await registerPubSubSubscriptions({
     pubsub,

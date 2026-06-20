@@ -547,13 +547,20 @@ engine.onProjectileFired = (proj, ship) => {
     ship.id === "player" ? "#00ffcc" : "#ff3333",
   );
 
-  const isPlasma =
-    ship &&
-    ship.outfits &&
-    ship.outfits.some(
-      (o) => typeof o === "string" && o.toLowerCase().includes("plasma"),
+  let weaponType = "laser";
+  if (ship && ship.outfits) {
+    const outfitsLower = ship.outfits.map((o) =>
+      typeof o === "string" ? o.toLowerCase() : "",
     );
-  soundEffectsEngine.playWeapon(isPlasma ? "plasma" : "laser", ship.position);
+    if (outfitsLower.some((o) => o.includes("plasma"))) {
+      weaponType = "plasma";
+    } else if (outfitsLower.some((o) => o.includes("neutron"))) {
+      weaponType = "neutron";
+    } else if (outfitsLower.some((o) => o.includes("ion"))) {
+      weaponType = "ion";
+    }
+  }
+  soundEffectsEngine.playWeapon(weaponType, ship.position);
 };
 
 engine.onEntityDestroyed = (ent) => {

@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-06-20T05:06:09.584Z",
+  "generatedAt": "2026-06-20T06:54:04.207Z",
   "stats": {
-    "totalSourceFiles": 115,
+    "totalSourceFiles": 114,
     "totalTestFiles": 156,
     "totalSpecFiles": 185,
-    "totalLoc": 27570,
-    "totalTests": 1951,
-    "untestedCoreFilesCount": 1
+    "totalLoc": 27568,
+    "totalTests": 1953,
+    "untestedCoreFilesCount": 0
   },
   "files": [
     {
@@ -2304,17 +2304,6 @@
       "fileOverview": "/**\n* statsPayload (spec 007) — builds the per-client `stats` message from a live\n* client object. Extracted from the server's `sendStats` so the payload shape is\n* a pure, testable function of the ship + mission manager rather than inline in\n* the socket layer.\n*/",
       "testFile": "src/net/statsPayload.test.js",
       "testCasesCount": 4,
-      "referencingSpecs": [],
-      "missingJsDocSymbols": []
-    },
-    {
-      "path": "src/net/temp_cli_1781928738349_f5z67.js",
-      "loc": 2,
-      "classes": [],
-      "exports": [],
-      "fileOverview": null,
-      "testFile": null,
-      "testCasesCount": 0,
       "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
@@ -5347,9 +5336,7 @@
     }
   ],
   "epistemicDebt": {
-    "untestedCoreFiles": [
-      "src/net/temp_cli_1781928738349_f5z67.js"
-    ],
+    "untestedCoreFiles": [],
     "missingJsDocs": [],
     "staleSpecReferences": [],
     "specErrors": [],

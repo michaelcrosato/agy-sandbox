@@ -95,7 +95,6 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 | StateCodec — pure, deterministic snapshot + delta codec for the authoritative world broadcast pipeline (P7: Netcode & Scale). | [`src/net/StateCodec.js`](file:///C:/dev/agy-sandbox/src/net/StateCodec.js) | yes | yes |
 | StaticSecuritySentry. | [`src/net/StaticSecuritySentry.js`](file:///C:/dev/agy-sandbox/src/net/StaticSecuritySentry.js) | yes | yes |
 | statsPayload (spec 007) — builds the per-client `stats` message from a live client object. | [`src/net/statsPayload.js`](file:///C:/dev/agy-sandbox/src/net/statsPayload.js) | yes | yes |
-| Temp_cli_1781928738349_f5z67 | [`src/net/temp_cli_1781928738349_f5z67.js`](file:///C:/dev/agy-sandbox/src/net/temp_cli_1781928738349_f5z67.js) | yes | no |
 | TokenCostGovernor. | [`src/net/TokenCostGovernor.js`](file:///C:/dev/agy-sandbox/src/net/TokenCostGovernor.js) | yes | yes |
 | WorkspaceDriftSentry. | [`src/net/WorkspaceDriftSentry.js`](file:///C:/dev/agy-sandbox/src/net/WorkspaceDriftSentry.js) | yes | yes |
 | wsCompression — `permessage-deflate` configuration + evaluation helper (spec 037). | [`src/net/wsCompression.js`](file:///C:/dev/agy-sandbox/src/net/wsCompression.js) | yes | yes |

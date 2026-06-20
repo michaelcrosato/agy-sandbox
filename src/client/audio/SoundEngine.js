@@ -518,12 +518,16 @@ export default class SoundEngine {
 
   /**
    * Triggers a weapon fire sound effect.
-   * @param {"laser"|"plasma"} type - The weapon type.
+   * @param {"laser"|"plasma"|"neutron"|"ion"} type - The weapon type.
    * @param {Object} [position] - Coordinate object {x, y} of the shooter.
    */
   playWeapon(type, position = null) {
     if (type === "plasma") {
       this.playPlasma(position);
+    } else if (type === "neutron") {
+      this.playNeutron(position);
+    } else if (type === "ion") {
+      this.playIon(position);
     } else {
       this.playLaser(position);
     }
@@ -585,6 +589,102 @@ export default class SoundEngine {
 
     osc.start(now);
     osc.stop(now + 0.25);
+  }
+
+  /**
+   * Synthesizes a neutron weapon discharge (bass tone with pitch decay).
+   * @param {Object} [position] - Coordinate object {x, y} of the source.
+   */
+  playNeutron(position = null) {
+    if (!this.ctx || this.ctx.state === "suspended" || !this.masterGain) {
+      return;
+    }
+    const now = this.ctx.currentTime;
+
+    const carrier = this.ctx.createOscillator();
+    carrier.type = "sawtooth";
+    carrier.frequency.setValueAtTime(220, now);
+    carrier.frequency.exponentialRampToValueAtTime(55, now + 0.2);
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(300, now);
+    filter.frequency.exponentialRampToValueAtTime(80, now + 0.2);
+
+    const gainNode = this.ctx.createGain();
+    gainNode.gain.setValueAtTime(0.35, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+
+    carrier.connect(filter);
+    filter.connect(gainNode);
+    this._route(gainNode, position);
+
+    carrier.start(now);
+    carrier.stop(now + 0.2);
+  }
+
+  /**
+   * Synthesizes an ion weapon discharge (high-voltage crackling sound).
+   * @param {Object} [position] - Coordinate object {x, y} of the source.
+   */
+  playIon(position = null) {
+    if (!this.ctx || this.ctx.state === "suspended" || !this.masterGain) {
+      return;
+    }
+    const now = this.ctx.currentTime;
+
+    const osc = this.ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(1500, now);
+    osc.frequency.linearRampToValueAtTime(900, now + 0.12);
+
+    let noise = null;
+    let noiseGain = null;
+
+    try {
+      noise = this._createNoiseNode();
+      const noiseFilter = this.ctx.createBiquadFilter();
+      noiseFilter.type = "bandpass";
+      noiseFilter.frequency.setValueAtTime(2000, now);
+      noiseFilter.Q.setValueAtTime(2.0, now);
+
+      noiseGain = this.ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.12, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+    } catch (_err) {
+      // Graceful fallback if noise nodes fail in JSDom/headless
+    }
+
+    const oscGain = this.ctx.createGain();
+    oscGain.gain.setValueAtTime(0.15, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+
+    const outputGain = this.ctx.createGain();
+    outputGain.gain.setValueAtTime(1.0, now);
+
+    osc.connect(oscGain);
+    oscGain.connect(outputGain);
+
+    if (noiseGain) {
+      noiseGain.connect(outputGain);
+    }
+
+    this._route(outputGain, position);
+
+    osc.start(now);
+    osc.stop(now + 0.12);
+
+    if (noise) {
+      try {
+        noise.start(now);
+        noise.stop(now + 0.12);
+      } catch (_err) {
+        // Safe fallback if noise start throws
+      }
+    }
   }
 
   /**

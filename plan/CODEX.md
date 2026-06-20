@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-06-20T05:06:09.584Z` · Baseline: `27,570 LOC` across `115 source files`
+> Generated: `2026-06-20T06:54:04.207Z` · Baseline: `27,568 LOC` across `114 source files`
 
 ---
 
@@ -9,12 +9,12 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `27,570 LOC` | 🟢 Healthy |
-| **Source Modules** | `115 files` | 🟢 Structured |
+| **Total Code Volume** | `27,568 LOC` | 🟢 Healthy |
+| **Source Modules** | `114 files` | 🟢 Structured |
 | **Test Suites** | `156 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1951 cases` | 🟢 Deterministic |
+| **Total Test Cases** | `1953 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `185 specifications` | 🟢 Traceable |
-| **Untested Core Modules** | `1 files` | ⚠️ Debt Pending |
+| **Untested Core Modules** | `0 files` | 🟢 100% Covered |
 
 ---
 
@@ -119,7 +119,6 @@
 | [StateCodec.js](file:///C:/dev/agy-sandbox/src/net/StateCodec.js) | 207 | `function encodeSnapshot`, `function diff`, `function applyDelta` | [StateCodec.test.js](file:///C:/dev/agy-sandbox/src/net/StateCodec.test.js) | _None_ |
 | [StaticSecuritySentry.js](file:///C:/dev/agy-sandbox/src/net/StaticSecuritySentry.js) | 313 | `constant StaticSecuritySentry` | [StaticSecuritySentry.test.js](file:///C:/dev/agy-sandbox/src/net/StaticSecuritySentry.test.js) | [`171_ast_static_security_sentry`](file:///C:/dev/agy-sandbox/plan/specs/171_ast_static_security_sentry.md) |
 | [statsPayload.js](file:///C:/dev/agy-sandbox/src/net/statsPayload.js) | 90 | `function buildStatsPayload` | [statsPayload.test.js](file:///C:/dev/agy-sandbox/src/net/statsPayload.test.js) | _None_ |
-| [temp_cli_1781928738349_f5z67.js](file:///C:/dev/agy-sandbox/src/net/temp_cli_1781928738349_f5z67.js) | 2 | _None_ | ❌ _Untested_ | _None_ |
 | [TokenCostGovernor.js](file:///C:/dev/agy-sandbox/src/net/TokenCostGovernor.js) | 550 | `class MockClientRequest`, `constant TokenCostGovernor` | [TokenCostGovernor.test.js](file:///C:/dev/agy-sandbox/src/net/TokenCostGovernor.test.js) | [`174_token_cost_governance_mock_sentry`](file:///C:/dev/agy-sandbox/plan/specs/174_token_cost_governance_mock_sentry.md) |
 | [WorkspaceDriftSentry.js](file:///C:/dev/agy-sandbox/src/net/WorkspaceDriftSentry.js) | 206 | `constant WorkspaceDriftSentry` | [WorkspaceDriftSentry.test.js](file:///C:/dev/agy-sandbox/src/net/WorkspaceDriftSentry.test.js) | [`146_workspace_drift_self_healer`](file:///C:/dev/agy-sandbox/plan/specs/146_workspace_drift_self_healer.md) |
 | [wsCompression.js](file:///C:/dev/agy-sandbox/src/net/wsCompression.js) | 42 | `constant DEFAULT_DEFLATE_OPTIONS`, `function perMessageDeflateOption` | [wsCompression.test.js](file:///C:/dev/agy-sandbox/src/net/wsCompression.test.js) | _None_ |
@@ -169,8 +168,8 @@
 
 ## ⚡ EPISTEMIC DEBT & STALE LOGIC REPORT
 
-### ⚠️ Untested Core Modules (1)
-- [ ] `src/net/temp_cli_1781928738349_f5z67.js` is missing a unit test suite.
+### ⚠️ Untested Core Modules (0)
+_None! All core modules have associated test suites._
 
 ### ⚠️ Stale Specification File References (0)
 _None! All specification file references correspond to real paths._

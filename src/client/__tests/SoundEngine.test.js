@@ -356,6 +356,32 @@ describe("SoundEngine", () => {
       const filter = filterSpy.mock.results[0].value;
       expect(filter.type).toBe("lowpass");
     });
+
+    it("should trigger neutron sound", () => {
+      const oscSpy = vi.spyOn(engine.ctx, "createOscillator");
+      const filterSpy = vi.spyOn(engine.ctx, "createBiquadFilter");
+      engine.playWeapon("neutron");
+
+      expect(oscSpy).toHaveBeenCalled();
+      const osc = oscSpy.mock.results[0].value;
+      expect(osc.type).toBe("sawtooth");
+      expect(filterSpy).toHaveBeenCalled();
+      const filter = filterSpy.mock.results[0].value;
+      expect(filter.type).toBe("lowpass");
+    });
+
+    it("should trigger ion sound", () => {
+      const oscSpy = vi.spyOn(engine.ctx, "createOscillator");
+      const filterSpy = vi.spyOn(engine.ctx, "createBiquadFilter");
+      engine.playWeapon("ion");
+
+      expect(oscSpy).toHaveBeenCalled();
+      const osc = oscSpy.mock.results[0].value;
+      expect(osc.type).toBe("sine");
+      expect(filterSpy).toHaveBeenCalled();
+      const filter = filterSpy.mock.results[0].value;
+      expect(filter.type).toBe("bandpass");
+    });
   });
 
   describe("Shield & Armor Impacts (One-shot)", () => {

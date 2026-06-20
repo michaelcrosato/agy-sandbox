@@ -891,39 +891,138 @@ export class CanvasRenderer {
     this.ctx.rotate(ship.heading);
 
     // Exhaust thrust flame — afterburner makes it longer, hotter, and adds a
-    // bright cyan-white inner core so the player can SEE their boost engaging.
+    // bright core, with specialized overrides based on outfitted engines.
     if (ship.controls && ship.controls.isThrusting && !ship.isDestroyed) {
       const boosting = !!(
         ship.controls.isBoosting &&
         (ship.energy === undefined || ship.energy > 0) &&
         !ship.isOverheated
       );
-      const baseLen = 20 + Math.random() * 15;
-      const flameLen = boosting ? baseLen * 1.9 + Math.random() * 10 : baseLen;
-      const flameSpread = boosting ? 7 : 5;
 
-      this.ctx.fillStyle = boosting ? "#00f2fe" : "#ff6a00";
-      this.ctx.shadowBlur = boosting ? 22 : 15;
-      this.ctx.shadowColor = boosting ? "#00f2fe" : "#ffb300";
-      this.ctx.beginPath();
-      this.ctx.moveTo(-ship.radius, -flameSpread);
-      this.ctx.lineTo(-ship.radius - flameLen, 0);
-      this.ctx.lineTo(-ship.radius, flameSpread);
-      this.ctx.closePath();
-      this.ctx.fill();
+      let engineStyle = "default";
+      if (ship.outfits) {
+        if (ship.outfits.includes("Hyper-Drive Thrusters")) {
+          engineStyle = "hyperdrive";
+        } else if (ship.outfits.includes("Overcharged Engines")) {
+          engineStyle = "overcharged";
+        }
+      }
 
-      if (boosting) {
-        // Hot inner core
-        this.ctx.fillStyle = "#ffffff";
-        this.ctx.shadowBlur = 12;
-        this.ctx.shadowColor = "#ffffff";
+      if (engineStyle === "overcharged") {
+        const flameColor = boosting ? "#7fff00" : "#00ff66";
+        const shadowColor = boosting ? "#7fff00" : "#00ff66";
+        const baseLen = 16 + Math.random() * 12;
+        const flameLen = boosting ? baseLen * 1.8 + Math.random() * 8 : baseLen;
+        const flameSpread = boosting ? 4 : 3;
+
+        this.ctx.fillStyle = flameColor;
+        this.ctx.shadowBlur = boosting ? 20 : 12;
+        this.ctx.shadowColor = shadowColor;
+
+        // Top parallel plume
         this.ctx.beginPath();
-        const coreLen = flameLen * 0.55;
-        this.ctx.moveTo(-ship.radius, -flameSpread * 0.45);
-        this.ctx.lineTo(-ship.radius - coreLen, 0);
-        this.ctx.lineTo(-ship.radius, flameSpread * 0.45);
+        this.ctx.moveTo(-ship.radius, -5 - flameSpread);
+        this.ctx.lineTo(-ship.radius - flameLen, -5);
+        this.ctx.lineTo(-ship.radius, -5 + flameSpread);
         this.ctx.closePath();
         this.ctx.fill();
+
+        // Bottom parallel plume
+        this.ctx.beginPath();
+        this.ctx.moveTo(-ship.radius, 5 - flameSpread);
+        this.ctx.lineTo(-ship.radius - flameLen, 5);
+        this.ctx.lineTo(-ship.radius, 5 + flameSpread);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        if (boosting) {
+          this.ctx.fillStyle = "#ffffff";
+          this.ctx.shadowBlur = 8;
+          this.ctx.shadowColor = "#ffffff";
+
+          this.ctx.beginPath();
+          this.ctx.moveTo(-ship.radius, -5 - 2);
+          this.ctx.lineTo(-ship.radius - flameLen * 0.6, -5);
+          this.ctx.lineTo(-ship.radius, -5 + 2);
+          this.ctx.closePath();
+          this.ctx.fill();
+
+          this.ctx.beginPath();
+          this.ctx.moveTo(-ship.radius, 5 - 2);
+          this.ctx.lineTo(-ship.radius - flameLen * 0.6, 5);
+          this.ctx.lineTo(-ship.radius, 5 + 2);
+          this.ctx.closePath();
+          this.ctx.fill();
+        }
+      } else if (engineStyle === "hyperdrive") {
+        const flameColor = boosting ? "#d03ffc" : "#00f0ff";
+        const shadowColor = boosting ? "#d03ffc" : "#00f0ff";
+        const baseLen = 25 + Math.random() * 20;
+        const flameLen = boosting
+          ? baseLen * 2.0 + Math.random() * 12
+          : baseLen;
+        const flameSpread = boosting ? 10 : 8;
+
+        this.ctx.fillStyle = flameColor;
+        this.ctx.shadowBlur = boosting ? 30 : 20;
+        this.ctx.shadowColor = shadowColor;
+
+        // Outer broad plume
+        this.ctx.beginPath();
+        this.ctx.moveTo(-ship.radius, -flameSpread);
+        this.ctx.lineTo(-ship.radius - flameLen, 0);
+        this.ctx.lineTo(-ship.radius, flameSpread);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Mid-stage core
+        this.ctx.fillStyle = boosting ? "#e0b0ff" : "#e0ffff";
+        this.ctx.beginPath();
+        this.ctx.moveTo(-ship.radius, -flameSpread * 0.6);
+        this.ctx.lineTo(-ship.radius - flameLen * 0.75, 0);
+        this.ctx.lineTo(-ship.radius, flameSpread * 0.6);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Hot inner core
+        this.ctx.fillStyle = "#ffffff";
+        this.ctx.shadowBlur = 15;
+        this.ctx.shadowColor = "#ffffff";
+        this.ctx.beginPath();
+        this.ctx.moveTo(-ship.radius, -flameSpread * 0.3);
+        this.ctx.lineTo(-ship.radius - flameLen * 0.45, 0);
+        this.ctx.lineTo(-ship.radius, flameSpread * 0.3);
+        this.ctx.closePath();
+        this.ctx.fill();
+      } else {
+        const baseLen = 20 + Math.random() * 15;
+        const flameLen = boosting
+          ? baseLen * 1.9 + Math.random() * 10
+          : baseLen;
+        const flameSpread = boosting ? 7 : 5;
+
+        this.ctx.fillStyle = boosting ? "#00f2fe" : "#ff6a00";
+        this.ctx.shadowBlur = boosting ? 22 : 15;
+        this.ctx.shadowColor = boosting ? "#00f2fe" : "#ffb300";
+        this.ctx.beginPath();
+        this.ctx.moveTo(-ship.radius, -flameSpread);
+        this.ctx.lineTo(-ship.radius - flameLen, 0);
+        this.ctx.lineTo(-ship.radius, flameSpread);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        if (boosting) {
+          this.ctx.fillStyle = "#ffffff";
+          this.ctx.shadowBlur = 12;
+          this.ctx.shadowColor = "#ffffff";
+          this.ctx.beginPath();
+          const coreLen = flameLen * 0.55;
+          this.ctx.moveTo(-ship.radius, -flameSpread * 0.45);
+          this.ctx.lineTo(-ship.radius - coreLen, 0);
+          this.ctx.lineTo(-ship.radius, flameSpread * 0.45);
+          this.ctx.closePath();
+          this.ctx.fill();
+        }
       }
     }
 

@@ -1245,6 +1245,7 @@ function syncEntitiesFromServer(serverEntities) {
           localEnt.maxHeat = ent.maxHeat;
           localEnt.isOverheated = ent.isOverheated;
           localEnt.isDisabled = ent.isDisabled;
+          localEnt.outfits = ent.outfits || [];
         } else if (localEnt.type === "cargo_pod") {
           localEnt.resourceType = ent.resourceType;
           localEnt.amount = ent.amount;
@@ -1287,6 +1288,7 @@ function syncEntitiesFromServer(serverEntities) {
         newShip.maxHeat = ent.maxHeat;
         newShip.isOverheated = ent.isOverheated;
         newShip.isDisabled = ent.isDisabled;
+        newShip.outfits = ent.outfits || [];
         newShip.controls = ent.controls || {
           isThrusting: false,
           isBraking: false,

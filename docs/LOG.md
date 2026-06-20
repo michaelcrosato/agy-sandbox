@@ -44,6 +44,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-20T07:05 · iter-0167 · GREEN · custom-engine-thruster-exhaust-plumes-rendered
+
+- **Baseline:** `dc07462` on `chore/agent-cleaner`; working tree clean.
+- **Move:** Implement unique, high-fidelity engine thruster exhaust plumes (shapes, colors, shadow glow) dynamically styled based on fitted engine outfits.
+- **Changed:**
+  - Updated `serializeEntities` in `src/engine/GameInstance.js` to propagate ship `outfits` to client entities.
+  - Synchronized the `outfits` property on client entities inside `src/main.js` for both existing and new ships.
+  - Hardened `drawShip` in `src/client/CanvasRenderer.js` to draw dual parallel green flames for Overcharged Engines and broad multi-stage blue/purple plumes for Hyper-Drive Thrusters.
+  - Added test case coverage inside `src/client/__tests/CanvasRenderer.browser.test.js` to verify rendering execution and `src/engine/GameInstance.test.js` to assert outfits serialization.
+- **Decisions:** Kept original engine plume style as the default case to preserve 100% compatibility with existing visual regression screenshots.
+- **Validation:** Ran full gate check `npm run agent:check` passing all 1,464 backend Jest tests and 94 client Vitest tests cleanly.
+- **Next:**
+  - Decompose more inline message handlers from `src/server.js` to modular handlers under `src/server/`.
+  - Wire generated, world-derived missions into the landing flow.
+
 ## 2026-06-20T07:01 · iter-0166 · GREEN · cargo-pickup-docking-audio-synthesized
 
 - **Baseline:** `c85728e` on `chore/agent-cleaner`; working tree clean.

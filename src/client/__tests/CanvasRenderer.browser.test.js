@@ -194,3 +194,45 @@ test("CanvasRenderer renders a fully-populated composite space viewport with var
   // Clean up
   document.body.removeChild(container);
 });
+
+test("CanvasRenderer renders custom engine exhaust plumes successfully without errors", async () => {
+  const container = document.createElement("div");
+  container.style.width = "400px";
+  container.style.height = "300px";
+  container.style.background = "#000";
+
+  const canvas = document.createElement("canvas");
+  container.appendChild(canvas);
+  document.body.appendChild(container);
+
+  const renderer = new CanvasRenderer(canvas);
+  renderer.resize();
+
+  const playerOvercharged = new Ship({
+    position: new Vector2D(0, -30),
+    name: "Overcharged Ship",
+  });
+  playerOvercharged.controls = { isThrusting: true, isBoosting: true };
+  playerOvercharged.outfits = ["Overcharged Engines"];
+
+  const playerHyperdrive = new Ship({
+    position: new Vector2D(0, 30),
+    name: "Hyperdrive Ship",
+  });
+  playerHyperdrive.controls = { isThrusting: true, isBoosting: true };
+  playerHyperdrive.outfits = ["Hyper-Drive Thrusters"];
+
+  const entities = [playerOvercharged, playerHyperdrive];
+
+  expect(() => {
+    renderer.draw(
+      0.05,
+      playerOvercharged,
+      entities,
+      null,
+      playerOvercharged.id,
+    );
+  }).not.toThrow();
+
+  document.body.removeChild(container);
+});

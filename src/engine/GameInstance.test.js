@@ -699,6 +699,13 @@ describe("Serialization", () => {
     }
   });
 
+  test("ship serialization includes outfits", () => {
+    const serialized = room.serializeEntities();
+    const ship = serialized.find((e) => e.type === "ship");
+    expect(ship.outfits).toBeDefined();
+    expect(Array.isArray(ship.outfits)).toBe(true);
+  });
+
   test("warp gate serialization includes sector routing fields", () => {
     const serialized = room.serializeEntities();
     const gate = serialized.find((e) => e.type === "warp_gate");

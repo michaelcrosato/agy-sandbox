@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-06-20T06:59:52.786Z` · Baseline: `27,568 LOC` across `114 source files`
+> Generated: `2026-06-20T07:03:53.984Z` · Baseline: `27,569 LOC` across `114 source files`
 
 ---
 
@@ -9,10 +9,10 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `27,568 LOC` | 🟢 Healthy |
+| **Total Code Volume** | `27,569 LOC` | 🟢 Healthy |
 | **Source Modules** | `114 files` | 🟢 Structured |
 | **Test Suites** | `156 test files` | 🟢 Integrated |
-| **Total Test Cases** | `1957 cases` | 🟢 Deterministic |
+| **Total Test Cases** | `1959 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `185 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `0 files` | 🟢 100% Covered |
 
@@ -43,7 +43,7 @@
 | [FactionWarCampaign.js](file:///C:/dev/agy-sandbox/src/engine/FactionWarCampaign.js) | 483 | `class FactionWarCampaign`, `function createSeededRng`, `constant SECTOR_NAMES` | [FactionWarCampaign.test.js](file:///C:/dev/agy-sandbox/src/engine/FactionWarCampaign.test.js) | [`164_faction_war_campaign_engine`](file:///C:/dev/agy-sandbox/plan/specs/164_faction_war_campaign_engine.md) |
 | [GalaxyEventsManager.js](file:///C:/dev/agy-sandbox/src/engine/GalaxyEventsManager.js) | 141 | `class GalaxyEventsManager` | [GalaxyEventsManager.test.js](file:///C:/dev/agy-sandbox/src/engine/GalaxyEventsManager.test.js) | [`057_dynamic_market_events`](file:///C:/dev/agy-sandbox/plan/specs/057_dynamic_market_events.md) |
 | [GalaxyHeartbeat.js](file:///C:/dev/agy-sandbox/src/engine/GalaxyHeartbeat.js) | 339 | `class GalaxyHeartbeat` | [GalaxyHeartbeat.test.js](file:///C:/dev/agy-sandbox/src/engine/GalaxyHeartbeat.test.js) | [`006_economy_nan_selfheal`](file:///C:/dev/agy-sandbox/plan/specs/006_economy_nan_selfheal.md) |
-| [GameInstance.js](file:///C:/dev/agy-sandbox/src/engine/GameInstance.js) | 1934 | `class GameInstance`, `constant SECTOR_ADJACENCY`, `function getSectorFromPosition` | [GameInstance.test.js](file:///C:/dev/agy-sandbox/src/engine/GameInstance.test.js) | [`047_dynamic_reputation_patrol_spawns`](file:///C:/dev/agy-sandbox/plan/specs/047_dynamic_reputation_patrol_spawns.md)<br>[`048_contraband_space_patrol_scans`](file:///C:/dev/agy-sandbox/plan/specs/048_contraband_space_patrol_scans.md)<br>[`054_faction_conflict_battlegrounds`](file:///C:/dev/agy-sandbox/plan/specs/054_faction_conflict_battlegrounds.md)<br>[`066_utilityai_advisor_spawns_rollout`](file:///C:/dev/agy-sandbox/plan/specs/066_utilityai_advisor_spawns_rollout.md)<br>[`081_outlaw_black_markets`](file:///C:/dev/agy-sandbox/plan/specs/081_outlaw_black_markets.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md)<br>[`107_gameinstance_deep_test_coverage`](file:///C:/dev/agy-sandbox/plan/specs/107_gameinstance_deep_test_coverage.md) |
+| [GameInstance.js](file:///C:/dev/agy-sandbox/src/engine/GameInstance.js) | 1935 | `class GameInstance`, `constant SECTOR_ADJACENCY`, `function getSectorFromPosition` | [GameInstance.test.js](file:///C:/dev/agy-sandbox/src/engine/GameInstance.test.js) | [`047_dynamic_reputation_patrol_spawns`](file:///C:/dev/agy-sandbox/plan/specs/047_dynamic_reputation_patrol_spawns.md)<br>[`048_contraband_space_patrol_scans`](file:///C:/dev/agy-sandbox/plan/specs/048_contraband_space_patrol_scans.md)<br>[`054_faction_conflict_battlegrounds`](file:///C:/dev/agy-sandbox/plan/specs/054_faction_conflict_battlegrounds.md)<br>[`066_utilityai_advisor_spawns_rollout`](file:///C:/dev/agy-sandbox/plan/specs/066_utilityai_advisor_spawns_rollout.md)<br>[`081_outlaw_black_markets`](file:///C:/dev/agy-sandbox/plan/specs/081_outlaw_black_markets.md)<br>[`104_living_codex_hygiene_jsdoc_audit`](file:///C:/dev/agy-sandbox/plan/specs/104_living_codex_hygiene_jsdoc_audit.md)<br>[`107_gameinstance_deep_test_coverage`](file:///C:/dev/agy-sandbox/plan/specs/107_gameinstance_deep_test_coverage.md) |
 | [GenerativeMissions.js](file:///C:/dev/agy-sandbox/src/engine/GenerativeMissions.js) | 417 | `constant DEFAULT_GENERATIVE_OPTIONS`, `function createSeededRng`, `function generateMissionsFromWorld`, `function applyMissionConsequences` | [GenerativeMissions.test.js](file:///C:/dev/agy-sandbox/src/engine/GenerativeMissions.test.js) | _None_ |
 | [Hyperdrive.js](file:///C:/dev/agy-sandbox/src/engine/Hyperdrive.js) | 245 | `constant DEFAULT_HYPERDRIVE_OPTIONS`, `function canJump`, `function consumeJump`, `function refuel`, `function ramscoopRegen`, `function getWarpToll`, `function isEntityHostile`, `function validateWarpJump` | [Hyperdrive.test.js](file:///C:/dev/agy-sandbox/src/engine/Hyperdrive.test.js) | [`052_stargate_warp_tolls_taxes`](file:///C:/dev/agy-sandbox/plan/specs/052_stargate_warp_tolls_taxes.md)<br>[`056_warp_lane_interdiction`](file:///C:/dev/agy-sandbox/plan/specs/056_warp_lane_interdiction.md) |
 | [InvariantVerifier.js](file:///C:/dev/agy-sandbox/src/engine/InvariantVerifier.js) | 219 | `class InvariantVerifier` | [InvariantVerifier.test.js](file:///C:/dev/agy-sandbox/src/engine/InvariantVerifier.test.js) | [`091_game_invariant_verifier`](file:///C:/dev/agy-sandbox/plan/specs/091_game_invariant_verifier.md) |

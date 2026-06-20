@@ -811,6 +811,7 @@ export class GameInstance {
             typeof ent.hasActiveInterdictor === "function"
               ? ent.hasActiveInterdictor()
               : false;
+          base.outfits = ent.outfits || [];
         } else if (ent.type === "cargo_pod") {
           base.resourceType = ent.resourceType;
           base.amount = ent.amount;

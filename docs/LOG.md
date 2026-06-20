@@ -44,6 +44,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-20T07:47 · iter-0173 · GREEN · websocket-message-router-modularized-tested
+
+- **Baseline:** `49ff73c` on `chore/agent-cleaner`; working tree clean.
+- **Move:** Decompose the massive inline WebSocket message routing switch and all gameplay handler imports from the server monolith into a modular messageRouter.js module.
+- **Changed:**
+  - Designed and implemented `src/server/messageRouter.js` exporting `routeMessage` which dispatches incoming payloads to their corresponding modular handlers using dependency injection.
+  - Refactored `src/server.js` connection message listener to delegate directly to `routeMessage`.
+  - Cleaned up imports of 26 message handlers from the header of `src/server.js`, moving them into the modular messageRouter.js module.
+  - Authored a comprehensive unit test suite in `src/server/messageRouter.test.js` validating connection, controls, port, trade, squad, escort, and tutorial routing logic across all 29 message types.
+- **Decisions:** none.
+- **Validation:** `npm run agent:check` completed successfully with 1,516 Jest and 94 Vitest tests passing green.
+- **Next:** Modularize more inline server tick intervals (such as GC, connection heartbeats, and room registration heartbeats) or design additional visual asteroid shattering particles.
+
 ## 2026-06-20T07:44 · iter-0172 · GREEN · room-state-broadcast-modularized-tested
 
 - **Baseline:** `0197304` on `chore/agent-cleaner`; working tree clean.

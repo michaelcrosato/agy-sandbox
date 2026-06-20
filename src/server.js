@@ -33,45 +33,7 @@ import { MemoryLeakSentry } from "./net/MemoryLeakSentry.js";
 import { AnomalyDetector } from "./net/AnomalyDetector.js";
 import { ConfigWatcher } from "./net/ConfigWatcher.js";
 import { ConnectionFloodSentry } from "./net/ConnectionFloodSentry.js";
-import {
-  handleOutfitBuy,
-  handleShipBuy,
-  handleVoucherRedeem,
-  handleOutfitSell,
-  handleOreRefine,
-  handleDistressBeacon,
-} from "./server/portHandlers.js";
-import {
-  handlePresetSave,
-  handlePresetLoad,
-  handlePresetDelete,
-} from "./server/outfittingPresetHandlers.js";
-import {
-  handleMissionAccept,
-  handleMissionAbandon,
-} from "./server/spaceportMissionHandlers.js";
-import {
-  handleTrade,
-  handlePortService,
-  handleJettison,
-  handleWarpJump,
-  handleBoardingAction,
-} from "./server/actionHandlers.js";
-import { handleChat } from "./server/chatHandler.js";
-import { handleFleetAction } from "./server/fleetHandlers.js";
-import {
-  handleControls,
-  handleLand,
-  handleLaunch,
-} from "./server/gameplayHandlers.js";
-import { handleSquadAction } from "./server/squadHandlers.js";
-import { handleEscortAction } from "./server/escortHandlers.js";
-import {
-  handleTutorialStart,
-  handleTutorialProgress,
-  handleTutorialComplete,
-} from "./server/tutorialHandlers.js";
-import { handleConnectionAction } from "./server/connectionHandlers.js";
+import { routeMessage } from "./server/messageRouter.js";
 import { handleRestRequest } from "./server/restHandlers.js";
 import {
   joinRoom as joinRoomExt,
@@ -708,126 +670,22 @@ wss.on("connection", (ws, req) => {
     });
     if (!msg) return;
 
-    const room = clientObj.roomId ? instances.get(clientObj.roomId) : null;
-
-    if (
-      msg.type === "join" ||
-      msg.type === "quick_join" ||
-      msg.type === "create_room" ||
-      msg.type === "join_room"
-    ) {
-      handleConnectionAction(clientObj, msg, ws, {
-        instances,
-        clients,
-        persistentSessions,
-        persistenceManager,
-        galacticChronicle,
-        WORKERS,
-        SHARD_INDEX,
-        matchmakingQueue,
-        joinRoom,
-        sendLobbyList,
-        broadcastLobbySync,
-      });
-    } else if (msg.type === "controls") {
-      handleControls(clientObj, msg);
-    } else if (msg.type === "land") {
-      if (clientObj.tutorialStep === "dock_at_port") {
-        await handleTutorialComplete(
-          clientObj,
-          instances,
-          persistenceManager,
-          joinRoom,
-        );
-      } else {
-        handleLand(clientObj, room, persistenceManager);
-      }
-    } else if (msg.type === "launch") {
-      handleLaunch(clientObj, room);
-    } else if (msg.type === "trade") {
-      handleTrade(clientObj, msg, room);
-    } else if (msg.type === "port_service") {
-      handlePortService(clientObj, msg);
-    } else if (msg.type === "port_refine" || msg.type === "ore_refine") {
-      handleOreRefine(clientObj, msg.quantity, msg.targetCommodity, room);
-    } else if (msg.type === "jettison") {
-      handleJettison(clientObj, msg, room);
-    } else if (msg.type === "outfit_buy") {
-      handleOutfitBuy(
-        clientObj,
-        msg.outfitName,
-        clientObj.planetLandedOn,
-        room,
-      );
-    } else if (msg.type === "outfit_sell") {
-      handleOutfitSell(
-        clientObj,
-        msg.outfitName,
-        clientObj.planetLandedOn,
-        room,
-      );
-    } else if (msg.type === "preset_save") {
-      handlePresetSave(clientObj, msg.presetIndex, msg.presetName);
-    } else if (msg.type === "preset_load") {
-      handlePresetLoad(
-        clientObj,
-        msg.presetIndex,
-        clientObj.planetLandedOn,
-        room,
-      );
-    } else if (msg.type === "preset_delete") {
-      handlePresetDelete(clientObj, msg.presetIndex);
-    } else if (msg.type === "ship_buy") {
-      handleShipBuy(clientObj, msg.shipName, clientObj.planetLandedOn, room);
-    } else if (
-      msg.type === "squad_invite" ||
-      msg.type === "squad_join" ||
-      msg.type === "squad_leave"
-    ) {
-      handleSquadAction(clientObj, msg, wss, squadManager, pubsub);
-    } else if (msg.type === "port_redeem_vouchers") {
-      handleVoucherRedeem(clientObj, room);
-    } else if (msg.type === "mission_accept") {
-      handleMissionAccept(
-        clientObj,
-        msg.planetName,
-        msg.missionId,
-        clientObj.planetLandedOn,
-        room,
-      );
-    } else if (msg.type === "mission_abandon") {
-      handleMissionAbandon(clientObj, msg.missionId);
-    } else if (
-      msg.type === "fleet_create" ||
-      msg.type === "fleet_join" ||
-      msg.type === "fleet_leave"
-    ) {
-      handleFleetAction(clientObj, msg, room);
-    } else if (msg.type === "chat") {
-      await handleChat(clientObj, msg, room, pubsub, squadManager);
-    } else if (msg.type === "warp_jump") {
-      handleWarpJump(clientObj, msg, room);
-    } else if (msg.type === "boarding_action") {
-      handleBoardingAction(clientObj, msg, room);
-    } else if (
-      msg.type === "escort_command" ||
-      msg.type === "escort_formation"
-    ) {
-      handleEscortAction(clientObj, msg, room);
-    } else if (msg.type === "distress_beacon") {
-      handleDistressBeacon(clientObj, room);
-    } else if (msg.type === "tutorial_start") {
-      await handleTutorialStart(clientObj, instances, joinRoom);
-    } else if (msg.type === "tutorial_progress") {
-      handleTutorialProgress(clientObj, msg);
-    } else if (msg.type === "tutorial_complete") {
-      handleTutorialComplete(clientObj, instances, persistenceManager);
-    } else if (msg.type === "ping") {
-      clientObj.send({
-        type: "pong",
-        time: msg.time,
-      });
-    }
+    await routeMessage(clientObj, msg, ws, {
+      instances,
+      clients,
+      persistentSessions,
+      persistenceManager,
+      galacticChronicle,
+      squadManager,
+      pubsub,
+      wss,
+      WORKERS,
+      SHARD_INDEX,
+      matchmakingQueue,
+      joinRoom,
+      sendLobbyList,
+      broadcastLobbySync,
+    });
   });
 
   ws.on("close", () => {

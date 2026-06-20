@@ -1305,6 +1305,8 @@ function syncEntitiesFromServer(serverEntities) {
           heading: ent.heading,
         });
         newProj.ownerId = ent.ownerId;
+        newProj.damage = ent.damage;
+        newProj.shieldPierce = ent.shieldPierce;
         engine.addEntity(newProj);
       } else if (ent.type === "cargo_pod") {
         const newPod = new SpaceEntity({

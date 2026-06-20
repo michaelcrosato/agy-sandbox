@@ -236,3 +236,57 @@ test("CanvasRenderer renders custom engine exhaust plumes successfully without e
 
   document.body.removeChild(container);
 });
+
+test("CanvasRenderer renders custom styled projectiles (Ion, Neutron, Plasma) successfully without errors", async () => {
+  const container = document.createElement("div");
+  container.style.width = "400px";
+  container.style.height = "300px";
+  container.style.background = "#000";
+
+  const canvas = document.createElement("canvas");
+  container.appendChild(canvas);
+  document.body.appendChild(container);
+
+  const renderer = new CanvasRenderer(canvas);
+  renderer.resize();
+
+  const mockPlayer = new Ship({
+    position: new Vector2D(0, 0),
+    name: "Alpha-1",
+  });
+
+  // Ion Disruptor projectile (shieldPierce > 0)
+  const ionProj = new Projectile({
+    ownerId: "Alpha-1",
+    startPosition: new Vector2D(-50, -50),
+    heading: 0,
+    speed: 600,
+    shieldPierce: 0.5,
+  });
+
+  // Neutron Blaster projectile (damage >= 50)
+  const neutronProj = new Projectile({
+    ownerId: "Alpha-1",
+    startPosition: new Vector2D(0, 0),
+    heading: Math.PI / 4,
+    speed: 600,
+    damage: 55,
+  });
+
+  // Plasma Cannon projectile (damage >= 25)
+  const plasmaProj = new Projectile({
+    ownerId: "Alpha-1",
+    startPosition: new Vector2D(50, 50),
+    heading: Math.PI / 2,
+    speed: 600,
+    damage: 25,
+  });
+
+  const entities = [ionProj, neutronProj, plasmaProj];
+
+  expect(() => {
+    renderer.draw(0.05, mockPlayer, entities, null, "Alpha-1");
+  }).not.toThrow();
+
+  document.body.removeChild(container);
+});

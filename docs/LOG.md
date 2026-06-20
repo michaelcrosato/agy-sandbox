@@ -44,6 +44,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-20T07:16 · iter-0168 · GREEN · custom-weapon-projectile-colors-glows-rendered
+
+- **Baseline:** `284cb2f` on `chore/agent-cleaner`; working tree clean.
+- **Move:** Implement unique, dynamic weapon projectile graphics and glows based on weapon attributes (Plasma, Neutron, Ion) and fix missing ownerId serialization.
+- **Changed:**
+  - Modified `serializeEntities()` in `src/engine/GameInstance.js` to serialize `ownerId`, `damage`, and `shieldPierce` for projectiles.
+  - Updated `src/main.js` to synchronize the new `damage` and `shieldPierce` fields on client projectile objects.
+  - Implemented custom rendering inside `drawProjectile` in `src/client/CanvasRenderer.js` adding yellow crackling electric trails for Ion, heavy purple-blue beams for Neutron, thick green bolts for Plasma, and standard laser glow rings.
+  - Added unit and integration tests inside `src/engine/GameInstance.test.js` and `src/client/__tests/CanvasRenderer.browser.test.js`.
+- **Decisions:** none.
+- **Validation:** `npm run agent:check` and `npm run test:client:browser` completed successfully with all 1,465 Jest and 94 Vitest tests passing green.
+- **Next:** Modularize more inline message handlers from `src/server.js` or design visual asteroid shattering particles.
+
 ## 2026-06-20T07:05 · iter-0167 · GREEN · custom-engine-thruster-exhaust-plumes-rendered
 
 - **Baseline:** `dc07462` on `chore/agent-cleaner`; working tree clean.

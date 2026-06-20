@@ -6,6 +6,7 @@ import {
   BASE_MARKETS,
 } from "./GameInstance.js";
 import { Ship } from "./Ship.js";
+import { Projectile } from "./Projectile.js";
 import { Vector2D } from "../physics/Vector2D.js";
 
 /**
@@ -725,6 +726,28 @@ describe("Serialization", () => {
     expect(storm.hazardType).toBeDefined();
     expect(storm.color).toBeDefined();
     expect(storm.particleColor).toBeDefined();
+  });
+
+  test("projectile serialization includes ownerId, damage, and shieldPierce", () => {
+    const proj = new Projectile({
+      ownerId: "player-123",
+      damage: 25,
+      startPosition: new Vector2D(10, 20),
+      heading: 1.0,
+      speed: 400,
+      range: 800,
+      shieldPierce: 0.5,
+    });
+    room.engine.addEntity(proj);
+
+    const serialized = room.serializeEntities();
+    const serializedProj = serialized.find(
+      (e) => e.type === "projectile" && e.id === proj.id,
+    );
+    expect(serializedProj).toBeDefined();
+    expect(serializedProj.ownerId).toBe("player-123");
+    expect(serializedProj.damage).toBe(25);
+    expect(serializedProj.shieldPierce).toBe(0.5);
   });
 });
 

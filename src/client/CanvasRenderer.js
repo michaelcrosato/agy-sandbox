@@ -795,22 +795,94 @@ export class CanvasRenderer {
    * Draws a glowing laser.
    */
   drawProjectile(proj) {
-    // Pick different colors based on who fired (friendly vs hostile)
     const isFriendly =
       proj.ownerId === "player" || proj.ownerId === this.localPlayerId;
     const color = isFriendly ? "#00ffcc" : "#ff3333";
-
-    this.ctx.strokeStyle = color;
-    this.ctx.lineWidth = 3;
-
-    // Tail line
     const dir = new Vector2D(Math.cos(proj.heading), Math.sin(proj.heading));
     const tail = proj.position.subtract(dir.multiply(20));
 
-    this.ctx.beginPath();
-    this.ctx.moveTo(proj.position.x, proj.position.y);
-    this.ctx.lineTo(tail.x, tail.y);
-    this.ctx.stroke();
+    this.ctx.save();
+
+    if (proj.shieldPierce && proj.shieldPierce > 0) {
+      // 1. Ion Disruptor (yellow jagged electric bolt)
+      this.ctx.strokeStyle = "#ffff33";
+      this.ctx.lineWidth = 2;
+      this.ctx.shadowBlur = 10;
+      this.ctx.shadowColor = "#ffcc00";
+
+      // Draw a jagged line with 3 segments
+      const p1 = proj.position;
+      const p4 = tail;
+      const normal = new Vector2D(-dir.y, dir.x); // perpendicular vector
+
+      const displace1 = (Math.random() - 0.5) * 8;
+      const displace2 = (Math.random() - 0.5) * 8;
+
+      const p2 = p1.subtract(dir.multiply(6.6)).add(normal.multiply(displace1));
+      const p3 = p1
+        .subtract(dir.multiply(13.3))
+        .add(normal.multiply(displace2));
+
+      this.ctx.beginPath();
+      this.ctx.moveTo(p1.x, p1.y);
+      this.ctx.lineTo(p2.x, p2.y);
+      this.ctx.lineTo(p3.x, p3.y);
+      this.ctx.lineTo(p4.x, p4.y);
+      this.ctx.stroke();
+    } else if (proj.damage && proj.damage >= 50) {
+      // 2. Neutron Blaster (heavy blue-purple plasma beam)
+      this.ctx.strokeStyle = "#9933ff";
+      this.ctx.lineWidth = 6;
+      this.ctx.shadowBlur = 20;
+      this.ctx.shadowColor = "#d03ffc";
+
+      this.ctx.beginPath();
+      this.ctx.moveTo(proj.position.x, proj.position.y);
+      this.ctx.lineTo(tail.x, tail.y);
+      this.ctx.stroke();
+
+      // White inner core
+      this.ctx.strokeStyle = "#ffffff";
+      this.ctx.lineWidth = 2;
+      this.ctx.shadowBlur = 0;
+      this.ctx.beginPath();
+      this.ctx.moveTo(proj.position.x, proj.position.y);
+      this.ctx.lineTo(tail.x, tail.y);
+      this.ctx.stroke();
+    } else if (proj.damage && proj.damage >= 25) {
+      // 3. Plasma Cannon (green plasma bolt)
+      this.ctx.strokeStyle = "#00ff66";
+      this.ctx.lineWidth = 5;
+      this.ctx.shadowBlur = 15;
+      this.ctx.shadowColor = "#00ff66";
+
+      this.ctx.beginPath();
+      this.ctx.moveTo(proj.position.x, proj.position.y);
+      this.ctx.lineTo(tail.x, tail.y);
+      this.ctx.stroke();
+
+      // White inner core
+      this.ctx.strokeStyle = "#ffffff";
+      this.ctx.lineWidth = 1.5;
+      this.ctx.shadowBlur = 0;
+      this.ctx.beginPath();
+      this.ctx.moveTo(proj.position.x, proj.position.y);
+      this.ctx.lineTo(tail.x, tail.y);
+      this.ctx.stroke();
+    } else {
+      // 4. Standard Laser (default)
+      this.ctx.strokeStyle = color;
+      this.ctx.lineWidth = 3;
+      this.ctx.shadowBlur = 8;
+      this.ctx.shadowColor = color;
+
+      this.ctx.beginPath();
+      this.ctx.moveTo(proj.position.x, proj.position.y);
+      this.ctx.lineTo(tail.x, tail.y);
+      this.ctx.stroke();
+    }
+
+    this.ctx.restore();
   }
 
   /**

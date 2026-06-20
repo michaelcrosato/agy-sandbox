@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-20T07:03:53.984Z",
+  "generatedAt": "2026-06-20T07:15:59.676Z",
   "stats": {
     "totalSourceFiles": 114,
     "totalTestFiles": 156,
     "totalSpecFiles": 185,
-    "totalLoc": 27569,
-    "totalTests": 1959,
+    "totalLoc": 27573,
+    "totalTests": 1961,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -536,7 +536,7 @@
     },
     {
       "path": "src/engine/GameInstance.js",
-      "loc": 1935,
+      "loc": 1939,
       "classes": [
         {
           "name": "GameInstance",
@@ -560,7 +560,7 @@
       ],
       "fileOverview": "/**\n* GameInstance coordinates sector engine simulations, warp portals, entities, and room states.\n*/",
       "testFile": "src/engine/GameInstance.test.js",
-      "testCasesCount": 79,
+      "testCasesCount": 80,
       "referencingSpecs": [
         "plan/specs/047_dynamic_reputation_patrol_spawns.md",
         "plan/specs/048_contraband_space_patrol_scans.md",

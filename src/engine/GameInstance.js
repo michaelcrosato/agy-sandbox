@@ -20,6 +20,7 @@ import { PLANET_PROFILES } from "./ProductionModel.js";
 import { recordKill, shipBountyValue } from "./CombatRating.js";
 import { mineYield } from "./Mining.js";
 import { shipName, createSeededRng } from "./NameGenerator.js";
+import { makeEmptyCargo } from "./commodities.js";
 import { squadManager } from "../server/SquadManager.js";
 import { SandboxSecurityRegistry } from "../net/SandboxSecurityRegistry.js";
 import { FactionWarCampaign } from "./FactionWarCampaign.js";
@@ -1332,6 +1333,8 @@ export class GameInstance {
               this.engine.addEntity(pod);
             }
           }
+          // Reset ship's cargo hold to empty to avoid duplicates
+          ent.cargo = makeEmptyCargo();
         }
         this.broadcastNotification(
           `${ent.name} has been destroyed in combat.`,

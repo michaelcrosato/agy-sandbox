@@ -122,6 +122,31 @@ export function handleLand(clientObj, room, persistenceManager) {
     room,
   );
 
+  const activeMissions =
+    (clientObj.missionManager && clientObj.missionManager.activeMissions) || [];
+  const missingCargoMissions = activeMissions.filter(
+    (m) =>
+      m.destination === targetPlanet.name &&
+      (m.type === "courier" ||
+        m.type === "smuggle" ||
+        m.type === "delivery" ||
+        (m.type === "storyline" && m.stage === 1)) &&
+      m.cargoItem &&
+      m.cargoAmount &&
+      clientObj.ship &&
+      clientObj.ship.cargo &&
+      (!clientObj.ship.cargo[m.cargoItem] ||
+        clientObj.ship.cargo[m.cargoItem] < m.cargoAmount),
+  );
+
+  for (const m of missingCargoMissions) {
+    clientObj.send({
+      type: "notification",
+      message: `Delivery Failed: You do not have the required ${m.cargoAmount} tons of ${m.cargoItem} for "${m.title}".`,
+      style: "error",
+    });
+  }
+
   for (const m of completed) {
     if (room.territoryControl && targetPlanet.sector && targetPlanet.faction) {
       room.territoryControl.adjustInfluence(

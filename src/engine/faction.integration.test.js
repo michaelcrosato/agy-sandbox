@@ -1247,6 +1247,7 @@ describe("mission + trade faction standings (spec 032)", () => {
           },
         };
         clientObj.missionManager.activeMissions = [deliveryMission];
+        playerShip.addCargo("ore", 10);
 
         // Land on Valkyrie Depot
         const valkyrieDepot = room.planets.find(

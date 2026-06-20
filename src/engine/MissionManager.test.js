@@ -212,6 +212,26 @@ describe("MissionManager.checkArrivalCompletions", () => {
     expect(mm.activeMissions.map((m) => m.id)).toEqual(["b"]);
     expect(player.credits).toBe(5100);
   });
+
+  test("leaves a delivery/courier mission active if player lacks the cargo", () => {
+    const mm = new MissionManager();
+    const player = newPlayer();
+    // Do not add cargo to the player
+    mm.activeMissions = [
+      {
+        id: "c2",
+        type: "courier",
+        destination: "New Polaris",
+        reward: 1000,
+        cargoItem: "food",
+        cargoAmount: 3,
+      },
+    ];
+    const completed = mm.checkArrivalCompletions("New Polaris", player);
+    expect(completed.length).toBe(0);
+    expect(mm.activeMissions.length).toBe(1);
+    expect(player.credits).toBe(5000);
+  });
 });
 
 describe("MissionManager.checkBountyCompletion", () => {

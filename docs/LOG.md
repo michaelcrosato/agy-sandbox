@@ -44,6 +44,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-20T08:01 · iter-0175 · GREEN · mission-cargo-verification-ship-death-clearing
+
+- **Baseline:** `4ae38ff` on `chore/agent-cleaner`; working tree modified.
+- **Move:** Harden cargo mission lifecycle mechanics to verify required cargo holds upon destination planet landings and prevent cargo duplication exploits by clearing ships' cargo bays upon destruction.
+- **Changed:**
+  - Hardened `checkArrivalCompletions` in `src/engine/MissionManager.js` to verify enroute cargo presence (`player.cargo[mission.cargoItem] >= mission.cargoAmount`) for courier, delivery, smuggling, and stage-1 storyline missions before completing.
+  - Refactored `handleEntityDestroyed` in `src/engine/GameInstance.js` to reset the ship's cargo to empty via `makeEmptyCargo()` upon destruction.
+  - Updated `src/server/gameplayHandlers.js` to notify players about missing cargo when docking at destination planets.
+  - Added cargo presence to existing mock tests in `src/engine/faction.integration.test.js` and handled safety defaults in `src/server/gameplayHandlers.js`.
+  - Authored isolated unit tests verifying both cargo-restricted mission landings and post-destruction cargo sweeps.
+- **Decisions:** none.
+- **Validation:** `npm run agent:check` completed successfully with 1,524 Jest and 94 Vitest tests passing green.
+- **Next:** Identify more gameplay exploits or continue modularizing server.js.
+
 ## 2026-06-20T07:50 · iter-0174 · GREEN · room-registry-heartbeat-modularized-tested
 
 - **Baseline:** `0f559db` on `chore/agent-cleaner`; working tree modified.

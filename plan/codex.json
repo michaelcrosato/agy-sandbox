@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-20T07:49:51.001Z",
+  "generatedAt": "2026-06-20T08:01:18.338Z",
   "stats": {
     "totalSourceFiles": 119,
     "totalTestFiles": 160,
     "totalSpecFiles": 185,
-    "totalLoc": 28351,
-    "totalTests": 2028,
+    "totalLoc": 28403,
+    "totalTests": 2031,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -536,12 +536,12 @@
     },
     {
       "path": "src/engine/GameInstance.js",
-      "loc": 1941,
+      "loc": 1944,
       "classes": [
         {
           "name": "GameInstance",
           "jsdoc": "/**\n* Authoritative sandbox game instance simulator managing sectors, entities,\n* economies, and dynamic galactic factions.\n*/",
-          "line": 57
+          "line": 58
         }
       ],
       "exports": [
@@ -549,13 +549,13 @@
           "name": "SECTOR_ADJACENCY",
           "type": "constant",
           "jsdoc": "/**\n* Map defining which sectors share direct warp-gate trade route adjacency links.\n* Used for simulated economic and price diffusion.\n* @type {Record<string, Array<string>>}\n*/",
-          "line": 32
+          "line": 33
         },
         {
           "name": "getSectorFromPosition",
           "type": "function",
           "jsdoc": "/**\n* Utility helper to identify a sector ID from 2D vector coordinate bounds.\n* @param {object} pos Coordinate point containing x and y coordinates.\n* @returns {string} The sector name identifier.\n*/",
-          "line": 46
+          "line": 47
         }
       ],
       "fileOverview": "/**\n* GameInstance coordinates sector engine simulations, warp portals, entities, and room states.\n*/",
@@ -774,7 +774,7 @@
     },
     {
       "path": "src/engine/MissionManager.js",
-      "loc": 715,
+      "loc": 739,
       "classes": [
         {
           "name": "MissionManager",
@@ -785,7 +785,7 @@
       "exports": [],
       "fileOverview": "/**\n* Manages the procedural mission generation, active contract tracking, and completion cycles.\n*/",
       "testFile": "src/engine/MissionManager.test.js",
-      "testCasesCount": 25,
+      "testCasesCount": 26,
       "referencingSpecs": [
         "plan/specs/060_naval_campaigns.md",
         "plan/specs/065_procedural_mission_completions.md",
@@ -2785,7 +2785,7 @@
     },
     {
       "path": "src/server/gameplayHandlers.js",
-      "loc": 370,
+      "loc": 395,
       "classes": [],
       "exports": [
         {
@@ -2804,7 +2804,7 @@
           "name": "handleLaunch",
           "type": "function",
           "jsdoc": "/**\n* Handles the \"launch\" message: taking off from a planet, repositioning ship.\n*\n* @param {object} clientObj - The authenticated client object.\n* @param {object} room - The current GameInstance room.\n*/",
-          "line": 347
+          "line": 372
         }
       ],
       "fileOverview": "/**\n* Handles the \"controls\" message: updates ship controls and heading.\n*\n* @param {object} clientObj - The authenticated client object.\n* @param {object} msg - The controls payload.\n*/",

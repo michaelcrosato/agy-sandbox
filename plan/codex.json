@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-20T08:41:58.757Z",
+  "generatedAt": "2026-06-20T10:55:44.396Z",
   "stats": {
-    "totalSourceFiles": 124,
-    "totalTestFiles": 165,
+    "totalSourceFiles": 125,
+    "totalTestFiles": 166,
     "totalSpecFiles": 185,
-    "totalLoc": 29231,
-    "totalTests": 2064,
+    "totalLoc": 29276,
+    "totalTests": 2070,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -3208,6 +3208,17 @@
       "referencingSpecs": [
         "plan/specs/042_server_monolith_extraction_galaxy_ticker.md"
       ],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/roomInitializer.js",
+      "loc": 45,
+      "classes": [],
+      "exports": [],
+      "fileOverview": "/**\n* Initializes default permanent rooms (like the \"public\" Arena) on their designated shards\n* and restores their saved states from the persistence manager.\n*\n* @param {object} options - Configuration and dependencies.\n* @param {number} options.workers - Total worker/shard count.\n* @param {number} options.shardIndex - This process's shard index.\n* @param {Map} options.instances - Authoritative world-state room map.\n* @param {object} options.galacticChronicle - Shared chronicle database.\n* @param {object} options.persistenceManager - Persistent storage manager.\n* @returns {Promise<void>}\n*/",
+      "testFile": "src/server/roomInitializer.test.js",
+      "testCasesCount": 6,
+      "referencingSpecs": [],
       "missingJsDocSymbols": []
     },
     {

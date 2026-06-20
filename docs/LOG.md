@@ -44,6 +44,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-20T10:56 · iter-0182 · GREEN · room-initializer-modularized-tested
+
+- **Baseline:** `df3e52d` on `chore/agent-cleaner`; working tree clean.
+- **Move:** Decompose the default room initialization and galaxy state restoration from the server monolith into a dedicated,
+  unit-tested module.
+- **Changed:**
+  - Designed and implemented `src/server/roomInitializer.js` containing the `initializeDefaultRooms` orchestrator.
+  - Refactored `src/server.js` to delegate default room startup to `roomInitializer.js` and removed unused imports.
+  - Authored a comprehensive unit test suite in `src/server/roomInitializer.test.js` verifying conditional room creation,
+    shard routing, state applications, and error fallbacks.
+- **Decisions:** none.
+- **Validation:** `npm run agent:check` completed successfully with 1,554 Jest and 94 Vitest tests passing green.
+- **Next:** Continue modularizing startup procedures or other inline blocks in server.js.
+
 ## 2026-06-20T08:42 · iter-0181 · GREEN · registry-store-modularized-tested
 
 - **Baseline:** `885b0f3` on `chore/agent-cleaner`; working tree clean.

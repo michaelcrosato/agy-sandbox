@@ -131,6 +131,7 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 | Reads a file synchronously with retries on lock contention. | [`src/server/restHandlers.js`](file:///C:/dev/agy-sandbox/src/server/restHandlers.js) | no | yes |
 | Broadcasts the current room world state to all connected clients. | [`src/server/roomBroadcast.js`](file:///C:/dev/agy-sandbox/src/server/roomBroadcast.js) | no | yes |
 | Sweeps room instances and reaps idle custom sectors. | [`src/server/roomGc.js`](file:///C:/dev/agy-sandbox/src/server/roomGc.js) | no | yes |
+| Initializes default permanent rooms (like the "public" Arena) on their designated shards and restores their saved states from the persistence manager. | [`src/server/roomInitializer.js`](file:///C:/dev/agy-sandbox/src/server/roomInitializer.js) | no | yes |
 | roomLifecycle (spec 007) — pure room-lifecycle decisions extracted from the server: whether an idle non-public room should be garbage-collected, and how a player nickname is sanitized. | [`src/server/roomLifecycle.js`](file:///C:/dev/agy-sandbox/src/server/roomLifecycle.js) | no | yes |
 | Room Registry Store | [`src/server/roomRegistryStore.js`](file:///C:/dev/agy-sandbox/src/server/roomRegistryStore.js) | no | yes |
 | Creates a graceful shutdown lifecycle handler for the server process. | [`src/server/shutdownHandler.js`](file:///C:/dev/agy-sandbox/src/server/shutdownHandler.js) | no | yes |

@@ -6,8 +6,6 @@ import { exec } from "child_process";
 
 import { registerMissionSpawnHandlers } from "./server/missionSpawnHandlers.js";
 
-import { GameInstance } from "./engine/GameInstance.js";
-
 import { perMessageDeflateOption } from "./net/wsCompression.js";
 import { squadManager } from "./server/SquadManager.js";
 import { JoinQueue, freeSlots, roomMatches } from "./server/matchmaking.js";
@@ -19,7 +17,7 @@ import {
   activateOutboundSentinel,
 } from "./net/ApiRateLimiter.js";
 import { SandboxFirewall, activateFirewall } from "./net/SandboxFirewall.js";
-import { applyGalaxy } from "./persistence/serializers.js";
+import { initializeDefaultRooms } from "./server/roomInitializer.js";
 import { InMemoryPubSub } from "./net/PubSub.js";
 
 import { selectDeadSockets, DEFAULT_HEARTBEAT_MS } from "./net/heartbeat.js";
@@ -482,25 +480,13 @@ export async function startServer({
   });
 
   // 2. Create Default permanent Public Arena Room ONLY if this shard owns it
-  if (workers === 1 || assignShard("public", workers) === shardIndex) {
-    const publicInstance = new GameInstance("public", "Public Arena");
-    publicInstance.chronicle = galacticChronicle;
-    instances.set("public", publicInstance);
-
-    // Restore any saved galaxy state
-    const persistenceDir = process.env.PERSISTENCE_DIR || "./data";
-    try {
-      const snapshot = await persistenceManager.loadGalaxy(publicInstance.id);
-      if (snapshot) {
-        applyGalaxy(publicInstance, snapshot);
-        console.log(
-          `💾 Restored galaxy state for [${publicInstance.name}] from ${persistenceDir}`,
-        );
-      }
-    } catch (err) {
-      console.error(`⚠️ Failed to restore public room galaxy: ${err.message}`);
-    }
-  }
+  await initializeDefaultRooms({
+    workers,
+    shardIndex,
+    instances,
+    galacticChronicle,
+    persistenceManager,
+  });
 
   // 3. Periodic galaxy autosave (P1): persist every live room
   const AUTOSAVE_INTERVAL_MS =

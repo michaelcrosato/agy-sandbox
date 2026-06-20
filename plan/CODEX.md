@@ -1,7 +1,7 @@
 # 📖 STARFALL LIVING CODEX · SEMANTIC ONTOLOGY REGISTER
 
 > **Dynamic Machine-Generated Codebase Ontology Map (SPEC-101)**
-> Generated: `2026-06-20T08:41:58.757Z` · Baseline: `29,231 LOC` across `124 source files`
+> Generated: `2026-06-20T10:55:44.396Z` · Baseline: `29,276 LOC` across `125 source files`
 
 ---
 
@@ -9,10 +9,10 @@
 
 | Category | Metric | Status |
 | --- | --- | --- |
-| **Total Code Volume** | `29,231 LOC` | 🟢 Healthy |
-| **Source Modules** | `124 files` | 🟢 Structured |
-| **Test Suites** | `165 test files` | 🟢 Integrated |
-| **Total Test Cases** | `2064 cases` | 🟢 Deterministic |
+| **Total Code Volume** | `29,276 LOC` | 🟢 Healthy |
+| **Source Modules** | `125 files` | 🟢 Structured |
+| **Test Suites** | `166 test files` | 🟢 Integrated |
+| **Total Test Cases** | `2070 cases` | 🟢 Deterministic |
 | **Active/Archived Specs** | `185 specifications` | 🟢 Traceable |
 | **Untested Core Modules** | `0 files` | 🟢 100% Covered |
 
@@ -164,6 +164,7 @@
 | [restHandlers.js](file:///C:/dev/agy-sandbox/src/server/restHandlers.js) | 695 | `function handleRestRequest` | [restHandlers.test.js](file:///C:/dev/agy-sandbox/src/server/restHandlers.test.js) | [`161_decompose_http_rest_endpoints`](file:///C:/dev/agy-sandbox/plan/specs/161_decompose_http_rest_endpoints.md)<br>[`164_faction_war_campaign_engine`](file:///C:/dev/agy-sandbox/plan/specs/164_faction_war_campaign_engine.md) |
 | [roomBroadcast.js](file:///C:/dev/agy-sandbox/src/server/roomBroadcast.js) | 116 | `function broadcastRoomState` | [roomBroadcast.test.js](file:///C:/dev/agy-sandbox/src/server/roomBroadcast.test.js) | _None_ |
 | [roomGc.js](file:///C:/dev/agy-sandbox/src/server/roomGc.js) | 57 | _None_ | [roomGc.test.js](file:///C:/dev/agy-sandbox/src/server/roomGc.test.js) | [`042_server_monolith_extraction_galaxy_ticker`](file:///C:/dev/agy-sandbox/plan/specs/042_server_monolith_extraction_galaxy_ticker.md) |
+| [roomInitializer.js](file:///C:/dev/agy-sandbox/src/server/roomInitializer.js) | 45 | _None_ | [roomInitializer.test.js](file:///C:/dev/agy-sandbox/src/server/roomInitializer.test.js) | _None_ |
 | [roomLifecycle.js](file:///C:/dev/agy-sandbox/src/server/roomLifecycle.js) | 38 | `constant DEFAULT_ROOM_IDLE_MS`, `function shouldGcRoom`, `function sanitizeNickname` | [roomLifecycle.test.js](file:///C:/dev/agy-sandbox/src/server/roomLifecycle.test.js) | _None_ |
 | [roomRegistryStore.js](file:///C:/dev/agy-sandbox/src/server/roomRegistryStore.js) | 46 | `constant REGISTRY_KEY` | [roomRegistryStore.test.js](file:///C:/dev/agy-sandbox/src/server/roomRegistryStore.test.js) | _None_ |
 | [shutdownHandler.js](file:///C:/dev/agy-sandbox/src/server/shutdownHandler.js) | 227 | `function createShutdownHandler` | [shutdownHandler.test.js](file:///C:/dev/agy-sandbox/src/server/shutdownHandler.test.js) | _None_ |

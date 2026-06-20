@@ -44,6 +44,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-20T07:01 · iter-0166 · GREEN · cargo-pickup-docking-audio-synthesized
+
+- **Baseline:** `c85728e` on `chore/agent-cleaner`; working tree clean.
+- **Move:** Implement dynamic synthesized Web Audio feedback for cargo pickups and spaceport landing/docking and launch/undocking events.
+- **Changed:**
+  - Added `playCargoPickup(position)` ascending chime, `playDock()` mechanical latch + steam hiss, and `playUndock()` latch release + engine exhaust puff synthesizers to `src/client/audio/SoundEngine.js`.
+  - Triggered the new sound synthesizers in `src/main.js` on local/network landing, local/network launching, and network cargo pickups.
+  - Authored unit test coverage in `src/client/__tests/SoundEngine.test.js` validating mock node instantiation, parameter ramps, and starts.
+- **Decisions:** Scoped oscillator and gain node variables entirely within try-catch blocks to prevent ESLint `no-useless-assignment` warnings in headless environments.
+- **Validation:** Executed `npm run agent:check`, passing all 1,463 backend Jest tests and 94 client Vitest tests successfully.
+- **Next:**
+  - Implement client-side thruster particle trail variations depending on engine chassis outfits.
+  - Decompose more server message handlers to reduce server monolith footprint.
+
 ## 2026-06-20T05:07 · iter-0165 · GREEN · cockpit-audio-synthesizer-implemented
 
 - **Baseline:** `3b16bc3` on `chore/agent-cleaner`; all tests green.

@@ -838,6 +838,9 @@ inputHandler.onLandPressed = () => {
 
     // Open glassmorphic trading/outfit spaceport screen
     spaceportUI.open(player, targetPlanet, planets);
+    if (soundEffectsEngine) {
+      soundEffectsEngine.playDock();
+    }
     uiController.notify(
       `Landed safely on ${targetPlanet.name}. Ship systems secured.`,
       "success",
@@ -853,6 +856,9 @@ inputHandler.onLandPressed = () => {
 // Bind launch callback to resume game simulation
 spaceportUI.onLaunch = () => {
   isLanded = false;
+  if (soundEffectsEngine) {
+    soundEffectsEngine.playUndock();
+  }
 
   // Reposition ship slightly outside the planet coordinate radius to prevent immediately re-landing
   const targetPlanet = spaceportUI.planet;
@@ -1529,6 +1535,9 @@ network.onLanded = (msg) => {
   const targetPlanet = planets.find((p) => p.name === msg.planetName);
   if (targetPlanet) {
     spaceportUI.open(player, targetPlanet, planets);
+    if (soundEffectsEngine) {
+      soundEffectsEngine.playDock();
+    }
     uiController.notify(
       `Landed safely on ${targetPlanet.name}. Ship systems secured.`,
       "success",
@@ -1539,6 +1548,9 @@ network.onLanded = (msg) => {
 network.onLaunched = () => {
   isLanded = false;
   spaceportUI.close();
+  if (soundEffectsEngine) {
+    soundEffectsEngine.playUndock();
+  }
 
   const targetPlanet = spaceportUI.planet;
   if (targetPlanet) {
@@ -1694,6 +1706,9 @@ network.onCargoPickup = (msg) => {
     msg.y,
     color,
   );
+  if (soundEffectsEngine) {
+    soundEffectsEngine.playCargoPickup({ x: msg.x, y: msg.y });
+  }
 };
 
 network.onPingReceived = (pingMs) => {

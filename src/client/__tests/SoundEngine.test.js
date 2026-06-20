@@ -406,6 +406,47 @@ describe("SoundEngine", () => {
     });
   });
 
+  describe("Cargo Pickup & Spaceport Dock/Undock (One-shot)", () => {
+    beforeEach(() => {
+      engine.start();
+      vi.clearAllMocks();
+    });
+
+    it("should trigger cargo pickup chime with two oscillators", () => {
+      const oscSpy = vi.spyOn(engine.ctx, "createOscillator");
+      engine.playCargoPickup({ x: 100, y: 100 });
+      expect(oscSpy).toHaveBeenCalledTimes(2);
+      const osc1 = oscSpy.mock.results[0].value;
+      const osc2 = oscSpy.mock.results[1].value;
+      expect(osc1.type).toBe("sine");
+      expect(osc2.type).toBe("sine");
+      expect(osc1.start).toHaveBeenCalled();
+      expect(osc2.start).toHaveBeenCalled();
+    });
+
+    it("should trigger docking mechanical clank and steam hiss", () => {
+      const oscSpy = vi.spyOn(engine.ctx, "createOscillator");
+      const noiseSpy = vi.spyOn(engine.ctx, "createBufferSource");
+      engine.playDock();
+      expect(oscSpy).toHaveBeenCalled();
+      expect(noiseSpy).toHaveBeenCalled();
+      const osc = oscSpy.mock.results[0].value;
+      expect(osc.type).toBe("triangle");
+      expect(osc.start).toHaveBeenCalled();
+    });
+
+    it("should trigger undocking mechanical release and engine puff", () => {
+      const oscSpy = vi.spyOn(engine.ctx, "createOscillator");
+      const noiseSpy = vi.spyOn(engine.ctx, "createBufferSource");
+      engine.playUndock();
+      expect(oscSpy).toHaveBeenCalled();
+      expect(noiseSpy).toHaveBeenCalled();
+      const osc = oscSpy.mock.results[0].value;
+      expect(osc.type).toBe("triangle");
+      expect(osc.start).toHaveBeenCalled();
+    });
+  });
+
   describe("Periodic Alarms", () => {
     beforeEach(() => {
       engine.start();

@@ -912,4 +912,145 @@ export default class SoundEngine {
       this._overheatActive = false;
     }
   }
+
+  /**
+   * Synthesizes a cargo pickup sound effect (pleasant ascending dual-tone chime).
+   * @param {Object} [position] - Coordinate object {x, y} of pickup.
+   */
+  playCargoPickup(position = null) {
+    if (!this.ctx || this.ctx.state === "suspended" || !this.masterGain) {
+      return;
+    }
+    const now = this.ctx.currentTime;
+
+    // Tone 1
+    const osc1 = this.ctx.createOscillator();
+    osc1.type = "sine";
+    osc1.frequency.setValueAtTime(600, now);
+
+    const gain1 = this.ctx.createGain();
+    gain1.gain.setValueAtTime(0.15, now);
+    gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+
+    osc1.connect(gain1);
+    this._route(gain1, position);
+
+    // Tone 2 (starts slightly after tone 1)
+    const osc2 = this.ctx.createOscillator();
+    osc2.type = "sine";
+    osc2.frequency.setValueAtTime(900, now + 0.08);
+
+    const gain2 = this.ctx.createGain();
+    gain2.gain.setValueAtTime(0.0, now);
+    gain2.gain.setValueAtTime(0.15, now + 0.08);
+    gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+
+    osc2.connect(gain2);
+    this._route(gain2, position);
+
+    osc1.start(now);
+    osc1.stop(now + 0.1);
+
+    osc2.start(now + 0.08);
+    osc2.stop(now + 0.22);
+  }
+
+  /**
+   * Synthesizes a spaceport landing/docking sound (heavy mechanical latch + steam hiss).
+   */
+  playDock() {
+    if (!this.ctx || this.ctx.state === "suspended" || !this.masterGain) {
+      return;
+    }
+    const now = this.ctx.currentTime;
+
+    // 1. Heavy mechanical clank/thud
+    const clankOsc = this.ctx.createOscillator();
+    clankOsc.type = "triangle";
+    clankOsc.frequency.setValueAtTime(80, now);
+    clankOsc.frequency.linearRampToValueAtTime(40, now + 0.15);
+
+    const clankGain = this.ctx.createGain();
+    clankGain.gain.setValueAtTime(0.4, now);
+    clankGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+
+    clankOsc.connect(clankGain);
+    this._route(clankGain); // Local cockpit sound
+
+    // 2. Steam depressurization hiss
+    try {
+      const steamNoise = this._createNoiseNode();
+      const steamFilter = this.ctx.createBiquadFilter();
+      steamFilter.type = "bandpass";
+      steamFilter.frequency.setValueAtTime(1000, now);
+      steamFilter.frequency.exponentialRampToValueAtTime(600, now + 0.8);
+      steamFilter.Q.setValueAtTime(1.0, now);
+
+      const steamGain = this.ctx.createGain();
+      steamGain.gain.setValueAtTime(0.0, now);
+      steamGain.gain.linearRampToValueAtTime(0.12, now + 0.05);
+      steamGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+
+      steamNoise.connect(steamFilter);
+      steamFilter.connect(steamGain);
+      this._route(steamGain);
+
+      steamNoise.start(now);
+      steamNoise.stop(now + 0.8);
+    } catch (_err) {
+      // Safe fallback
+    }
+
+    clankOsc.start(now);
+    clankOsc.stop(now + 0.2);
+  }
+
+  /**
+   * Synthesizes a spaceport launching/undocking sound (latch release + engine puff).
+   */
+  playUndock() {
+    if (!this.ctx || this.ctx.state === "suspended" || !this.masterGain) {
+      return;
+    }
+    const now = this.ctx.currentTime;
+
+    // 1. Latch release thud
+    const latchOsc = this.ctx.createOscillator();
+    latchOsc.type = "triangle";
+    latchOsc.frequency.setValueAtTime(120, now);
+    latchOsc.frequency.linearRampToValueAtTime(80, now + 0.1);
+
+    const latchGain = this.ctx.createGain();
+    latchGain.gain.setValueAtTime(0.3, now);
+    latchGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+
+    latchOsc.connect(latchGain);
+    this._route(latchGain); // Local cockpit sound
+
+    // 2. Thruster engine puff
+    try {
+      const puffNoise = this._createNoiseNode();
+      const puffFilter = this.ctx.createBiquadFilter();
+      puffFilter.type = "lowpass";
+      puffFilter.frequency.setValueAtTime(300, now);
+      puffFilter.frequency.exponentialRampToValueAtTime(100, now + 0.4);
+
+      const puffGain = this.ctx.createGain();
+      puffGain.gain.setValueAtTime(0.0, now);
+      puffGain.gain.linearRampToValueAtTime(0.18, now + 0.05);
+      puffGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+
+      puffNoise.connect(puffFilter);
+      puffFilter.connect(puffGain);
+      this._route(puffGain);
+
+      puffNoise.start(now);
+      puffNoise.stop(now + 0.4);
+    } catch (_err) {
+      // Safe fallback
+    }
+
+    latchOsc.start(now);
+    latchOsc.stop(now + 0.12);
+  }
 }

@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-20T08:14:05.913Z",
+  "generatedAt": "2026-06-20T08:18:11.859Z",
   "stats": {
-    "totalSourceFiles": 122,
-    "totalTestFiles": 163,
+    "totalSourceFiles": 123,
+    "totalTestFiles": 164,
     "totalSpecFiles": 185,
-    "totalLoc": 28831,
-    "totalTests": 2045,
+    "totalLoc": 29058,
+    "totalTests": 2049,
     "untestedCoreFilesCount": 0
   },
   "files": [
@@ -3231,6 +3231,24 @@
       "fileOverview": "/**\n* roomLifecycle (spec 007) — pure room-lifecycle decisions extracted from the\n* server: whether an idle non-public room should be garbage-collected, and how a\n* player nickname is sanitized. Pure and unit-testable.\n*/",
       "testFile": "src/server/roomLifecycle.test.js",
       "testCasesCount": 9,
+      "referencingSpecs": [],
+      "missingJsDocSymbols": []
+    },
+    {
+      "path": "src/server/shutdownHandler.js",
+      "loc": 227,
+      "classes": [],
+      "exports": [
+        {
+          "name": "createShutdownHandler",
+          "type": "function",
+          "jsdoc": "/**\n* Creates a graceful shutdown lifecycle handler for the server process.\n* @param {Object} options Options containing all server references\n* @returns {Function} Async function that triggers graceful shutdown\n*/",
+          "line": 9
+        }
+      ],
+      "fileOverview": "/**\n* Creates a graceful shutdown lifecycle handler for the server process.\n* @param {Object} options Options containing all server references\n* @returns {Function} Async function that triggers graceful shutdown\n*/",
+      "testFile": "src/server/shutdownHandler.test.js",
+      "testCasesCount": 4,
       "referencingSpecs": [],
       "missingJsDocSymbols": []
     },

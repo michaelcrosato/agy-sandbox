@@ -132,6 +132,7 @@ excludes `node_modules/`) and `.aiignore`. Full operating rules: `../../AGENTS.m
 | Broadcasts the current room world state to all connected clients. | [`src/server/roomBroadcast.js`](file:///C:/dev/agy-sandbox/src/server/roomBroadcast.js) | no | yes |
 | Sweeps room instances and reaps idle custom sectors. | [`src/server/roomGc.js`](file:///C:/dev/agy-sandbox/src/server/roomGc.js) | no | yes |
 | roomLifecycle (spec 007) — pure room-lifecycle decisions extracted from the server: whether an idle non-public room should be garbage-collected, and how a player nickname is sanitized. | [`src/server/roomLifecycle.js`](file:///C:/dev/agy-sandbox/src/server/roomLifecycle.js) | no | yes |
+| Creates a graceful shutdown lifecycle handler for the server process. | [`src/server/shutdownHandler.js`](file:///C:/dev/agy-sandbox/src/server/shutdownHandler.js) | no | yes |
 | Handles accepting a dynamic generative mission. | [`src/server/spaceportMissionHandlers.js`](file:///C:/dev/agy-sandbox/src/server/spaceportMissionHandlers.js) | no | yes |
 | Handles "squad_invite", "squad_join", and "squad_leave" WebSocket messages. | [`src/server/squadHandlers.js`](file:///C:/dev/agy-sandbox/src/server/squadHandlers.js) | no | yes |
 | SquadManager — manages co-op player party squads (SPEC-059). | [`src/server/SquadManager.js`](file:///C:/dev/agy-sandbox/src/server/SquadManager.js) | no | yes |

@@ -42,10 +42,8 @@ import {
 import { verifyWebSocketClient as verifyWebSocketClientExt } from "./server/verifyWebSocketClient.js";
 import { processMatchmakingQueueForRoom as processMatchmakingQueueForRoomExt } from "./server/matchmakingQueueProcessor.js";
 import { processPhysicsTickForRoom } from "./server/physicsTickProcessor.js";
-import {
-  startPeriodicIntervals,
-  stopPeriodicIntervals,
-} from "./server/periodicIntervals.js";
+import { startPeriodicIntervals } from "./server/periodicIntervals.js";
+import { createShutdownHandler } from "./server/shutdownHandler.js";
 import { buildStatsPayload } from "./net/statsPayload.js";
 import {
   createClientObject,
@@ -463,135 +461,25 @@ wss.on("connection", (ws, req) => {
 
 let activeTunnel = null;
 
-const shutdown = async () => {
-  console.log("\n🔌 Shutting down server gracefully...");
-  latencyMonitor.stop();
-  sandboxTelemetry.stop();
-  memoryLeakSentry.stop();
-  resourceLimiter.stop();
-  if (configWatcher) {
-    try {
-      configWatcher.stop();
-      console.log("🛑 Configuration watcher closed.");
-    } catch (e) {
-      console.error("Error stopping config watcher:", e.message);
-    }
-  }
-
-  // Clear all heartbeat and simulation intervals immediately to prevent race conditions during teardown (spec 019f)
-  clearInterval(physicsInterval);
-  stopPeriodicIntervals(periodicIntervalHandles);
-
-  // Graceful Drain (spec 019f)
-  if (WORKERS > 1) {
-    console.log(
-      "🌊 Gracefully draining worker presence and transferring rooms...",
-    );
-    try {
-      const registry = await loadRegistry();
-      const activeNodes = [];
-      for (let i = 0; i < WORKERS; i++) {
-        activeNodes.push(`node-${i}`);
-      }
-      const drainingNodeId = `node-${SHARD_INDEX}`;
-      const targets = activeNodes.filter((id) => id !== drainingNodeId);
-
-      if (targets.length > 0) {
-        const rooms = Array.from(instances.keys());
-        if (rooms.length > 0) {
-          console.log(
-            `🌊 Graceful drain: transferring ${rooms.length} room(s) to peers.`,
-          );
-          for (const roomId of rooms) {
-            const idx = assignShard(roomId, targets.length);
-            const toNode = targets[idx];
-            const room = instances.get(roomId);
-            if (room) {
-              // 1. Save room galaxy state
-              await persistenceManager.saveGalaxy(roomId, room);
-
-              // 2. Transfer registry ownership with a 10s lease
-              registry.transfer(
-                roomId,
-                drainingNodeId,
-                toNode,
-                Date.now() + 10000,
-              );
-
-              // 3. Notify clients in this room to reconnect
-              for (const client of room.clients.values()) {
-                client.send({
-                  type: "reconnect",
-                  message:
-                    "Server is restarting, reconnecting to new sector host...",
-                });
-                // Forcefully close the connection shortly after to trigger reconnect
-                setTimeout(() => {
-                  try {
-                    client.ws.close();
-                  } catch {
-                    // Ignore socket close errors
-                  }
-                }, 100);
-              }
-            }
-          }
-          await saveRegistry(registry);
-        }
-      }
-    } catch (err) {
-      console.error(`⚠️ Graceful drain failed: ${err.message}`);
-    }
-  }
-
-  // Snapshot the world (and every connected pilot) to disk before tearing
-  // down. The manager swallows errors so a flaky filesystem still lets us
-  // proceed with the WS/HTTP teardown.
-  persistenceManager.stopAutosave();
-  try {
-    const savedRooms = await persistenceManager.saveAllGalaxies(
-      instances.values(),
-    );
-    console.log(`💾 Persisted ${savedRooms} galaxy snapshot(s).`);
-    let savedPlayers = 0;
-    for (const client of clients.values()) {
-      if (!client || !client.id || !client.ship) continue;
-      const ok = await persistenceManager.savePlayer(
-        client.id,
-        client,
-        client.roomId,
-      );
-      if (ok) savedPlayers++;
-    }
-    if (savedPlayers > 0) {
-      console.log(`💾 Persisted ${savedPlayers} active player session(s).`);
-    }
-  } catch (e) {
-    console.error("Persistence flush during shutdown failed:", e.message);
-  }
-
-  if (activeTunnel) {
-    try {
-      activeTunnel.close();
-      console.log("🛑 Localtunnel closed.");
-    } catch (e) {
-      console.error("Error closing localtunnel:", e.message);
-    }
-  }
-  wss.close(() => {
-    console.log("🛑 WebSocket server closed.");
-    server.close(() => {
-      console.log("🛑 HTTP server closed.");
-      process.exit(0);
-    });
-  });
-
-  // Force close after 2 seconds
-  setTimeout(() => {
-    console.log("⚠️ Forcing shutdown after timeout...");
-    process.exit(1);
-  }, 2000);
-};
+const shutdown = createShutdownHandler({
+  latencyMonitor,
+  sandboxTelemetry,
+  memoryLeakSentry,
+  resourceLimiter,
+  getConfigWatcher: () => configWatcher,
+  physicsInterval,
+  getPeriodicIntervalHandles: () => periodicIntervalHandles,
+  loadRegistry,
+  saveRegistry,
+  instances,
+  persistenceManager,
+  clients,
+  getActiveTunnel: () => activeTunnel,
+  wss,
+  server,
+  workers: WORKERS,
+  shardIndex: SHARD_INDEX,
+});
 
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);

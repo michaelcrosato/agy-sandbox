@@ -44,6 +44,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-20T08:18 · iter-0179 · GREEN · shutdown-handler-modularized-tested
+
+- **Baseline:** `e776e2c` on `chore/agent-cleaner`; working tree modified.
+- **Move:** Decompose the graceful server shutdown and teardown flow from the server monolith into a dedicated, unit-tested module.
+- **Changed:**
+  - Created `src/server/shutdownHandler.js` to handle telemetry stopping, interval clearing, room draining, state saving, and server close sequence.
+  - Refactored `src/server.js` to delegate process interrupt listeners to the modular shutdown handler.
+  - Authored a comprehensive unit test suite in `src/server/shutdownHandler.test.js` validating teardown sequences, multi-worker registry transfers, and watchdogs.
+- **Decisions:** none.
+- **Validation:** `npm run agent:check` completed successfully with 1,538 Jest and 94 Vitest tests passing green.
+- **Next:** Continue decomposing connection handlers or websocket lifecycle loops in server.js.
+
+
 ## 2026-06-20T08:14 · iter-0178 · GREEN · physics-tick-processor-modularized-tested
 
 - **Baseline:** `e9d5cb8` on `chore/agent-cleaner`; working tree modified.

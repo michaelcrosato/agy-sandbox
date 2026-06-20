@@ -44,6 +44,21 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
 
+## 2026-06-20T05:07 · iter-0165 · GREEN · cockpit-audio-synthesizer-implemented
+
+- **Baseline:** `3b16bc3` on `chore/agent-cleaner`; all tests green.
+- **Move:** Implement a pure JavaScript cockpit sound effects synthesizer utilizing Web Audio API with stereo panning, proximity volume decay, and local storage toggle persistence.
+- **Changed:**
+  - Designed and implemented `src/client/audio/SoundEngine.js` programmatically synthesizing thruster engines, laser fire, shield/armor impacts, stargate warp jumps, and repeating low-shield sirens.
+  - Added spatial stereo panning and linear distance-based volume decay relative to the player's coordinate.
+  - Added a golden-glassmorphic Audio Toggle sidebar HUD button to `index.html` styled in `index.css` with persistent local storage.
+  - Created a comprehensive Vitest unit test suite in `src/client/__tests/SoundEngine.test.js`.
+  - Cleaned up ESLint warning in `src/net/GuestRunnerWorker.test.js`.
+- **Decisions:** Synthesizer runs programmatically to prevent binary asset loading latency and memory overhead.
+- **Validation:** Executed `npm run agent:check` confirming all 1463 Jest tests and 89 Vitest tests pass 100% green.
+- **Next:** Refine thruster pitch modulations or introduce additional dynamic soundscape oscillators.
+
+
 ## 2026-06-19T03:12 · iter-0164 · GREEN · spec-template-and-linter-integrated
 
 - **Baseline:** `38719cd` on `develop`; all test suites passing.

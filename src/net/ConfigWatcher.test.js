@@ -1,12 +1,14 @@
 import fs from "fs";
 import path from "path";
+import os from "os";
 import { ConfigWatcher } from "./ConfigWatcher.js";
 import { ApiRateLimiter } from "./ApiRateLimiter.js";
 import { SandboxFirewall } from "./SandboxFirewall.js";
 
 describe("ConfigWatcher", () => {
-  const testConfigPath = path.resolve(
-    "C:\\dev\\agy-sandbox\\src\\net\\config_test_temp.json",
+  const testConfigPath = path.join(
+    os.tmpdir(),
+    `config_test_temp_${process.pid}.json`,
   );
 
   // Helper to write JSON config helper

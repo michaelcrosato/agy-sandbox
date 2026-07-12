@@ -1,7 +1,10 @@
-import { Worker } from "worker_threads";
 import http from "http";
 import fs from "fs";
 import path from "path";
+import {
+  bootGameServerWorker,
+  stopGameServerWorker,
+} from "./testSupport/integrationHarness.js";
 
 /**
  * Reads a file synchronously with retries on lock contention.
@@ -67,6 +70,7 @@ function writeFileSyncWithRetry(
 describe("Dynamic Egress Firewall Admin HTTP Integration Tests (SPEC-137)", () => {
   let worker;
   const port = 18194;
+  const persistenceDir = "./data-test-firewall-admin";
   let originalConfigContent = "";
   const configPath = path.resolve("plan/config.json");
 
@@ -74,16 +78,6 @@ describe("Dynamic Egress Firewall Admin HTTP Integration Tests (SPEC-137)", () =
     // Backup original config.json content
     if (fs.existsSync(configPath)) {
       originalConfigContent = readFileSyncWithRetry(configPath, "utf-8");
-    }
-
-    // Purge test directories
-    try {
-      fs.rmSync("./data-test-firewall-admin", {
-        recursive: true,
-        force: true,
-      });
-    } catch {
-      // ignore
     }
 
     // Ensure codex.json exists
@@ -97,39 +91,16 @@ describe("Dynamic Egress Firewall Admin HTTP Integration Tests (SPEC-137)", () =
     }
 
     // Boot Worker on custom port
-    worker = new Worker(new URL("../server.js", import.meta.url), {
-      env: {
-        NODE_ENV: "test",
-        PORT: String(port),
-        SHARD_INDEX: "0",
-        WORKERS: "1",
-        PERSISTENCE_DIR: "./data-test-firewall-admin",
-      },
-    });
-
-    // Wait for the worker to bind to the port
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-  });
+    worker = await bootGameServerWorker({ port, persistenceDir });
+  }, 25000);
 
   afterAll(async () => {
-    // Terminate worker
-    if (worker) {
-      await worker.terminate();
-    }
+    // Terminate worker & clean up test directories
+    await stopGameServerWorker(worker, persistenceDir);
 
     // Restore original config.json
     if (originalConfigContent) {
       writeFileSyncWithRetry(configPath, originalConfigContent, "utf-8");
-    }
-
-    // Clean up test directories
-    try {
-      fs.rmSync("./data-test-firewall-admin", {
-        recursive: true,
-        force: true,
-      });
-    } catch {
-      // ignore
     }
   });
 

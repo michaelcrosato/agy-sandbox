@@ -19,7 +19,6 @@ export function createShutdownHandler({
   instances,
   persistenceManager,
   clients,
-  getActiveTunnel,
   wss,
   server,
   workers,
@@ -178,16 +177,6 @@ export function createShutdownHandler({
         }
       } catch (e) {
         console.error("Persistence flush during shutdown failed:", e.message);
-      }
-    }
-
-    const activeTunnel = getActiveTunnel ? getActiveTunnel() : null;
-    if (activeTunnel && typeof activeTunnel.close === "function") {
-      try {
-        activeTunnel.close();
-        console.log("🛑 Localtunnel closed.");
-      } catch (e) {
-        console.error("Error closing localtunnel:", e.message);
       }
     }
 

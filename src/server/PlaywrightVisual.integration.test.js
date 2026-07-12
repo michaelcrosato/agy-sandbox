@@ -1,8 +1,11 @@
-import { Worker } from "worker_threads";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { chromium } from "playwright";
+import {
+  bootGameServerWorker,
+  stopGameServerWorker,
+} from "./testSupport/integrationHarness.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,6 +16,7 @@ describe("Golden Visual E2E Playwright Automation & UI Telemetry Regression Guar
   let worker;
   let browser;
   const port = 18299;
+  const persistenceDir = "./data-test-playwright-visual";
 
   beforeAll(async () => {
     // Ensure recordings directory exists
@@ -20,41 +24,18 @@ describe("Golden Visual E2E Playwright Automation & UI Telemetry Regression Guar
       fs.mkdirSync(RECORDINGS_DIR, { recursive: true });
     }
 
-    // Purge test directories
-    try {
-      fs.rmSync("./data-test-playwright-visual", {
-        recursive: true,
-        force: true,
-      });
-    } catch {
-      // ignore
-    }
-
     // Boot Server Worker on custom port
-    worker = new Worker(new URL("../server.js", import.meta.url), {
-      env: {
-        NODE_ENV: "test",
-        PORT: String(port),
-        SHARD_INDEX: "0",
-        WORKERS: "1",
-        PERSISTENCE_DIR: "./data-test-playwright-visual",
-      },
-    });
-
-    // Wait for the worker to bind to the port
-    await new Promise((resolve) => setTimeout(resolve, 2500));
+    worker = await bootGameServerWorker({ port, persistenceDir });
 
     // Launch headless Playwright Chromium instance
     browser = await chromium.launch({ headless: true });
-  }, 10000);
+  }, 30000);
 
   afterAll(async () => {
     if (browser) {
       await browser.close();
     }
-    if (worker) {
-      await worker.terminate();
-    }
+    await stopGameServerWorker(worker, persistenceDir);
   });
 
   const captureDashboardPage = async (pageFilename, pathSegment) => {

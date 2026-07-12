@@ -1,41 +1,21 @@
-import { Worker } from "worker_threads";
 import WebSocket from "ws";
-import fs from "fs";
+import {
+  bootGameServerWorker,
+  stopGameServerWorker,
+} from "./testSupport/integrationHarness.js";
 
 describe("WebSocket Schema Validation Integration Tests (SPEC-089)", () => {
   let worker;
   const port = 18195;
+  const persistenceDir = "./data-test-validation";
 
   beforeAll(async () => {
-    // Purge test directories to avoid leftover registry or sector files
-    try {
-      fs.rmSync("./data-test-validation", { recursive: true, force: true });
-    } catch {
-      // ignore
-    }
-
     // Boot the game server Worker on a dedicated port
-    worker = new Worker(new URL("../server.js", import.meta.url), {
-      env: {
-        NODE_ENV: "test",
-        PORT: String(port),
-        SHARD_INDEX: "0",
-        WORKERS: "1",
-        PERSISTENCE_DIR: "./data-test-validation",
-      },
-    });
-
-    // Wait for the server to start and bind
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-  });
+    worker = await bootGameServerWorker({ port, persistenceDir });
+  }, 25000);
 
   afterAll(async () => {
-    await worker.terminate();
-    try {
-      fs.rmSync("./data-test-validation", { recursive: true, force: true });
-    } catch {
-      // ignore
-    }
+    await stopGameServerWorker(worker, persistenceDir);
   });
 
   test("accepts valid join_room message and returns standard response", () => {

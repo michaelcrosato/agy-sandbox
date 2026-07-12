@@ -559,10 +559,9 @@ excludes \`node_modules/\`) and \`.aiignore\`. Full operating rules: \`../../AGE
 
 | What | File | Notes |
 | --- | --- | --- |
-| **Game server** (authoritative) | \`src/server.js\` | Node \`ws\` + static HTTP on \`:8080\`. ~1900 lines, **not unit-tested**, organized by lettered section headers (e.g. "J. Authoritative World State Broadcast"). Read the section you need. |
-| **Browser client** bootstrap | \`src/main.js\` | Loaded by \`index.html\`; wires engine + \`src/client/*\`. Not unit-tested. |
+| **Game server** (authoritative) | \`src/server.js\` | Composition root: Node \`ws\` + static HTTP on \`:8080\`. Wires the tested modules under \`src/server/\`; covered by the \`src/server/*.integration.test.js\` suites. |
+| **Browser client** bootstrap | \`src/main.js\` | Loaded by \`index.html\`; wires engine + \`src/client/*\`. Client units are tested under \`src/client/__tests__/\` (Vitest). |
 | **Page shell** | \`index.html\`, \`index.css\` | DOM/HUD the client renders into. |
-| \`package.json\` \`main\` | \`src/index.js\` | ⚠️ A demo stub (\`add\`/\`subtract\`/\`greet\`) — **not** a real entry point. Don't be misled. |
 
 ## Core product logic — \`src/\` (this is what you improve)
 
@@ -583,7 +582,7 @@ excludes \`node_modules/\`) and \`.aiignore\`. Full operating rules: \`../../AGE
         ? "no"
         : "yes";
     const tested = f.testFile ? "yes" : "no";
-    const pathLink = `[\`${f.path}\`](file:///${WORKSPACE_ROOT.replace(/\\/g, "/")}/${f.path})`;
+    const pathLink = `[\`${f.path}\`](../../${f.path})`;
     md += `| ${area} | ${pathLink} | ${pure} | ${tested} |\n`;
   }
 
@@ -596,7 +595,7 @@ as \`*.test.js\`.
 
 - \`package.json\` — scripts (\`test\`, \`lint\`, \`format\`, \`format:check\`, \`agent:bootstrap\`, \`agent:check\`), deps.
 - \`eslint.config.js\` — flat config; \`no-unused-vars: warn\`; globals node+jest+browser.
-- \`.github/workflows/ci.yml\` — the gate of record: prettier **--check** → eslint → jest on push/PR to \`main\`.
+- \`.github/workflows/ci.yml\` — the gate of record on push/PR to \`main\`/\`develop\`: substrate verify → prettier **--check** → eslint → typecheck → jest (Node 22/24/26 matrix) + Vitest client job.
 - \`scripts/agent/*.{sh,ps1}\` — agent-facing wrappers; \`check\` mirrors CI exactly.
 - \`.env.example\` — runtime/automation env vars (copy to \`.env\`, which is gitignored).
 

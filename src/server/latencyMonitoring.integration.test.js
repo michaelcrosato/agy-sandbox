@@ -1,46 +1,27 @@
-import { Worker } from "worker_threads";
 import http from "http";
-import fs from "fs";
 import { ProcessReaper } from "../net/ProcessReaper.js";
+import {
+  bootGameServerWorker,
+  stopGameServerWorker,
+} from "./testSupport/integrationHarness.js";
 
 describe("Event-Loop Latency Monitoring Integration Tests (SPEC-090)", () => {
   let worker;
   const port = 18196;
+  const persistenceDir = "./data-test-latency";
 
   beforeAll(async () => {
-    // Clean up any old test persistence dir
-    try {
-      fs.rmSync("./data-test-latency", { recursive: true, force: true });
-    } catch {
-      // ignore
-    }
-
     // Boot the game server Worker on dedicated port 18196
-    worker = new Worker(new URL("../server.js", import.meta.url), {
-      env: {
-        NODE_ENV: "test",
-        PORT: String(port),
-        SHARD_INDEX: "0",
-        WORKERS: "1",
-        PERSISTENCE_DIR: "./data-test-latency",
-      },
-    });
+    worker = await bootGameServerWorker({ port, persistenceDir });
 
     // Register worker with the ProcessReaper for clean teardown safety (SPEC-092)
     ProcessReaper.registerWorker(worker);
-
-    // Wait for the server to bind and start
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-  });
+  }, 25000);
 
   afterAll(async () => {
     // Terminate worker & reap process resources cleanly
     await ProcessReaper.reap();
-    try {
-      fs.rmSync("./data-test-latency", { recursive: true, force: true });
-    } catch {
-      // ignore
-    }
+    await stopGameServerWorker(worker, persistenceDir);
   });
 
   test("metrics endpoint exposes event loop latency and status", () => {

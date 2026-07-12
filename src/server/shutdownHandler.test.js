@@ -21,7 +21,6 @@ describe("shutdownHandler", () => {
   let serverMock;
   let persistenceManagerMock;
   let configWatcherMock;
-  let activeTunnelMock;
   let clientsMock;
   let instancesMock;
 
@@ -44,9 +43,6 @@ describe("shutdownHandler", () => {
     };
     configWatcherMock = {
       stop: jest.fn(),
-    };
-    activeTunnelMock = {
-      close: jest.fn(),
     };
     clientsMock = new Map([
       [
@@ -90,7 +86,6 @@ describe("shutdownHandler", () => {
       instances: instancesMock,
       persistenceManager: persistenceManagerMock,
       clients: clientsMock,
-      getActiveTunnel: () => activeTunnelMock,
       wss: wssMock,
       server: serverMock,
       workers: 1,
@@ -128,9 +123,6 @@ describe("shutdownHandler", () => {
       expect.any(Object),
       "room-1",
     );
-
-    // Active tunnel close
-    expect(activeTunnelMock.close).toHaveBeenCalled();
 
     // WSS and HTTP server closes
     expect(wssMock.close).toHaveBeenCalled();

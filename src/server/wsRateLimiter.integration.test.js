@@ -1,58 +1,57 @@
-import { Worker } from "worker_threads";
 import WebSocket from "ws";
-import fs from "fs";
+import {
+  bootGameServerWorker,
+  stopGameServerWorker,
+} from "./testSupport/integrationHarness.js";
 
 describe("WebSocket Rate Limiter Integration Tests (SPEC-117)", () => {
   let worker;
   const port = 18205;
+  const persistenceDir = "./data-test-ratelimiter";
 
   beforeAll(async () => {
-    try {
-      fs.rmSync("./data-test-ratelimiter", { recursive: true, force: true });
-    } catch {
-      // ignore
-    }
-
-    // Boot the game server Worker on a dedicated port
-    worker = new Worker(new URL("../server.js", import.meta.url), {
-      env: {
-        NODE_ENV: "test",
-        PORT: String(port),
-        SHARD_INDEX: "0",
-        WORKERS: "1",
-        PERSISTENCE_DIR: "./data-test-ratelimiter",
-      },
-    });
-
-    // Wait for the server to start and bind
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-  });
+    worker = await bootGameServerWorker({ port, persistenceDir });
+  }, 25000);
 
   afterAll(async () => {
-    await worker.terminate();
-    try {
-      fs.rmSync("./data-test-ratelimiter", { recursive: true, force: true });
-    } catch {
-      // ignore
-    }
+    await stopGameServerWorker(worker, persistenceDir);
   });
 
   test("enforces the 100 msgs/sec rate limit by returning rate_limit_exceeded", () => {
     return new Promise((resolve, reject) => {
       const ws = new WebSocket(`ws://localhost:${port}`);
-      let rateLimitWarningReceived = false;
+      let floodInterval = null;
+      let safetyTimer = null;
+      let settled = false;
+
+      const finish = (err) => {
+        if (settled) return;
+        settled = true;
+        clearInterval(floodInterval);
+        clearTimeout(safetyTimer);
+        try {
+          ws.close();
+        } catch {
+          // ignore close errors during teardown
+        }
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      };
 
       ws.on("open", () => {
-        // Send a burst of 110 messages. Since the bucket holds max 100, the last 10 should hit the limit.
-        for (let i = 0; i < 110; i++) {
-          ws.send(
-            JSON.stringify({
-              type: "join_room",
-              roomId: "public",
-              nickname: "FloodClient",
-            }),
-          );
-        }
+        // Sustain a flood far above the 100 msgs/sec token-refill rate so the
+        // limiter must trip no matter how the event loop schedules the reads.
+        // The payload is deliberately invalid JSON: the limiter consumes a
+        // token before parsing, and the server drops the message silently, so
+        // the flood does not amplify into response traffic.
+        floodInterval = setInterval(() => {
+          for (let i = 0; i < 50 && ws.readyState === WebSocket.OPEN; i++) {
+            ws.send("flood");
+          }
+        }, 20);
       });
 
       ws.on("message", (data) => {
@@ -64,25 +63,17 @@ describe("WebSocket Rate Limiter Integration Tests (SPEC-117)", () => {
         }
 
         if (msg.type === "rate_limit_exceeded") {
-          rateLimitWarningReceived = true;
-          ws.close();
-          resolve();
+          finish();
         }
       });
 
       ws.on("error", (err) => {
-        reject(err);
+        finish(err);
       });
 
-      // Timeout safety
-      setTimeout(() => {
-        ws.close();
-        if (rateLimitWarningReceived) {
-          resolve();
-        } else {
-          reject(new Error("Rate limit exceeded message was never received"));
-        }
-      }, 10000);
+      safetyTimer = setTimeout(() => {
+        finish(new Error("Rate limit exceeded message was never received"));
+      }, 12000);
     });
-  }, 15000);
+  }, 20000);
 });

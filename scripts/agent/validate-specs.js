@@ -8,25 +8,37 @@ export class SpecLinter {
     this.workspaceRoot = workspaceRoot;
     this.specsDir = path.join(workspaceRoot, "plan/specs");
     this.progressFile = path.join(workspaceRoot, "plan/PROGRESS.md");
+    this.progressArchiveDir = path.join(workspaceRoot, "plan/archive");
   }
 
-  // Parse progress file to collect all defined spec indices
+  // Parse the live progress file plus any archived ledgers to collect all
+  // registered spec indices. Completed waves rotate into plan/archive/ so the
+  // live queue stays compact; archived checkboxes still count as registered.
   parseProgressIndices() {
-    if (!fs.existsSync(this.progressFile)) {
-      return [];
+    const ledgers = [];
+    if (fs.existsSync(this.progressFile)) {
+      ledgers.push(this.progressFile);
     }
-    const content = fs.readFileSync(this.progressFile, "utf8");
-    const lines = content.split(/\r?\n/);
-    const indices = [];
+    if (fs.existsSync(this.progressArchiveDir)) {
+      for (const entry of fs.readdirSync(this.progressArchiveDir)) {
+        if (/^PROGRESS.*\.md$/i.test(entry)) {
+          ledgers.push(path.join(this.progressArchiveDir, entry));
+        }
+      }
+    }
 
+    const indices = [];
     // Match lines like: - [x] `103` ...
     // or - [ ] `019a` ...
     const progressRegex = /^-\s+\[[ x/]\]\s+`([a-z0-9_-]+)`/i;
 
-    for (const line of lines) {
-      const match = progressRegex.exec(line.trim());
-      if (match) {
-        indices.push(match[1]);
+    for (const ledger of ledgers) {
+      const content = fs.readFileSync(ledger, "utf8");
+      for (const line of content.split(/\r?\n/)) {
+        const match = progressRegex.exec(line.trim());
+        if (match) {
+          indices.push(match[1]);
+        }
       }
     }
     return indices;

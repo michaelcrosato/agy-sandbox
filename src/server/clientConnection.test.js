@@ -47,14 +47,33 @@ describe("clientConnection", () => {
       expect(client.rateLimitTokens).toBe(100);
     });
 
-    test("should extract client IP from x-forwarded-for header with priority", () => {
+    test("should ignore spoofable x-forwarded-for by default and use the socket peer", () => {
       const req = {
         headers: {
           "x-forwarded-for": "1.2.3.4, 5.6.7.8",
         },
+        socket: {
+          remoteAddress: "203.0.113.7",
+        },
       };
       const client = createClientObject(ws, req, options);
-      expect(client.ip).toBe("1.2.3.4");
+      expect(client.ip).toBe("203.0.113.7");
+    });
+
+    test("should honor x-forwarded-for only when TRUST_PROXY is enabled", () => {
+      const prev = process.env.TRUST_PROXY;
+      process.env.TRUST_PROXY = "1";
+      try {
+        const req = {
+          headers: { "x-forwarded-for": "1.2.3.4, 5.6.7.8" },
+          socket: { remoteAddress: "203.0.113.7" },
+        };
+        const client = createClientObject(ws, req, options);
+        expect(client.ip).toBe("1.2.3.4");
+      } finally {
+        if (prev === undefined) delete process.env.TRUST_PROXY;
+        else process.env.TRUST_PROXY = prev;
+      }
     });
 
     test("should fallback client IP to socket remote address", () => {

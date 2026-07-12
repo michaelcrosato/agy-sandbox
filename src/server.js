@@ -2,7 +2,6 @@ import http from "http";
 import path from "path";
 import { fileURLToPath } from "url";
 import { WebSocketServer } from "ws";
-import { exec } from "child_process";
 
 import { registerMissionSpawnHandlers } from "./server/missionSpawnHandlers.js";
 
@@ -394,8 +393,6 @@ wss.on("connection", (ws, req) => {
   });
 });
 
-let activeTunnel = null;
-
 const shutdown = createShutdownHandler({
   latencyMonitor,
   sandboxTelemetry,
@@ -409,7 +406,6 @@ const shutdown = createShutdownHandler({
   instances,
   persistenceManager,
   clients,
-  getActiveTunnel: () => activeTunnel,
   wss,
   server,
   workers: WORKERS,
@@ -525,43 +521,6 @@ export async function startServer({
         `================================================================`,
       );
 
-      // Programmatic localtunnel startup
-      if (
-        process.env.NODE_ENV !== "production" &&
-        process.env.NODE_ENV !== "test"
-      ) {
-        try {
-          const { default: localtunnel } = await import("localtunnel");
-          console.log(`📡 Spinning up optional localtunnel...`);
-          const tunnel = await localtunnel({ port: port });
-          activeTunnel = tunnel;
-          console.log(`🚀 Public Multiplayer URL: ${tunnel.url}`);
-
-          exec(`echo ${tunnel.url} | clip`, (err) => {
-            if (!err) {
-              console.log(
-                "📋 Public URL successfully copied to clipboard! Share it (Ctrl+V) with friends.",
-              );
-            } else {
-              console.log("Could not copy URL to clipboard automatically.");
-            }
-          });
-
-          tunnel.on("error", (err) => {
-            console.error("⚠️ Localtunnel error encountered:", err.message);
-          });
-
-          tunnel.on("close", () => {
-            console.log("Localtunnel connection closed.");
-          });
-        } catch (e) {
-          console.log(
-            `ℹ️  Public tunnel unavailable (${e.message}). localtunnel is optional — ` +
-              `install it with \`npm i localtunnel\`, or share your game with ` +
-              `\`cloudflared tunnel --url http://localhost:${port}\`.`,
-          );
-        }
-      }
       resolve(server);
     });
   });
@@ -591,5 +550,3 @@ if (isMain) {
     });
   }
 }
-
-// MOCK DRY RUN ACTIVE - 1780988042019

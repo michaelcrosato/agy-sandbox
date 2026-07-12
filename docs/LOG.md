@@ -43,6 +43,19 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - Entries **SHOULD** target 150–350 words, and **MUST NOT** exceed 500 words unless labeled an `INCIDENT` or `ROLLBACK`.
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
+## 2026-07-12T21:20 · iter-0184 · GREEN · repository-overhaul-and-security-hardening
+
+- **Baseline:** `ce62e39` on `develop`; production-readiness overhaul of the full repo.
+- **Move:** Bring the repository to a coherent, secure, documented, production-ready state a new developer can clone, build, test, run, and extend from the docs alone.
+- **Changed:**
+  - Security: added `src/net/httpSecurity.js` (+tests) and gated `/api/sandbox/execute`, `/api/sandbox/kill`, `/api/firewall/rules` behind a loopback-or-`ADMIN_TOKEN` check; allowlisted static serving so `.env`/`.git`/config/`data` are refused; capped admin request bodies; stopped trusting spoofable `X-Forwarded-For` unless `TRUST_PROXY`; sanitized room `mode`/`tags` server-side (stored-XSS fix); `/api/sandbox/kill` now only reaps GuestRunner-spawned PIDs.
+  - Reliability: replaced fixed integration boot sleeps with a readiness-polling harness (`src/server/testSupport/integrationHarness.js`) across 12 suites; made the SPEC-117 rate-limiter test flood continuously (fixes the Node-26 CI flake); removed the broken optional localtunnel path.
+  - Cleanup: deleted dead modules (`src/index.js`, `ShardedStore`, `DeltaStateCodec`, `SchemaCodec`, `NetworkLatencyInjector`, `EphemeralSandbox`, `MainThreadWatchdog` trio, client `Reconciler`); merged `src/client/__tests` into `__tests__`; un-tracked generated artifacts; archived historical plan ledgers; removed stale one-off docs.
+  - Docs: rewrote `README.md`, `.env.example`, `AGENTS.md`/`ROADMAP.md` pointers, and the plan status files to match reality; `npm audit fix` cleared the js-yaml advisory.
+- **Decisions:** Loopback-or-token gate keeps local tooling and the test suite working without credentials while refusing remote callers by default; kept `/metrics` an unauthenticated read and documented it as a residual risk.
+- **Validation:** `npm run agent:check` green — 151 Jest suites / 1552 tests, 5 Vitest client files / 92 tests, lint + typecheck + format + substrate all pass; `npm audit` reports 0 vulnerabilities.
+- **Next:** Merge `develop` into `main`, delete the merged branch, and push.
+
 ## 2026-06-20T11:09 · iter-0183 · GREEN · redis-setup-modularized-tested
 
 - **Baseline:** `221862b` on `chore/agent-cleaner`; working tree modified.

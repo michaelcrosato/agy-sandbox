@@ -1,4 +1,5 @@
 import { isAllowedOrigin } from "../net/originPolicy.js";
+import { clientIpFromRequest, isProxyTrusted } from "../net/httpSecurity.js";
 
 /**
  * Validates WebSocket connection upgrades (URI length, payload length, allowed origins, flood sentry).
@@ -50,14 +51,11 @@ export function verifyWebSocketClient(
     return cb(false, 403, "Forbidden");
   }
 
-  // 4. Inbound Connection Flood Protection & Active IP Sentry
-  const ip = req
-    ? req.headers["x-forwarded-for"]
-      ? req.headers["x-forwarded-for"].split(",")[0].trim()
-      : req.socket
-        ? req.socket.remoteAddress
-        : "unknown"
-    : "unknown";
+  // 4. Inbound Connection Flood Protection & Active IP Sentry.
+  // X-Forwarded-For is spoofable unless the server is behind a trusted proxy,
+  // so it is only honored when TRUST_PROXY is set (else flood limits are
+  // trivially bypassed by rotating a fake header).
+  const ip = clientIpFromRequest(req, { trustProxy: isProxyTrusted() });
 
   const floodCheck = connectionFloodSentry.register(ip);
   if (!floodCheck.allowed) {

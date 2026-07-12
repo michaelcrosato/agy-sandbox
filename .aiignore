@@ -21,6 +21,13 @@ night-queue/          # local-only overnight task queue
 *.log
 npm-debug.log*
 
+# Generated artifacts (rebuild with `npm run codex:generate` / the test suites)
+plan/CODEX.md
+plan/codex.json
+plan/monitoring_report.json
+browser_recordings/
+plan/archive/         # historical ledgers; read only when investigating history
+
 # Secrets & local env (never read; use .env.example for the schema)
 .env
 .env.*

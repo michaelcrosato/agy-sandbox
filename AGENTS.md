@@ -32,7 +32,7 @@ The cross-platform verifier is `npm run agent:verify-substrate`. It reads `scrip
 7. `docs/ai/REPO_MAP.md` — where code and tests live.
 8. Top entries of `docs/LOG.md` — recent history only.
 
-`tickets/` is legacy history unless an explicit launch context says otherwise. The canonical queue is `plan/PROGRESS.md` + `plan/specs/`.
+The canonical queue is `plan/PROGRESS.md` + `plan/specs/`. Completed-wave history lives in `plan/archive/`.
 
 ## 2. Per-iteration loop
 

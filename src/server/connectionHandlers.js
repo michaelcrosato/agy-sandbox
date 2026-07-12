@@ -4,6 +4,38 @@ import { matchRoom } from "./matchmaking.js";
 import { assignShard } from "../net/roomRouter.js";
 
 /**
+ * Strips HTML/control characters and caps length on a free-text room field.
+ * `mode` and `tags` are surfaced verbatim into operator dashboards, so they
+ * must not carry markup that could execute when rendered (stored-XSS defense).
+ *
+ * @param {unknown} value
+ * @param {number} [maxLength=24]
+ * @returns {string}
+ */
+function sanitizeMetaField(value, maxLength = 24) {
+  if (typeof value !== "string") return "";
+  return value
+    .replace(/[<>&"'`\r\n\t\\/]/g, "")
+    .trim()
+    .slice(0, maxLength);
+}
+
+/**
+ * Sanitizes an array of tag strings, dropping empties and capping the count.
+ *
+ * @param {unknown} tags
+ * @param {number} [maxTags=8]
+ * @returns {string[]}
+ */
+function sanitizeTags(tags, maxTags = 8) {
+  if (!Array.isArray(tags)) return [];
+  return tags
+    .map((t) => sanitizeMetaField(t, 24))
+    .filter((t) => t.length > 0)
+    .slice(0, maxTags);
+}
+
+/**
  * Handles the "join", "quick_join", "create_room", and "join_room" WebSocket messages.
  *
  * @param {object} clientObj - The active client connection object.
@@ -147,9 +179,11 @@ export function handleConnectionAction(clientObj, msg, ws, options) {
       sendLobbyList(clientObj, instances);
     }
   } else if (msg.type === "quick_join") {
+    const cleanMode = sanitizeMetaField(msg.mode);
+    const cleanTags = sanitizeTags(msg.tags);
     const criteria = {
-      mode: msg.mode,
-      tags: Array.isArray(msg.tags) ? msg.tags : undefined,
+      mode: cleanMode || undefined,
+      tags: cleanTags.length ? cleanTags : undefined,
     };
     const roomsMeta = [];
     for (const r of instances.values()) roomsMeta.push(r.metadata());
@@ -174,9 +208,9 @@ export function handleConnectionAction(clientObj, msg, ws, options) {
         (msg.name || "Quick Match").trim().substring(0, 20) || "Quick Match",
       );
       created.chronicle = galacticChronicle;
-      if (typeof msg.mode === "string") created.mode = msg.mode;
+      if (cleanMode) created.mode = cleanMode;
       if (Number.isFinite(msg.maxPlayers)) created.maxPlayers = msg.maxPlayers;
-      if (Array.isArray(msg.tags)) created.tags = msg.tags;
+      if (cleanTags.length) created.tags = cleanTags;
       instances.set(qRoomId, created);
       joinRoom(clientObj, qRoomId, msg.nickname);
       broadcastLobbySync(instances, clients);

@@ -1,41 +1,21 @@
-import { Worker } from "worker_threads";
 import WebSocket from "ws";
-import fs from "fs";
+import {
+  bootGameServerWorker,
+  stopGameServerWorker,
+} from "./testSupport/integrationHarness.js";
 
 describe("Interactive Onboarding Tutorial Server-Side Rewards Integration Tests (SPEC-105)", () => {
   let worker;
   const port = 18200;
+  const persistenceDir = "./data-test-tutorial";
 
   beforeAll(async () => {
-    // Purge test directories to avoid leftover registry or sector files
-    try {
-      fs.rmSync("./data-test-tutorial", { recursive: true, force: true });
-    } catch {
-      // ignore
-    }
-
     // Boot the game server Worker on a dedicated port
-    worker = new Worker(new URL("../server.js", import.meta.url), {
-      env: {
-        NODE_ENV: "test",
-        PORT: String(port),
-        SHARD_INDEX: "0",
-        WORKERS: "1",
-        PERSISTENCE_DIR: "./data-test-tutorial",
-      },
-    });
-
-    // Wait for the server to start and bind
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-  });
+    worker = await bootGameServerWorker({ port, persistenceDir });
+  }, 25000);
 
   afterAll(async () => {
-    await worker.terminate();
-    try {
-      fs.rmSync("./data-test-tutorial", { recursive: true, force: true });
-    } catch {
-      // ignore
-    }
+    await stopGameServerWorker(worker, persistenceDir);
   });
 
   /**

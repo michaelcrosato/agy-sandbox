@@ -1,8 +1,8 @@
 {
   "name": "agy-sandbox",
   "version": "1.0.0",
-  "description": "Sandbox configured for maximum fully autonomous coding",
-  "main": "src/index.js",
+  "description": "Starfall: Living Galaxy — browser-native multiplayer space sim with an autonomous-engineering harness",
+  "main": "src/server.js",
   "type": "module",
   "engines": {
     "node": ">=22"

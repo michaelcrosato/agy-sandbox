@@ -9,11 +9,13 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, "../..");
 
 class MockReq extends EventEmitter {
-  constructor(method, url, bodyStr = null) {
+  constructor(method, url, { remoteAddress = "127.0.0.1", headers = {} } = {}) {
     super();
     this.method = method;
     this.url = url;
-    this.bodyStr = bodyStr;
+    this.headers = headers;
+    this.socket = { remoteAddress };
+    this.destroy = () => {};
   }
 }
 
@@ -336,14 +338,74 @@ describe("REST API Modular Handlers Unit & Integration Tests (SPEC-161)", () => 
     });
   });
 
-  test("Static file server rejects traversal boundary escapes with 403 Forbidden", () => {
+  test("Static file server refuses traversal boundary escapes", () => {
     const req = new MockReq("GET", "/../secrets.json");
     const res = createMockRes();
 
     handleRestRequest(req, res, mockOptions);
 
-    expect(res.statusCode).toBe(403);
-    expect(res.body.toString()).toBe("Forbidden");
+    expect(res.statusCode).toBe(404);
+    expect(res.body.toString()).toBe("Not Found");
+  });
+
+  test("Static file server refuses to serve secrets, VCS internals, and config", () => {
+    for (const target of [
+      "/.env",
+      "/.git/config",
+      "/package.json",
+      "/plan/config.json",
+      "/data/players.json",
+    ]) {
+      const req = new MockReq("GET", target);
+      const res = createMockRes();
+      handleRestRequest(req, res, mockOptions);
+      expect(res.statusCode).toBe(404);
+    }
+  });
+
+  test("admin endpoints reject non-loopback callers without a token", () => {
+    return new Promise((resolve, reject) => {
+      const req = new MockReq("POST", "/api/sandbox/execute", {
+        remoteAddress: "203.0.113.7",
+      });
+      const res = createMockRes();
+      res.onEnd = (body) => {
+        try {
+          expect(res.statusCode).toBe(403);
+          expect(JSON.parse(body.toString()).error).toContain("Forbidden");
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
+      };
+      handleRestRequest(req, res, mockOptions);
+    });
+  });
+
+  test("admin endpoints accept a non-loopback caller with a valid token", () => {
+    return new Promise((resolve, reject) => {
+      mockOptions.adminToken = "s3cret-token";
+      const req = new MockReq("POST", "/api/sandbox/execute", {
+        remoteAddress: "203.0.113.7",
+        headers: { "x-admin-token": "s3cret-token" },
+      });
+      const res = createMockRes();
+      res.onEnd = (body) => {
+        try {
+          // Passes the auth gate, then fails validation on the missing code.
+          expect(res.statusCode).toBe(400);
+          expect(JSON.parse(body.toString()).error).toContain(
+            "Code parameter is required",
+          );
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
+      };
+      handleRestRequest(req, res, mockOptions);
+      req.emit("data", Buffer.from(JSON.stringify({})));
+      req.emit("end");
+    });
   });
 
   test("Static file server handles non-existent files with 404 Not Found", () => {

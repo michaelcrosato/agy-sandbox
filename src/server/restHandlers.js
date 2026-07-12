@@ -13,10 +13,41 @@ import { validateMessage } from "../net/SchemaValidator.js";
 import { COMMODITIES_METADATA, SCHEMAS } from "../net/SchemaRegistry.js";
 import { buildLobbyRoomsList } from "./lobbySync.js";
 import { DynamicResourceGovernor } from "../net/DynamicResourceGovernor.js";
+import {
+  isAdminAuthorized,
+  readBodyWithLimit,
+  resolveStaticFile,
+} from "../net/httpSecurity.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DEFAULT_ROOT_DIR = path.resolve(__dirname, "../..");
+const MAX_ADMIN_BODY_BYTES = 256 * 1024;
+
+/**
+ * Writes a JSON response with the standard header set.
+ * @param {import("http").ServerResponse} res
+ * @param {number} code
+ * @param {object} obj
+ * @param {boolean} [cors=true] Whether to send the permissive CORS header.
+ */
+function sendJson(res, code, obj, cors = true) {
+  const headers = { "Content-Type": "application/json" };
+  if (cors) headers["Access-Control-Allow-Origin"] = "*";
+  res.writeHead(code, headers);
+  res.end(JSON.stringify(obj));
+}
+
+/**
+ * Rejects a request that failed the admin authorization gate.
+ * @param {import("http").ServerResponse} res
+ */
+function sendForbidden(res) {
+  sendJson(res, 403, {
+    error:
+      "Forbidden: administrative endpoints require a loopback caller or a valid X-Admin-Token header.",
+  });
+}
 
 /**
  * Reads a file synchronously with retries on lock contention.
@@ -93,6 +124,7 @@ function writeFileSyncWithRetry(
  * @param {number} options.SHARD_INDEX The current shard index.
  * @param {Object} options.wss The WebSocketServer instance.
  * @param {string} [options.ROOT_DIR] The optional repository root directory path.
+ * @param {string} [options.adminToken] Token gating admin/sandbox endpoints (defaults to ADMIN_TOKEN env).
  */
 export function handleRestRequest(req, res, options) {
   // Handle CORS OPTIONS preflight first to prevent GET endpoints from intercepting it
@@ -108,6 +140,7 @@ export function handleRestRequest(req, res, options) {
 
   const safeUrl = req.url.split("?")[0];
   const ROOT_DIR = options.ROOT_DIR || DEFAULT_ROOT_DIR;
+  const adminToken = options.adminToken ?? process.env.ADMIN_TOKEN;
 
   // Test only: Induce event loop lag to test backpressure shedding (SPEC-095)
   if (process.env.NODE_ENV === "test" && safeUrl === "/test/induce-lag") {
@@ -278,12 +311,12 @@ export function handleRestRequest(req, res, options) {
 
   // SPEC-137: Dynamic Egress Firewall Admin rules modification endpoint
   if (req.method === "POST" && safeUrl === "/api/firewall/rules") {
-    let body = "";
-    req.on("data", (chunk) => {
-      body += chunk;
-    });
-    req.on("end", () => {
-      try {
+    if (!isAdminAuthorized(req, { adminToken })) {
+      sendForbidden(res);
+      return;
+    }
+    readBodyWithLimit(req, MAX_ADMIN_BODY_BYTES)
+      .then((body) => {
         const payload = JSON.parse(body);
         if (!payload || typeof payload !== "object") {
           res.writeHead(400, {
@@ -392,22 +425,18 @@ export function handleRestRequest(req, res, options) {
             allowlistDomains: config.sandboxFirewall.allowlistDomains,
           }),
         );
-      } catch (err) {
+      })
+      .catch((err) => {
         if (err instanceof SyntaxError) {
-          res.writeHead(400, {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-          });
-          res.end(JSON.stringify({ error: "Invalid JSON payload" }));
+          sendJson(res, 400, { error: "Invalid JSON payload" });
           return;
         }
-        res.writeHead(500, {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        });
-        res.end(JSON.stringify({ error: err.message }));
-      }
-    });
+        if (err && err.code === "E_BODY_TOO_LARGE") {
+          sendJson(res, 413, { error: "Payload Too Large" });
+          return;
+        }
+        sendJson(res, 500, { error: err.message });
+      });
     return;
   }
 
@@ -513,13 +542,13 @@ export function handleRestRequest(req, res, options) {
 
   // SPEC-153: Secure Interactive Codex CLI sandbox command dispatcher
   if (req.method === "POST" && safeUrl === "/api/sandbox/execute") {
-    let body = "";
-    req.on("data", (chunk) => {
-      body += chunk;
-    });
-    req.on("end", async () => {
-      let tempFile = null;
-      try {
+    if (!isAdminAuthorized(req, { adminToken })) {
+      sendForbidden(res);
+      return;
+    }
+    let tempFile = null;
+    readBodyWithLimit(req, MAX_ADMIN_BODY_BYTES)
+      .then(async (body) => {
         const payload = JSON.parse(body);
         if (!payload || typeof payload !== "object") {
           res.writeHead(400, {
@@ -565,21 +594,19 @@ export function handleRestRequest(req, res, options) {
             error: result.error || null,
           }),
         );
-      } catch (err) {
+      })
+      .catch((err) => {
         if (err instanceof SyntaxError) {
-          res.writeHead(400, {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-          });
-          res.end(JSON.stringify({ error: "Invalid JSON payload" }));
+          sendJson(res, 400, { error: "Invalid JSON payload" });
           return;
         }
-        res.writeHead(500, {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        });
-        res.end(JSON.stringify({ error: err.message }));
-      } finally {
+        if (err && err.code === "E_BODY_TOO_LARGE") {
+          sendJson(res, 413, { error: "Payload Too Large" });
+          return;
+        }
+        sendJson(res, 500, { error: err.message });
+      })
+      .finally(() => {
         if (tempFile && fs.existsSync(tempFile)) {
           try {
             fs.unlinkSync(tempFile);
@@ -587,87 +614,70 @@ export function handleRestRequest(req, res, options) {
             // ignore cleanup failure
           }
         }
-      }
-    });
+      });
     return;
   }
 
   // SPEC-153: Secure Interactive Codex CLI sandbox process reaper termination trigger
   if (req.method === "POST" && safeUrl === "/api/sandbox/kill") {
-    let body = "";
-    req.on("data", (chunk) => {
-      body += chunk;
-    });
-    req.on("end", async () => {
-      try {
+    if (!isAdminAuthorized(req, { adminToken })) {
+      sendForbidden(res);
+      return;
+    }
+    readBodyWithLimit(req, MAX_ADMIN_BODY_BYTES)
+      .then(async (body) => {
         const payload = JSON.parse(body);
         if (!payload || typeof payload !== "object") {
-          res.writeHead(400, {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-          });
-          res.end(JSON.stringify({ error: "Invalid JSON payload" }));
+          sendJson(res, 400, { error: "Invalid JSON payload" });
           return;
         }
 
         const { pid } = payload;
         const numericPid = parseInt(String(pid), 10);
         if (isNaN(numericPid) || numericPid <= 0) {
-          res.writeHead(400, {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
+          sendJson(res, 400, { error: "Valid PID parameter is required" });
+          return;
+        }
+
+        // Only reap process trees this server actually spawned via GuestRunner
+        // (activeRuns is keyed by child pid); never an arbitrary attacker-chosen
+        // host PID.
+        if (!GuestRunner.activeRuns.has(numericPid)) {
+          sendJson(res, 403, {
+            error: "Refusing to reap a PID not spawned by this server.",
           });
-          res.end(JSON.stringify({ error: "Valid PID parameter is required" }));
           return;
         }
 
         // Call the ProcessReaper to kill the child and its grandchildren
         await ProcessReaper.reap(numericPid);
 
-        res.writeHead(200, {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
+        sendJson(res, 200, {
+          success: true,
+          message: `Process tree for PID ${numericPid} forcefully reaped.`,
         });
-        res.end(
-          JSON.stringify({
-            success: true,
-            message: `Process tree for PID ${numericPid} forcefully reaped.`,
-          }),
-        );
-      } catch (err) {
+      })
+      .catch((err) => {
         if (err instanceof SyntaxError) {
-          res.writeHead(400, {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-          });
-          res.end(JSON.stringify({ error: "Invalid JSON payload" }));
+          sendJson(res, 400, { error: "Invalid JSON payload" });
           return;
         }
-        res.writeHead(500, {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        });
-        res.end(JSON.stringify({ error: err.message }));
-      }
-    });
+        if (err && err.code === "E_BODY_TOO_LARGE") {
+          sendJson(res, 413, { error: "Payload Too Large" });
+          return;
+        }
+        sendJson(res, 500, { error: err.message });
+      });
     return;
   }
 
-  // Static file serving logic
-  let relativeUrl = safeUrl;
-  if (relativeUrl === "/dashboard-codex") {
-    relativeUrl = "/dashboard-codex.html";
-  }
-
-  if (relativeUrl === "/" || relativeUrl === "") {
-    relativeUrl = "/index.html";
-  }
-
-  const filePath = path.join(ROOT_DIR, relativeUrl);
-
-  if (!filePath.startsWith(ROOT_DIR)) {
-    res.statusCode = 403;
-    res.end("Forbidden");
+  // Static file serving: allowlist-gated so secrets (.env), VCS internals
+  // (.git), config, and persistence snapshots are never served (see
+  // src/net/httpSecurity.js#resolveStaticFile).
+  const filePath = resolveStaticFile(ROOT_DIR, safeUrl);
+  if (!filePath) {
+    res.statusCode = 404;
+    res.end("Not Found");
     return;
   }
 

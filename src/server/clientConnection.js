@@ -1,5 +1,6 @@
 import { MissionManager } from "../engine/MissionManager.js";
 import { sendClientStats } from "./clientStats.js";
+import { clientIpFromRequest, isProxyTrusted } from "../net/httpSecurity.js";
 
 /**
  * Creates and initializes a connection client state object.
@@ -19,14 +20,7 @@ export function createClientObject(ws, req, options) {
     buildStatsPayload,
   } = options;
 
-  const clientIp =
-    req && req.headers
-      ? req.headers["x-forwarded-for"]
-        ? req.headers["x-forwarded-for"].split(",")[0].trim()
-        : req.socket
-          ? req.socket.remoteAddress
-          : "unknown"
-      : "unknown";
+  const clientIp = clientIpFromRequest(req, { trustProxy: isProxyTrusted() });
 
   const clientId = "player-" + Math.random().toString(36).substring(2, 9);
 

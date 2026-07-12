@@ -80,9 +80,6 @@ export async function joinRoom(clientObj, roomId, nickname, options) {
       registry,
       shardCount: WORKERS,
     });
-    console.log(
-      `[DEBUG] Shard ${SHARD_INDEX} check for ${roomId}: ownerNodeId=${ownerNodeId}, registry=${JSON.stringify(registry.serialize())}`,
-    );
     if (ownerNodeId === `node-${SHARD_INDEX}`) {
       room = new GameInstance(roomId, `Sector ${roomId}`);
       room.chronicle = galacticChronicle;

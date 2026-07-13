@@ -1,3 +1,4 @@
+// @ts-nocheck -- Browser client is not type-checked (see AGENTS/Phase 3 notes); compiled by tsconfig.build.json for emit only.
 import { Vector2D } from "./physics/Vector2D.js";
 import { Ship } from "./engine/Ship.js";
 import { Planet } from "./engine/Planet.js";
@@ -1193,7 +1194,7 @@ function syncEntitiesFromServer(serverEntities) {
     if (ent.id !== localId) {
       interpolator.push(ent.id, Date.now(), ent.x, ent.y, ent.heading);
     }
-    let localEnt = engine.entities.find((e) => e.id === ent.id);
+    const localEnt = engine.entities.find((e) => e.id === ent.id);
 
     if (localEnt) {
       if (ent.id === localId) {

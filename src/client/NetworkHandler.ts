@@ -1,3 +1,4 @@
+// @ts-nocheck -- Browser client is not type-checked (see AGENTS/Phase 3 notes); compiled by tsconfig.build.json for emit only.
 import { applyDelta } from "../net/StateCodec.js";
 import { decode as decodeFrame } from "../net/BinaryCodec.js";
 

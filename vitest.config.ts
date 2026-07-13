@@ -41,15 +41,18 @@ export default defineConfig({
           name: "jsdom",
           globals: false,
           environment: "jsdom",
-          include: ["src/client/**/*.test.js"],
-          exclude: ["src/client/**/*.browser.test.js", "**/node_modules/**"],
+          include: ["src/client/**/*.test.{js,ts}"],
+          exclude: [
+            "src/client/**/*.browser.test.{js,ts}",
+            "**/node_modules/**",
+          ],
         },
       },
       {
         test: {
           name: "browser",
           globals: false,
-          include: ["src/client/**/*.browser.test.js"],
+          include: ["src/client/**/*.browser.test.{js,ts}"],
           browser: {
             enabled: true,
             provider: playwright(),

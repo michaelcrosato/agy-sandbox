@@ -1,3 +1,4 @@
+// @ts-nocheck -- Browser client is not type-checked (see AGENTS/Phase 3 notes); compiled by tsconfig.build.json for emit only.
 /**
  * @typedef {Object} TutorialStep
  * @property {number} index - Step index.

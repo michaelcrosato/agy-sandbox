@@ -1,3 +1,4 @@
+// @ts-nocheck -- Browser client is not type-checked (see AGENTS/Phase 3 notes); compiled by tsconfig.build.json for emit only.
 /**
  * SoundEngine: procedural synthesis engine for space simulation audio feedback.
  * Uses Web Audio API to synthesize sounds on-the-fly with spatial panning
@@ -74,7 +75,7 @@ export default class SoundEngine {
     }
 
     const AudioContextClass =
-      window.AudioContext || /** @type {any} */ (window).webkitAudioContext;
+      window.AudioContext || /** @type {any} */ window.webkitAudioContext;
     if (!AudioContextClass) return;
 
     try {

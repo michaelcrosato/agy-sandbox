@@ -39,6 +39,20 @@ export default tseslint.config(
       ],
     },
   },
+  // Browser client (Phase 3): `src/client/**` and `src/main.ts` are compiled by
+  // `tsconfig.build.json` for emit but deliberately NOT type-checked. They are
+  // heavy DOM + dynamic-property game code that predates the migration and was
+  // never part of the `tsc --noEmit` graph; type-checking them surfaces ~2k
+  // pre-existing DOM/dynamic-property errors that are documented follow-up work,
+  // not this phase's scope. Each file carries a `// @ts-nocheck` header so the
+  // build emits it without those errors. Allow that one directive here while
+  // keeping `@ts-ignore`/`@ts-expect-error` banned as elsewhere.
+  {
+    files: ["src/client/**/*.ts", "src/main.ts"],
+    rules: {
+      "@typescript-eslint/ban-ts-comment": ["error", { "ts-nocheck": false }],
+    },
+  },
   // Shared language options + project rules for all files.
   {
     languageOptions: {

@@ -1,3 +1,4 @@
+// @ts-nocheck -- Browser client is not type-checked (see AGENTS/Phase 3 notes); compiled by tsconfig.build.json for emit only.
 import { COMMODITIES } from "../net/SchemaRegistry.js";
 // eslint-disable-next-line no-unused-vars
 import SoundEngine from "./audio/SoundEngine.js";
@@ -108,7 +109,7 @@ export class UIController {
       this.eventTitle.textContent = `GALAXY EVENT: ${event.name.toUpperCase()}`;
     }
     if (this.eventDesc) {
-      let modifierStrings = [];
+      const modifierStrings = [];
       if (event.priceModifiers) {
         for (const [commodity, val] of Object.entries(event.priceModifiers)) {
           modifierStrings.push(`${commodity.toUpperCase()} ${val}x`);
@@ -565,7 +566,7 @@ export class UIController {
             const pB = planets[j];
 
             for (const commodity of commodities) {
-              let baseBuyPrice = pA.market[commodity];
+              const baseBuyPrice = pA.market[commodity];
               let baseSellPrice = pB.market[commodity];
               if (baseBuyPrice === undefined || baseSellPrice === undefined)
                 continue;

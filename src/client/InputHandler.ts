@@ -1,3 +1,4 @@
+// @ts-nocheck -- Browser client is not type-checked (see AGENTS/Phase 3 notes); compiled by tsconfig.build.json for emit only.
 /**
  * Manages keyboard controls, mapping events directly into Player Ship controls.
  */

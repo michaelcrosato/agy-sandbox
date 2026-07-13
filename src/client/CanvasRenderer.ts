@@ -1,3 +1,4 @@
+// @ts-nocheck -- Browser client is not type-checked (see AGENTS/Phase 3 notes); compiled by tsconfig.build.json for emit only.
 import { Vector2D } from "../physics/Vector2D.js";
 import { NEBULAE } from "../engine/Nebulae.js";
 

@@ -42,13 +42,16 @@ jobs:
         run: npm ci
 
       - name: Install Playwright Chromium
+        # The node project's PlaywrightVisual integration test launches Chromium
+        # (capture-only, no golden comparison), so the browser must be present.
         run: npx playwright install chromium --with-deps
 
       - name: Verify Substrate Integrity
         run: npm run agent:verify-substrate
 
       - name: Run Formatting Check
-        run: npx prettier --check "src/**/*.{js,json}" "scripts/**/*.js" ".github/**/*.md" README.md
+        # Mirrors the `format:check` script glob, which includes the .ts sources.
+        run: npm run format:check
 
       - name: Run Linting
         run: npm run lint
@@ -56,15 +59,26 @@ jobs:
       - name: Run Typecheck
         run: npm run typecheck
 
-      - name: Run Unit Tests
-        run: npm test
+      - name: Build Server Artifact
+        # Integration suites boot `dist/server.js` in worker_threads, so the
+        # compiled artifact must exist before the test run.
+        run: npm run build
+
+      - name: Run Node Suite
+        # Run only the `node` Vitest project across the full 22/24/26 matrix:
+        # pure engine/net/physics/persistence/server suites plus the
+        # scripts/agent control-plane tests. The jsdom client suite runs in the
+        # separate `client-tests` job (jsdom 29 lacks localStorage on Node 26),
+        # and the browser project asserts against win32 golden PNGs so it is
+        # local-only (Windows baselines) and cannot match on Linux CI.
+        run: npm run test:node
 
   client-tests:
-    # Client (DOM) suite runs under Vitest + jsdom, kept separate from the Jest
-    # engine matrix above so runtime regressions surface without duplicating it.
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
+    # Pinned to Node 24: jsdom 29 does not provide `localStorage` under Node 26,
+    # so the jsdom client suite is exercised on the same single version the
+    # original client-tests job used.
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -83,7 +97,9 @@ jobs:
       - name: Verify Substrate Integrity
         run: npm run agent:verify-substrate
 
-      - name: Run Client Tests
+      - name: Run jsdom Client Suite
+        # Runs only the `jsdom` Vitest project. These units import `.ts` source
+        # via Vite (not the `dist/` build), so no build step is needed here.
         run: npm run test:client
 
   verify:

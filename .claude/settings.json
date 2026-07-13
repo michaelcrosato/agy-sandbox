@@ -23,6 +23,8 @@
     "allow": [
       "Bash(npm ci)",
       "Bash(npm test:*)",
+      "Bash(npm run build)",
+      "Bash(npm start:*)",
       "Bash(npm run agent:check)",
       "Bash(npm run agent:check:core)",
       "Bash(npm run lint)",

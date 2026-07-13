@@ -14,11 +14,12 @@
   },
   "_comment": "spec 024 checkJs gate, phase 1 scope: the import-isolated net/physics/server modules (hardening, observability, physics, room lifecycle). The stateful engine classes need JSDoc-typedef work for their untyped {...parentParams} configs before they can join the checked graph — tracked in plan/BACKLOG.md to ratchet up.",
   "include": [
-    "src/net/**/*.js",
-    "src/physics/**/*.js",
-    "src/server/**/*.js",
-    "src/engine/**/*.js",
-    "src/persistence/**/*.js"
+    "src/server.ts",
+    "src/net/**/*.ts",
+    "src/physics/**/*.ts",
+    "src/server/**/*.ts",
+    "src/engine/**/*.ts",
+    "src/persistence/**/*.ts"
   ],
-  "exclude": ["node_modules", "**/*.test.js"]
+  "exclude": ["node_modules", "**/*.test.js", "**/*.test.ts"]
 }

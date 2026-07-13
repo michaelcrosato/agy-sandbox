@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { generateCodexGraph, run } from "./generate-codex.js";
 import fs from "fs";
 import path from "path";
@@ -27,7 +28,7 @@ describe("Living Codex & Codebase Ontology Generator (SPEC-101)", () => {
 
     // Verify that file objects contain path, loc, classes, exports
     const apiRateLimiterFile = graph.files.find(
-      (f) => f.path === "src/net/ApiRateLimiter.js",
+      (f) => f.path === "src/net/ApiRateLimiter.ts",
     );
     if (apiRateLimiterFile) {
       expect(apiRateLimiterFile).toHaveProperty("path");
@@ -36,7 +37,7 @@ describe("Living Codex & Codebase Ontology Generator (SPEC-101)", () => {
       expect(apiRateLimiterFile.classes.length).toBeGreaterThan(0);
       expect(apiRateLimiterFile.classes[0].name).toBe("ApiRateLimiter");
       expect(apiRateLimiterFile.testFile).toContain(
-        "src/net/ApiRateLimiter.test.js",
+        "src/net/ApiRateLimiter.test.ts",
       );
     }
   });

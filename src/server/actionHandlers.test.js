@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import {
   handleTrade,
   handlePortService,
@@ -63,22 +63,22 @@ describe("actionHandlers (SPEC-103)", () => {
 
     mockRoom = {
       factionRegistry: {
-        adjustStanding: jest.fn(),
-        getStanding: jest.fn(() => 0),
-        classifyStanding: jest.fn(() => "neutral"),
-        priceModifier: jest.fn(() => 1.0),
-        getTransactionTaxRate: jest.fn(() => 0.0),
+        adjustStanding: vi.fn(),
+        getStanding: vi.fn(() => 0),
+        classifyStanding: vi.fn(() => "neutral"),
+        priceModifier: vi.fn(() => 1.0),
+        getTransactionTaxRate: vi.fn(() => 0.0),
       },
       economyManager: {
-        registerBuy: jest.fn(),
-        registerSell: jest.fn(),
+        registerBuy: vi.fn(),
+        registerSell: vi.fn(),
       },
       territoryControl: {
-        adjustInfluence: jest.fn(),
+        adjustInfluence: vi.fn(),
         sectors: {},
       },
       engine: {
-        getEntity: jest.fn((id) => {
+        getEntity: vi.fn((id) => {
           if (id === "gate-1") {
             return {
               id: "gate-1",
@@ -102,12 +102,12 @@ describe("actionHandlers (SPEC-103)", () => {
           }
           return null;
         }),
-        removeEntity: jest.fn(),
+        removeEntity: vi.fn(),
       },
-      getGoverningFaction: jest.fn(() => "Federation"),
-      broadcast: jest.fn(),
-      broadcastRosterUpdate: jest.fn(),
-      jettisonFromShip: jest.fn((ship, item, amount) => {
+      getGoverningFaction: vi.fn(() => "Federation"),
+      broadcast: vi.fn(),
+      broadcastRosterUpdate: vi.fn(),
+      jettisonFromShip: vi.fn((ship, item, amount) => {
         if (ship.cargo[item] > 0) {
           ship.cargo[item] -= amount;
           return { resourceType: item, amount };

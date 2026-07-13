@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { COMMODITIES, makeEmptyCargo } from "./commodities.js";
 import { Ship } from "./Ship.js";
 import { Planet } from "./Planet.js";

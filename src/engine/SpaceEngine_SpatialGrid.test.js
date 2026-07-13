@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach } from "vitest";
 import { SpaceEngine } from "./SpaceEngine.js";
 import { SpaceEntity } from "./SpaceEntity.js";
 import { Vector2D } from "../physics/Vector2D.js";

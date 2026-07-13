@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { SpecLinter } from "./validate-specs.js";
 import fs from "fs";
 import path from "path";

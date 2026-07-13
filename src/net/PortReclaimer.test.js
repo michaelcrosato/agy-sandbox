@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { reclaimPort } from "./PortReclaimer.js";
 import { ProcessSentinel } from "./ProcessSentinel.js";
 import childProcess from "child_process";

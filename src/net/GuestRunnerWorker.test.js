@@ -1,10 +1,19 @@
-import { jest } from "@jest/globals";
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  beforeEach,
+  afterAll,
+  afterEach,
+  vi,
+} from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 
 // Mock node:module to prevent register from executing during test
-jest.unstable_mockModule("node:module", () => ({
-  register: jest.fn(),
+vi.doMock("node:module", () => ({
+  register: vi.fn(),
   isBuiltin: (specifier) => {
     return (
       specifier.startsWith("node:") ||
@@ -24,44 +33,44 @@ jest.unstable_mockModule("node:module", () => ({
 }));
 
 // Mock internal sentries/modules
-jest.unstable_mockModule("./IntrusionDetectionSentry.js", () => ({
+vi.doMock("./IntrusionDetectionSentry.js", () => ({
   IntrusionDetectionSentry: {
-    activate: jest.fn(),
+    activate: vi.fn(),
   },
 }));
 
-jest.unstable_mockModule("./ProcessSentinel.js", () => ({
+vi.doMock("./ProcessSentinel.js", () => ({
   ProcessSentinel: {
-    activate: jest.fn(),
-    setSandboxDirectory: jest.fn(),
+    activate: vi.fn(),
+    setSandboxDirectory: vi.fn(),
   },
 }));
 
-jest.unstable_mockModule("./SandboxFirewall.js", () => {
-  const mockFirewall = jest.fn();
+vi.doMock("./SandboxFirewall.js", () => {
+  const mockFirewall = vi.fn();
   return {
     SandboxFirewall: mockFirewall,
-    activateFirewall: jest.fn(),
+    activateFirewall: vi.fn(),
   };
 });
 
-jest.unstable_mockModule("./DnsEgressSentry.js", () => ({
+vi.doMock("./DnsEgressSentry.js", () => ({
   DnsEgressSentry: {
-    activate: jest.fn(),
+    activate: vi.fn(),
   },
 }));
 
-jest.unstable_mockModule("./TokenCostGovernor.js", () => ({
+vi.doMock("./TokenCostGovernor.js", () => ({
   TokenCostGovernor: {
-    activate: jest.fn(),
-    getTokensSpent: jest.fn().mockReturnValue(123),
-    getUsdConsumed: jest.fn().mockReturnValue(0.01),
+    activate: vi.fn(),
+    getTokensSpent: vi.fn().mockReturnValue(123),
+    getUsdConsumed: vi.fn().mockReturnValue(0.01),
   },
 }));
 
-jest.unstable_mockModule("./IntegrityGuard.js", () => ({
+vi.doMock("./IntegrityGuard.js", () => ({
   IntegrityGuard: {
-    start: jest.fn(),
+    start: vi.fn(),
   },
 }));
 
@@ -95,11 +104,11 @@ describe("GuestRunnerWorker", () => {
   });
 
   beforeEach(() => {
-    exitSpy = jest.spyOn(process, "exit").mockImplementation(() => {});
-    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-    processSendSpy = jest.fn();
+    exitSpy = vi.spyOn(process, "exit").mockImplementation(() => {});
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    processSendSpy = vi.fn();
     process.send = processSendSpy;
-    jest.useFakeTimers();
+    vi.useFakeTimers();
 
     if (fs.existsSync(indicatorFile)) {
       fs.unlinkSync(indicatorFile);
@@ -112,9 +121,9 @@ describe("GuestRunnerWorker", () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
-    jest.useRealTimers();
-    jest.resetModules();
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+    vi.resetModules();
     delete process.send;
   });
 
@@ -135,10 +144,15 @@ describe("GuestRunnerWorker", () => {
 
     await import("./GuestRunnerWorker.js?v=success");
 
-    // Allow async bootstrap to complete
-    await new Promise((resolve) => {
-      jest.requireActual("node:timers").setTimeout(resolve, 50);
-    });
+    // Allow async bootstrap to complete. Fake timers are active, so pull the
+    // real setTimeout from node:timers (Vitest's importActual is async). Poll
+    // for the guest script's side effect rather than sleeping a fixed amount —
+    // the dynamic import + guest run time varies with runner/machine load.
+    const { setTimeout: realSetTimeout } = await vi.importActual("node:timers");
+    const bootstrapDeadline = Date.now() + 5000;
+    while (!fs.existsSync(indicatorFile) && Date.now() < bootstrapDeadline) {
+      await new Promise((resolve) => realSetTimeout(resolve, 25));
+    }
 
     // Expect the dynamically imported script to have executed
     expect(fs.existsSync(indicatorFile)).toBe(true);
@@ -157,7 +171,7 @@ describe("GuestRunnerWorker", () => {
     });
 
     // Verify CPU heartbeat telemetry triggers
-    jest.advanceTimersByTime(55);
+    vi.advanceTimersByTime(55);
     expect(processSendSpy).toHaveBeenCalledWith({
       type: "cpu_heartbeat",
       cpuTimeMs: expect.any(Number),

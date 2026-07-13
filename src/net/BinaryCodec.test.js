@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { encode, decode, BINARY_PROTOCOL_VERSION } from "./BinaryCodec.js";
 import { encodeSnapshot, diff, applyDelta } from "./StateCodec.js";
 

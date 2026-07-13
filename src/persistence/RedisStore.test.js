@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach } from "vitest";
 import { RedisStore } from "./RedisStore.js";
 
 class FakeRedisClient {

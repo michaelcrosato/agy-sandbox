@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import {
   DEFAULT_HYPERDRIVE_OPTIONS,
   canJump,

@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach } from "vitest";
 import { CommoditiesRegistry } from "./EconomyManager.js";
 import { GalaxyHeartbeat } from "./GalaxyHeartbeat.js";
 import { SandboxSecurityRegistry } from "../net/SandboxSecurityRegistry.js";

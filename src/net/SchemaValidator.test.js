@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { validateMessage } from "./SchemaValidator.js";
 
 describe("SchemaValidator", () => {

@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import dns from "dns";
 import net from "net";
 import {
@@ -94,38 +95,40 @@ describe("SandboxFirewall", () => {
     expect(bounded.blockCount).toBe(50);
   });
 
-  test("activateFirewall intercepts dns.lookup and net.connect", (done) => {
-    activateFirewall(firewall);
+  test("activateFirewall intercepts dns.lookup and net.connect", () =>
+    new Promise((resolve) => {
+      activateFirewall(firewall);
 
-    // 1. Assert dns.lookup blocks unauthorized domains before resolution
-    dns.lookup("malicious.com", (err) => {
-      expect(err).toBeDefined();
-      expect(err.message).toContain("blocked non-allowlisted host domain");
-      expect(err.code).toBe("ENETUNREACH");
+      // 1. Assert dns.lookup blocks unauthorized domains before resolution
+      dns.lookup("malicious.com", (err) => {
+        expect(err).toBeDefined();
+        expect(err.message).toContain("blocked non-allowlisted host domain");
+        expect(err.code).toBe("ENETUNREACH");
 
-      // 2. Assert net.connect blocks unauthorized hosts
-      const socket = net.connect({ host: "192.168.1.1", port: 80 });
-      socket.on("error", (socketErr) => {
-        expect(socketErr).toBeDefined();
-        expect(socketErr.message).toContain(
-          "blocked connection to private IP range",
-        );
+        // 2. Assert net.connect blocks unauthorized hosts
+        const socket = net.connect({ host: "192.168.1.1", port: 80 });
+        socket.on("error", (socketErr) => {
+          expect(socketErr).toBeDefined();
+          expect(socketErr.message).toContain(
+            "blocked connection to private IP range",
+          );
 
-        // 3. Deactivate and verify standard call is restored
-        deactivateFirewall();
-        done();
+          // 3. Deactivate and verify standard call is restored
+          deactivateFirewall();
+          resolve();
+        });
       });
-    });
-  });
+    }));
 
-  test("firewall resolves whitelisted domains when active", (done) => {
-    activateFirewall(firewall);
+  test("firewall resolves whitelisted domains when active", () =>
+    new Promise((resolve) => {
+      activateFirewall(firewall);
 
-    // Should call native lookup (mocked to resolve localhost or trigger standard DNS resolution)
-    dns.lookup("localhost", (err, address) => {
-      expect(err).toBeNull();
-      expect(address).toBeDefined();
-      done();
-    });
-  });
+      // Should call native lookup (mocked to resolve localhost or trigger standard DNS resolution)
+      dns.lookup("localhost", (err, address) => {
+        expect(err).toBeNull();
+        expect(address).toBeDefined();
+        resolve();
+      });
+    }));
 });

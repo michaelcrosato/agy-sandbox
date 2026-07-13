@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { Vector2D } from "./Vector2D.js";
 
 describe("Vector2D mathematical operations", () => {

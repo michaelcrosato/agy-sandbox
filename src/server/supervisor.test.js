@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { planWorkers } from "./supervisor.js";
 
 describe("Supervisor planWorkers (spec 019c)", () => {

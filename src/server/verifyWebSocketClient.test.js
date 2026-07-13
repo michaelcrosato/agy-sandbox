@@ -1,6 +1,6 @@
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { verifyWebSocketClient } from "./verifyWebSocketClient.js";
 import { ConnectionFloodSentry } from "../net/ConnectionFloodSentry.js";
-import { jest } from "@jest/globals";
 
 describe("verifyWebSocketClient modular utility", () => {
   let connectionFloodSentry;
@@ -14,7 +14,7 @@ describe("verifyWebSocketClient modular utility", () => {
   });
 
   test("rejects request if URI length exceeds 2048", () => {
-    const mockCb = jest.fn();
+    const mockCb = vi.fn();
     const mockInfo = {
       origin: "http://localhost:8080",
       req: {
@@ -33,7 +33,7 @@ describe("verifyWebSocketClient modular utility", () => {
   });
 
   test("rejects request if Content-Length exceeds 4096", () => {
-    const mockCb = jest.fn();
+    const mockCb = vi.fn();
     const mockInfo = {
       origin: "http://localhost:8080",
       req: {
@@ -53,7 +53,7 @@ describe("verifyWebSocketClient modular utility", () => {
   });
 
   test("allows valid request when headers and limits are normal", () => {
-    const mockCb = jest.fn();
+    const mockCb = vi.fn();
     const mockInfo = {
       origin: "http://localhost:8080",
       req: {
@@ -77,7 +77,7 @@ describe("verifyWebSocketClient modular utility", () => {
 
   test("triggers connection flood sentry for non-loopback IPs and rejects excess connections with 429", () => {
     const ip = "192.0.2.1"; // TEST-NET-1 IP address (non-localhost)
-    const mockCb = jest.fn();
+    const mockCb = vi.fn();
 
     // Set maxConnectionsPerIp to 2 for this test
     connectionFloodSentry.maxConnectionsPerIp = 2;

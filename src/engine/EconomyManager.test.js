@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach } from "vitest";
 import { EconomyManager } from "./EconomyManager.js";
 import { Planet } from "./Planet.js";
 import { BASE_MARKETS } from "./GameInstance.js";

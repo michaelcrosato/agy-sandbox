@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import {
   handleMissionAccept,
   handleMissionAbandon,
@@ -18,7 +18,7 @@ describe("spaceportMissionHandlers (SPEC-154)", () => {
       missionManager: {
         availableMissions: {},
         activeMissions: [],
-        generateWorldMissions: jest
+        generateWorldMissions: vi
           .fn()
           .mockImplementation((planetName, _world) => {
             // Mock generating a dynamic mission if a shortage/surplus mismatch exists
@@ -55,7 +55,7 @@ describe("spaceportMissionHandlers (SPEC-154)", () => {
           this.sentNotifications.push(data);
         }
       },
-      sendStats: jest.fn(),
+      sendStats: vi.fn(),
     };
 
     mockPlanet = {

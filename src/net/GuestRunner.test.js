@@ -1,3 +1,12 @@
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  beforeEach,
+  afterAll,
+  afterEach,
+} from "vitest";
 /**
  * GuestRunner.test.js (SPEC-136) — comprehensive verification suite
  * for the host-isolated child-process guest execution runner.

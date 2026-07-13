@@ -1,35 +1,35 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 
 // Define mocks before importing the target module
-const mockRunEconomyShortage = jest.fn();
-const mockRunEnvironmentalSiege = jest.fn();
-const mockRunEconomyNormalization = jest.fn();
-const mockRunGalaxyHeartbeat = jest.fn();
+const mockRunEconomyShortage = vi.fn();
+const mockRunEnvironmentalSiege = vi.fn();
+const mockRunEconomyNormalization = vi.fn();
+const mockRunGalaxyHeartbeat = vi.fn();
 
-jest.unstable_mockModule("./galaxyTicker.js", () => ({
+vi.doMock("./galaxyTicker.js", () => ({
   runEconomyShortageInterval: mockRunEconomyShortage,
   runEnvironmentalSiegeInterval: mockRunEnvironmentalSiege,
   runEconomyNormalizationInterval: mockRunEconomyNormalization,
   runGalaxyHeartbeatInterval: mockRunGalaxyHeartbeat,
 }));
 
-const mockRunGcSweep = jest.fn();
-jest.unstable_mockModule("./roomGc.js", () => ({
+const mockRunGcSweep = vi.fn();
+vi.doMock("./roomGc.js", () => ({
   runGcSweep: mockRunGcSweep,
 }));
 
-const mockBroadcastLobbySync = jest.fn();
-jest.unstable_mockModule("./lobbySync.js", () => ({
+const mockBroadcastLobbySync = vi.fn();
+vi.doMock("./lobbySync.js", () => ({
   broadcastLobbySync: mockBroadcastLobbySync,
 }));
 
-const mockStartRegistryHeartbeat = jest.fn(() => setInterval(() => {}, 4000));
-jest.unstable_mockModule("./registryHeartbeat.js", () => ({
+const mockStartRegistryHeartbeat = vi.fn(() => setInterval(() => {}, 4000));
+vi.doMock("./registryHeartbeat.js", () => ({
   startRegistryHeartbeat: mockStartRegistryHeartbeat,
 }));
 
-const mockSelectDeadSockets = jest.fn(() => []);
-jest.unstable_mockModule("../net/heartbeat.js", () => ({
+const mockSelectDeadSockets = vi.fn(() => []);
+vi.doMock("../net/heartbeat.js", () => ({
   selectDeadSockets: mockSelectDeadSockets,
   DEFAULT_HEARTBEAT_MS: 30000,
 }));
@@ -53,31 +53,31 @@ describe("periodicIntervals", () => {
   let saveRegistry;
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.clearAllMocks();
+    vi.useFakeTimers();
+    vi.clearAllMocks();
 
     instances = new Map();
     pubsub = {
-      publish: jest.fn(),
+      publish: vi.fn(),
     };
     wss = {
       clients: new Set(),
     };
     clients = new Map();
     metrics = {
-      inc: jest.fn(),
+      inc: vi.fn(),
     };
     latencyMonitor = {
-      getLatency: jest.fn().mockReturnValue(5),
-      shouldShed: jest.fn().mockReturnValue(false),
+      getLatency: vi.fn().mockReturnValue(5),
+      shouldShed: vi.fn().mockReturnValue(false),
     };
     anomalyDetector = {
-      observe: jest.fn(),
+      observe: vi.fn(),
     };
     connectionFloodSentry = {};
     resourceLimiter = {};
-    loadRegistry = jest.fn();
-    saveRegistry = jest.fn();
+    loadRegistry = vi.fn();
+    saveRegistry = vi.fn();
 
     options = {
       instances,
@@ -97,7 +97,7 @@ describe("periodicIntervals", () => {
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   test("starts all expected intervals and calls correct tick functions", () => {
@@ -114,35 +114,35 @@ describe("periodicIntervals", () => {
     expect(handles.registryHeartbeatInterval).toBeUndefined(); // workers count = 1
 
     // Advance 1s -> anomaly
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
     expect(anomalyDetector.observe).toHaveBeenCalled();
 
     // Advance to 5s -> lobby sync
-    jest.advanceTimersByTime(4000);
+    vi.advanceTimersByTime(4000);
     expect(mockBroadcastLobbySync).toHaveBeenCalled();
 
     // Advance to 6s -> economy normalization
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
     expect(mockRunEconomyNormalization).toHaveBeenCalledWith(instances);
 
     // Advance to 8s -> galaxy heartbeat
-    jest.advanceTimersByTime(2000);
+    vi.advanceTimersByTime(2000);
     expect(mockRunGalaxyHeartbeat).toHaveBeenCalledWith(instances);
 
     // Advance to 10s -> gc sweep
-    jest.advanceTimersByTime(2000);
+    vi.advanceTimersByTime(2000);
     expect(mockRunGcSweep).toHaveBeenCalled();
 
     // Advance to 30s -> heartbeat
-    jest.advanceTimersByTime(20000);
+    vi.advanceTimersByTime(20000);
     expect(mockSelectDeadSockets).toHaveBeenCalled();
 
     // Advance to 45s -> economy shortage
-    jest.advanceTimersByTime(15000);
+    vi.advanceTimersByTime(15000);
     expect(mockRunEconomyShortage).toHaveBeenCalledWith(instances);
 
     // Advance to 90s -> environmental siege
-    jest.advanceTimersByTime(45000);
+    vi.advanceTimersByTime(45000);
     expect(mockRunEnvironmentalSiege).toHaveBeenCalledWith(instances);
 
     stopPeriodicIntervals(handles);
@@ -168,7 +168,7 @@ describe("periodicIntervals", () => {
 
     // Trigger economy shortage (45s) and heartbeat (30s)
     expect(() => {
-      jest.advanceTimersByTime(45000);
+      vi.advanceTimersByTime(45000);
     }).not.toThrow();
 
     stopPeriodicIntervals(handles);
@@ -179,10 +179,10 @@ describe("periodicIntervals", () => {
     stopPeriodicIntervals(handles);
 
     // Clear mocks to ensure no calls are made after stop
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Advance time by 100s
-    jest.advanceTimersByTime(100000);
+    vi.advanceTimersByTime(100000);
 
     expect(anomalyDetector.observe).not.toHaveBeenCalled();
     expect(mockBroadcastLobbySync).not.toHaveBeenCalled();

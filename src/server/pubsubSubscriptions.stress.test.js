@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { registerPubSubSubscriptions } from "./pubsubSubscriptions.js";
 import { Squad } from "./SquadManager.js";
 
@@ -16,7 +16,7 @@ describe("pubsubSubscriptions Stress & Adversarial Tests", () => {
 
   beforeEach(() => {
     mockPubsub = {
-      subscribe: jest.fn().mockImplementation(async (topic, callback) => {
+      subscribe: vi.fn().mockImplementation(async (topic, callback) => {
         if (topic === "chat:global") globalChatCallback = callback;
         if (topic === "chat:squad") squadChatCallback = callback;
         if (topic === "squad:events") squadEventsCallback = callback;
@@ -31,10 +31,10 @@ describe("pubsubSubscriptions Stress & Adversarial Tests", () => {
     };
 
     mockSquadManager = {
-      getSquadId: jest.fn(),
+      getSquadId: vi.fn(),
       squads: new Map(),
       playerToSquad: new Map(),
-      getSquadForPlayer: jest.fn(),
+      getSquadForPlayer: vi.fn(),
     };
 
     options = {
@@ -50,7 +50,7 @@ describe("pubsubSubscriptions Stress & Adversarial Tests", () => {
       await registerPubSubSubscriptions(options);
 
       const mockClient = {
-        send: jest.fn().mockImplementation(() => {
+        send: vi.fn().mockImplementation(() => {
           // Simulate dynamic modification during iteration
           mockWss.clients.clear();
         }),
@@ -137,8 +137,8 @@ describe("pubsubSubscriptions Stress & Adversarial Tests", () => {
         const clientObj = {
           id,
           nickname: `Pilot-${i}`,
-          send: jest.fn(),
-          sendStats: jest.fn(),
+          send: vi.fn(),
+          sendStats: vi.fn(),
         };
         mockWss.clients.add({ clientObj });
       }
@@ -221,11 +221,11 @@ describe("pubsubSubscriptions Stress & Adversarial Tests", () => {
       await registerPubSubSubscriptions(options);
 
       const mockCampaign = {
-        load: jest.fn(),
+        load: vi.fn(),
       };
       const room = {
         factionWarCampaign: mockCampaign,
-        broadcast: jest.fn(),
+        broadcast: vi.fn(),
       };
       mockInstances.set("public", room);
 

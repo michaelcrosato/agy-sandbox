@@ -1,8 +1,8 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 
 // Mock the imported serializer function
-jest.unstable_mockModule("../persistence/serializers.js", () => ({
-  applyGalaxy: jest.fn(),
+vi.doMock("../persistence/serializers.js", () => ({
+  applyGalaxy: vi.fn(),
 }));
 
 // Resolve the mocked modules
@@ -17,11 +17,11 @@ describe("roomInitializer", () => {
   let options;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     instances = new Map();
     mockGalacticChronicle = {};
     mockPersistenceManager = {
-      loadGalaxy: jest.fn(),
+      loadGalaxy: vi.fn(),
     };
 
     options = {
@@ -79,7 +79,7 @@ describe("roomInitializer", () => {
   });
 
   test("should handle load error gracefully without throwing", async () => {
-    const consoleErrorSpy = jest
+    const consoleErrorSpy = vi
       .spyOn(console, "error")
       .mockImplementation(() => {});
     mockPersistenceManager.loadGalaxy.mockRejectedValue(

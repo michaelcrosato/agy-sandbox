@@ -1,14 +1,14 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 
 // Set up mocks before importing the target processor
-const mockUpdateAILogic = jest.fn();
-const mockApplyTractorForces = jest.fn();
-const mockHandleCargoCollection = jest.fn();
-const mockApplyNebulaHazards = jest.fn();
-const mockApplyCosmicStormHazards = jest.fn();
-const mockApplySolarEmpHazards = jest.fn();
+const mockUpdateAILogic = vi.fn();
+const mockApplyTractorForces = vi.fn();
+const mockHandleCargoCollection = vi.fn();
+const mockApplyNebulaHazards = vi.fn();
+const mockApplyCosmicStormHazards = vi.fn();
+const mockApplySolarEmpHazards = vi.fn();
 
-jest.unstable_mockModule("./physicsTickHandlers.js", () => ({
+vi.doMock("./physicsTickHandlers.js", () => ({
   updateAILogic: mockUpdateAILogic,
   applyTractorForces: mockApplyTractorForces,
   handleCargoCollection: mockHandleCargoCollection,
@@ -17,8 +17,8 @@ jest.unstable_mockModule("./physicsTickHandlers.js", () => ({
   applySolarEmpHazards: mockApplySolarEmpHazards,
 }));
 
-const mockBroadcastRoomState = jest.fn();
-jest.unstable_mockModule("./roomBroadcast.js", () => ({
+const mockBroadcastRoomState = vi.fn();
+vi.doMock("./roomBroadcast.js", () => ({
   broadcastRoomState: mockBroadcastRoomState,
 }));
 
@@ -29,7 +29,7 @@ describe("physicsTickProcessor", () => {
   let options;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     room = {
       planets: [
@@ -39,27 +39,27 @@ describe("physicsTickProcessor", () => {
           preEventMarket: { ore: 5 },
         },
       ],
-      broadcast: jest.fn(),
-      broadcastNotification: jest.fn(),
-      checkReputationPatrolSpawns: jest.fn(),
-      checkEliteHunterSpawns: jest.fn(),
-      checkEscortAmbushSpawns: jest.fn(),
-      checkContrabandSpaceScans: jest.fn(),
+      broadcast: vi.fn(),
+      broadcastNotification: vi.fn(),
+      checkReputationPatrolSpawns: vi.fn(),
+      checkEliteHunterSpawns: vi.fn(),
+      checkEscortAmbushSpawns: vi.fn(),
+      checkContrabandSpaceScans: vi.fn(),
       engine: {
-        update: jest.fn(),
+        update: vi.fn(),
         entities: [],
       },
       determinismSentry: {
-        audit: jest.fn(),
+        audit: vi.fn(),
       },
-      spawnNewAsteroid: jest.fn(),
+      spawnNewAsteroid: vi.fn(),
       fleets: new Map([["fleet-1", {}]]),
-      broadcastFleetUpdate: jest.fn(),
+      broadcastFleetUpdate: vi.fn(),
       galaxyEventsManager: {
         activeEvent: { name: "Economic Shock" },
-        tick: jest.fn().mockReturnValue(false),
+        tick: vi.fn().mockReturnValue(false),
       },
-      clients: new Map([["client-1", { send: jest.fn() }]]),
+      clients: new Map([["client-1", { send: vi.fn() }]]),
     };
 
     options = {

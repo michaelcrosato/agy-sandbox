@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import {
   WeaponArchetype,
   WEAPON_ARCHETYPE_ORDER,

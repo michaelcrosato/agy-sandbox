@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { createRegistry } from "./metrics.js";
 
 describe("metrics.createRegistry (spec 010)", () => {

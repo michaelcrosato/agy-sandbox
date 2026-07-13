@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { sendClientStats } from "./clientStats.js";
 
 describe("clientStats", () => {
@@ -15,7 +15,7 @@ describe("clientStats", () => {
       id: "player-123",
       nickname: "AlphaCommander",
       roomId: "sector-7",
-      send: jest.fn(),
+      send: vi.fn(),
       ship: {
         shield: 180,
         maxShield: 200,
@@ -27,23 +27,23 @@ describe("clientStats", () => {
     };
 
     mockStore = {
-      save: jest.fn().mockResolvedValue(),
-      load: jest.fn(),
+      save: vi.fn().mockResolvedValue(),
+      load: vi.fn(),
     };
 
     mockInstances = {
-      get: jest.fn().mockReturnValue({
+      get: vi.fn().mockReturnValue({
         factionRegistry: "mockFactionRegistry",
       }),
     };
 
     mockSquadManager = {
-      getSquadForPlayer: jest.fn().mockReturnValue(null),
+      getSquadForPlayer: vi.fn().mockReturnValue(null),
     };
 
-    mockGetClients = jest.fn().mockReturnValue([]);
+    mockGetClients = vi.fn().mockReturnValue([]);
 
-    mockBuildStatsPayload = jest.fn().mockReturnValue({
+    mockBuildStatsPayload = vi.fn().mockReturnValue({
       type: "stats",
       dummy: true,
     });

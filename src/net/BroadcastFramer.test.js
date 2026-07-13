@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { nextFrame, DEFAULT_KEYFRAME_INTERVAL } from "./BroadcastFramer.js";
 import { applyDelta, encodeSnapshot } from "./StateCodec.js";
 

@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { handleFleetAction } from "./fleetHandlers.js";
 
 describe("fleetHandlers", () => {
@@ -9,13 +9,13 @@ describe("fleetHandlers", () => {
     clientObj = {
       id: "p1",
       fleetName: null,
-      send: jest.fn(),
+      send: vi.fn(),
     };
     room = {
       fleets: new Map(),
-      leaveCurrentFleet: jest.fn(),
-      broadcastFleetUpdate: jest.fn(),
-      broadcastRosterUpdate: jest.fn(),
+      leaveCurrentFleet: vi.fn(),
+      broadcastFleetUpdate: vi.fn(),
+      broadcastRosterUpdate: vi.fn(),
     };
   });
 

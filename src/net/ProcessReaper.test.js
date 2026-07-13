@@ -1,3 +1,4 @@
+import { describe, test, expect, afterEach } from "vitest";
 import { ProcessReaper } from "./ProcessReaper.js";
 import { spawn } from "child_process";
 import fs from "fs";

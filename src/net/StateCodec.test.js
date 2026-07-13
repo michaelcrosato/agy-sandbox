@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { encodeSnapshot, diff, applyDelta } from "./StateCodec.js";
 
 // Hand-built entity factories — no Math.random, no time-based fields, so every

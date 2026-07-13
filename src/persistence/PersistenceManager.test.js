@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import fs from "fs/promises";
 import os from "os";
 import path from "path";
@@ -271,7 +272,7 @@ describe("PersistenceManager (JsonFileStore)", () => {
 describe("PersistenceManager autosave", () => {
   test("autosave fires saveAllGalaxies on its cadence and stop() halts it", async () => {
     // Use real timers with a very short cadence (Jest ESM mode does not expose
-    // the `jest` global, so we can't rely on fake timers here).
+    // the `vi` global, so we can't rely on fake timers here).
     const store = new InMemoryStore();
     const manager = new PersistenceManager({ store, logger: () => {} });
     const rooms = [new GameInstance("public", "Public Arena")];

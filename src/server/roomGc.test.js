@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { runGcSweep } from "./roomGc.js";
 
 describe("roomGc module (Spec-042)", () => {

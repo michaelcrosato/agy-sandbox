@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import zlib from "zlib";
 import {
   DEFAULT_DEFLATE_OPTIONS,

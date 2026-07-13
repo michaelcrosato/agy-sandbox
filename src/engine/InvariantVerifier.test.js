@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach } from "vitest";
 import { InvariantVerifier } from "./InvariantVerifier.js";
 import { Ship } from "./Ship.js";
 import { GameInstance } from "./GameInstance.js";

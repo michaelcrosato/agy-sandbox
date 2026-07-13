@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { LatencyMonitor } from "./LatencyMonitor.js";
 
 describe("LatencyMonitor (SPEC-090)", () => {

@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { registerMissionSpawnHandlers } from "./missionSpawnHandlers.js";
 import { Vector2D } from "../physics/Vector2D.js";
 import { Ship } from "../engine/Ship.js";
@@ -21,7 +21,7 @@ describe("missionSpawnHandlers", () => {
       id: "player-1",
       roomId: "sol",
       ship: { name: "Flagship" },
-      send: jest.fn(),
+      send: vi.fn(),
       missionManager: {
         onStorylineStageAdvanced: null,
         onBountyAccepted: null,
@@ -32,16 +32,16 @@ describe("missionSpawnHandlers", () => {
     room = {
       planets: [planetA],
       engine: {
-        addEntity: jest.fn(),
+        addEntity: vi.fn(),
       },
       ais: [],
       factionRegistry: {
-        factionPolicy: jest.fn().mockReturnValue("mockFactionPolicy"),
-        standingPolicy: jest.fn().mockReturnValue("mockStandingPolicy"),
+        factionPolicy: vi.fn().mockReturnValue("mockFactionPolicy"),
+        standingPolicy: vi.fn().mockReturnValue("mockStandingPolicy"),
       },
     };
 
-    getRoom = jest.fn().mockReturnValue(room);
+    getRoom = vi.fn().mockReturnValue(room);
   });
 
   test("should register all three handlers on missionManager", () => {

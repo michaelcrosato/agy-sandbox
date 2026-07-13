@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { setupRedis } from "./redisSetup.js";
 import { JsonFileStore } from "../persistence/Store.js";
 import { InMemoryPubSub } from "../net/PubSub.js";
@@ -12,17 +12,17 @@ describe("redisSetup", () => {
   let mockRedisPubSubLib;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockRedisClient = {
-      connect: jest.fn().mockResolvedValue(undefined),
+      connect: vi.fn().mockResolvedValue(undefined),
     };
 
     mockRedisLib = {
-      createClient: jest.fn().mockReturnValue(mockRedisClient),
+      createClient: vi.fn().mockReturnValue(mockRedisClient),
     };
 
-    mockRedisStore = jest.fn();
-    mockRedisPubSub = jest.fn();
+    mockRedisStore = vi.fn();
+    mockRedisPubSub = vi.fn();
 
     mockRedisStoreLib = {
       RedisStore: mockRedisStore,
@@ -74,7 +74,7 @@ describe("redisSetup", () => {
   });
 
   test("should fallback to JsonFileStore gracefully if connection throws", async () => {
-    const consoleErrorSpy = jest
+    const consoleErrorSpy = vi
       .spyOn(console, "error")
       .mockImplementation(() => {});
     mockRedisClient.connect.mockRejectedValue(new Error("Connection refused"));

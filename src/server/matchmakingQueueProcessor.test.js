@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { processMatchmakingQueueForRoom } from "./matchmakingQueueProcessor.js";
 import { JoinQueue } from "./matchmaking.js";
 
@@ -11,12 +11,12 @@ describe("matchmakingQueueProcessor", () => {
   let clientsMock;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     roomMock = {
       id: "room-1",
       name: "Sol-Test",
-      metadata: jest.fn().mockReturnValue({
+      metadata: vi.fn().mockReturnValue({
         id: "room-1",
         name: "Sol-Test",
         maxPlayers: 5,
@@ -28,8 +28,8 @@ describe("matchmakingQueueProcessor", () => {
 
     matchmakingQueue = new JoinQueue();
 
-    joinRoomMock = jest.fn();
-    broadcastLobbySyncMock = jest.fn();
+    joinRoomMock = vi.fn();
+    broadcastLobbySyncMock = vi.fn();
     instancesMock = new Map();
     clientsMock = new Map();
   });
@@ -44,7 +44,7 @@ describe("matchmakingQueueProcessor", () => {
 
     const client1 = {
       ws: { readyState: 1 },
-      send: jest.fn(),
+      send: vi.fn(),
     };
     matchmakingQueue.enqueue({
       nickname: "PilotA",
@@ -66,9 +66,9 @@ describe("matchmakingQueueProcessor", () => {
   });
 
   test("admits matching candidates from the queue up to the free slots limit", () => {
-    const client1 = { ws: { readyState: 1 }, send: jest.fn() };
-    const client2 = { ws: { readyState: 1 }, send: jest.fn() };
-    const client3 = { ws: { readyState: 1 }, send: jest.fn() };
+    const client1 = { ws: { readyState: 1 }, send: vi.fn() };
+    const client2 = { ws: { readyState: 1 }, send: vi.fn() };
+    const client3 = { ws: { readyState: 1 }, send: vi.fn() };
 
     matchmakingQueue.enqueue({
       nickname: "PilotA",
@@ -128,9 +128,9 @@ describe("matchmakingQueueProcessor", () => {
   });
 
   test("prunes candidates from the queue if the socket is closed or missing", () => {
-    const client1 = { ws: null, send: jest.fn() }; // missing ws
-    const client2 = { ws: { readyState: 3 /* CLOSED */ }, send: jest.fn() }; // closed ws
-    const client3 = { ws: { readyState: 1 /* OPEN */ }, send: jest.fn() };
+    const client1 = { ws: null, send: vi.fn() }; // missing ws
+    const client2 = { ws: { readyState: 3 /* CLOSED */ }, send: vi.fn() }; // closed ws
+    const client3 = { ws: { readyState: 1 /* OPEN */ }, send: vi.fn() };
 
     matchmakingQueue.enqueue({
       nickname: "PilotA",
@@ -164,7 +164,7 @@ describe("matchmakingQueueProcessor", () => {
   });
 
   test("does not admit candidate if room criteria do not match", () => {
-    const client1 = { ws: { readyState: 1 }, send: jest.fn() };
+    const client1 = { ws: { readyState: 1 }, send: vi.fn() };
 
     matchmakingQueue.enqueue({
       nickname: "PilotA",

@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { NEBULAE } from "./Nebulae.js";
 
 describe("NEBULAE configuration", () => {

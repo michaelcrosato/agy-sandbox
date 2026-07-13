@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { GalaxyHeartbeat } from "./GalaxyHeartbeat.js";
 
 function planet(name, market, sector) {

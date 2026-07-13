@@ -1,3 +1,12 @@
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  beforeEach,
+  afterAll,
+  afterEach,
+} from "vitest";
 /**
  * WorkspaceDriftSentry.test.js (SPEC-146)
  * Comprehensive unit and integration verification suite for the Workspace Drift Sentry.

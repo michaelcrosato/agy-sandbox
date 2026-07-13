@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { AIController } from "./AIController.js";
 import { Goals } from "./UtilityAI.js";
 

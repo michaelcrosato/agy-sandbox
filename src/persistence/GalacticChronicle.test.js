@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach } from "vitest";
 import { InMemoryStore } from "./Store.js";
 import { GalacticChronicle } from "./GalacticChronicle.js";
 

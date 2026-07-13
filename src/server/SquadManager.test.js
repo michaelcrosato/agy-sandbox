@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach } from "vitest";
 import { SquadManager } from "./SquadManager.js";
 
 describe("SquadManager (spec 059)", () => {

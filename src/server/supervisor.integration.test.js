@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { Worker } from "worker_threads";
 import WebSocket from "ws";
 import fs from "fs";
@@ -26,7 +27,7 @@ describe("Supervisor process model integration (spec 019c)", () => {
 
     // Boot Worker 0 on port0 (Shard index 0, Shard count 2)
     worker0 = ProcessReaper.registerWorker(
-      new Worker(new URL("../server.js", import.meta.url), {
+      new Worker(new URL("../../dist/server.js", import.meta.url), {
         env: {
           NODE_ENV: "test",
           PORT: String(port0),
@@ -39,7 +40,7 @@ describe("Supervisor process model integration (spec 019c)", () => {
 
     // Boot Worker 1 on port1 (Shard index 1, Shard count 2)
     _worker1 = ProcessReaper.registerWorker(
-      new Worker(new URL("../server.js", import.meta.url), {
+      new Worker(new URL("../../dist/server.js", import.meta.url), {
         env: {
           NODE_ENV: "test",
           PORT: String(port1),

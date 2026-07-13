@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { broadcastRoomState } from "./roomBroadcast.js";
 
 describe("roomBroadcast", () => {
@@ -16,8 +16,8 @@ describe("roomBroadcast", () => {
         readyState: 1, // OPEN
         OPEN: 1,
         bufferedAmount: 0,
-        send: jest.fn(),
-        terminate: jest.fn(),
+        send: vi.fn(),
+        terminate: vi.fn(),
       },
       ship: {
         id: "player-1",
@@ -33,8 +33,8 @@ describe("roomBroadcast", () => {
         readyState: 1, // OPEN
         OPEN: 1,
         bufferedAmount: 0,
-        send: jest.fn(),
-        terminate: jest.fn(),
+        send: vi.fn(),
+        terminate: vi.fn(),
       },
       ship: {
         id: "player-2",
@@ -51,7 +51,7 @@ describe("roomBroadcast", () => {
         ["player-1", client1],
         ["player-2", client2],
       ]),
-      serializeEntities: jest.fn().mockReturnValue([
+      serializeEntities: vi.fn().mockReturnValue([
         { id: "player-1", type: "ship", x: 0, y: 0, position: { x: 0, y: 0 } },
         {
           id: "player-2",
@@ -79,15 +79,15 @@ describe("roomBroadcast", () => {
     };
 
     squadManagerMock = {
-      getSquadForPlayer: jest.fn().mockReturnValue(null),
+      getSquadForPlayer: vi.fn().mockReturnValue(null),
     };
 
     latencyMonitorMock = {
-      shouldShed: jest.fn().mockReturnValue(false),
+      shouldShed: vi.fn().mockReturnValue(false),
     };
 
     metricsMock = {
-      inc: jest.fn(),
+      inc: vi.fn(),
     };
   });
 

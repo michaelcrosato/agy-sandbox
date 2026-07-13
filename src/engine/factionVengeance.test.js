@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { GameInstance } from "./GameInstance.js";
 import { Ship } from "./Ship.js";
 import { Vector2D } from "../physics/Vector2D.js";

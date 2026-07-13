@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { ConnectionFloodSentry } from "./ConnectionFloodSentry.js";
 
 describe("ConnectionFloodSentry", () => {

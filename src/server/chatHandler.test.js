@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { handleChat } from "./chatHandler.js";
 
 describe("chatHandler", () => {
@@ -12,16 +12,16 @@ describe("chatHandler", () => {
       id: "p1",
       nickname: "TestPlayer",
       fleetName: null,
-      send: jest.fn(),
+      send: vi.fn(),
     };
     room = {
       fleets: new Map(),
     };
     pubsub = {
-      publish: jest.fn().mockImplementation(() => Promise.resolve()),
+      publish: vi.fn().mockImplementation(() => Promise.resolve()),
     };
     squadManager = {
-      getSquadForPlayer: jest.fn(),
+      getSquadForPlayer: vi.fn(),
     };
   });
 
@@ -108,7 +108,7 @@ describe("chatHandler", () => {
 
   test("broadcasts to fleet when in fleet and channel is fleet", async () => {
     clientObj.fleetName = "myfleet";
-    const otherClient = { send: jest.fn() };
+    const otherClient = { send: vi.fn() };
     room.fleets.set("myfleet", new Set([clientObj, otherClient]));
 
     await handleChat(

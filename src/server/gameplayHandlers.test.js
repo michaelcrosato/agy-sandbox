@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { Vector2D } from "../physics/Vector2D.js";
 import {
   handleControls,
@@ -17,8 +17,8 @@ describe("gameplayHandlers", () => {
       nickname: "TestPlayer",
       isLanded: false,
       planetLandedOn: null,
-      send: jest.fn(),
-      sendStats: jest.fn(),
+      send: vi.fn(),
+      sendStats: vi.fn(),
       ship: {
         isDestroyed: false,
         velocity: new Vector2D(5, 5),
@@ -28,14 +28,14 @@ describe("gameplayHandlers", () => {
         maxHyperFuel: 100,
         hyperFuel: 50,
         outfits: [],
-        setControls: jest.fn(),
-        clearControls: jest.fn(),
+        setControls: vi.fn(),
+        clearControls: vi.fn(),
       },
       missionManager: {
-        checkArrivalCompletions: jest.fn().mockReturnValue([]),
+        checkArrivalCompletions: vi.fn().mockReturnValue([]),
         availableMissions: {},
-        generateWorldMissions: jest.fn().mockReturnValue([]),
-        generateMissionsForPlanet: jest.fn(),
+        generateWorldMissions: vi.fn().mockReturnValue([]),
+        generateMissionsForPlanet: vi.fn(),
       },
     };
 
@@ -47,31 +47,31 @@ describe("gameplayHandlers", () => {
           faction: "Federation",
           landingRadius: 100,
           position: new Vector2D(100, 100),
-          canLand: jest.fn().mockReturnValue(true),
+          canLand: vi.fn().mockReturnValue(true),
           market: {},
         },
       ],
       fleets: new Map(),
       ships: new Map(),
       factionRegistry: {
-        dockingPermitted: jest.fn().mockReturnValue(true),
-        getStanding: jest.fn().mockReturnValue(0),
+        dockingPermitted: vi.fn().mockReturnValue(true),
+        getStanding: vi.fn().mockReturnValue(0),
       },
       territoryControl: {
         sectors: [],
-        adjustInfluence: jest.fn(),
+        adjustInfluence: vi.fn(),
       },
       engine: {
-        addEntity: jest.fn(),
-        removeEntity: jest.fn(),
+        addEntity: vi.fn(),
+        removeEntity: vi.fn(),
       },
-      broadcast: jest.fn(),
-      broadcastNotification: jest.fn(),
-      broadcastRosterUpdate: jest.fn(),
+      broadcast: vi.fn(),
+      broadcastNotification: vi.fn(),
+      broadcastRosterUpdate: vi.fn(),
     };
 
     persistenceManager = {
-      savePlayer: jest.fn(),
+      savePlayer: vi.fn(),
     };
   });
 

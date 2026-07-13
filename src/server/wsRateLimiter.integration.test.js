@@ -1,3 +1,4 @@
+import { describe, test, beforeAll, afterAll } from "vitest";
 import WebSocket from "ws";
 import {
   bootGameServerWorker,

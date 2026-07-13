@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach } from "vitest";
 import { InMemoryPubSub, RedisPubSub } from "./PubSub.js";
 
 class FakePubSubRedisClient {

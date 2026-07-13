@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   GameInstance,
   getSectorFromPosition,
@@ -12,10 +12,10 @@ import { Vector2D } from "../physics/Vector2D.js";
 /**
  * Creates a lightweight mock WebSocket that satisfies the GameInstance
  * broadcast guards (`ws.readyState === ws.OPEN`).
- * @returns {{ send: jest.Mock, readyState: number, OPEN: number }}
+ * @returns {{ send: import("vitest").Mock, readyState: number, OPEN: number }}
  */
 function mockWs() {
-  return { send: jest.fn(), readyState: 1, OPEN: 1 };
+  return { send: vi.fn(), readyState: 1, OPEN: 1 };
 }
 
 /**
@@ -43,8 +43,8 @@ function mockClient(id, nickname, shipOverrides = {}) {
     planetLandedOn: null,
     cleanupTimeout: null,
     missionManager: { activeMissions: [], checkBountyCompletion: () => null },
-    send: jest.fn(),
-    sendStats: jest.fn(),
+    send: vi.fn(),
+    sendStats: vi.fn(),
   };
 }
 

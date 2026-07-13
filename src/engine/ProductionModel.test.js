@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import {
   PLANET_PROFILES,
   DEFAULT_PRODUCTION_OPTIONS,

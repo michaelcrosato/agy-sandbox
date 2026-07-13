@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { handleSquadAction } from "./squadHandlers.js";
 
 describe("squadHandlers", () => {
@@ -11,24 +11,24 @@ describe("squadHandlers", () => {
     clientObj = {
       id: "p1",
       nickname: "Player1",
-      send: jest.fn(),
-      sendStats: jest.fn(),
+      send: vi.fn(),
+      sendStats: vi.fn(),
     };
     targetClient = {
       id: "p2",
       nickname: "Player2",
-      send: jest.fn(),
-      sendStats: jest.fn(),
+      send: vi.fn(),
+      sendStats: vi.fn(),
     };
     wss = {
       clients: new Set([{ clientObj: clientObj }, { clientObj: targetClient }]),
     };
     squadManager = {
-      getSquadForPlayer: jest.fn(),
-      createSquad: jest.fn().mockReturnValue({ id: "squad1" }),
-      joinSquad: jest.fn(),
-      leaveSquad: jest.fn(),
-      getSquadId: jest.fn(),
+      getSquadForPlayer: vi.fn(),
+      createSquad: vi.fn().mockReturnValue({ id: "squad1" }),
+      joinSquad: vi.fn(),
+      leaveSquad: vi.fn(),
+      getSquadId: vi.fn(),
     };
   });
 
@@ -172,9 +172,9 @@ describe("squadHandlers", () => {
 
     beforeEach(() => {
       mockPubsub = {
-        publish: jest.fn().mockResolvedValue(),
-        subscribe: jest.fn().mockResolvedValue(),
-        unsubscribe: jest.fn().mockResolvedValue(),
+        publish: vi.fn().mockResolvedValue(),
+        subscribe: vi.fn().mockResolvedValue(),
+        unsubscribe: vi.fn().mockResolvedValue(),
       };
     });
 

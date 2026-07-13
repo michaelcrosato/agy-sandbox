@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeAll, beforeEach, afterAll } from "vitest";
 /**
  * StaticSecuritySentry.test.js (SPEC-171) — Unit and integration tests
  * for Static Analysis AST Security Sentry.

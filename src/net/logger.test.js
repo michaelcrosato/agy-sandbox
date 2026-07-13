@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { createLogger } from "./logger.js";
 
 function capture(level) {

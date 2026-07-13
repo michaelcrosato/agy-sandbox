@@ -1,3 +1,4 @@
+import { describe, test, expect, afterEach } from "vitest";
 import fs from "fs";
 import path from "path";
 import os from "os";
@@ -188,76 +189,78 @@ describe("ConfigWatcher", () => {
     watcher.stop();
   });
 
-  test("watches config file for disk mutations and triggers reload asynchronously", (done) => {
-    const config1 = {
-      wsRateLimit: {
-        maxPerSecond: 80,
-      },
-    };
+  test("watches config file for disk mutations and triggers reload asynchronously", () =>
+    new Promise((resolve) => {
+      const config1 = {
+        wsRateLimit: {
+          maxPerSecond: 80,
+        },
+      };
 
-    writeTestConfig(config1);
+      writeTestConfig(config1);
 
-    const wsConfig = { maxPerSecond: 80 };
-    const watcher = new ConfigWatcher(testConfigPath, {
-      wsRateLimitConfig: wsConfig,
-    });
+      const wsConfig = { maxPerSecond: 80 };
+      const watcher = new ConfigWatcher(testConfigPath, {
+        wsRateLimitConfig: wsConfig,
+      });
 
-    watcher.start();
-    expect(watcher.reloadCount).toBe(1);
-
-    // Overwrite config
-    const config2 = {
-      wsRateLimit: {
-        maxPerSecond: 120,
-      },
-    };
-
-    setTimeout(() => {
-      writeTestConfig(config2);
-    }, 50);
-
-    // Wait for fs.watch event debounce timeout to fire
-    setTimeout(() => {
-      expect(watcher.reloadCount).toBe(2);
-      expect(wsConfig.maxPerSecond).toBe(120);
-      watcher.stop();
-      done();
-    }, 300);
-  });
-
-  test("safely ignores fs.watch events and clears timers after stop() is invoked to prevent async leaks (SPEC-125)", (done) => {
-    const config1 = {
-      wsRateLimit: {
-        maxPerSecond: 80,
-      },
-    };
-
-    writeTestConfig(config1);
-
-    const wsConfig = { maxPerSecond: 80 };
-    const watcher = new ConfigWatcher(testConfigPath, {
-      wsRateLimitConfig: wsConfig,
-    });
-
-    watcher.start();
-    expect(watcher.reloadCount).toBe(1);
-
-    // Call stop() immediately to simulate teardown
-    watcher.stop();
-
-    // Trigger a file change
-    const config2 = {
-      wsRateLimit: {
-        maxPerSecond: 120,
-      },
-    };
-    writeTestConfig(config2);
-
-    // Wait and assert that reloadCount did NOT increment, and wsConfig limits were NOT updated
-    setTimeout(() => {
+      watcher.start();
       expect(watcher.reloadCount).toBe(1);
-      expect(wsConfig.maxPerSecond).toBe(80);
-      done();
-    }, 250);
-  });
+
+      // Overwrite config
+      const config2 = {
+        wsRateLimit: {
+          maxPerSecond: 120,
+        },
+      };
+
+      setTimeout(() => {
+        writeTestConfig(config2);
+      }, 50);
+
+      // Wait for fs.watch event debounce timeout to fire
+      setTimeout(() => {
+        expect(watcher.reloadCount).toBe(2);
+        expect(wsConfig.maxPerSecond).toBe(120);
+        watcher.stop();
+        resolve();
+      }, 300);
+    }));
+
+  test("safely ignores fs.watch events and clears timers after stop() is invoked to prevent async leaks (SPEC-125)", () =>
+    new Promise((resolve) => {
+      const config1 = {
+        wsRateLimit: {
+          maxPerSecond: 80,
+        },
+      };
+
+      writeTestConfig(config1);
+
+      const wsConfig = { maxPerSecond: 80 };
+      const watcher = new ConfigWatcher(testConfigPath, {
+        wsRateLimitConfig: wsConfig,
+      });
+
+      watcher.start();
+      expect(watcher.reloadCount).toBe(1);
+
+      // Call stop() immediately to simulate teardown
+      watcher.stop();
+
+      // Trigger a file change
+      const config2 = {
+        wsRateLimit: {
+          maxPerSecond: 120,
+        },
+      };
+      writeTestConfig(config2);
+
+      // Wait and assert that reloadCount did NOT increment, and wsConfig limits were NOT updated
+      setTimeout(() => {
+        expect(watcher.reloadCount).toBe(1);
+        expect(wsConfig.maxPerSecond).toBe(80);
+        resolve();
+      }, 250);
+    }));
 });

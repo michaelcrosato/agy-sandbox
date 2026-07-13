@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
 import fs from "fs";
 import path from "path";

@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { GalaxyEventsManager } from "./GalaxyEventsManager.js";
 
 describe("GalaxyEventsManager core logic", () => {

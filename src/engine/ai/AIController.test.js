@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { AIController } from "./AIController.js";
 import { Ship } from "../Ship.js";
 import { SpaceEntity } from "../SpaceEntity.js";

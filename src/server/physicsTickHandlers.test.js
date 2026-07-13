@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { Vector2D } from "../physics/Vector2D.js";
 import { Ship } from "../engine/Ship.js";
 import { CargoPod } from "../engine/CargoPod.js";
@@ -21,12 +21,12 @@ describe("physicsTickHandlers", () => {
       clients: new Map(),
       engine: {
         entities: [],
-        removeEntity: jest.fn(),
+        removeEntity: vi.fn(),
         globalDrag: 0.1,
       },
       planets: [],
-      broadcastNotification: jest.fn(),
-      broadcast: jest.fn(),
+      broadcastNotification: vi.fn(),
+      broadcast: vi.fn(),
       activeSectorEvent: null,
     };
   });
@@ -35,7 +35,7 @@ describe("physicsTickHandlers", () => {
     test("skips updating destroyed AI ships", () => {
       const ai = {
         ship: { isDestroyed: true, id: "ai-1" },
-        update: jest.fn(),
+        update: vi.fn(),
       };
       room.ais.push(ai);
 
@@ -56,8 +56,8 @@ describe("physicsTickHandlers", () => {
         id: "player",
         nickname: "PilotOne",
         ship: playerShip,
-        send: jest.fn(),
-        sendStats: jest.fn(),
+        send: vi.fn(),
+        sendStats: vi.fn(),
       };
       room.clients.set("player", client);
 
@@ -71,7 +71,7 @@ describe("physicsTickHandlers", () => {
         isRefuelTanker: true,
         refuelTargetId: "player",
         destination: null,
-        update: jest.fn(),
+        update: vi.fn(),
       };
       room.ais.push(ai);
       room.engine.entities.push(aiShip, playerShip);
@@ -101,7 +101,7 @@ describe("physicsTickHandlers", () => {
         isRefuelTanker: true,
         refuelTargetId: "player-missing",
         destination: null,
-        update: jest.fn(),
+        update: vi.fn(),
       };
       room.ais.push(ai);
       room.engine.entities.push(aiShip);
@@ -123,7 +123,7 @@ describe("physicsTickHandlers", () => {
         ship: merchantShip,
         role: "merchant",
         destination: null,
-        update: jest.fn(),
+        update: vi.fn(),
       };
       room.ais.push(ai);
       room.planets.push(planetA);
@@ -154,7 +154,7 @@ describe("physicsTickHandlers", () => {
 
       room.engine.entities.push(ship, pod);
 
-      const applyForceSpy = jest.spyOn(pod, "applyForce");
+      const applyForceSpy = vi.spyOn(pod, "applyForce");
 
       applyTractorForces(room);
 
@@ -178,7 +178,7 @@ describe("physicsTickHandlers", () => {
 
       room.engine.entities.push(ship, pod);
 
-      const applyForceSpy = jest.spyOn(pod, "applyForce");
+      const applyForceSpy = vi.spyOn(pod, "applyForce");
 
       applyTractorForces(room);
 
@@ -198,8 +198,8 @@ describe("physicsTickHandlers", () => {
         id: "player",
         ship,
         tutorialStep: "mine_asteroid",
-        send: jest.fn(),
-        sendStats: jest.fn(),
+        send: vi.fn(),
+        sendStats: vi.fn(),
       };
       room.clients.set("player", client);
 
@@ -235,8 +235,8 @@ describe("physicsTickHandlers", () => {
       const client = {
         id: "player",
         ship,
-        send: jest.fn(),
-        sendStats: jest.fn(),
+        send: vi.fn(),
+        sendStats: vi.fn(),
       };
       room.clients.set("player", client);
 
@@ -272,8 +272,8 @@ describe("physicsTickHandlers", () => {
       const client = {
         id: "player",
         ship,
-        send: jest.fn(),
-        sendStats: jest.fn(),
+        send: vi.fn(),
+        sendStats: vi.fn(),
       };
       room.clients.set("player", client);
 
@@ -308,7 +308,7 @@ describe("physicsTickHandlers", () => {
       ship.velocity = new Vector2D(10, 10);
       room.engine.entities.push(ship);
 
-      const applyForceSpy = jest.spyOn(ship, "applyForce");
+      const applyForceSpy = vi.spyOn(ship, "applyForce");
       const originalRegens = new Map();
 
       applyNebulaHazards(room, originalRegens);

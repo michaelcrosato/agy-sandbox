@@ -1,3 +1,12 @@
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  beforeEach,
+  afterAll,
+  afterEach,
+} from "vitest";
 /**
  * IntrusionDetectionSentry.test.js (SPEC-175)
  * Comprehensive unit and integration test suite for V8 Isolated Sandbox Process Escape Intrusion Sentry.
@@ -67,138 +76,142 @@ describe("IntrusionDetectionSentry", () => {
     SandboxSecurityRegistry.clearRegistry();
   });
 
-  test("should instantly SIGKILL the process on prototype tampering", (done) => {
-    const child = childProcess.fork(workerScriptPath, ["proto"], {
-      stdio: "pipe",
-    });
+  test("should instantly SIGKILL the process on prototype tampering", () =>
+    new Promise((resolve, reject) => {
+      const child = childProcess.fork(workerScriptPath, ["proto"], {
+        stdio: "pipe",
+      });
 
-    let receivedAlert = false;
-    child.on("message", (msg) => {
-      if (
-        msg &&
-        msg.type === "intrusion_alert" &&
-        msg.category === "prototype_tamper"
-      ) {
-        receivedAlert = true;
-      }
-    });
-
-    child.on("exit", (code, signal) => {
-      try {
-        if (process.platform === "win32") {
-          expect(code !== 0 || signal !== null).toBe(true);
-        } else {
-          expect(signal).toBe("SIGKILL");
+      let receivedAlert = false;
+      child.on("message", (msg) => {
+        if (
+          msg &&
+          msg.type === "intrusion_alert" &&
+          msg.category === "prototype_tamper"
+        ) {
+          receivedAlert = true;
         }
-        expect(receivedAlert).toBe(true);
-        done();
-      } catch (err) {
-        done(err);
-      }
-    });
-  });
+      });
 
-  test("should instantly SIGKILL the process on process spawn attempt", (done) => {
-    const child = childProcess.fork(workerScriptPath, ["spawn"], {
-      stdio: "pipe",
-    });
-
-    let receivedAlert = false;
-    child.on("message", (msg) => {
-      if (
-        msg &&
-        msg.type === "intrusion_alert" &&
-        msg.category === "process_spawn"
-      ) {
-        receivedAlert = true;
-      }
-    });
-
-    child.on("exit", (code, signal) => {
-      try {
-        if (process.platform === "win32") {
-          expect(code !== 0 || signal !== null).toBe(true);
-        } else {
-          expect(signal).toBe("SIGKILL");
+      child.on("exit", (code, signal) => {
+        try {
+          if (process.platform === "win32") {
+            expect(code !== 0 || signal !== null).toBe(true);
+          } else {
+            expect(signal).toBe("SIGKILL");
+          }
+          expect(receivedAlert).toBe(true);
+          resolve();
+        } catch (err) {
+          reject(err);
         }
-        expect(receivedAlert).toBe(true);
-        done();
-      } catch (err) {
-        done(err);
-      }
-    });
-  });
+      });
+    }));
 
-  test("should compute and verify valid HMAC signatures on normal messages", (done) => {
-    const child = childProcess.fork(workerScriptPath, ["normal"], {
-      stdio: "pipe",
-    });
+  test("should instantly SIGKILL the process on process spawn attempt", () =>
+    new Promise((resolve, reject) => {
+      const child = childProcess.fork(workerScriptPath, ["spawn"], {
+        stdio: "pipe",
+      });
 
-    let verified = false;
-    child.on("message", (msg) => {
-      if (msg && msg.type === "heartbeat") {
-        const { signature } = msg;
-        const payload = { ...msg, signature: undefined };
-        const payloadStr = JSON.stringify(payload);
-        const computedSig = crypto
-          .createHmac("sha256", secretKey)
-          .update(payloadStr)
-          .digest("hex");
-
-        if (computedSig === signature) {
-          verified = true;
+      let receivedAlert = false;
+      child.on("message", (msg) => {
+        if (
+          msg &&
+          msg.type === "intrusion_alert" &&
+          msg.category === "process_spawn"
+        ) {
+          receivedAlert = true;
         }
-      }
-    });
+      });
 
-    child.on("exit", (code, signal) => {
-      try {
-        expect(verified).toBe(true);
-        expect(code).toBe(0);
-        expect(signal).toBeNull();
-        done();
-      } catch (err) {
-        done(err);
-      }
-    });
-  });
-
-  test("should allow host to detect signature tampering and mismatch", (done) => {
-    const child = childProcess.fork(workerScriptPath, ["bypass"], {
-      stdio: "pipe",
-    });
-
-    let mismatchDetected = false;
-    child.on("message", (msg) => {
-      if (msg && msg.type === "heartbeat") {
-        const { signature } = msg;
-        const payload = { ...msg, signature: undefined };
-        const payloadStr = JSON.stringify(payload);
-        const computedSig = crypto
-          .createHmac("sha256", secretKey)
-          .update(payloadStr)
-          .digest("hex");
-
-        if (computedSig !== signature) {
-          mismatchDetected = true;
-          // In standard host supervisor, it would send SIGKILL
-          child.kill("SIGKILL");
+      child.on("exit", (code, signal) => {
+        try {
+          if (process.platform === "win32") {
+            expect(code !== 0 || signal !== null).toBe(true);
+          } else {
+            expect(signal).toBe("SIGKILL");
+          }
+          expect(receivedAlert).toBe(true);
+          resolve();
+        } catch (err) {
+          reject(err);
         }
-      }
-    });
+      });
+    }));
 
-    child.on("exit", (code, signal) => {
-      try {
-        expect(mismatchDetected).toBe(true);
-        if (process.platform === "win32") {
-          expect(code !== 0 || signal !== null).toBe(true);
-        } else {
-          expect(signal).toBe("SIGKILL");
+  test("should compute and verify valid HMAC signatures on normal messages", () =>
+    new Promise((resolve, reject) => {
+      const child = childProcess.fork(workerScriptPath, ["normal"], {
+        stdio: "pipe",
+      });
+
+      let verified = false;
+      child.on("message", (msg) => {
+        if (msg && msg.type === "heartbeat") {
+          const { signature } = msg;
+          const payload = { ...msg, signature: undefined };
+          const payloadStr = JSON.stringify(payload);
+          const computedSig = crypto
+            .createHmac("sha256", secretKey)
+            .update(payloadStr)
+            .digest("hex");
+
+          if (computedSig === signature) {
+            verified = true;
+          }
         }
-        done();
-      } catch (err) {
-        done(err);
-      }
-    });
-  });
+      });
+
+      child.on("exit", (code, signal) => {
+        try {
+          expect(verified).toBe(true);
+          expect(code).toBe(0);
+          expect(signal).toBeNull();
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
+      });
+    }));
+
+  test("should allow host to detect signature tampering and mismatch", () =>
+    new Promise((resolve, reject) => {
+      const child = childProcess.fork(workerScriptPath, ["bypass"], {
+        stdio: "pipe",
+      });
+
+      let mismatchDetected = false;
+      child.on("message", (msg) => {
+        if (msg && msg.type === "heartbeat") {
+          const { signature } = msg;
+          const payload = { ...msg, signature: undefined };
+          const payloadStr = JSON.stringify(payload);
+          const computedSig = crypto
+            .createHmac("sha256", secretKey)
+            .update(payloadStr)
+            .digest("hex");
+
+          if (computedSig !== signature) {
+            mismatchDetected = true;
+            // In standard host supervisor, it would send SIGKILL
+            child.kill("SIGKILL");
+          }
+        }
+      });
+
+      child.on("exit", (code, signal) => {
+        try {
+          expect(mismatchDetected).toBe(true);
+          if (process.platform === "win32") {
+            expect(code !== 0 || signal !== null).toBe(true);
+          } else {
+            expect(signal).toBe("SIGKILL");
+          }
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
+      });
+    }));
 });

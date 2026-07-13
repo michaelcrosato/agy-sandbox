@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import {
   interestFilter,
   DEFAULT_INTEREST_RADIUS,

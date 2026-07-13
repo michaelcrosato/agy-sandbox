@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { createSeededRng, pilotName, shipName } from "./NameGenerator.js";
 
 describe("NameGenerator (EW8)", () => {

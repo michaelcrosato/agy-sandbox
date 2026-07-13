@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import http from "http";
 import WebSocket from "ws";
 import { ProcessReaper } from "../net/ProcessReaper.js";

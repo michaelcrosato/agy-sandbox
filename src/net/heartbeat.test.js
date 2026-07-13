@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { DEFAULT_HEARTBEAT_MS, selectDeadSockets } from "./heartbeat.js";
 
 describe("heartbeat.selectDeadSockets (spec 003)", () => {

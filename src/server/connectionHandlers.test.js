@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { handleConnectionAction } from "./connectionHandlers.js";
 
 describe("connectionHandlers", () => {
@@ -11,11 +11,11 @@ describe("connectionHandlers", () => {
       id: "p1",
       nickname: "Player1",
       roomId: null,
-      send: jest.fn(),
-      sendStats: jest.fn(),
+      send: vi.fn(),
+      sendStats: vi.fn(),
     };
     ws = {
-      send: jest.fn(),
+      send: vi.fn(),
     };
     options = {
       instances: new Map([
@@ -26,10 +26,10 @@ describe("connectionHandlers", () => {
             name: "Public Sector",
             clients: new Map(),
             planets: [],
-            engine: { entities: [], addEntity: jest.fn() },
-            broadcastNotification: jest.fn(),
-            broadcastRosterUpdate: jest.fn(),
-            metadata: jest.fn().mockReturnValue({
+            engine: { entities: [], addEntity: vi.fn() },
+            broadcastNotification: vi.fn(),
+            broadcastRosterUpdate: vi.fn(),
+            metadata: vi.fn().mockReturnValue({
               id: "public",
               name: "Public Sector",
               players: 0,
@@ -43,17 +43,17 @@ describe("connectionHandlers", () => {
       clients: new Map(),
       persistentSessions: new Map(),
       persistenceManager: {
-        loadPlayer: jest.fn().mockReturnValue(Promise.resolve(null)),
+        loadPlayer: vi.fn().mockReturnValue(Promise.resolve(null)),
       },
       galacticChronicle: {},
       WORKERS: 1,
       SHARD_INDEX: 0,
       matchmakingQueue: {
-        enqueue: jest.fn(),
+        enqueue: vi.fn(),
       },
-      joinRoom: jest.fn(),
-      sendLobbyList: jest.fn(),
-      broadcastLobbySync: jest.fn(),
+      joinRoom: vi.fn(),
+      sendLobbyList: vi.fn(),
+      broadcastLobbySync: vi.fn(),
     };
   });
 
@@ -102,8 +102,8 @@ describe("connectionHandlers", () => {
         id: "p1",
         nickname: "Player1",
         roomId: "public",
-        send: jest.fn(),
-        sendStats: jest.fn(),
+        send: vi.fn(),
+        sendStats: vi.fn(),
         ship: { id: "ship-1" },
         tutorialCompleted: false,
       };

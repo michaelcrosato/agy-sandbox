@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import http from "http";
 import https from "https";
 import {
@@ -121,44 +122,50 @@ describe("ApiRateLimiter & Outbound Network Sentinel", () => {
       req.abort(); // Clean up socket connection
     });
 
-    test("http.request intercepts and emits pre-flight validation error on block", (done) => {
-      const req = http.request(
-        {
-          host: "malicious.com",
-          path: "/leak",
-        },
-        (_res) => {
-          done(
-            new Error("Should not invoke response callback on blocked domain"),
-          );
-        },
-      );
-
-      req.on("error", (err) => {
-        expect(err.message).toContain(
-          "Outbound sentinel blocked non-allowlisted",
+    test("http.request intercepts and emits pre-flight validation error on block", () =>
+      new Promise((resolve, reject) => {
+        const req = http.request(
+          {
+            host: "malicious.com",
+            path: "/leak",
+          },
+          (_res) => {
+            reject(
+              new Error(
+                "Should not invoke response callback on blocked domain",
+              ),
+            );
+          },
         );
-        expect(err.code).toBe("ENETUNREACH");
-        done();
-      });
-    });
 
-    test("https.request intercepts and emits pre-flight validation error on block", (done) => {
-      const req = https.request(
-        "https://secret-leak.com/exfiltrate",
-        (_res) => {
-          done(
-            new Error("Should not invoke response callback on blocked domain"),
+        req.on("error", (err) => {
+          expect(err.message).toContain(
+            "Outbound sentinel blocked non-allowlisted",
           );
-        },
-      );
+          expect(err.code).toBe("ENETUNREACH");
+          resolve();
+        });
+      }));
 
-      req.on("error", (err) => {
-        expect(err.message).toContain("Outbound sentinel blocked");
-        expect(err.code).toBe("ENETUNREACH");
-        done();
-      });
-    });
+    test("https.request intercepts and emits pre-flight validation error on block", () =>
+      new Promise((resolve, reject) => {
+        const req = https.request(
+          "https://secret-leak.com/exfiltrate",
+          (_res) => {
+            reject(
+              new Error(
+                "Should not invoke response callback on blocked domain",
+              ),
+            );
+          },
+        );
+
+        req.on("error", (err) => {
+          expect(err.message).toContain("Outbound sentinel blocked");
+          expect(err.code).toBe("ENETUNREACH");
+          resolve();
+        });
+      }));
 
     test("globalThis.fetch intercepts and throws on block", async () => {
       if (typeof globalThis.fetch === "function") {

@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { Planet } from "./Planet.js";
 import { Ship } from "./Ship.js";
 import { Vector2D } from "../physics/Vector2D.js";

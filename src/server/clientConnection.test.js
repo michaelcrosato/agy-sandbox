@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import {
   createClientObject,
   preprocessMessage,
@@ -6,8 +6,8 @@ import {
 } from "./clientConnection.js";
 
 // Mock the imported sendClientStats function
-jest.unstable_mockModule("./clientStats.js", () => ({
-  sendClientStats: jest.fn(),
+vi.doMock("./clientStats.js", () => ({
+  sendClientStats: vi.fn(),
 }));
 
 describe("clientConnection", () => {
@@ -18,13 +18,13 @@ describe("clientConnection", () => {
 
     beforeEach(() => {
       ws = {
-        send: jest.fn(),
+        send: vi.fn(),
         readyState: 1, // OPEN
         OPEN: 1,
       };
 
       mockLatencyMonitor = {
-        shouldShed: jest.fn().mockReturnValue(false),
+        shouldShed: vi.fn().mockReturnValue(false),
       };
 
       options = {
@@ -32,8 +32,8 @@ describe("clientConnection", () => {
         storeInstance: {},
         instances: {},
         squadManager: {},
-        getClients: jest.fn(),
-        buildStatsPayload: jest.fn(),
+        getClients: vi.fn(),
+        buildStatsPayload: vi.fn(),
       };
     });
 
@@ -133,23 +133,23 @@ describe("clientConnection", () => {
         id: "player-123",
         rateLimitTokens: 10,
         rateLimitLastRefill: Date.now() - 5000, // 5 seconds ago
-        send: jest.fn(),
+        send: vi.fn(),
       };
 
       ws = {
-        pause: jest.fn(),
-        resume: jest.fn(),
+        pause: vi.fn(),
+        resume: vi.fn(),
       };
 
       mockMetrics = {
-        inc: jest.fn(),
+        inc: vi.fn(),
       };
 
       mockResourceLimiter = {
         isBackpressureActive: false,
       };
 
-      mockValidateMessage = jest.fn().mockReturnValue({
+      mockValidateMessage = vi.fn().mockReturnValue({
         valid: true,
         sanitized: { type: "controls", thrust: true },
       });
@@ -199,7 +199,7 @@ describe("clientConnection", () => {
       const origEnv = process.env.NODE_ENV;
       process.env.NODE_ENV = "production";
 
-      jest.useFakeTimers();
+      vi.useFakeTimers();
 
       const msg = preprocessMessage(
         clientObj,
@@ -218,12 +218,12 @@ describe("clientConnection", () => {
       );
 
       // Fast-forward resume timer
-      jest.advanceTimersByTime(200);
+      vi.advanceTimersByTime(200);
       expect(ws.resume).toHaveBeenCalled();
 
       // Clean up environment and timers
       process.env.NODE_ENV = origEnv;
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     test("should return null for malformed JSON inputs", () => {
@@ -258,10 +258,10 @@ describe("clientConnection", () => {
       eventListeners = {};
       ws = {
         isAlive: false,
-        on: jest.fn((event, cb) => {
+        on: vi.fn((event, cb) => {
           eventListeners[event] = cb;
         }),
-        send: jest.fn(),
+        send: vi.fn(),
         readyState: 1, // OPEN
         OPEN: 1,
       };
@@ -273,22 +273,22 @@ describe("clientConnection", () => {
       };
 
       options = {
-        metrics: { inc: jest.fn() },
-        logger: { info: jest.fn() },
-        latencyMonitor: { shouldShed: jest.fn().mockReturnValue(false) },
+        metrics: { inc: vi.fn() },
+        logger: { info: vi.fn() },
+        latencyMonitor: { shouldShed: vi.fn().mockReturnValue(false) },
         storeInstance: {},
         instances: new Map(),
         squadManager: {},
-        buildStatsPayload: jest.fn(),
-        registerMissionSpawnHandlers: jest.fn(),
+        buildStatsPayload: vi.fn(),
+        registerMissionSpawnHandlers: vi.fn(),
         clients: new Map(),
         wsRateLimitConfig: { maxPerSecond: 100 },
         resourceLimiter: { isBackpressureActive: false },
-        validateMessage: jest.fn().mockReturnValue({
+        validateMessage: vi.fn().mockReturnValue({
           valid: true,
           sanitized: { type: "chat", message: "hello" },
         }),
-        routeMessage: jest.fn(),
+        routeMessage: vi.fn(),
         persistentSessions: new Map(),
         persistenceManager: {},
         galacticChronicle: {},
@@ -297,12 +297,12 @@ describe("clientConnection", () => {
         WORKERS: 1,
         SHARD_INDEX: 0,
         matchmakingQueue: {},
-        joinRoom: jest.fn(),
-        sendLobbyList: jest.fn(),
-        broadcastLobbySync: jest.fn(),
+        joinRoom: vi.fn(),
+        sendLobbyList: vi.fn(),
+        broadcastLobbySync: vi.fn(),
         connectionFloodSentry: {},
-        handleClientDisconnect: jest.fn(),
-        processMatchmakingQueueForRoom: jest.fn(),
+        handleClientDisconnect: vi.fn(),
+        processMatchmakingQueueForRoom: vi.fn(),
       };
     });
 

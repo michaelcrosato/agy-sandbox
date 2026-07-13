@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { DEFAULT_MINING_OPTIONS, mineYield } from "./Mining.js";
 import { createSeededRng } from "./GenerativeMissions.js";
 

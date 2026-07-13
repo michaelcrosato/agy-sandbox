@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach } from "vitest";
 import { AnomalyDetector } from "./AnomalyDetector.js";
 
 describe("AnomalyDetector Unit Tests", () => {

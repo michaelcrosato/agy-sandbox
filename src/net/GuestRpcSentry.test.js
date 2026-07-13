@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { validateRpcRequest, GuestRpcSentry } from "./GuestRpcSentry.js";
 import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
 
@@ -6,7 +6,7 @@ describe("GuestRpcSentry", () => {
   beforeEach(() => {
     GuestRpcSentry.totalRequests = 0;
     GuestRpcSentry.blockedRequests = 0;
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("validateRpcRequest", () => {
@@ -119,7 +119,7 @@ describe("GuestRpcSentry", () => {
     });
 
     test("blocks requests with mismatched expected token", async () => {
-      const logSpy = jest
+      const logSpy = vi
         .spyOn(SandboxSecurityRegistry, "logViolation")
         .mockImplementation(() => {});
       const msg = {
@@ -150,7 +150,7 @@ describe("GuestRpcSentry", () => {
     });
 
     test("blocks invalid RPC requests", async () => {
-      const logSpy = jest
+      const logSpy = vi
         .spyOn(SandboxSecurityRegistry, "logViolation")
         .mockImplementation(() => {});
       const msg = {

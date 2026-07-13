@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
 /**
  * DnsEgressSentry.test.js (SPEC-173) — comprehensive test suite
  * for the DNS exfiltration and tunneling sentry.
@@ -105,49 +106,53 @@ describe("DnsEgressSentry", () => {
       DnsEgressSentry.activate();
     });
 
-    test("should successfully resolve allowed domains under patched callback lookup", (done) => {
-      dns.lookup("localhost", (err, address) => {
-        expect(err).toBeNull();
-        expect(address).toBeDefined();
-        done();
-      });
-    });
+    test("should successfully resolve allowed domains under patched callback lookup", () =>
+      new Promise((resolve) => {
+        dns.lookup("localhost", (err, address) => {
+          expect(err).toBeNull();
+          expect(address).toBeDefined();
+          resolve();
+        });
+      }));
 
-    test("should fail resolving blocked domains with ENETUNREACH under callback lookup", (done) => {
-      dns.lookup("evil.com", (err) => {
-        expect(err).toBeInstanceOf(Error);
-        expect(err.code).toBe("ENETUNREACH");
-        expect(err.message).toContain(
-          "Outbound firewall blocked non-allowlisted host domain",
-        );
+    test("should fail resolving blocked domains with ENETUNREACH under callback lookup", () =>
+      new Promise((resolve) => {
+        dns.lookup("evil.com", (err) => {
+          expect(err).toBeInstanceOf(Error);
+          expect(err.code).toBe("ENETUNREACH");
+          expect(err.message).toContain(
+            "Outbound firewall blocked non-allowlisted host domain",
+          );
 
-        // Should log in SandboxSecurityRegistry
-        const metrics = SandboxSecurityRegistry.getMetrics();
-        expect(metrics.security_violations_total).toBe(1);
-        expect(metrics.security_violations_by_category.firewall).toBe(1);
-        done();
-      });
-    });
+          // Should log in SandboxSecurityRegistry
+          const metrics = SandboxSecurityRegistry.getMetrics();
+          expect(metrics.security_violations_total).toBe(1);
+          expect(metrics.security_violations_by_category.firewall).toBe(1);
+          resolve();
+        });
+      }));
 
-    test("should fail resolving blocked resolves with ENETUNREACH under callback resolve4", (done) => {
-      dns.resolve4("evil.com", (err) => {
-        expect(err).toBeInstanceOf(Error);
-        expect(err.code).toBe("ENETUNREACH");
-        done();
-      });
-    });
+    test("should fail resolving blocked resolves with ENETUNREACH under callback resolve4", () =>
+      new Promise((resolve) => {
+        dns.resolve4("evil.com", (err) => {
+          expect(err).toBeInstanceOf(Error);
+          expect(err.code).toBe("ENETUNREACH");
+          resolve();
+        });
+      }));
 
-    test("should fail resolving high-entropy tunneling domain under callback resolveTxt", (done) => {
-      const payload = "4a8f9b2c3d7e6f0a1b2c3d4e5f6a7b8c";
-      dns.resolveTxt(`${payload}.google.com`, (err) => {
-        expect(err).toBeInstanceOf(Error);
-        expect(err.code).toBe("ENETUNREACH");
-        expect(err.message).toContain(
-          "Potential DNS tunneling exfiltration detected",
-        );
-        done();
-      });
-    });
+    test("should fail resolving high-entropy tunneling domain under callback resolveTxt", () =>
+      new Promise((resolve) => {
+        const payload = "4a8f9b2c3d7e6f0a1b2c3d4e5f6a7b8c";
+        dns.resolveTxt(`${payload}.google.com`, (err) => {
+          expect(err).toBeInstanceOf(Error);
+          expect(err.code).toBe("ENETUNREACH");
+          expect(err.message).toContain(
+            "Potential DNS tunneling exfiltration detected",
+          );
+          resolve();
+        });
+      }));
 
     test("should return a rejected promise under promises.lookup for blocked domain", async () => {
       await expect(dns.promises.lookup("evil.com")).rejects.toThrow(

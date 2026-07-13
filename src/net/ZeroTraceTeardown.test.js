@@ -1,7 +1,7 @@
+import { describe, test, expect, afterEach, vi } from "vitest";
 import fs from "fs";
 import path from "path";
 import childProcess from "child_process";
-import { jest } from "@jest/globals";
 import { ZeroTraceTeardown } from "./ZeroTraceTeardown.js";
 
 describe("ZeroTraceTeardown (SPEC-176)", () => {
@@ -30,36 +30,37 @@ describe("ZeroTraceTeardown (SPEC-176)", () => {
     expect(fired).toBe(false);
   });
 
-  test("killProcessTree terminates child processes recursively", (done) => {
-    // Spawn a node child process that executes a nested child process and busy waits
-    const child = childProcess.spawn("node", [
-      "-e",
-      "const cp = require('child_process'); cp.spawn('node', ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' }); setInterval(() => {}, 1000);",
-    ]);
+  test("killProcessTree terminates child processes recursively", () =>
+    new Promise((resolve) => {
+      // Spawn a node child process that executes a nested child process and busy waits
+      const child = childProcess.spawn("node", [
+        "-e",
+        "const cp = require('child_process'); cp.spawn('node', ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' }); setInterval(() => {}, 1000);",
+      ]);
 
-    setTimeout(() => {
-      const pid = child.pid;
-      expect(pid).toBeDefined();
+      setTimeout(() => {
+        const pid = child.pid;
+        expect(pid).toBeDefined();
 
-      if (pid) {
-        ZeroTraceTeardown.killProcessTree(pid);
+        if (pid) {
+          ZeroTraceTeardown.killProcessTree(pid);
 
-        // Wait a short time for OS process cleanup
-        setTimeout(() => {
-          let isDead = false;
-          try {
-            process.kill(pid, 0);
-          } catch (err) {
-            isDead = err.code === "ESRCH";
-          }
-          expect(isDead).toBe(true);
-          done();
-        }, 100);
-      } else {
-        done();
-      }
-    }, 500);
-  });
+          // Wait a short time for OS process cleanup
+          setTimeout(() => {
+            let isDead = false;
+            try {
+              process.kill(pid, 0);
+            } catch (err) {
+              isDead = err.code === "ESRCH";
+            }
+            expect(isDead).toBe(true);
+            resolve();
+          }, 100);
+        } else {
+          resolve();
+        }
+      }, 500);
+    }));
 
   test("teardown performs comprehensive purges and self-healing", async () => {
     ZeroTraceTeardown.initTimerHooks();
@@ -95,9 +96,9 @@ describe("ZeroTraceTeardown (SPEC-176)", () => {
     const mockChild = {
       pid: 999999,
       connected: true,
-      disconnect: jest.fn(),
-      stdout: { destroy: jest.fn() },
-      stderr: { destroy: jest.fn() },
+      disconnect: vi.fn(),
+      stdout: { destroy: vi.fn() },
+      stderr: { destroy: vi.fn() },
     };
 
     // Run teardown directly to verify its individual components

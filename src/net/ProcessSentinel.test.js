@@ -1,4 +1,13 @@
 import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  beforeEach,
+  afterAll,
+  afterEach,
+} from "vitest";
+import {
   ProcessSentinel,
   validateCommand,
   parseCommandString,

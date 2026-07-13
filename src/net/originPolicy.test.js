@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { isAllowedOrigin } from "./originPolicy.js";
 
 describe("originPolicy.isAllowedOrigin (spec 002)", () => {

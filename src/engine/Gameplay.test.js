@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach } from "vitest";
 import { Ship } from "./Ship.js";
 import { Planet } from "./Planet.js";
 import { MissionManager } from "./MissionManager.js";

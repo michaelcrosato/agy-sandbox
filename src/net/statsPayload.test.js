@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { buildStatsPayload } from "./statsPayload.js";
 import { Ship } from "../engine/Ship.js";
 import { MissionManager } from "../engine/MissionManager.js";

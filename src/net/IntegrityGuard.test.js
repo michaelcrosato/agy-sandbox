@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
 /**
  * IntegrityGuard.test.js (spec 134) — comprehensive verification suite
  * for global prototype freeze and object integrity sentry.

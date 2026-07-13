@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { ResourceLimiter } from "./ResourceLimiter.js";
 
 describe("ResourceLimiter (SPEC-116)", () => {

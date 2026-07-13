@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { GameInstance } from "../engine/GameInstance.js";
 import { FactionRegistry } from "../engine/FactionRegistry.js";
 import { squadManager } from "./SquadManager.js";

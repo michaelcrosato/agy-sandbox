@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { joinRoom, handleClientDisconnect } from "./connectionLifecycle.js";
 import { Vector2D } from "../physics/Vector2D.js";
 import { Ship } from "../engine/Ship.js";
@@ -11,15 +11,15 @@ describe("connectionLifecycle", () => {
   let roomB;
 
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
 
     clientObj = {
       id: "p1",
       nickname: "Player1",
       roomId: null,
       ws: {},
-      send: jest.fn(),
-      sendStats: jest.fn(),
+      send: vi.fn(),
+      sendStats: vi.fn(),
     };
 
     ws = clientObj.ws;
@@ -31,14 +31,14 @@ describe("connectionLifecycle", () => {
       ais: [],
       engine: {
         entities: [],
-        addEntity: jest.fn(),
-        removeEntity: jest.fn(),
+        addEntity: vi.fn(),
+        removeEntity: vi.fn(),
       },
       planets: [{ name: "PlanetA", market: { ore: 10 } }],
       activeSectorEvent: null,
-      leaveCurrentFleet: jest.fn(),
-      broadcastNotification: jest.fn(),
-      broadcastRosterUpdate: jest.fn(),
+      leaveCurrentFleet: vi.fn(),
+      broadcastNotification: vi.fn(),
+      broadcastRosterUpdate: vi.fn(),
     };
 
     roomB = {
@@ -48,14 +48,14 @@ describe("connectionLifecycle", () => {
       ais: [],
       engine: {
         entities: [],
-        addEntity: jest.fn(),
-        removeEntity: jest.fn(),
+        addEntity: vi.fn(),
+        removeEntity: vi.fn(),
       },
       planets: [{ name: "PlanetB", market: { commodities: 5 } }],
       activeSectorEvent: null,
-      leaveCurrentFleet: jest.fn(),
-      broadcastNotification: jest.fn(),
-      broadcastRosterUpdate: jest.fn(),
+      leaveCurrentFleet: vi.fn(),
+      broadcastNotification: vi.fn(),
+      broadcastRosterUpdate: vi.fn(),
     };
 
     options = {
@@ -67,29 +67,29 @@ describe("connectionLifecycle", () => {
       clients: new Map([[ws, clientObj]]),
       persistentSessions: new Map(),
       persistenceManager: {
-        savePlayer: jest.fn(),
-        loadGalaxy: jest.fn().mockResolvedValue(null),
+        savePlayer: vi.fn(),
+        loadGalaxy: vi.fn().mockResolvedValue(null),
       },
       galacticChronicle: {},
       WORKERS: 1,
       SHARD_INDEX: 0,
       connectionFloodSentry: {
-        deregister: jest.fn(),
+        deregister: vi.fn(),
       },
       matchmakingQueue: {
-        remove: jest.fn(),
+        remove: vi.fn(),
         waiting: [],
       },
-      loadRegistry: jest.fn(),
-      saveRegistry: jest.fn(),
-      routeConnection: jest.fn(),
-      processMatchmakingQueueForRoom: jest.fn(),
-      broadcastLobbySync: jest.fn(),
+      loadRegistry: vi.fn(),
+      saveRegistry: vi.fn(),
+      routeConnection: vi.fn(),
+      processMatchmakingQueueForRoom: vi.fn(),
+      broadcastLobbySync: vi.fn(),
     };
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe("joinRoom", () => {
@@ -192,7 +192,7 @@ describe("connectionLifecycle", () => {
       expect(options.persistenceManager.savePlayer).not.toHaveBeenCalled();
 
       // Trigger the 30s timeout
-      jest.advanceTimersByTime(30000);
+      vi.advanceTimersByTime(30000);
 
       // Post-timeout asserts
       expect(options.persistenceManager.savePlayer).toHaveBeenCalledWith(

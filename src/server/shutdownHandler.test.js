@@ -1,13 +1,13 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 
 // Define mocks before importing the target module
-const mockStopPeriodicIntervals = jest.fn();
-jest.unstable_mockModule("./periodicIntervals.js", () => ({
+const mockStopPeriodicIntervals = vi.fn();
+vi.doMock("./periodicIntervals.js", () => ({
   stopPeriodicIntervals: mockStopPeriodicIntervals,
 }));
 
-const mockAssignShard = jest.fn(() => 0);
-jest.unstable_mockModule("../net/roomRouter.js", () => ({
+const mockAssignShard = vi.fn(() => 0);
+vi.doMock("../net/roomRouter.js", () => ({
   assignShard: mockAssignShard,
 }));
 
@@ -25,24 +25,24 @@ describe("shutdownHandler", () => {
   let instancesMock;
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.clearAllMocks();
+    vi.useFakeTimers();
+    vi.clearAllMocks();
 
-    exitProcessMock = jest.fn();
+    exitProcessMock = vi.fn();
     wssMock = {
-      close: jest.fn((cb) => cb()),
+      close: vi.fn((cb) => cb()),
     };
     serverMock = {
-      close: jest.fn((cb) => cb()),
+      close: vi.fn((cb) => cb()),
     };
     persistenceManagerMock = {
-      stopAutosave: jest.fn(),
-      saveGalaxy: jest.fn(),
-      saveAllGalaxies: jest.fn().mockResolvedValue(2),
-      savePlayer: jest.fn().mockResolvedValue(true),
+      stopAutosave: vi.fn(),
+      saveGalaxy: vi.fn(),
+      saveAllGalaxies: vi.fn().mockResolvedValue(2),
+      savePlayer: vi.fn().mockResolvedValue(true),
     };
     configWatcherMock = {
-      stop: jest.fn(),
+      stop: vi.fn(),
     };
     clientsMock = new Map([
       [
@@ -62,8 +62,8 @@ describe("shutdownHandler", () => {
             [
               "client-1",
               {
-                send: jest.fn(),
-                ws: { close: jest.fn() },
+                send: vi.fn(),
+                ws: { close: vi.fn() },
               },
             ],
           ]),
@@ -72,17 +72,17 @@ describe("shutdownHandler", () => {
     ]);
 
     options = {
-      latencyMonitor: { stop: jest.fn() },
-      sandboxTelemetry: { stop: jest.fn() },
-      memoryLeakSentry: { stop: jest.fn() },
-      resourceLimiter: { stop: jest.fn() },
+      latencyMonitor: { stop: vi.fn() },
+      sandboxTelemetry: { stop: vi.fn() },
+      memoryLeakSentry: { stop: vi.fn() },
+      resourceLimiter: { stop: vi.fn() },
       getConfigWatcher: () => configWatcherMock,
       physicsInterval: 123,
       getPeriodicIntervalHandles: () => ({ handle: 456 }),
-      loadRegistry: jest.fn().mockResolvedValue({
-        transfer: jest.fn(),
+      loadRegistry: vi.fn().mockResolvedValue({
+        transfer: vi.fn(),
       }),
-      saveRegistry: jest.fn(),
+      saveRegistry: vi.fn(),
       instances: instancesMock,
       persistenceManager: persistenceManagerMock,
       clients: clientsMock,
@@ -95,7 +95,7 @@ describe("shutdownHandler", () => {
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   test("runs correct sequence of stops, interval clears, persists, and triggers server closes and exit 0", async () => {
@@ -135,7 +135,7 @@ describe("shutdownHandler", () => {
   test("runs graceful multi-worker drain and transfers rooms on restart", async () => {
     options.workers = 2; // trigger drain logic
     const registryMock = {
-      transfer: jest.fn(),
+      transfer: vi.fn(),
     };
     options.loadRegistry.mockResolvedValue(registryMock);
 
@@ -161,7 +161,7 @@ describe("shutdownHandler", () => {
   });
 
   test("triggers fallback exit 1 if server close timeouts exceed force exit threshold", async () => {
-    wssMock.close = jest.fn(); // hang WebSocket server close callback
+    wssMock.close = vi.fn(); // hang WebSocket server close callback
 
     const handler = createShutdownHandler(options);
     await handler();
@@ -171,7 +171,7 @@ describe("shutdownHandler", () => {
     expect(exitProcessMock).not.toHaveBeenCalled();
 
     // Advance fake timers by 2 seconds
-    jest.advanceTimersByTime(2000);
+    vi.advanceTimersByTime(2000);
 
     expect(exitProcessMock).toHaveBeenCalledWith(1);
   });

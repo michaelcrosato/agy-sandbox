@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { GameInstance } from "./GameInstance.js";
 import { Ship } from "./Ship.js";
 import { CosmicStorm } from "./CosmicStorm.js";

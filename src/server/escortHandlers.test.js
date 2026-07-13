@@ -1,8 +1,8 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 
 // Mock portHandlers before importing escortHandlers
-jest.unstable_mockModule("./portHandlers.js", () => ({
-  handleEscortCommand: jest.fn(),
+vi.doMock("./portHandlers.js", () => ({
+  handleEscortCommand: vi.fn(),
 }));
 
 const { handleEscortAction } = await import("./escortHandlers.js");
@@ -13,11 +13,11 @@ describe("escortHandlers", () => {
   let room;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     clientObj = {
       id: "p1",
       ship: { id: "ship1" },
-      send: jest.fn(),
+      send: vi.fn(),
     };
     room = {
       ais: [

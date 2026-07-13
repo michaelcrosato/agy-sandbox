@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import {
   handleTutorialStart,
   handleTutorialProgress,
@@ -38,22 +38,22 @@ describe("tutorialHandlers Deep Integration & FSM Test Suite (SPEC-158)", () => 
       tutorialRotationDone: false,
       tutorialThrustDone: false,
       ship: playerShip,
-      send: jest.fn(),
-      sendStats: jest.fn(),
+      send: vi.fn(),
+      sendStats: vi.fn(),
       chronicle: {
-        recordEvent: jest.fn(),
+        recordEvent: vi.fn(),
       },
       missionManager: {
-        checkBountyCompletion: jest.fn(() => null),
+        checkBountyCompletion: vi.fn(() => null),
       },
     };
 
     instances = new Map();
     persistenceManager = {
-      savePlayer: jest.fn(),
+      savePlayer: vi.fn(),
     };
 
-    joinRoomMock = jest.fn(async (client, roomId, nickname) => {
+    joinRoomMock = vi.fn(async (client, roomId, nickname) => {
       if (client.roomId) {
         const prev = instances.get(client.roomId);
         if (prev) {

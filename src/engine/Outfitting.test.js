@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { applyOutfitStats, removeOutfitStats } from "./Outfitting.js";
 import { Ship } from "./Ship.js";
 

@@ -1,3 +1,12 @@
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  beforeEach,
+  afterAll,
+  afterEach,
+} from "vitest";
 /**
  * DynamicResourceGovernor.test.js (SPEC-172) — comprehensive test suite
  * for the host resource governor, queue, and priority scheduler.

@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   tickRegistryHeartbeat,
   startRegistryHeartbeat,
@@ -13,8 +13,8 @@ describe("registryHeartbeat", () => {
   let consoleErrorSpy;
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.clearAllMocks();
+    vi.useFakeTimers();
+    vi.clearAllMocks();
 
     instances = new Map([
       ["room-1", {}],
@@ -22,19 +22,19 @@ describe("registryHeartbeat", () => {
     ]);
 
     registryMock = {
-      reapExpired: jest.fn().mockReturnValue(0),
-      claim: jest.fn().mockReturnValue(false),
+      reapExpired: vi.fn().mockReturnValue(0),
+      claim: vi.fn().mockReturnValue(false),
     };
 
-    loadRegistry = jest.fn().mockResolvedValue(registryMock);
-    saveRegistry = jest.fn().mockResolvedValue();
+    loadRegistry = vi.fn().mockResolvedValue(registryMock);
+    saveRegistry = vi.fn().mockResolvedValue();
 
-    consoleLogSpy = jest.spyOn(console, "log").mockImplementation(() => {});
-    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
     consoleLogSpy.mockRestore();
     consoleErrorSpy.mockRestore();
   });
@@ -145,7 +145,7 @@ describe("registryHeartbeat", () => {
     expect(interval).toBeDefined();
 
     expect(loadRegistry).not.toHaveBeenCalled();
-    jest.advanceTimersByTime(2000);
+    vi.advanceTimersByTime(2000);
 
     // Jest runs macro-ticks. The async task executes on next micro-tick.
     // Allow micro-tasks to flush:

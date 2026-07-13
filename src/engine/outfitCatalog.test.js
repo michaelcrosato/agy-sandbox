@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { DEFAULT_OUTFITS } from "./outfitCatalog.js";
 import { applyOutfitStats } from "./Outfitting.js";
 import { Ship } from "./Ship.js";

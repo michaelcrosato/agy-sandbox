@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { FactionWarCampaign } from "./FactionWarCampaign.js";
 import { TerritoryControl } from "./TerritoryControl.js";
 
@@ -6,7 +6,7 @@ describe("FactionWarCampaign Engine Unit Tests", () => {
   let dateSpy;
 
   beforeEach(() => {
-    dateSpy = jest.spyOn(Date, "now").mockImplementation(() => 1780246423959);
+    dateSpy = vi.spyOn(Date, "now").mockImplementation(() => 1780246423959);
   });
 
   afterEach(() => {

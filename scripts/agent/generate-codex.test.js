@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { generateCodexGraph, run } from "./generate-codex.js";
 import fs from "fs";
 import path from "path";

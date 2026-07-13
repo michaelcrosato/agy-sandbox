@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { tradeOne, applyHullPurchase, findBestTradeRoutes } from "./Trading.js";
 import { Ship } from "./Ship.js";
 

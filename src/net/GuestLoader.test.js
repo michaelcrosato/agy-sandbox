@@ -1,4 +1,12 @@
-import { jest } from "@jest/globals";
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  beforeEach,
+  afterAll,
+  vi,
+} from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
@@ -26,20 +34,20 @@ describe("GuestLoader resolving", () => {
 
   beforeEach(() => {
     SandboxSecurityRegistry.clearRegistry();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
     delete process.env.GUEST_ALLOWED_MODULE_HASHES;
   });
 
   test("should allow safe native core modules without restrictions", async () => {
-    const nextResolve = jest.fn().mockResolvedValue({ url: "node:path" });
+    const nextResolve = vi.fn().mockResolvedValue({ url: "node:path" });
     const result = await resolve("node:path", {}, nextResolve);
     expect(nextResolve).toHaveBeenCalledWith("node:path", {});
     expect(result).toEqual({ url: "node:path" });
   });
 
   test("should reject restricted native core modules and log violations", async () => {
-    const nextResolve = jest.fn();
-    const logSpy = jest.spyOn(SandboxSecurityRegistry, "logViolation");
+    const nextResolve = vi.fn();
+    const logSpy = vi.spyOn(SandboxSecurityRegistry, "logViolation");
 
     await expect(
       resolve("node:child_process", {}, nextResolve),
@@ -57,10 +65,10 @@ describe("GuestLoader resolving", () => {
   });
 
   test("should enforce path boundary constraints", async () => {
-    const nextResolve = jest.fn().mockResolvedValue({
+    const nextResolve = vi.fn().mockResolvedValue({
       url: `file:///${path.resolve("src/net/../../secret.js").replace(/\\/g, "/")}`,
     });
-    const checkPathSpy = jest
+    const checkPathSpy = vi
       .spyOn(ProcessSentinel, "checkPath")
       .mockImplementation(() => {
         throw new Error("Path boundary violation");
@@ -73,13 +81,13 @@ describe("GuestLoader resolving", () => {
   });
 
   test("should reject modules that are not registered in GUEST_ALLOWED_MODULE_HASHES", async () => {
-    const nextResolve = jest.fn().mockResolvedValue({
+    const nextResolve = vi.fn().mockResolvedValue({
       url: `file:///${tempFilePath.replace(/\\/g, "/")}`,
     });
-    const logSpy = jest.spyOn(SandboxSecurityRegistry, "logViolation");
+    const logSpy = vi.spyOn(SandboxSecurityRegistry, "logViolation");
 
     // Enable path jailing bypass in spy so it goes to hash check
-    jest.spyOn(ProcessSentinel, "checkPath").mockImplementation(() => {});
+    vi.spyOn(ProcessSentinel, "checkPath").mockImplementation(() => {});
 
     await expect(
       resolve("./temp_guest_loader_module.js", {}, nextResolve),
@@ -96,11 +104,11 @@ describe("GuestLoader resolving", () => {
   });
 
   test("should reject modules with mismatched cryptographic hashes", async () => {
-    const nextResolve = jest.fn().mockResolvedValue({
+    const nextResolve = vi.fn().mockResolvedValue({
       url: `file:///${tempFilePath.replace(/\\/g, "/")}`,
     });
-    const logSpy = jest.spyOn(SandboxSecurityRegistry, "logViolation");
-    jest.spyOn(ProcessSentinel, "checkPath").mockImplementation(() => {});
+    const logSpy = vi.spyOn(SandboxSecurityRegistry, "logViolation");
+    vi.spyOn(ProcessSentinel, "checkPath").mockImplementation(() => {});
 
     process.env.GUEST_ALLOWED_MODULE_HASHES = JSON.stringify({
       [tempFilePath]: "wrong_hash_here",
@@ -121,10 +129,10 @@ describe("GuestLoader resolving", () => {
   });
 
   test("should successfully resolve modules with matching hashes", async () => {
-    const nextResolve = jest.fn().mockResolvedValue({
+    const nextResolve = vi.fn().mockResolvedValue({
       url: `file:///${tempFilePath.replace(/\\/g, "/")}`,
     });
-    jest.spyOn(ProcessSentinel, "checkPath").mockImplementation(() => {});
+    vi.spyOn(ProcessSentinel, "checkPath").mockImplementation(() => {});
 
     process.env.GUEST_ALLOWED_MODULE_HASHES = JSON.stringify({
       [tempFilePath]: tempFileHash,

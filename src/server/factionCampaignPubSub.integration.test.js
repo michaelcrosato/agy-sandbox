@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { GameInstance } from "../engine/GameInstance.js";
 import { PersistenceManager } from "../persistence/PersistenceManager.js";
 import { InMemoryStore } from "../persistence/Store.js";

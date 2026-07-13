@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { RoomRegistry } from "../net/roomRouter.js";
 import {
   loadRegistry,
@@ -11,8 +11,8 @@ describe("roomRegistryStore", () => {
 
   beforeEach(() => {
     mockStore = {
-      load: jest.fn(),
-      save: jest.fn(),
+      load: vi.fn(),
+      save: vi.fn(),
     };
   });
 
@@ -43,7 +43,7 @@ describe("roomRegistryStore", () => {
     });
 
     test("should handle load errors gracefully and return empty RoomRegistry", async () => {
-      const consoleErrorMock = jest
+      const consoleErrorMock = vi
         .spyOn(console, "error")
         .mockImplementation(() => {});
       mockStore.load.mockRejectedValue(
@@ -81,10 +81,10 @@ describe("roomRegistryStore", () => {
     });
 
     test("should retry up to 5 times on transient failures before giving up", async () => {
-      const consoleErrorMock = jest
+      const consoleErrorMock = vi
         .spyOn(console, "error")
         .mockImplementation(() => {});
-      jest.useFakeTimers();
+      vi.useFakeTimers();
 
       mockStore.save
         .mockRejectedValueOnce(new Error("transient 1"))
@@ -95,10 +95,10 @@ describe("roomRegistryStore", () => {
 
       // Flush microtasks and tick timers to advance retries
       await Promise.resolve();
-      jest.advanceTimersByTime(50);
+      vi.advanceTimersByTime(50);
       await Promise.resolve();
       await Promise.resolve();
-      jest.advanceTimersByTime(100);
+      vi.advanceTimersByTime(100);
       await Promise.resolve();
       await Promise.resolve();
       await savePromise;
@@ -107,14 +107,14 @@ describe("roomRegistryStore", () => {
       expect(consoleErrorMock).not.toHaveBeenCalled();
 
       consoleErrorMock.mockRestore();
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     test("should log error and stop retrying after 5 failed attempts", async () => {
-      const consoleErrorMock = jest
+      const consoleErrorMock = vi
         .spyOn(console, "error")
         .mockImplementation(() => {});
-      jest.useFakeTimers();
+      vi.useFakeTimers();
 
       mockStore.save.mockRejectedValue(new Error("persistent failure"));
 
@@ -123,7 +123,7 @@ describe("roomRegistryStore", () => {
       // Let all 5 attempts tick and resolve
       for (let i = 1; i <= 5; i++) {
         await Promise.resolve();
-        jest.advanceTimersByTime(50 * i);
+        vi.advanceTimersByTime(50 * i);
         await Promise.resolve();
         await Promise.resolve();
       }
@@ -137,7 +137,7 @@ describe("roomRegistryStore", () => {
       );
 
       consoleErrorMock.mockRestore();
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
   });
 });

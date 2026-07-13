@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { registerPubSubSubscriptions } from "./pubsubSubscriptions.js";
 import { Squad } from "./SquadManager.js";
 
@@ -16,7 +16,7 @@ describe("pubsubSubscriptions", () => {
 
   beforeEach(() => {
     mockPubsub = {
-      subscribe: jest.fn().mockImplementation(async (topic, callback) => {
+      subscribe: vi.fn().mockImplementation(async (topic, callback) => {
         if (topic === "chat:global") globalChatCallback = callback;
         if (topic === "chat:squad") squadChatCallback = callback;
         if (topic === "squad:events") squadEventsCallback = callback;
@@ -25,8 +25,8 @@ describe("pubsubSubscriptions", () => {
     };
 
     mockInstances = {
-      values: jest.fn().mockReturnValue([]),
-      get: jest.fn(),
+      values: vi.fn().mockReturnValue([]),
+      get: vi.fn(),
     };
 
     mockWss = {
@@ -34,7 +34,7 @@ describe("pubsubSubscriptions", () => {
     };
 
     mockSquadManager = {
-      getSquadId: jest.fn(),
+      getSquadId: vi.fn(),
       squads: new Map(),
       playerToSquad: new Map(),
     };
@@ -72,8 +72,8 @@ describe("pubsubSubscriptions", () => {
     test("should broadcast chat message to all clients in all active rooms", async () => {
       await registerPubSubSubscriptions(options);
 
-      const client1 = { send: jest.fn() };
-      const client2 = { send: jest.fn() };
+      const client1 = { send: vi.fn() };
+      const client2 = { send: vi.fn() };
 
       const room1 = { clients: new Map([["ws1", client1]]) };
       const room2 = { clients: new Map([["ws2", client2]]) };
@@ -95,8 +95,8 @@ describe("pubsubSubscriptions", () => {
     test("should send squad chat only to connected local squad members", async () => {
       await registerPubSubSubscriptions(options);
 
-      const client1 = { id: "p1", send: jest.fn() };
-      const client2 = { id: "p2", send: jest.fn() };
+      const client1 = { id: "p1", send: vi.fn() };
+      const client2 = { id: "p2", send: vi.fn() };
 
       mockWss.clients.add({ clientObj: client1 });
       mockWss.clients.add({ clientObj: client2 });
@@ -118,11 +118,11 @@ describe("pubsubSubscriptions", () => {
     test("should route squad invite to target player by ID or target player by nickname", async () => {
       await registerPubSubSubscriptions(options);
 
-      const clientTargetId = { id: "target-id", send: jest.fn() };
+      const clientTargetId = { id: "target-id", send: vi.fn() };
       const clientTargetNick = {
         id: "other-id",
         nickname: "NickTarget",
-        send: jest.fn(),
+        send: vi.fn(),
       };
 
       mockWss.clients.add({ clientObj: clientTargetId });
@@ -160,7 +160,7 @@ describe("pubsubSubscriptions", () => {
     test("should dissolve squad and alert remaining local members if member list is empty", async () => {
       await registerPubSubSubscriptions(options);
 
-      const client1 = { id: "p1", send: jest.fn(), sendStats: jest.fn() };
+      const client1 = { id: "p1", send: vi.fn(), sendStats: vi.fn() };
       mockWss.clients.add({ clientObj: client1 });
 
       const squadMock = { memberIds: new Set(["p1"]) };
@@ -208,14 +208,14 @@ describe("pubsubSubscriptions", () => {
       const client1 = {
         id: "p1",
         nickname: "Leader",
-        send: jest.fn(),
-        sendStats: jest.fn(),
+        send: vi.fn(),
+        sendStats: vi.fn(),
       };
       const client2 = {
         id: "p2",
         nickname: "Wingman",
-        send: jest.fn(),
-        sendStats: jest.fn(),
+        send: vi.fn(),
+        sendStats: vi.fn(),
       };
       mockWss.clients.add({ clientObj: client1 });
       mockWss.clients.add({ clientObj: client2 });
@@ -263,10 +263,10 @@ describe("pubsubSubscriptions", () => {
     test("should load faction campaign state and broadcast to sector clients", async () => {
       await registerPubSubSubscriptions(options);
 
-      const mockWarCampaign = { load: jest.fn() };
+      const mockWarCampaign = { load: vi.fn() };
       const mockRoom = {
         factionWarCampaign: mockWarCampaign,
-        broadcast: jest.fn(),
+        broadcast: vi.fn(),
       };
       mockInstances.get.mockReturnValueOnce(mockRoom);
 
@@ -288,7 +288,7 @@ describe("pubsubSubscriptions", () => {
     test("should send squad chat to players not in squad if payload squadId is null", async () => {
       await registerPubSubSubscriptions(options);
 
-      const clientNotInSquad = { id: "p-no-squad", send: jest.fn() };
+      const clientNotInSquad = { id: "p-no-squad", send: vi.fn() };
       mockWss.clients.add({ clientObj: clientNotInSquad });
       mockSquadManager.getSquadId.mockReturnValue(null);
 
@@ -304,20 +304,20 @@ describe("pubsubSubscriptions", () => {
       const leader = {
         id: "leader",
         nickname: "Leader",
-        send: jest.fn(),
-        sendStats: jest.fn(),
+        send: vi.fn(),
+        sendStats: vi.fn(),
       };
       const joiner1 = {
         id: "j1",
         nickname: "Joiner1",
-        send: jest.fn(),
-        sendStats: jest.fn(),
+        send: vi.fn(),
+        sendStats: vi.fn(),
       };
       const joiner2 = {
         id: "j2",
         nickname: "Joiner2",
-        send: jest.fn(),
-        sendStats: jest.fn(),
+        send: vi.fn(),
+        sendStats: vi.fn(),
       };
 
       mockWss.clients.add({ clientObj: leader });
@@ -350,9 +350,9 @@ describe("pubsubSubscriptions", () => {
     test("should bubble up client send errors on chat:global if c.send throws", async () => {
       await registerPubSubSubscriptions(options);
 
-      const clientGood = { send: jest.fn() };
+      const clientGood = { send: vi.fn() };
       const clientBad = {
-        send: jest.fn().mockImplementation(() => {
+        send: vi.fn().mockImplementation(() => {
           throw new Error("Connection failed");
         }),
       };
@@ -380,8 +380,8 @@ describe("pubsubSubscriptions", () => {
       const activeClients = new Set();
       mockWss.clients = activeClients;
 
-      const ws1 = { clientObj: { id: "p1", send: jest.fn() } };
-      const ws2 = { clientObj: { id: "p2", send: jest.fn() } };
+      const ws1 = { clientObj: { id: "p1", send: vi.fn() } };
+      const ws2 = { clientObj: { id: "p2", send: vi.fn() } };
 
       activeClients.add(ws1);
       activeClients.add(ws2);

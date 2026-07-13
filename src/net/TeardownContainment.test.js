@@ -1,3 +1,11 @@
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  beforeEach,
+  afterAll,
+} from "vitest";
 import { validateCommand, ProcessSentinel } from "./ProcessSentinel.js";
 import { ProcessReaper } from "./ProcessReaper.js";
 import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
@@ -45,7 +53,7 @@ describe("ProcessSentinel Path Jailing Sentry", () => {
   });
 
   test("should allow approved node_modules dependencies", () => {
-    const workspaceNodeModules = path.resolve("./node_modules/jest/index.js");
+    const workspaceNodeModules = path.resolve("./node_modules/vitest/index.js");
     const val = validateCommand("node", [workspaceNodeModules]);
     expect(val.allowed).toBe(true);
   });

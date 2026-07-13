@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { describe, test, expect, beforeEach, vi } from "vitest";
 import { routeMessage } from "./messageRouter.js";
 
 describe("messageRouter", () => {
@@ -13,7 +13,7 @@ describe("messageRouter", () => {
       id: "player-1",
       roomId: "room-1",
       tutorialStep: null,
-      send: jest.fn(),
+      send: vi.fn(),
     };
 
     ws = {};
@@ -21,33 +21,33 @@ describe("messageRouter", () => {
     room = { id: "room-1", name: "Alpha Sector" };
 
     handlers = {
-      handleConnectionAction: jest.fn(),
-      handleControls: jest.fn(),
-      handleLand: jest.fn(),
-      handleLaunch: jest.fn(),
-      handleTrade: jest.fn(),
-      handlePortService: jest.fn(),
-      handleOreRefine: jest.fn(),
-      handleJettison: jest.fn(),
-      handleOutfitBuy: jest.fn(),
-      handleOutfitSell: jest.fn(),
-      handlePresetSave: jest.fn(),
-      handlePresetLoad: jest.fn(),
-      handlePresetDelete: jest.fn(),
-      handleShipBuy: jest.fn(),
-      handleSquadAction: jest.fn(),
-      handleVoucherRedeem: jest.fn(),
-      handleMissionAccept: jest.fn(),
-      handleMissionAbandon: jest.fn(),
-      handleFleetAction: jest.fn(),
-      handleChat: jest.fn(),
-      handleWarpJump: jest.fn(),
-      handleBoardingAction: jest.fn(),
-      handleEscortAction: jest.fn(),
-      handleDistressBeacon: jest.fn(),
-      handleTutorialStart: jest.fn(),
-      handleTutorialProgress: jest.fn(),
-      handleTutorialComplete: jest.fn(),
+      handleConnectionAction: vi.fn(),
+      handleControls: vi.fn(),
+      handleLand: vi.fn(),
+      handleLaunch: vi.fn(),
+      handleTrade: vi.fn(),
+      handlePortService: vi.fn(),
+      handleOreRefine: vi.fn(),
+      handleJettison: vi.fn(),
+      handleOutfitBuy: vi.fn(),
+      handleOutfitSell: vi.fn(),
+      handlePresetSave: vi.fn(),
+      handlePresetLoad: vi.fn(),
+      handlePresetDelete: vi.fn(),
+      handleShipBuy: vi.fn(),
+      handleSquadAction: vi.fn(),
+      handleVoucherRedeem: vi.fn(),
+      handleMissionAccept: vi.fn(),
+      handleMissionAbandon: vi.fn(),
+      handleFleetAction: vi.fn(),
+      handleChat: vi.fn(),
+      handleWarpJump: vi.fn(),
+      handleBoardingAction: vi.fn(),
+      handleEscortAction: vi.fn(),
+      handleDistressBeacon: vi.fn(),
+      handleTutorialStart: vi.fn(),
+      handleTutorialProgress: vi.fn(),
+      handleTutorialComplete: vi.fn(),
     };
 
     options = {
@@ -62,9 +62,9 @@ describe("messageRouter", () => {
       WORKERS: 1,
       SHARD_INDEX: 0,
       matchmakingQueue: {},
-      joinRoom: jest.fn(),
-      sendLobbyList: jest.fn(),
-      broadcastLobbySync: jest.fn(),
+      joinRoom: vi.fn(),
+      sendLobbyList: vi.fn(),
+      broadcastLobbySync: vi.fn(),
       handlers,
     };
   });

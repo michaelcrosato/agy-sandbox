@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach } from "vitest";
 import { DeterminismSentry } from "./DeterminismSentry.js";
 import { Vector2D } from "../physics/Vector2D.js";
 

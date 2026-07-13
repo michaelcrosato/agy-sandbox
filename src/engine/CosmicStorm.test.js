@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { CosmicStorm } from "./CosmicStorm.js";
 import { Vector2D } from "../physics/Vector2D.js";
 

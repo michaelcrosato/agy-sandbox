@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { DEFAULT_BACKPRESSURE_OPTIONS, sendDecision } from "./backpressure.js";
 
 const SOFT = DEFAULT_BACKPRESSURE_OPTIONS.softLimit;

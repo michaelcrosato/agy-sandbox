@@ -1,3 +1,4 @@
+import { describe, test, expect } from "vitest";
 import { GameInstance } from "../engine/GameInstance.js";
 import { FactionRegistry } from "../engine/FactionRegistry.js";
 import { MissionManager } from "../engine/MissionManager.js";

@@ -1,3 +1,4 @@
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
 /**
  * TokenCostGovernor.test.js
  * Jest unit tests for the TokenCostGovernor sentry.
@@ -125,51 +126,53 @@ describe("TokenCostGovernor", () => {
     expect(metrics.security_violations_by_category.token_budget).toBe(1);
   });
 
-  test("should intercept http/https requests successfully using mock response streams", (done) => {
-    TokenCostGovernor.activate();
-    TokenCostGovernor.registerMock(/tell me joke/i, "Space joke here.");
+  test("should intercept http/https requests successfully using mock response streams", () =>
+    new Promise((resolve) => {
+      TokenCostGovernor.activate();
+      TokenCostGovernor.registerMock(/tell me joke/i, "Space joke here.");
 
-    const req = https.request(
-      {
+      const req = https.request(
+        {
+          hostname: "api.anthropic.com",
+          path: "/v1/messages",
+          method: "POST",
+        },
+        (res) => {
+          expect(res.statusCode).toBe(200);
+          let data = "";
+          res.on("data", (chunk) => {
+            data += chunk;
+          });
+          res.on("end", () => {
+            const json = JSON.parse(data);
+            expect(json.content[0].text).toBe("Space joke here.");
+            resolve();
+          });
+        },
+      );
+
+      req.write(JSON.stringify({ prompt: "tell me joke" }));
+      req.end();
+    }));
+
+  test("should emit error on http/https request when budget is exceeded", () =>
+    new Promise((resolve) => {
+      TokenCostGovernor.activate();
+      TokenCostGovernor.setBudgetLimitUsd(0.001);
+      TokenCostGovernor.recordQuery("claude-opus-4-8", 1000, 1000); // Exceeds budget
+
+      const req = https.request({
         hostname: "api.anthropic.com",
         path: "/v1/messages",
         method: "POST",
-      },
-      (res) => {
-        expect(res.statusCode).toBe(200);
-        let data = "";
-        res.on("data", (chunk) => {
-          data += chunk;
-        });
-        res.on("end", () => {
-          const json = JSON.parse(data);
-          expect(json.content[0].text).toBe("Space joke here.");
-          done();
-        });
-      },
-    );
+      });
 
-    req.write(JSON.stringify({ prompt: "tell me joke" }));
-    req.end();
-  });
+      req.on("error", (err) => {
+        expect(err.message).toContain("Payment Required");
+        resolve();
+      });
 
-  test("should emit error on http/https request when budget is exceeded", (done) => {
-    TokenCostGovernor.activate();
-    TokenCostGovernor.setBudgetLimitUsd(0.001);
-    TokenCostGovernor.recordQuery("claude-opus-4-8", 1000, 1000); // Exceeds budget
-
-    const req = https.request({
-      hostname: "api.anthropic.com",
-      path: "/v1/messages",
-      method: "POST",
-    });
-
-    req.on("error", (err) => {
-      expect(err.message).toContain("Payment Required");
-      done();
-    });
-
-    req.write(JSON.stringify({ prompt: "hello" }));
-    req.end();
-  });
+      req.write(JSON.stringify({ prompt: "hello" }));
+      req.end();
+    }));
 });

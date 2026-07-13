@@ -93,82 +93,87 @@ export function applyTractorForces(room) {
  * @param {Object} room The active GameInstance room.
  */
 export function handleCargoCollection(room) {
-  const podsToRemove = [];
-  for (const pod of room.engine.entities) {
-    if (pod.type === "cargo_pod") {
-      for (const ship of room.engine.entities) {
-        if (ship.type === "ship" && !ship.isDestroyed) {
-          const dist = ship.position.distance(pod.position);
-          if (dist <= ship.radius + pod.radius) {
-            if (pod.isTrainingSalvage) {
-              podsToRemove.push(pod);
-              const client = Array.from(room.clients.values()).find(
-                (c) => c.ship === ship,
-              );
-              if (client) {
-                client.tutorialStep = "dock_at_port";
-                client.send({
-                  type: "notification",
-                  message:
-                    "Salvage harvested! Return to the spaceport and land [L] to complete onboarding.",
-                  style: "success",
-                });
-                client.send({
-                  type: "tutorial_state",
-                  step: "dock_at_port",
-                });
-                client.send({
-                  type: "cargo_pickup",
-                  resourceType: pod.resourceType,
-                  amount: pod.amount,
-                  x: pod.position.x,
-                  y: pod.position.y,
-                });
-                client.sendStats();
-              }
-              break;
-            }
+  // Restrict the collision scan to the relevant entity subsets and resolve each
+  // ship's client via a map built once, instead of scanning all entities twice
+  // and rebuilding a clients array per collision.
+  const pods = room.engine.entities.filter((e) => e.type === "cargo_pod");
+  if (pods.length === 0) return;
+  const ships = room.engine.entities.filter(
+    (e) => e.type === "ship" && !e.isDestroyed,
+  );
+  if (ships.length === 0) return;
 
-            const success = ship.addCargo(pod.resourceType, pod.amount);
-            if (success) {
-              podsToRemove.push(pod);
-              const client = Array.from(room.clients.values()).find(
-                (c) => c.ship === ship,
-              );
-              if (client) {
-                client.send({
-                  type: "notification",
-                  message: `+${pod.amount} ${pod.resourceType.toUpperCase()} collected!`,
-                  style: "success",
-                });
-                client.send({
-                  type: "cargo_pickup",
-                  resourceType: pod.resourceType,
-                  amount: pod.amount,
-                  x: pod.position.x,
-                  y: pod.position.y,
-                });
-                client.sendStats();
-              }
-              break;
-            } else {
-              const client = Array.from(room.clients.values()).find(
-                (c) => c.ship === ship,
-              );
-              if (
-                client &&
-                (!ship.lastCargoFullAlert ||
-                  Date.now() - ship.lastCargoFullAlert > 2000)
-              ) {
-                ship.lastCargoFullAlert = Date.now();
-                client.send({
-                  type: "notification",
-                  message:
-                    "Cargo bay is FULL! Upgrade cargo holds or sell commodities.",
-                  style: "error",
-                });
-              }
-            }
+  const clientByShip = new Map();
+  for (const c of room.clients.values()) {
+    if (c.ship) clientByShip.set(c.ship, c);
+  }
+
+  const podsToRemove = [];
+  for (const pod of pods) {
+    for (const ship of ships) {
+      const dist = ship.position.distance(pod.position);
+      if (dist <= ship.radius + pod.radius) {
+        if (pod.isTrainingSalvage) {
+          podsToRemove.push(pod);
+          const client = clientByShip.get(ship);
+          if (client) {
+            client.tutorialStep = "dock_at_port";
+            client.send({
+              type: "notification",
+              message:
+                "Salvage harvested! Return to the spaceport and land [L] to complete onboarding.",
+              style: "success",
+            });
+            client.send({
+              type: "tutorial_state",
+              step: "dock_at_port",
+            });
+            client.send({
+              type: "cargo_pickup",
+              resourceType: pod.resourceType,
+              amount: pod.amount,
+              x: pod.position.x,
+              y: pod.position.y,
+            });
+            client.sendStats();
+          }
+          break;
+        }
+
+        const success = ship.addCargo(pod.resourceType, pod.amount);
+        if (success) {
+          podsToRemove.push(pod);
+          const client = clientByShip.get(ship);
+          if (client) {
+            client.send({
+              type: "notification",
+              message: `+${pod.amount} ${pod.resourceType.toUpperCase()} collected!`,
+              style: "success",
+            });
+            client.send({
+              type: "cargo_pickup",
+              resourceType: pod.resourceType,
+              amount: pod.amount,
+              x: pod.position.x,
+              y: pod.position.y,
+            });
+            client.sendStats();
+          }
+          break;
+        } else {
+          const client = clientByShip.get(ship);
+          if (
+            client &&
+            (!ship.lastCargoFullAlert ||
+              Date.now() - ship.lastCargoFullAlert > 2000)
+          ) {
+            ship.lastCargoFullAlert = Date.now();
+            client.send({
+              type: "notification",
+              message:
+                "Cargo bay is FULL! Upgrade cargo holds or sell commodities.",
+              style: "error",
+            });
           }
         }
       }

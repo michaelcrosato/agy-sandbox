@@ -1,0 +1,16 @@
+---
+description: Canonical operating rules for this repository (all AI agents)
+globs:
+alwaysApply: true
+---
+
+The single source of truth for how to work in this repository is **`AGENTS.md`**
+at the repo root. Read it first and follow it.
+
+Non-negotiables (full detail in `AGENTS.md`):
+
+- Never modify the write-protected substrate files listed in `AGENTS.md` §0.
+- Gate every change with `npm run agent:check`; never weaken a test to pass it.
+- Keep `src/engine`, `src/physics`, `src/net`, and `src/persistence` pure (no DOM,
+  sockets, timers, or unseeded `Math.random` in test-reachable paths).
+- Use Conventional Commits; keep changes small and focused.

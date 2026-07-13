@@ -56,40 +56,19 @@ jobs:
       - name: Run Typecheck
         run: npm run typecheck
 
-      - name: Run Unit Tests
+      - name: Build Server Artifact
+        # Integration suites boot `dist/server.js` in worker_threads, so the
+        # compiled artifact must exist before the test run.
+        run: npm run build
+
+      - name: Run Tests
+        # `vitest run` executes all three projects (node, jsdom, browser).
         run: npm test
-
-  client-tests:
-    # Client (DOM) suite runs under Vitest + jsdom, kept separate from the Jest
-    # engine matrix above so runtime regressions surface without duplicating it.
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Verify Substrate Integrity
-        run: npm run agent:verify-substrate
-
-      - name: Run Client Tests
-        run: npm run test:client
 
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [build-and-test, client-tests]
+    needs: [build-and-test]
     steps:
       - name: All checks passed
         run: echo "Verification successful"

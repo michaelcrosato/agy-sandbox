@@ -26,16 +26,22 @@ export async function bootGameServerWorker({
     removeDirBestEffort(persistenceDir);
   }
 
-  const worker = new Worker(new URL("../../server.js", import.meta.url), {
-    env: {
-      NODE_ENV: "test",
-      PORT: String(port),
-      SHARD_INDEX: "0",
-      WORKERS: "1",
-      ...(persistenceDir ? { PERSISTENCE_DIR: persistenceDir } : {}),
-      ...env,
+  // Boot the compiled server artifact. Phase 1 of the TS migration builds
+  // `dist/` before the test run, and worker_threads cannot load `.ts` sources,
+  // so integration suites exercise the shipped `dist/server.js`.
+  const worker = new Worker(
+    new URL("../../../dist/server.js", import.meta.url),
+    {
+      env: {
+        NODE_ENV: "test",
+        PORT: String(port),
+        SHARD_INDEX: "0",
+        WORKERS: "1",
+        ...(persistenceDir ? { PERSISTENCE_DIR: persistenceDir } : {}),
+        ...env,
+      },
     },
-  });
+  );
 
   try {
     await waitForWebSocketReady(port, readyTimeoutMs);

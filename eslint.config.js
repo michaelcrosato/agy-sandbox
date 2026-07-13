@@ -19,9 +19,8 @@ export default tseslint.config(
       sourceType: "module",
       globals: {
         ...globals.node,
-        // jest globals retained so the current Jest suites lint cleanly; a later
-        // phase moves the client to vitest and can drop these.
-        ...globals.jest,
+        // Test suites import their APIs explicitly from "vitest" (globals:
+        // false), so no test-runner globals are injected here.
         ...globals.browser,
       },
     },

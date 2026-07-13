@@ -54,34 +54,38 @@ Get-ChildItem -Path $RepoRoot -Directory -Filter "data-test-*" -Force | ForEach-
 $vitestAttachments = Join-Path $RepoRoot ".vitest-attachments"
 Remove-DirectorySafe $vitestAttachments
 
-# 5. Clean up temporary files like .git-commit-msg.txt in repo root and subdirs (excluding protected folders)
-Get-ChildItem -Path $RepoRoot -File -Filter ".git-commit-msg.txt" -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
-    $path = $_.FullName
-    if ($path -notmatch "([\\/]plan[\\/]|[\\/]\.agents[\\/]|[\\/]\.git[\\/]|[\\/]node_modules[\\/]|docs[\\/]LOG\.md$)") {
-        Remove-FileSafe $path
+# Recursively sweeps the live workspace for files matching a filter. A -Recurse
+# enumeration can raise a *terminating* provider exception (not suppressed by
+# -ErrorAction) if a subdirectory is deleted mid-scan — e.g. a concurrent test
+# tearing down its own data-test-* dir. Root-level matches are yielded before
+# the recursion descends, so catching the exception still removes the intended
+# top-level temp files while tolerating the concurrent churn.
+function Remove-MatchingFilesSafe ($filter) {
+    try {
+        Get-ChildItem -Path $RepoRoot -File -Filter $filter -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
+            $path = $_.FullName
+            if ($path -notmatch "([\\/]plan[\\/]|[\\/]\.agents[\\/]|[\\/]\.git[\\/]|[\\/]node_modules[\\/]|docs[\\/]LOG\.md$)") {
+                Remove-FileSafe $path
+            }
+        }
+    } catch {
+        Write-Warning "Recursive sweep for '$filter' interrupted by concurrent change: $($_.Exception.Message)"
     }
 }
+
+# 5. Clean up temporary files like .git-commit-msg.txt in repo root and subdirs (excluding protected folders)
+Remove-MatchingFilesSafe ".git-commit-msg.txt"
 
 # 6. Clean up temporary Node/npm/yarn/pnpm debug logs
 $logFilters = @("npm-debug.log*", "yarn-debug.log*", "yarn-error.log*", "lerna-debug.log*", ".pnpm-debug.log*")
 foreach ($filter in $logFilters) {
-    Get-ChildItem -Path $RepoRoot -File -Filter $filter -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
-        $path = $_.FullName
-        if ($path -notmatch "([\\/]plan[\\/]|[\\/]\.agents[\\/]|[\\/]\.git[\\/]|[\\/]node_modules[\\/]|docs[\\/]LOG\.md$)") {
-            Remove-FileSafe $path
-        }
-    }
+    Remove-MatchingFilesSafe $filter
 }
 
 # 7. Clean up standard OS temporary files
 $osTempFilters = @("Thumbs.db", ".DS_Store")
 foreach ($filter in $osTempFilters) {
-    Get-ChildItem -Path $RepoRoot -File -Filter $filter -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
-        $path = $_.FullName
-        if ($path -notmatch "([\\/]plan[\\/]|[\\/]\.agents[\\/]|[\\/]\.git[\\/]|[\\/]node_modules[\\/]|docs[\\/]LOG\.md$)") {
-            Remove-FileSafe $path
-        }
-    }
+    Remove-MatchingFilesSafe $filter
 }
 
 # 8. Clean up coverage and nyc_output directories if they exist

@@ -43,6 +43,18 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - Entries **SHOULD** target 150–350 words, and **MUST NOT** exceed 500 words unless labeled an `INCIDENT` or `ROLLBACK`.
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
+## 2026-07-13T06:00 · iter-0186 · GREEN · operating-docs-and-config-modernization
+
+- **Baseline:** `8eb5328` (main synced to develop); improvement pass already merged.
+- **Move:** Modernize the repo's operating/config docs to current (2025–26) best practices, researched from official sources (agents.md, Claude Code docs, GitHub Actions, EditorConfig, Node release policy).
+- **Changed:**
+  - CI: added `concurrency` (cancel superseded PR runs), least-privilege `permissions: contents: read`, per-job `timeout-minutes`, and `persist-credentials: false`; added `.github/dependabot.yml` (npm + github-actions, weekly, grouped). Kept the Playwright install (verified the Jest PlaywrightVisual test launches Chromium).
+  - Agent config: `CLAUDE.md` now imports `AGENTS.md` (`@AGENTS.md`) + Claude-specific notes; committed `.claude/settings.json` with team permissions (deny substrate edits/writes + force-push/publish, allow common test/read commands); migrated Cursor to `.cursor/rules/agents.mdc`; `.gitignore` commits only `.claude/settings.json`.
+  - Hygiene: added `.editorconfig`, `SECURITY.md`, `CONTRIBUTING.md`, and a PR template; fixed stale claims in `plan/AGENTS.md` and cross-linked companion docs from `AGENTS.md`.
+- **Decisions:** Kept the 22/24/26 matrix, `cache: 'npm'`, advisory `engines`, and `.nvmrc` (already correct per research); skipped `engine-strict`, `packageManager`/Corepack, `.node-version`, and CODEOWNERS as overkill at this scale. Did not touch substrate files.
+- **Validation:** `npm run agent:check` green (substrate integrity verified, Jest + Vitest client + lint + typecheck + format all pass); `.github`/YAML/JSON validated.
+- **Next:** Optionally SHA-pin the `actions/*` once Dependabot is active; enable GitHub Private Vulnerability Reporting to back SECURITY.md.
+
 ## 2026-07-13T05:20 · iter-0185 · GREEN · audit-driven-improvement-pass
 
 - **Baseline:** `258c430` on `develop`; clean tree after the production overhaul.

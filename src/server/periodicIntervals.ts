@@ -42,7 +42,7 @@ export function startPeriodicIntervals({
   workers,
   heartbeatMs = DEFAULT_HEARTBEAT_MS,
 }) {
-  const handles = {};
+  const handles: any = {};
 
   // 1. Anomaly detection monitor (1 second)
   handles.anomalyInterval = setInterval(() => {

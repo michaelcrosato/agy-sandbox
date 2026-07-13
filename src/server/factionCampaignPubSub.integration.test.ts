@@ -24,8 +24,8 @@ describe("Clustered Sync for Faction War Campaign (SPEC-165)", () => {
   });
 
   afterEach(() => {
-    shard0Game.destroy && shard0Game.destroy();
-    shard1Game.destroy && shard1Game.destroy();
+    shard0Game.destroy?.();
+    shard1Game.destroy?.();
   });
 
   test("PersistenceManager saves and loads campaign state cleanly under faction:campaign:state key", async () => {

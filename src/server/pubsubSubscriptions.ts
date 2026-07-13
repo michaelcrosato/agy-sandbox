@@ -53,7 +53,7 @@ export async function registerPubSubSubscriptions(options) {
         for (const mId of oldMembers) {
           squadManager.playerToSquad.delete(mId);
           const localC = Array.from(wss.clients)
-            .map((w) => w.clientObj)
+            .map((w: any) => w.clientObj)
             .find((c) => c && c.id === mId);
           if (localC) {
             localC.send({
@@ -89,7 +89,7 @@ export async function registerPubSubSubscriptions(options) {
           if (joinedId) {
             let joinedNickname = "A player";
             const localJoined = Array.from(wss.clients)
-              .map((w) => w.clientObj)
+              .map((w: any) => w.clientObj)
               .find((c) => c && c.id === joinedId);
             if (localJoined) {
               joinedNickname = localJoined.nickname;
@@ -112,7 +112,7 @@ export async function registerPubSubSubscriptions(options) {
           if (leftId) {
             let leftNickname = "A player";
             const localLeft = Array.from(wss.clients)
-              .map((w) => w.clientObj)
+              .map((w: any) => w.clientObj)
               .find((c) => c && c.id === leftId);
             if (localLeft) {
               leftNickname = localLeft.nickname;

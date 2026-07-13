@@ -329,7 +329,10 @@ export function handleBoardingAction(clientObj, msg, room) {
       maxBoardSpeed: Number.POSITIVE_INFINITY,
     });
     if (result.ok) {
-      const tons = Object.values(result.cargo).reduce((a, b) => a + b, 0);
+      const tons = Object.values(result.cargo).reduce(
+        (a: number, b: number) => a + b,
+        0,
+      );
       clientObj.send({
         type: "notification",
         message: `Plundered ${tons} ton(s) of cargo and ${result.credits.toLocaleString()} CR.`,

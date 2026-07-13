@@ -37,7 +37,7 @@ export function broadcastRoomState(room, options) {
     if (client.ws.readyState !== client.ws.OPEN) continue;
 
     const viewer = client.ship;
-    let squadmates = [];
+    const squadmates = [];
     if (viewer && squadManager) {
       const squad = squadManager.getSquadForPlayer(client.id);
       if (squad) {

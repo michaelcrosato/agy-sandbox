@@ -67,7 +67,12 @@ function delay(ms) {
  * @param {number} [delayMs]
  * @returns {Promise<string>}
  */
-async function readFileWithRetry(filePath, options, retries = 5, delayMs = 20) {
+async function readFileWithRetry(
+  filePath,
+  options,
+  retries = 5,
+  delayMs = 20,
+): Promise<any> {
   for (let i = 0; i < retries; i++) {
     try {
       return await fs.promises.readFile(filePath, options);

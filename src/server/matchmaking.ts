@@ -22,7 +22,7 @@
  * @param {Object} criteria - `{ mode?, tags?, combatRating?, combatRatingTolerance? }`.
  * @returns {boolean}
  */
-export function roomMatches(room, criteria = {}) {
+export function roomMatches(room, criteria: any = {}) {
   if (!room) return false;
   if (criteria.mode !== undefined && room.mode !== criteria.mode) return false;
   if (Array.isArray(criteria.tags) && criteria.tags.length > 0) {
@@ -74,7 +74,7 @@ export function freeSlots(room) {
  * @param {Object} [criteria] - `{ mode?, maxPlayers?, tags?, combatRating?, playerCount? }`.
  * @returns {{action: "join"|"queue"|"create", roomId: (string|null)}}
  */
-export function matchRoom(rooms, criteria = {}) {
+export function matchRoom(rooms, criteria: any = {}) {
   const list = Array.isArray(rooms) ? rooms : [];
   const requestedSlots =
     criteria.playerCount !== undefined ? criteria.playerCount : 1;
@@ -114,6 +114,7 @@ export function matchRoom(rooms, criteria = {}) {
  * admitted in arrival order. Supports progressive rating-based tolerance expansion (spec 069).
  */
 export class JoinQueue {
+  declare waiting;
   constructor() {
     /** @type {Array<*>} */
     this.waiting = [];
@@ -126,7 +127,7 @@ export class JoinQueue {
    * @param {Object} [criteria] - Match search criteria (combatRating, mode, tags, etc.)
    * @returns {number} The client's 1-based position in line.
    */
-  enqueue(client, criteria = {}) {
+  enqueue(client, criteria: any = {}) {
     let record;
     if (typeof client === "object" && client !== null) {
       record = client;

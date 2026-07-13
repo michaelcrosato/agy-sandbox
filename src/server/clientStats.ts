@@ -45,7 +45,7 @@ export async function sendClientStats(clientObj, options) {
   const room = instances.get(clientObj.roomId);
   const registry = room ? room.factionRegistry : null;
 
-  let squadMembers = [];
+  const squadMembers = [];
   const squad = squadManager.getSquadForPlayer(clientObj.id);
   if (squad) {
     for (const memberId of squad.memberIds) {

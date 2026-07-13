@@ -17,7 +17,7 @@ export function handleSquadAction(
   if (msg.type === "squad_invite") {
     const clientsSet = wss && wss.clients ? wss.clients : new Set();
     const target = Array.from(clientsSet)
-      .map((ws) => ws.clientObj)
+      .map((ws: any) => ws.clientObj)
       .find(
         (c) =>
           c &&
@@ -87,7 +87,7 @@ export function handleSquadAction(
 
       const clientsSet = wss && wss.clients ? wss.clients : new Set();
       const squadMembers = Array.from(clientsSet)
-        .map((ws) => ws.clientObj)
+        .map((ws: any) => ws.clientObj)
         .filter((c) => c && squad.memberIds.has(c.id));
       for (const member of squadMembers) {
         member.send({
@@ -140,7 +140,7 @@ export function handleSquadAction(
 
       const clientsSet = wss && wss.clients ? wss.clients : new Set();
       const remainingMembers = Array.from(clientsSet)
-        .map((ws) => ws.clientObj)
+        .map((ws: any) => ws.clientObj)
         .filter((c) => c && squadManager.getSquadId(c.id) === squadId);
       for (const member of remainingMembers) {
         member.send({

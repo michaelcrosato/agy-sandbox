@@ -7,6 +7,9 @@
  * Represents a co-op party squad formed by players in the game lobby.
  */
 export class Squad {
+  declare id;
+  declare leaderId;
+  declare memberIds;
   /**
    * @param {string} id - The unique squad ID.
    * @param {string} leaderId - The player client ID who is the leader.
@@ -24,6 +27,8 @@ export class Squad {
  * Singleton state manager coordinating all multiplayer co-op party squads.
  */
 export class SquadManager {
+  declare playerToSquad;
+  declare squads;
   constructor() {
     /** @type {Map<string, Squad>} */
     this.squads = new Map();

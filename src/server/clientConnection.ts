@@ -228,7 +228,7 @@ export function registerWebSocketConnection(ws, req, options) {
     storeInstance,
     instances,
     squadManager,
-    getClients: () => Array.from(wss.clients).map((w) => w.clientObj),
+    getClients: () => Array.from(wss.clients).map((w: any) => w.clientObj),
     buildStatsPayload,
   });
 

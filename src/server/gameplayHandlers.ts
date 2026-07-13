@@ -287,7 +287,7 @@ export function handleLand(clientObj, room, persistenceManager) {
   ) {
     const bountyTargets =
       room && room.ships && typeof room.ships.values === "function"
-        ? Array.from(room.ships.values())
+        ? (Array.from(room.ships.values()) as any[])
             .filter(
               (s) =>
                 s &&

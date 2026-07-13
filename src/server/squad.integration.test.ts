@@ -319,7 +319,7 @@ describe("Squad Multiplayer Integration (SPEC-059)", () => {
       });
 
       // 2. Fetch squadmates (p2)
-      let squadMembers = [];
+      const squadMembers = [];
       const squad = squadManager.getSquadForPlayer(this.id);
       if (squad) {
         for (const memberId of squad.memberIds) {

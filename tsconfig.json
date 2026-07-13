@@ -16,7 +16,7 @@
   "include": [
     "src/net/**/*.ts",
     "src/physics/**/*.ts",
-    "src/server/**/*.js",
+    "src/server/**/*.ts",
     "src/engine/**/*.ts",
     "src/persistence/**/*.ts"
   ],

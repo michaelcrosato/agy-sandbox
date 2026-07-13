@@ -66,7 +66,7 @@ export async function waitForWebSocketReady(port, timeoutMs = 20000) {
 
   while (Date.now() < deadline) {
     try {
-      await new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         const probe = new WebSocket(`ws://localhost:${port}`);
         const timer = setTimeout(() => {
           probe.terminate();

@@ -39,7 +39,9 @@ export function runEconomyTickForRoom(room) {
       for (const p of room.planets) {
         p.preEventMarket = { ...p.market };
         // Apply multipliers to the current market prices
-        for (const [commodity, modifier] of Object.entries(ev.priceModifiers)) {
+        for (const [commodity, modifier] of Object.entries(
+          ev.priceModifiers,
+        ) as [string, any][]) {
           if (p.market[commodity] !== undefined) {
             p.market[commodity] = Math.max(
               1,

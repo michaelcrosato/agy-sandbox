@@ -13,7 +13,7 @@ import { InMemoryPubSub } from "../net/PubSub.js";
  * @param {object} [options.redisPubSubLib] - Optional injected RedisPubSub library for testing.
  * @returns {Promise<{storeInstance: object, pubsub: object}>} The resolved storage and pubsub instances.
  */
-export async function setupRedis(options = {}) {
+export async function setupRedis(options: any = {}) {
   const redisUrl = options.redisUrl || process.env.REDIS_URL;
   const redisScaleOut = options.redisScaleOut || process.env.REDIS_SCALE_OUT;
   const persistenceDir =
@@ -28,8 +28,7 @@ export async function setupRedis(options = {}) {
       if (options.redisLib) {
         createClient = options.redisLib.createClient;
       } else {
-        // @ts-ignore
-        const redisModule = await import("redis");
+        const redisModule = await import("redis" as any);
         createClient = redisModule.createClient;
       }
 

@@ -15,7 +15,7 @@ protocol and does not override the substrate boundary, conventions, or git workf
 | One suite | `npm test -- src/engine/<X>.test.js` | targeted pass |
 | Lint | `npm run lint` | eslint exits 0 |
 | Format (write) | `npm run format` | — |
-| **Type-check** | `npm run typecheck` (`tsc --noEmit`) | exit 0 over `net\|physics\|server`; engine ratchet = `specs/030` |
+| **Type-check** | `npm run typecheck` (`tsc --noEmit`) | exit 0 over `engine\|net\|physics\|server\|persistence` (all checked; see `tsconfig.json`) |
 | **Build** | _none_ | project has no build step (static + node) |
 | Server smoke | `PORT=18190 NODE_ENV=test node src/server.js` | prints "LISTENING", no crash (Ctrl-C) |
 | Security | `npm audit` | track high/critical; see `specs/001` |
@@ -64,7 +64,8 @@ Toolchain: `ws` 8.x, ESLint 10, Jest 30, TypeScript 6, Vitest 4 (+jsdom / +brows
   real legal/security ambiguity.
 
 ## Notes for downstream agents
-- The engine is the safe place to add logic; `server.js` is the risky seam (untested) — prefer extracting
-  pure units (`specs/007`) over editing it in place.
+- The engine is the safe place to add logic. `src/server.js` is now a thin composition root that wires the
+  tested modules under `src/server/` (covered by `src/server/*.integration.test.js`) — add new server behavior
+  as a pure helper plus a thin handler rather than inlining it into `server.js`.
 - Reuse existing patterns: `createSeededRng` (GenerativeMissions) for RNG; frozen `DEFAULT_*_OPTIONS`
   option objects; pure modules + a thin server handler; `*.test.js` beside source.

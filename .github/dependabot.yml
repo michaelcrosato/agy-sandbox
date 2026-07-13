@@ -1,0 +1,19 @@
+# Dependabot keeps npm dependencies and GitHub Actions patched, and maintains
+# any action version pins. Grouped + weekly to avoid PR spam on a small repo.
+# https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 5
+    groups:
+      dev-dependencies:
+        dependency-type: 'development'
+        update-types: ['minor', 'patch']
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'

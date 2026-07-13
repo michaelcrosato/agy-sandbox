@@ -7,6 +7,8 @@ Read this first. It is the single operating manual for agents and humans working
 - **Product:** `Starfall: Living Galaxy`, a persistent browser-native multiplayer space sim under `src/`.
 - **Harness:** the autonomous-engineering control plane that plans, executes, verifies, logs, and replenishes work.
 
+This file follows the [AGENTS.md](https://agents.md) open standard and is the one source every tool reads: `CLAUDE.md` imports it (`@AGENTS.md`), Cursor reads [`.cursor/rules/agents.mdc`](.cursor/rules/agents.mdc), and `.github/AGENT_RULES.md` adds only the GitHub-issue-flow delta. Human onboarding lives in [`README.md`](README.md) and [`CONTRIBUTING.md`](CONTRIBUTING.md); the vulnerability-reporting policy is [`SECURITY.md`](SECURITY.md). Claude Code permission defaults (including substrate-edit denials) are committed in [`.claude/settings.json`](.claude/settings.json).
+
 ## 0. Substrate boundary
 
 These files are write-protected substrate. Do not modify, rename, delete, or plan changes to them:

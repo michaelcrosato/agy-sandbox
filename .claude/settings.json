@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "deny": [
+      "Edit(docs/AXIOMS.md)",
+      "Edit(docs/AGENT-LOOP.md)",
+      "Edit(scripts/assert-gate-integrity.ps1)",
+      "Edit(scripts/local-gate.ps1)",
+      "Edit(scripts/run-autonomous-loop.ps1)",
+      "Edit(scripts/validate-log-compliance.py)",
+      "Edit(scripts/manifest.txt)",
+      "Write(docs/AXIOMS.md)",
+      "Write(docs/AGENT-LOOP.md)",
+      "Write(scripts/assert-gate-integrity.ps1)",
+      "Write(scripts/local-gate.ps1)",
+      "Write(scripts/run-autonomous-loop.ps1)",
+      "Write(scripts/validate-log-compliance.py)",
+      "Write(scripts/manifest.txt)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(npm publish:*)"
+    ],
+    "allow": [
+      "Bash(npm ci)",
+      "Bash(npm test:*)",
+      "Bash(npm run agent:check)",
+      "Bash(npm run agent:check:core)",
+      "Bash(npm run lint)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run format:check)",
+      "Bash(npm run test:client:*)",
+      "Bash(npm run codex:generate)",
+      "Bash(npm run agent:verify-substrate)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)"
+    ]
+  }
+}

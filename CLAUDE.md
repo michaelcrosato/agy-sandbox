@@ -1,10 +1,20 @@
 # CLAUDE.md
 
-Canonical agent instructions live in **[AGENTS.md](AGENTS.md)** — read it first.
+@AGENTS.md
 
-Critical constraints (full detail in AGENTS.md):
+The canonical operating manual is imported above (Claude Code reads `CLAUDE.md`;
+other agents read `AGENTS.md` directly, so both stay in sync from one source).
 
-- **Never modify substrate files** listed in `docs/AGENT-LOOP.md` / AGENTS.md §0.
-- **Gate every change with `npm run agent:check`** (prettier + eslint + jest = CI) before committing.
-- Keep `src/engine`, `src/physics`, `src/net`, `src/persistence` pure: no DOM, sockets, or `Math.random`.
-- Product intent: `docs/GOAL.md`. Workflow loop, commands, and conventions: `AGENTS.md`.
+## Claude Code specifics
+
+- **Gate of record:** run `npm run agent:check` (substrate verify + Prettier +
+  ESLint + `tsc` + Jest + Vitest client) before committing. Never weaken or skip a
+  test to make it pass.
+- **Substrate is off-limits:** never edit the files listed in `AGENTS.md` §0.
+  `.claude/settings.json` also denies edits to them as a backstop.
+- **Purity:** keep `src/engine`, `src/physics`, `src/net`, and `src/persistence`
+  free of DOM, sockets, timers, and unseeded `Math.random` in test-reachable paths.
+- **Where things live:** product intent is `docs/GOAL.md`; the generated code map
+  is `docs/ai/REPO_MAP.md` (run `npm run codex:generate` to (re)produce it).
+- **Commits:** Conventional Commits; small, focused, green. Don't push or merge
+  unless explicitly asked.

@@ -37,7 +37,7 @@ function hostOf(s) {
  *   `Origin` (non-browser tools).
  * @returns {boolean}
  */
-export function isAllowedOrigin(origin, options = {}) {
+export function isAllowedOrigin(origin, options: any = {}) {
   const { host = "", allow = [], allowNoOrigin = true } = options;
   if (origin === undefined || origin === null || origin === "") {
     return allowNoOrigin;

@@ -78,7 +78,7 @@ async function bootstrap() {
         const requestId = Math.random().toString(36).substring(2, 9);
 
         const responseHandler = (msg) => {
-          const m = /** @type {any} */ (msg);
+          const m = msg as any;
           if (
             m &&
             m.type === "guest_rpc_response" &&

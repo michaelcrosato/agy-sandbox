@@ -65,7 +65,7 @@ export const SecureModuleRegistry = {
    * @returns {Object<string, string>} - Map of absolute path to SHA-256.
    */
   getRegistry() {
-    const obj = /** @type {Record<string, string>} */ ({});
+    const obj = {} as Record<string, string>;
     for (const [key, value] of registry.entries()) {
       obj[key] = value;
     }

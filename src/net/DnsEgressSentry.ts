@@ -172,8 +172,7 @@ export const DnsEgressSentry = {
 
           const evaluation = DnsEgressSentry.checkHostname(hostname, allowlist);
           if (!evaluation.allowed) {
-            /** @type {any} */
-            const err = new Error(evaluation.reason);
+            const err: any = new Error(evaluation.reason);
             err.code = "ENETUNREACH";
 
             SandboxSecurityRegistry.logViolation("firewall", "dns_block", {
@@ -193,10 +192,8 @@ export const DnsEgressSentry = {
 
         // Preserve native static properties (like __promisify__)
         Object.assign(patched, original);
-        if (/** @type {any} */ (original).__promisify__) {
-          /** @type {any} */ (patched).__promisify__ = /** @type {any} */ (
-            original
-          ).__promisify__;
+        if ((original as any).__promisify__) {
+          (patched as any).__promisify__ = (original as any).__promisify__;
         }
 
         dns[key] = patched;
@@ -217,8 +214,7 @@ export const DnsEgressSentry = {
               allowlist,
             );
             if (!evaluation.allowed) {
-              /** @type {any} */
-              const err = new Error(evaluation.reason);
+              const err: any = new Error(evaluation.reason);
               err.code = "ENETUNREACH";
 
               SandboxSecurityRegistry.logViolation("firewall", "dns_block", {

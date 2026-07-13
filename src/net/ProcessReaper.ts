@@ -55,8 +55,8 @@ function killProcessTree(pid) {
   }
 }
 
-const activeWorkers = new Set();
-const activeProcesses = new Set();
+const activeWorkers = new Set<any>();
+const activeProcesses = new Set<any>();
 
 let isListenersRegistered = false;
 
@@ -185,7 +185,7 @@ export const ProcessReaper = {
    * Terminates all currently tracked worker threads and child processes.
    * @returns {Promise<void>}
    */
-  async reap() {
+  async reap(_pid?: any) {
     // Terminate child processes
     for (const proc of activeProcesses) {
       try {

@@ -3,12 +3,17 @@
  * Actively monitors event loop delays using high-resolution timers and computes a rolling average.
  */
 export class LatencyMonitor {
+  declare intervalMs;
+  declare lastTime;
+  declare samples;
+  declare timer;
+  declare windowSize;
   /**
    * @param {Object} [options]
    * @param {number} [options.intervalMs=500] - Sampling frequency in milliseconds.
    * @param {number} [options.windowSize=10] - Size of the rolling window for latency samples.
    */
-  constructor(options = {}) {
+  constructor(options: any = {}) {
     this.intervalMs = options.intervalMs || 500;
     this.windowSize = options.windowSize || 10;
     this.samples = [];

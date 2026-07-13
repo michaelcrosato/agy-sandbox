@@ -60,7 +60,7 @@ export function safeEqual(a, b) {
  * @param {string} [opts.adminToken] - The configured admin token (env-provided).
  * @returns {boolean}
  */
-export function isAdminAuthorized(req, { adminToken } = {}) {
+export function isAdminAuthorized(req, { adminToken }: any = {}) {
   const remote = req && req.socket ? req.socket.remoteAddress : undefined;
   if (isLoopbackAddress(remote)) return true;
 
@@ -81,7 +81,7 @@ export function isAdminAuthorized(req, { adminToken } = {}) {
  * @param {number} [maxBytes=65536] - Hard cap; the socket is destroyed past it.
  * @returns {Promise<string>} Resolves with the collected body.
  */
-export function readBodyWithLimit(req, maxBytes = 64 * 1024) {
+export function readBodyWithLimit(req, maxBytes = 64 * 1024): Promise<string> {
   return new Promise((resolve, reject) => {
     let size = 0;
     const chunks = [];
@@ -92,8 +92,9 @@ export function readBodyWithLimit(req, maxBytes = 64 * 1024) {
       size += chunk.length;
       if (size > maxBytes) {
         aborted = true;
-        /** @type {Error & { code?: string }} */
-        const err = new Error("Request body exceeds maximum allowed size");
+        const err: Error & { code?: string } = new Error(
+          "Request body exceeds maximum allowed size",
+        );
         err.code = "E_BODY_TOO_LARGE";
         try {
           req.destroy();

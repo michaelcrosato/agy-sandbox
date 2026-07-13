@@ -36,7 +36,7 @@ export function validateMessage(msg) {
 
   const sanitized = { type };
 
-  for (const [propName, rule] of Object.entries(schema)) {
+  for (const [propName, rule] of Object.entries(schema) as [string, any][]) {
     const val = msg[propName];
 
     // Check optional/required constraints

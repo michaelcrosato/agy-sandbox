@@ -418,6 +418,9 @@ function getUrlFromOptions(options, defaultProtocol) {
  * Mock ClientRequest to simulate HTTP connection flows locally.
  */
 class MockClientRequest extends Writable {
+  declare callback;
+  declare chunks;
+  declare options;
   /**
    * @param {Object} options
    * @param {Function} [callback]
@@ -446,7 +449,7 @@ class MockClientRequest extends Writable {
    * @param {any} [callback]
    * @returns {this}
    */
-  end(chunk, _encoding, callback) {
+  end(chunk?: any, _encoding?: any, callback?: any): any {
     let actualCallback = callback;
     if (typeof chunk === "function") {
       actualCallback = chunk;
@@ -468,7 +471,7 @@ class MockClientRequest extends Writable {
 
     if (TokenCostGovernor.isBudgetExceeded()) {
       const err = new Error("402 Payment Required: LLM API budget exhausted");
-      /** @type {any} */ (err).code = "ENETUNREACH";
+      (err as any).code = "ENETUNREACH";
       process.nextTick(() => {
         this.emit("error", err);
       });
@@ -506,9 +509,9 @@ class MockClientRequest extends Writable {
           : JSON.stringify(finalResponse);
 
       const resStream = Readable.from([responseBody]);
-      /** @type {any} */ (resStream).statusCode = 200;
-      /** @type {any} */ (resStream).statusMessage = "OK";
-      /** @type {any} */ (resStream).headers = {
+      (resStream as any).statusCode = 200;
+      (resStream as any).statusMessage = "OK";
+      (resStream as any).headers = {
         "content-type": "application/json",
       };
 
@@ -522,7 +525,7 @@ class MockClientRequest extends Writable {
       const err = new Error(
         `400 Bad Request: Outbound LLM API call unmocked and blocked: ${urlStr}`,
       );
-      /** @type {any} */ (err).code = "ENETUNREACH";
+      (err as any).code = "ENETUNREACH";
       process.nextTick(() => {
         this.emit("error", err);
       });

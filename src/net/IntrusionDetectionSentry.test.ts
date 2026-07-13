@@ -21,7 +21,14 @@ import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const workerScriptPath = path.join(__dirname, "temp_sentry_test_worker.js");
+// The forked worker runs under raw Node and imports "./IntrusionDetectionSentry.js"
+// relatively; that resolves only against the compiled output, so place the
+// generated worker in dist/net (built by the gate before tests run) rather than
+// src/net where only the .ts source exists.
+const workerScriptPath = path.resolve(
+  __dirname,
+  "../../dist/net/temp_sentry_test_worker.js",
+);
 const secretKey = "test-secret-key-12345";
 
 describe("IntrusionDetectionSentry", () => {

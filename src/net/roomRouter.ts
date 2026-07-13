@@ -59,6 +59,7 @@ export function assignShard(roomId, shardCount) {
  * per-node listing.
  */
 export class RoomRegistry {
+  declare owners;
   /**
    * @param {Object<string, string|Object>} [initial={}] - roomId → nodeId or lease object seed map.
    */

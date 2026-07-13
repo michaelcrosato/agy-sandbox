@@ -5,6 +5,8 @@
  * and tracks socket bounds to prevent distributed flood attacks and host memory exhaustion.
  */
 export class ConnectionFloodSentry {
+  declare activeConnectionsByIp;
+  declare maxConnectionsPerIp;
   /**
    * @param {Object} [options]
    * @param {number} [options.maxConnectionsPerIp=5] - Absolute concurrent socket ceiling per unique remote IP.

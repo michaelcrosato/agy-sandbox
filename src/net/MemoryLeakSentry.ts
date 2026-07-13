@@ -11,6 +11,13 @@
  * Lightweight memory leak sentinel and self-healing garbage collector.
  */
 export class MemoryLeakSentry {
+  declare alertCount;
+  declare intervalMs;
+  declare isActiveLoad;
+  declare lastAlertTime;
+  declare leakThresholdBytesPerMin;
+  declare sandboxTelemetry;
+  declare timer;
   /**
    * @param {Object} options
    * @param {import("./SandboxTelemetry.js").SandboxTelemetry} options.sandboxTelemetry - Sentry resource telemetry.

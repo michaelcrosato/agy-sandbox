@@ -27,7 +27,7 @@ export const DEFAULT_BACKPRESSURE_OPTIONS = Object.freeze({
  * @returns {"send"|"skip"|"drop"}
  */
 export function sendDecision(bufferedAmount, options = {}) {
-  const o = { ...DEFAULT_BACKPRESSURE_OPTIONS, ...options };
+  const o: any = { ...DEFAULT_BACKPRESSURE_OPTIONS, ...options };
   const buf = Number.isFinite(bufferedAmount) ? bufferedAmount : 0;
   if (buf >= o.hardLimit) return "drop";
   if (buf >= o.softLimit) return o.isKeyframe ? "send" : "skip";

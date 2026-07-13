@@ -24,6 +24,11 @@ export default tseslint.config(
     //   across `.js` and `.ts`.
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
+      // `arguments`-based forwarding is intentional in the Node-builtin
+      // monkey-patches (e.g. ProcessSentinel) that wrap child_process/fs; the
+      // base JS lint never enforced this rule, so keep it off for parity during
+      // the migration rather than rewrite security-critical wrappers.
+      "prefer-rest-params": "off",
       "@typescript-eslint/no-unused-vars": [
         "warn",
         {

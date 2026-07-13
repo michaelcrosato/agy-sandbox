@@ -53,6 +53,7 @@ export class PubSub {
  * Used for fast in-process tests and single-process execution.
  */
 export class InMemoryPubSub extends PubSub {
+  declare subscriptions;
   constructor() {
     super();
     /** @type {Map<string, Set<function(Object): void>>} */
@@ -105,13 +106,16 @@ export class InMemoryPubSub extends PubSub {
  * Integrates with standard Redis pub/sub and Redis 7+ sharded pub/sub.
  */
 export class RedisPubSub extends PubSub {
+  declare pubClient;
+  declare subClient;
+  declare wrappedCallbacks;
   /**
    * @param {Object} params
    * @param {Object} [params.client] - Redis client to fallback to.
    * @param {Object} [params.pubClient] - Redis client dedicated to publishing.
    * @param {Object} [params.subClient] - Redis client dedicated to subscribing.
    */
-  constructor({ client, pubClient = null, subClient = null } = {}) {
+  constructor({ client, pubClient = null, subClient = null }: any = {}) {
     super();
     this.pubClient = pubClient || client;
     this.subClient = subClient || client;
@@ -125,7 +129,7 @@ export class RedisPubSub extends PubSub {
     this.wrappedCallbacks = new Map();
   }
 
-  async publish(channel, msg, options = {}) {
+  async publish(channel, msg, options: any = {}) {
     const payload = JSON.stringify(msg);
     if (options.sharded && typeof this.pubClient.spublish === "function") {
       await this.pubClient.spublish(channel, payload);
@@ -134,7 +138,7 @@ export class RedisPubSub extends PubSub {
     }
   }
 
-  async subscribe(channel, cb, options = {}) {
+  async subscribe(channel, cb, options: any = {}) {
     const wrapped = (message) => {
       try {
         cb(JSON.parse(message));
@@ -157,7 +161,7 @@ export class RedisPubSub extends PubSub {
     }
   }
 
-  async unsubscribe(channel, cb = null, options = {}) {
+  async unsubscribe(channel, cb = null, options: any = {}) {
     const chanMap = this.wrappedCallbacks.get(channel);
 
     if (!cb) {

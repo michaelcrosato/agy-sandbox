@@ -6,6 +6,18 @@ import { ProcessReaper } from "./ProcessReaper.js";
  * and actively prevents runaway infinite loops or Out-Of-Memory (OOM) failures.
  */
 export class ResourceLimiter {
+  declare hardLatencyLimit;
+  declare hardMemoryLimit;
+  declare intervalMs;
+  declare isBackpressureActive;
+  declare isShuttingDown;
+  declare lastTime;
+  declare latencySamples;
+  declare onHardLimit;
+  declare onSoftLimit;
+  declare softLatencyLimit;
+  declare softMemoryLimit;
+  declare timer;
   /**
    * @param {object} [options]
    * @param {number} [options.intervalMs=1000] - Polling interval in milliseconds.
@@ -16,7 +28,7 @@ export class ResourceLimiter {
    * @param {Function} [options.onSoftLimit] - Optional callback when soft limit is crossed.
    * @param {Function} [options.onHardLimit] - Optional callback when hard limit is crossed.
    */
-  constructor(options = {}) {
+  constructor(options: any = {}) {
     this.intervalMs = options.intervalMs || 1000;
     this.softMemoryLimit = options.softMemoryLimit || 512 * 1024 * 1024;
     this.hardMemoryLimit = options.hardMemoryLimit || 640 * 1024 * 1024;

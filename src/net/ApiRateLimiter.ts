@@ -10,6 +10,12 @@ import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
  * egress destinations to a secure, developer-configured allowlist.
  */
 export class ApiRateLimiter {
+  declare allowlistDomains;
+  declare blockCount;
+  declare expendedTokens;
+  declare maxPerHour;
+  declare maxPerMinute;
+  declare requestTimestamps;
   /**
    * @param {Object} [config]
    * @param {number} [config.maxPerMinute=5] - Maximum API calls allowed per minute.
@@ -153,8 +159,7 @@ export function activateOutboundSentinel(limiter) {
     const evaluation = limiter.checkRequest(urlStr);
 
     if (!evaluation.allowed) {
-      /** @type {any} */
-      const err = new Error(evaluation.reason);
+      const err: any = new Error(evaluation.reason);
       err.code = "ENETUNREACH"; // Standard network unreachable error code
       const mockReq = new (class extends http.ClientRequest {
         constructor() {
@@ -182,8 +187,7 @@ export function activateOutboundSentinel(limiter) {
             safeOptions = { ...options };
           }
 
-          /** @type {any} */
-          const dummyAgent = new http.Agent();
+          const dummyAgent: any = new http.Agent();
           dummyAgent.addRequest = () => {}; // Prevent background connection/DNS resolution
           super({ ...safeOptions, agent: dummyAgent }, callback);
 
@@ -211,8 +215,7 @@ export function activateOutboundSentinel(limiter) {
     const evaluation = limiter.checkRequest(urlStr);
 
     if (!evaluation.allowed) {
-      /** @type {any} */
-      const err = new Error(evaluation.reason);
+      const err: any = new Error(evaluation.reason);
       err.code = "ENETUNREACH";
       const mockReq = new (class extends http.ClientRequest {
         constructor() {
@@ -240,8 +243,7 @@ export function activateOutboundSentinel(limiter) {
             safeOptions = { ...options, protocol: "http:" };
           }
 
-          /** @type {any} */
-          const dummyAgent = new http.Agent();
+          const dummyAgent: any = new http.Agent();
           dummyAgent.addRequest = () => {}; // Prevent background connection/DNS resolution
           super({ ...safeOptions, agent: dummyAgent }, callback);
 

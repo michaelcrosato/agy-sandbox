@@ -36,7 +36,7 @@ const protectedObjects = new Set();
 for (const builtin of coreBuiltins) {
   if (builtin) {
     protectedObjects.add(builtin);
-    const b = /** @type {any} */ (builtin);
+    const b = builtin as any;
     if (b.prototype) {
       protectedObjects.add(b.prototype);
     }
@@ -119,7 +119,7 @@ export const IntegrityGuard = {
         if (builtin) {
           try {
             Object.freeze(builtin);
-            const b = /** @type {any} */ (builtin);
+            const b = builtin as any;
             if (b.prototype) {
               Object.freeze(b.prototype);
             }

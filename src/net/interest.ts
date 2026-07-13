@@ -38,7 +38,7 @@ export const DEFAULT_INTEREST_RADIUS = 3000;
  * @param {Array<Object>} [options.squadmates] - Coordinates of active squadmates to share sensor sweeps.
  * @returns {Array<Object>} The in-interest subset.
  */
-export function interestFilter(entities, viewer, options = {}) {
+export function interestFilter(entities, viewer, options: any = {}) {
   if (!Array.isArray(entities)) return [];
   if (!viewer || !Number.isFinite(viewer.x) || !Number.isFinite(viewer.y)) {
     return entities.slice();

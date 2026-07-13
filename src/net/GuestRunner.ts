@@ -20,7 +20,14 @@ import { ZeroTraceTeardown } from "./ZeroTraceTeardown.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const workerPath = path.join(__dirname, "GuestRunnerWorker.js");
+// In the compiled build (dist/net) the fork target sits beside this file. Under
+// the Vitest source run (src/net) only the .ts exists, so fall back to the
+// compiled worker in dist/ — the gate builds before tests run. Node's `fork`
+// requires a runnable .js, so this must always resolve to compiled output.
+const localWorkerPath = path.join(__dirname, "GuestRunnerWorker.js");
+const workerPath = fs.existsSync(localWorkerPath)
+  ? localWorkerPath
+  : path.resolve(__dirname, "../../dist/net/GuestRunnerWorker.js");
 
 /**
  * Guest Runner (SPEC-136) managing isolated guest process executions.
@@ -49,7 +56,7 @@ export const GuestRunner = {
    * @param {boolean} [options.bypassStaticCheck=false] - Skip static analysis pre-scans (useful for runtime exception testing).
    * @returns {Promise<{ status: string, exitCode: number | null, signal: string | null, error?: string, stack?: string, stdout: string, stderr: string, childAuditFile?: string }>}
    */
-  runScript(scriptPath, options = {}) {
+  runScript(scriptPath, options: any = {}): Promise<any> {
     const sandboxDir = options.sandboxDir
       ? path.resolve(options.sandboxDir)
       : null;
@@ -143,7 +150,7 @@ export const GuestRunner = {
           "GUEST_ALLOWED_MODULE_HASHES",
           "GUEST_DNS_ALLOWLIST",
         ];
-        const childEnv = {};
+        const childEnv: any = {};
         for (const key of allowedKeys) {
           if (process.env[key] !== undefined) {
             childEnv[key] = process.env[key];
@@ -164,13 +171,13 @@ export const GuestRunner = {
 
         // Spawn the bootstrap worker via fork to establish IPC channel
         const child = childProcess.fork(workerPath, [], {
-          env: /** @type {any} */ (childEnv),
+          env: childEnv as any,
           execArgv,
           stdio: "pipe",
         });
 
         // Configure normal CPU scheduling priority to start with, and let governor down-throttle it if needed (SPEC-172)
-        const procAny = /** @type {any} */ (process);
+        const procAny = process as any;
         if (child.pid && typeof procAny.setPriority === "function") {
           try {
             procAny.setPriority(child.pid, 0); // Start at normal priority 0
@@ -339,7 +346,7 @@ export const GuestRunner = {
               } else {
                 child.kill("SIGKILL");
               }
-              /** @type {any} */ (child).killed = true;
+              (child as any).killed = true;
             }
             if (!child.killed && typeof child.kill === "function") {
               child.kill("SIGKILL");
@@ -378,7 +385,7 @@ export const GuestRunner = {
               } else {
                 child.kill("SIGKILL");
               }
-              /** @type {any} */ (child).killed = true;
+              (child as any).killed = true;
             }
             if (!child.killed && typeof child.kill === "function") {
               child.kill("SIGKILL");
@@ -420,7 +427,7 @@ export const GuestRunner = {
             return;
           }
 
-          const m = /** @type {any} */ (msg);
+          const m = msg as any;
           const { signature } = m;
           const payload = { ...m, signature: undefined };
           const payloadStr = JSON.stringify(payload);
@@ -533,7 +540,7 @@ export const GuestRunner = {
               } else {
                 child.kill("SIGKILL");
               }
-              /** @type {any} */ (child).killed = true;
+              (child as any).killed = true;
             }
             if (!child.killed && typeof child.kill === "function") {
               child.kill("SIGKILL");

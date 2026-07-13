@@ -56,12 +56,14 @@ const originalExistsSync = fs.existsSync;
 // Virtual COW FS overlay variables (SPEC-150)
 let virtualCowActive = false;
 const virtualFiles = new Map(); // resolved absolute path -> Buffer or string
-const virtualDirs = new Set(); // resolved absolute path of directories
+const virtualDirs = new Set<any>(); // resolved absolute path of directories
 
 /**
  * Virtual Write stream class for Zero-Trust COW.
  */
 class VirtualWriteStream extends Writable {
+  declare chunks;
+  declare filePath;
   constructor(filePath) {
     super();
     this.filePath = filePath;
@@ -71,7 +73,7 @@ class VirtualWriteStream extends Writable {
     this.chunks.push(chunk);
     callback();
   }
-  end(chunk, encoding, callback) {
+  end(chunk?: any, encoding?: any, callback?: any): any {
     if (typeof chunk === "function") {
       callback = chunk;
       chunk = null;
@@ -90,7 +92,7 @@ class VirtualWriteStream extends Writable {
     }
     this.emit("finish");
     this.emit("close");
-    return /** @type {this} */ (this);
+    return this as this;
   }
 }
 
@@ -98,6 +100,8 @@ class VirtualWriteStream extends Writable {
  * Virtual Read stream class for Zero-Trust COW.
  */
 class VirtualReadStream extends Readable {
+  declare data;
+  declare sent;
   constructor(filePath, data) {
     super();
     this.data = Buffer.isBuffer(data) ? data : Buffer.from(data);
@@ -114,7 +118,7 @@ class VirtualReadStream extends Readable {
 }
 
 // Helper to remove virtual files/directories recursively
-function handleVirtualDelete(resolved, options = {}) {
+function handleVirtualDelete(resolved, options: any = {}) {
   let deleted = false;
   if (virtualFiles.has(resolved)) {
     virtualFiles.delete(resolved);
@@ -634,224 +638,178 @@ export const ProcessSentinel = {
   activate() {
     if (isPatched) return;
 
-    childProcess.spawn = /** @type {any} */ (
-      function (command, args, _options) {
-        if (
-          !process.env.GUEST_SCRIPT_PATH &&
-          !process.env.TEST_SENTINEL_FORCE
-        ) {
-          return originalSpawn.apply(this, arguments);
-        }
-        const actualArgs = Array.isArray(args) ? args : [];
-        const validation = validateCommand(command, actualArgs);
-        if (!validation.allowed) {
-          stats.blockedCount++;
-          logProcessBlock(command, actualArgs, validation.reason);
-          throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
-        }
-        stats.allowedCount++;
-        const proc = originalSpawn.apply(this, arguments);
-        return ProcessReaper.registerProcess(proc);
+    childProcess.spawn = function (command, args, _options) {
+      if (!process.env.GUEST_SCRIPT_PATH && !process.env.TEST_SENTINEL_FORCE) {
+        return originalSpawn.apply(this, arguments);
       }
-    );
-
-    childProcess.spawnSync = /** @type {any} */ (
-      function (command, args, _options) {
-        if (
-          !process.env.GUEST_SCRIPT_PATH &&
-          !process.env.TEST_SENTINEL_FORCE
-        ) {
-          return originalSpawnSync.apply(this, arguments);
-        }
-        const actualArgs = Array.isArray(args) ? args : [];
-        const validation = validateCommand(command, actualArgs);
-        if (!validation.allowed) {
-          stats.blockedCount++;
-          logProcessBlock(command, actualArgs, validation.reason);
-          throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
-        }
-        stats.allowedCount++;
-        const proc = originalSpawnSync.apply(this, arguments);
-        return ProcessReaper.registerProcess(proc);
+      const actualArgs = Array.isArray(args) ? args : [];
+      const validation = validateCommand(command, actualArgs);
+      if (!validation.allowed) {
+        stats.blockedCount++;
+        logProcessBlock(command, actualArgs, validation.reason);
+        throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
       }
-    );
+      stats.allowedCount++;
+      const proc = originalSpawn.apply(this, arguments);
+      return ProcessReaper.registerProcess(proc);
+    } as any;
 
-    childProcess.fork = /** @type {any} */ (
-      function (modulePath, args, _options) {
-        if (
-          !process.env.GUEST_SCRIPT_PATH &&
-          !process.env.TEST_SENTINEL_FORCE
-        ) {
-          return originalFork.apply(this, arguments);
-        }
-        const actualArgs = Array.isArray(args) ? args : [];
-        const validation = validateCommand("node", [modulePath, ...actualArgs]);
-        if (!validation.allowed) {
-          stats.blockedCount++;
-          logProcessBlock(
-            "node",
-            [modulePath, ...actualArgs],
-            validation.reason,
-          );
-          throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
-        }
-        stats.allowedCount++;
-        const proc = originalFork.apply(this, arguments);
-        return ProcessReaper.registerProcess(proc);
+    childProcess.spawnSync = function (command, args, _options) {
+      if (!process.env.GUEST_SCRIPT_PATH && !process.env.TEST_SENTINEL_FORCE) {
+        return originalSpawnSync.apply(this, arguments);
       }
-    );
-
-    childProcess.exec = /** @type {any} */ (
-      function (command, options, callback) {
-        if (
-          !process.env.GUEST_SCRIPT_PATH &&
-          !process.env.TEST_SENTINEL_FORCE
-        ) {
-          return originalExec.apply(this, arguments);
-        }
-        const actualCallback =
-          typeof options === "function" ? options : callback;
-
-        // 1. Metacharacter scan for shell injections
-        const forbiddenShellChars = /[&|;><$]/;
-        if (forbiddenShellChars.test(command)) {
-          stats.blockedCount++;
-          const reason =
-            "Shell metacharacters are forbidden in sandbox execution";
-          logProcessBlock(command, [], reason);
-          const err = new Error(`[SECURITY ACCESS DENIED] ${reason}`);
-          if (typeof actualCallback === "function") {
-            actualCallback(err, "", "");
-            return;
-          }
-          throw err;
-        }
-
-        // 2. Parse and validate command string
-        const parsed = parseCommandString(command);
-        const validation = validateCommand(parsed.command, parsed.args);
-        if (!validation.allowed) {
-          stats.blockedCount++;
-          logProcessBlock(parsed.command, parsed.args, validation.reason);
-          const err = new Error(
-            `[SECURITY ACCESS DENIED] ${validation.reason}`,
-          );
-          if (typeof actualCallback === "function") {
-            actualCallback(err, "", "");
-            return;
-          }
-          throw err;
-        }
-
-        stats.allowedCount++;
-        const proc = originalExec.apply(this, arguments);
-        return ProcessReaper.registerProcess(proc);
+      const actualArgs = Array.isArray(args) ? args : [];
+      const validation = validateCommand(command, actualArgs);
+      if (!validation.allowed) {
+        stats.blockedCount++;
+        logProcessBlock(command, actualArgs, validation.reason);
+        throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
       }
-    );
+      stats.allowedCount++;
+      const proc = originalSpawnSync.apply(this, arguments);
+      return ProcessReaper.registerProcess(proc);
+    } as any;
 
-    childProcess.execSync = /** @type {any} */ (
-      function (command, _options) {
-        if (
-          !process.env.GUEST_SCRIPT_PATH &&
-          !process.env.TEST_SENTINEL_FORCE
-        ) {
-          return originalExecSync.apply(this, arguments);
-        }
-        const forbiddenShellChars = /[&|;><$]/;
-        if (forbiddenShellChars.test(command)) {
-          stats.blockedCount++;
-          const reason =
-            "Shell metacharacters are forbidden in sandbox execution";
-          logProcessBlock(command, [], reason);
-          throw new Error(`[SECURITY ACCESS DENIED] ${reason}`);
-        }
-
-        const parsed = parseCommandString(command);
-        const validation = validateCommand(parsed.command, parsed.args);
-        if (!validation.allowed) {
-          stats.blockedCount++;
-          logProcessBlock(parsed.command, parsed.args, validation.reason);
-          throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
-        }
-
-        stats.allowedCount++;
-        const proc = originalExecSync.apply(this, arguments);
-        return ProcessReaper.registerProcess(proc);
+    childProcess.fork = function (modulePath, args, _options) {
+      if (!process.env.GUEST_SCRIPT_PATH && !process.env.TEST_SENTINEL_FORCE) {
+        return originalFork.apply(this, arguments);
       }
-    );
-
-    childProcess.execFile = /** @type {any} */ (
-      function (file, args, options, callback) {
-        if (
-          !process.env.GUEST_SCRIPT_PATH &&
-          !process.env.TEST_SENTINEL_FORCE
-        ) {
-          return originalExecFile.apply(this, arguments);
-        }
-        const actualArgs = Array.isArray(args) ? args : [];
-        const validation = validateCommand(file, actualArgs);
-        if (!validation.allowed) {
-          stats.blockedCount++;
-          logProcessBlock(file, actualArgs, validation.reason);
-          const actualCallback =
-            typeof options === "function" ? options : callback;
-          const err = new Error(
-            `[SECURITY ACCESS DENIED] ${validation.reason}`,
-          );
-          if (typeof actualCallback === "function") {
-            actualCallback(err, "", "");
-            return;
-          }
-          throw err;
-        }
-        stats.allowedCount++;
-        const proc = originalExecFile.apply(this, arguments);
-        return ProcessReaper.registerProcess(proc);
+      const actualArgs = Array.isArray(args) ? args : [];
+      const validation = validateCommand("node", [modulePath, ...actualArgs]);
+      if (!validation.allowed) {
+        stats.blockedCount++;
+        logProcessBlock("node", [modulePath, ...actualArgs], validation.reason);
+        throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
       }
-    );
+      stats.allowedCount++;
+      const proc = originalFork.apply(this, arguments);
+      return ProcessReaper.registerProcess(proc);
+    } as any;
 
-    childProcess.execFileSync = /** @type {any} */ (
-      function (file, args, _options) {
-        if (
-          !process.env.GUEST_SCRIPT_PATH &&
-          !process.env.TEST_SENTINEL_FORCE
-        ) {
-          return originalExecFileSync.apply(this, arguments);
-        }
-        const actualArgs = Array.isArray(args) ? args : [];
-        const validation = validateCommand(file, actualArgs);
-        if (!validation.allowed) {
-          stats.blockedCount++;
-          logProcessBlock(file, actualArgs, validation.reason);
-          throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
-        }
-        stats.allowedCount++;
-        const proc = originalExecFileSync.apply(this, arguments);
-        return ProcessReaper.registerProcess(proc);
+    childProcess.exec = function (command, options, callback) {
+      if (!process.env.GUEST_SCRIPT_PATH && !process.env.TEST_SENTINEL_FORCE) {
+        return originalExec.apply(this, arguments);
       }
-    );
+      const actualCallback = typeof options === "function" ? options : callback;
 
-    // Monkeypatch synchronous/callback fs write operations
-    fs.writeFile = /** @type {any} */ (
-      function (file, data, ...args) {
-        const resolved = resolveSafePath(file);
-        checkPath(resolved, true);
-        if (virtualCowActive) {
-          virtualFiles.set(resolved, data);
-          let parent = path.dirname(resolved);
-          while (parent && parent !== path.dirname(parent)) {
-            virtualDirs.add(parent);
-            parent = path.dirname(parent);
-          }
-          const callback = args[args.length - 1];
-          if (typeof callback === "function") {
-            process.nextTick(() => callback(null));
-          }
+      // 1. Metacharacter scan for shell injections
+      const forbiddenShellChars = /[&|;><$]/;
+      if (forbiddenShellChars.test(command)) {
+        stats.blockedCount++;
+        const reason =
+          "Shell metacharacters are forbidden in sandbox execution";
+        logProcessBlock(command, [], reason);
+        const err = new Error(`[SECURITY ACCESS DENIED] ${reason}`);
+        if (typeof actualCallback === "function") {
+          actualCallback(err, "", "");
           return;
         }
-        return originalWriteFile.apply(this, arguments);
+        throw err;
       }
-    );
+
+      // 2. Parse and validate command string
+      const parsed = parseCommandString(command);
+      const validation = validateCommand(parsed.command, parsed.args);
+      if (!validation.allowed) {
+        stats.blockedCount++;
+        logProcessBlock(parsed.command, parsed.args, validation.reason);
+        const err = new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
+        if (typeof actualCallback === "function") {
+          actualCallback(err, "", "");
+          return;
+        }
+        throw err;
+      }
+
+      stats.allowedCount++;
+      const proc = originalExec.apply(this, arguments);
+      return ProcessReaper.registerProcess(proc);
+    } as any;
+
+    childProcess.execSync = function (command, _options) {
+      if (!process.env.GUEST_SCRIPT_PATH && !process.env.TEST_SENTINEL_FORCE) {
+        return originalExecSync.apply(this, arguments);
+      }
+      const forbiddenShellChars = /[&|;><$]/;
+      if (forbiddenShellChars.test(command)) {
+        stats.blockedCount++;
+        const reason =
+          "Shell metacharacters are forbidden in sandbox execution";
+        logProcessBlock(command, [], reason);
+        throw new Error(`[SECURITY ACCESS DENIED] ${reason}`);
+      }
+
+      const parsed = parseCommandString(command);
+      const validation = validateCommand(parsed.command, parsed.args);
+      if (!validation.allowed) {
+        stats.blockedCount++;
+        logProcessBlock(parsed.command, parsed.args, validation.reason);
+        throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
+      }
+
+      stats.allowedCount++;
+      const proc = originalExecSync.apply(this, arguments);
+      return ProcessReaper.registerProcess(proc);
+    } as any;
+
+    childProcess.execFile = function (file, args, options, callback) {
+      if (!process.env.GUEST_SCRIPT_PATH && !process.env.TEST_SENTINEL_FORCE) {
+        return originalExecFile.apply(this, arguments);
+      }
+      const actualArgs = Array.isArray(args) ? args : [];
+      const validation = validateCommand(file, actualArgs);
+      if (!validation.allowed) {
+        stats.blockedCount++;
+        logProcessBlock(file, actualArgs, validation.reason);
+        const actualCallback =
+          typeof options === "function" ? options : callback;
+        const err = new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
+        if (typeof actualCallback === "function") {
+          actualCallback(err, "", "");
+          return;
+        }
+        throw err;
+      }
+      stats.allowedCount++;
+      const proc = originalExecFile.apply(this, arguments);
+      return ProcessReaper.registerProcess(proc);
+    } as any;
+
+    childProcess.execFileSync = function (file, args, _options) {
+      if (!process.env.GUEST_SCRIPT_PATH && !process.env.TEST_SENTINEL_FORCE) {
+        return originalExecFileSync.apply(this, arguments);
+      }
+      const actualArgs = Array.isArray(args) ? args : [];
+      const validation = validateCommand(file, actualArgs);
+      if (!validation.allowed) {
+        stats.blockedCount++;
+        logProcessBlock(file, actualArgs, validation.reason);
+        throw new Error(`[SECURITY ACCESS DENIED] ${validation.reason}`);
+      }
+      stats.allowedCount++;
+      const proc = originalExecFileSync.apply(this, arguments);
+      return ProcessReaper.registerProcess(proc);
+    } as any;
+
+    // Monkeypatch synchronous/callback fs write operations
+    fs.writeFile = function (file, data, ...args) {
+      const resolved = resolveSafePath(file);
+      checkPath(resolved, true);
+      if (virtualCowActive) {
+        virtualFiles.set(resolved, data);
+        let parent = path.dirname(resolved);
+        while (parent && parent !== path.dirname(parent)) {
+          virtualDirs.add(parent);
+          parent = path.dirname(parent);
+        }
+        const callback = args[args.length - 1];
+        if (typeof callback === "function") {
+          process.nextTick(() => callback(null));
+        }
+        return;
+      }
+      return originalWriteFile.apply(this, arguments);
+    } as any;
     if (originalWriteFile && originalWriteFile.__promisify__) {
       fs.writeFile.__promisify__ = originalWriteFile.__promisify__;
     }
@@ -871,21 +829,19 @@ export const ProcessSentinel = {
       return originalWriteFileSync.apply(this, arguments);
     };
 
-    fs.mkdir = /** @type {any} */ (
-      function (dir, ...args) {
-        const resolved = resolveSafePath(dir);
-        checkPath(resolved, true);
-        if (virtualCowActive) {
-          virtualDirs.add(resolved);
-          const callback = args[args.length - 1];
-          if (typeof callback === "function") {
-            process.nextTick(() => callback(null));
-          }
-          return;
+    fs.mkdir = function (dir, ...args) {
+      const resolved = resolveSafePath(dir);
+      checkPath(resolved, true);
+      if (virtualCowActive) {
+        virtualDirs.add(resolved);
+        const callback = args[args.length - 1];
+        if (typeof callback === "function") {
+          process.nextTick(() => callback(null));
         }
-        return originalMkdir.apply(this, arguments);
+        return;
       }
-    );
+      return originalMkdir.apply(this, arguments);
+    } as any;
     if (originalMkdir && originalMkdir.__promisify__) {
       fs.mkdir.__promisify__ = originalMkdir.__promisify__;
     }
@@ -900,22 +856,20 @@ export const ProcessSentinel = {
       return originalMkdirSync.apply(this, arguments);
     };
 
-    fs.rm = /** @type {any} */ (
-      function (p, ...args) {
-        const resolved = resolveSafePath(p);
-        checkPath(resolved, true);
-        if (virtualCowActive) {
-          const options = typeof args[0] === "object" ? args[0] : {};
-          handleVirtualDelete(resolved, options);
-          const callback = args[args.length - 1];
-          if (typeof callback === "function") {
-            process.nextTick(() => callback(null));
-          }
-          return;
+    fs.rm = function (p, ...args) {
+      const resolved = resolveSafePath(p);
+      checkPath(resolved, true);
+      if (virtualCowActive) {
+        const options = typeof args[0] === "object" ? args[0] : {};
+        handleVirtualDelete(resolved, options);
+        const callback = args[args.length - 1];
+        if (typeof callback === "function") {
+          process.nextTick(() => callback(null));
         }
-        return originalRm.apply(this, arguments);
+        return;
       }
-    );
+      return originalRm.apply(this, arguments);
+    } as any;
     if (originalRm && originalRm.__promisify__) {
       fs.rm.__promisify__ = originalRm.__promisify__;
     }
@@ -931,21 +885,19 @@ export const ProcessSentinel = {
       return originalRmSync.apply(this, arguments);
     };
 
-    fs.unlink = /** @type {any} */ (
-      function (p, ...args) {
-        const resolved = resolveSafePath(p);
-        checkPath(resolved, true);
-        if (virtualCowActive) {
-          handleVirtualDelete(resolved);
-          const callback = args[args.length - 1];
-          if (typeof callback === "function") {
-            process.nextTick(() => callback(null));
-          }
-          return;
+    fs.unlink = function (p, ...args) {
+      const resolved = resolveSafePath(p);
+      checkPath(resolved, true);
+      if (virtualCowActive) {
+        handleVirtualDelete(resolved);
+        const callback = args[args.length - 1];
+        if (typeof callback === "function") {
+          process.nextTick(() => callback(null));
         }
-        return originalUnlink.apply(this, arguments);
+        return;
       }
-    );
+      return originalUnlink.apply(this, arguments);
+    } as any;
     if (originalUnlink && originalUnlink.__promisify__) {
       fs.unlink.__promisify__ = originalUnlink.__promisify__;
     }
@@ -960,45 +912,43 @@ export const ProcessSentinel = {
       return originalUnlinkSync.apply(this, arguments);
     };
 
-    fs.rename = /** @type {any} */ (
-      function (oldPath, newPath, ...args) {
-        const resolvedOld = resolveSafePath(oldPath);
-        const resolvedNew = resolveSafePath(newPath);
-        checkPath(resolvedOld, true);
-        checkPath(resolvedNew, true);
-        if (virtualCowActive) {
-          if (virtualFiles.has(resolvedOld)) {
-            const data = virtualFiles.get(resolvedOld);
-            virtualFiles.delete(resolvedOld);
-            virtualFiles.set(resolvedNew, data);
-          } else if (virtualDirs.has(resolvedOld)) {
-            virtualDirs.delete(resolvedOld);
-            virtualDirs.add(resolvedNew);
-            for (const key of virtualFiles.keys()) {
-              if (key.startsWith(resolvedOld + path.sep)) {
-                const relative = key.slice(resolvedOld.length);
-                const data = virtualFiles.get(key);
-                virtualFiles.delete(key);
-                virtualFiles.set(resolvedNew + relative, data);
-              }
-            }
-            for (const key of virtualDirs) {
-              if (key.startsWith(resolvedOld + path.sep)) {
-                const relative = key.slice(resolvedOld.length);
-                virtualDirs.delete(key);
-                virtualDirs.add(resolvedNew + relative);
-              }
+    fs.rename = function (oldPath, newPath, ...args) {
+      const resolvedOld = resolveSafePath(oldPath);
+      const resolvedNew = resolveSafePath(newPath);
+      checkPath(resolvedOld, true);
+      checkPath(resolvedNew, true);
+      if (virtualCowActive) {
+        if (virtualFiles.has(resolvedOld)) {
+          const data = virtualFiles.get(resolvedOld);
+          virtualFiles.delete(resolvedOld);
+          virtualFiles.set(resolvedNew, data);
+        } else if (virtualDirs.has(resolvedOld)) {
+          virtualDirs.delete(resolvedOld);
+          virtualDirs.add(resolvedNew);
+          for (const key of virtualFiles.keys()) {
+            if (key.startsWith(resolvedOld + path.sep)) {
+              const relative = key.slice(resolvedOld.length);
+              const data = virtualFiles.get(key);
+              virtualFiles.delete(key);
+              virtualFiles.set(resolvedNew + relative, data);
             }
           }
-          const callback = args[args.length - 1];
-          if (typeof callback === "function") {
-            process.nextTick(() => callback(null));
+          for (const key of virtualDirs) {
+            if (key.startsWith(resolvedOld + path.sep)) {
+              const relative = key.slice(resolvedOld.length);
+              virtualDirs.delete(key);
+              virtualDirs.add(resolvedNew + relative);
+            }
           }
-          return;
         }
-        return originalRename.apply(this, arguments);
+        const callback = args[args.length - 1];
+        if (typeof callback === "function") {
+          process.nextTick(() => callback(null));
+        }
+        return;
       }
-    );
+      return originalRename.apply(this, arguments);
+    } as any;
     if (originalRename && originalRename.__promisify__) {
       fs.rename.__promisify__ = originalRename.__promisify__;
     }
@@ -1047,30 +997,28 @@ export const ProcessSentinel = {
     };
 
     // Monkeypatch synchronous/callback fs read operations
-    fs.readFile = /** @type {any} */ (
-      function (file, ...args) {
-        const resolved = resolveSafePath(file);
-        checkPath(resolved, false);
-        if (virtualCowActive && virtualFiles.has(resolved)) {
-          const data = virtualFiles.get(resolved);
-          const options = args[0];
-          const encoding =
-            typeof options === "string" ? options : options?.encoding;
-          let result = data;
-          if (encoding && Buffer.isBuffer(data)) {
-            result = data.toString(encoding);
-          } else if (!encoding && typeof data === "string") {
-            result = Buffer.from(data);
-          }
-          const callback = args[args.length - 1];
-          if (typeof callback === "function") {
-            process.nextTick(() => callback(null, result));
-          }
-          return;
+    fs.readFile = function (file, ...args) {
+      const resolved = resolveSafePath(file);
+      checkPath(resolved, false);
+      if (virtualCowActive && virtualFiles.has(resolved)) {
+        const data = virtualFiles.get(resolved);
+        const options = args[0];
+        const encoding =
+          typeof options === "string" ? options : options?.encoding;
+        let result = data;
+        if (encoding && Buffer.isBuffer(data)) {
+          result = data.toString(encoding);
+        } else if (!encoding && typeof data === "string") {
+          result = Buffer.from(data);
         }
-        return originalReadFile.apply(this, arguments);
+        const callback = args[args.length - 1];
+        if (typeof callback === "function") {
+          process.nextTick(() => callback(null, result));
+        }
+        return;
       }
-    );
+      return originalReadFile.apply(this, arguments);
+    } as any;
     if (originalReadFile && originalReadFile.__promisify__) {
       fs.readFile.__promisify__ = originalReadFile.__promisify__;
     }
@@ -1094,37 +1042,35 @@ export const ProcessSentinel = {
       return originalReadFileSync.apply(this, arguments);
     };
 
-    fs.readdir = /** @type {any} */ (
-      function (dir, ...args) {
-        const resolved = resolveSafePath(dir);
-        checkPath(resolved, false);
-        const callback = args[args.length - 1];
-        if (virtualCowActive) {
-          let physical = [];
-          try {
-            physical = originalReaddirSync.apply(this, arguments);
-          } catch (err) {
-            if (
-              !virtualDirs.has(resolved) &&
-              !Array.from(virtualFiles.keys()).some((k) =>
-                k.startsWith(resolved + path.sep),
-              )
-            ) {
-              if (typeof callback === "function") {
-                return callback(err);
-              }
-              throw err;
+    fs.readdir = function (dir, ...args) {
+      const resolved = resolveSafePath(dir);
+      checkPath(resolved, false);
+      const callback = args[args.length - 1];
+      if (virtualCowActive) {
+        let physical = [];
+        try {
+          physical = originalReaddirSync.apply(this, arguments);
+        } catch (err) {
+          if (
+            !virtualDirs.has(resolved) &&
+            !Array.from(virtualFiles.keys()).some((k) =>
+              k.startsWith(resolved + path.sep),
+            )
+          ) {
+            if (typeof callback === "function") {
+              return callback(err);
             }
+            throw err;
           }
-          const merged = mergeVirtualReaddir(resolved, physical);
-          if (typeof callback === "function") {
-            process.nextTick(() => callback(null, merged));
-          }
-          return;
         }
-        return originalReaddir.apply(this, arguments);
+        const merged = mergeVirtualReaddir(resolved, physical);
+        if (typeof callback === "function") {
+          process.nextTick(() => callback(null, merged));
+        }
+        return;
       }
-    );
+      return originalReaddir.apply(this, arguments);
+    } as any;
     if (originalReaddir && originalReaddir.__promisify__) {
       fs.readdir.__promisify__ = originalReaddir.__promisify__;
     }

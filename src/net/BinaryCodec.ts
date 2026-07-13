@@ -47,6 +47,7 @@ const textDecoder = new TextDecoder();
 
 /** Growable byte sink with the primitive writers the encoder needs. */
 class ByteWriter {
+  declare bytes;
   constructor() {
     this.bytes = [];
   }
@@ -84,6 +85,9 @@ class ByteWriter {
 
 /** Cursor over a Uint8Array with bounds-checked readers. */
 class ByteReader {
+  declare off;
+  declare u8;
+  declare view;
   constructor(u8) {
     this.u8 = u8;
     this.view = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);

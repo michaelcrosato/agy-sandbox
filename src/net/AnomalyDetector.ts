@@ -4,6 +4,14 @@
  * using Z-score statistics (standard deviations from the rolling mean) to detect anomalies.
  */
 export class AnomalyDetector {
+  declare anomalyTriggersTotal;
+  declare connectionsWindow;
+  declare diagnostics;
+  declare lastHeapUsed;
+  declare latencyWindow;
+  declare memoryWindow;
+  declare windowSize;
+  declare zThreshold;
   /**
    * @param {number} [windowSize=60] - Number of observations to retain in the rolling window.
    * @param {number} [zThreshold=3.0] - Z-score threshold above which an observation is anomalous.

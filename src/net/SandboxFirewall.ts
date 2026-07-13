@@ -15,6 +15,10 @@ import { SandboxSecurityRegistry } from "./SandboxSecurityRegistry.js";
  * High-performance outbound connection packet-filtering firewall.
  */
 export class SandboxFirewall {
+  declare allowlistDomains;
+  declare blockCount;
+  declare blockedEvents;
+  declare maxBlockedEvents;
   /**
    * @param {Object} [options]
    * @param {Array<string>} [options.allowlistDomains] - Standard approved egress domains.
@@ -217,8 +221,7 @@ export function activateFirewall(firewall) {
 
     const hostEval = firewall.checkHost(hostname);
     if (!hostEval.allowed) {
-      /** @type {any} */
-      const err = new Error(hostEval.reason);
+      const err: any = new Error(hostEval.reason);
       err.code = "ENETUNREACH";
       if (actualCallback) {
         process.nextTick(() => actualCallback(err));
@@ -230,8 +233,7 @@ export function activateFirewall(firewall) {
       if (!err && address) {
         const ipEval = firewall.checkIp(address);
         if (!ipEval.allowed) {
-          /** @type {any} */
-          const ipErr = new Error(ipEval.reason);
+          const ipErr: any = new Error(ipEval.reason);
           ipErr.code = "ENETUNREACH";
           if (actualCallback) actualCallback(ipErr, address, family);
           return;
@@ -249,11 +251,11 @@ export function activateFirewall(firewall) {
     patchedLookup.__promisify__ = originalDnsLookup.__promisify__;
   }
 
-  dns.lookup = /** @type {any} */ (patchedLookup);
+  dns.lookup = patchedLookup as any;
 
   // 2. Patch socket connection
   net.connect = function (...args) {
-    const options = normalizeConnectArgs(args);
+    const options: any = normalizeConnectArgs(args);
     const host = options.host || "localhost";
 
     const hostEval = firewall.checkHost(host);
@@ -291,7 +293,7 @@ export function deactivateFirewall() {
  * @private
  */
 function normalizeConnectArgs(args) {
-  let options = {};
+  let options: any = {};
   if (args[0] && typeof args[0] === "object") {
     options = args[0];
   } else if (typeof args[0] === "number") {

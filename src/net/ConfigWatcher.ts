@@ -9,6 +9,12 @@ import { validateMessage } from "./SchemaValidator.js";
  * safely swallowing any syntax errors.
  */
 export class ConfigWatcher {
+  declare debounceTimeout;
+  declare filePath;
+  declare lastReloadTime;
+  declare reloadCount;
+  declare targets;
+  declare watcher;
   /**
    * @param {string} filePath - Absolute or relative path to watch on disk.
    * @param {object} [targets] - Group of live instances to propagate reloads.

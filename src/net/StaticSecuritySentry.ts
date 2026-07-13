@@ -200,12 +200,10 @@ export const StaticSecuritySentry = {
     } catch {
       // Fail-safe registry logging bypass
     }
-    const err = new Error(
+    const err: any = new Error(
       `[SECURITY ACCESS DENIED] Static Security Sentry Violation [${action}]: ${message}`,
     );
-    // @ts-ignore
     err.category = "static_analysis";
-    // @ts-ignore
     err.action = action;
     throw err;
   },

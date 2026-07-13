@@ -35,7 +35,7 @@ const protectedObjects = new Set();
 for (const builtin of coreBuiltins) {
   if (builtin) {
     protectedObjects.add(builtin);
-    const b = /** @type {any} */ (builtin);
+    const b = builtin as any;
     if (b.prototype) {
       protectedObjects.add(b.prototype);
     }
@@ -124,7 +124,7 @@ export const IntrusionDetectionSentry = {
     const originalExecFileSync = childProcess.execFileSync;
     const originalFork = childProcess.fork;
 
-    const cpAny = /** @type {any} */ (childProcess);
+    const cpAny = childProcess as any;
 
     cpAny.spawn = function (command, ...args) {
       IntrusionDetectionSentry.triggerAlarm("process_spawn", {

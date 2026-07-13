@@ -6,6 +6,19 @@ import path from "path";
  * Compiles and exposes real-time CPU, memory, and repository disk utilization.
  */
 export class SandboxTelemetry {
+  declare baseHeapUsed;
+  declare baseRss;
+  declare currentCpuPercent;
+  declare diskSizeBytes;
+  declare intervalMs;
+  declare lastCpuEpoch;
+  declare lastCpuUsage;
+  declare peakHeapTotal;
+  declare peakHeapUsed;
+  declare peakRss;
+  declare rootPath;
+  declare startupTime;
+  declare timer;
   /**
    * Initializes the SandboxTelemetry recorder.
    * @param {string} [rootPath=process.cwd()] - Root directory of the repository.

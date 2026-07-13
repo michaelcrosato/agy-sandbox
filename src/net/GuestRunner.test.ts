@@ -557,7 +557,7 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
       }
       const cb = typeof options === "function" ? options : callback;
       if (cb) process.nextTick(() => cb(null, "", ""));
-      return /** @type {any} */ ({});
+      return /** @type {any} */ {};
     };
 
     try {
@@ -583,7 +583,7 @@ console.log("NODE_ENV:" + process.env.NODE_ENV);`,
       execCalled = true;
       const cb = typeof options === "function" ? options : callback;
       if (cb) process.nextTick(() => cb(null, "", ""));
-      return /** @type {any} */ ({});
+      return /** @type {any} */ {};
     };
 
     try {

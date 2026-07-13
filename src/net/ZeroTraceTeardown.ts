@@ -4,8 +4,8 @@ import { SecureModuleRegistry } from "./SecureModuleRegistry.js";
 import { WorkspaceDriftSentry } from "./WorkspaceDriftSentry.js";
 
 let isHooked = false;
-const activeTimeouts = new Set();
-const activeIntervals = new Set();
+const activeTimeouts = new Set<any>();
+const activeIntervals = new Set<any>();
 
 const originalSetTimeout = global.setTimeout;
 const originalClearTimeout = global.clearTimeout;
@@ -30,11 +30,10 @@ export const ZeroTraceTeardown = {
     if (isHooked) return;
     isHooked = true;
 
-    const g = /** @type {any} */ (global);
+    const g = global as any;
 
     g.setTimeout = (cb, delay, ...args) => {
-      let timer;
-      timer = originalSetTimeout(
+      const timer = originalSetTimeout(
         (...cbArgs) => {
           activeTimeouts.delete(timer);
           cb(...cbArgs);
@@ -72,7 +71,7 @@ export const ZeroTraceTeardown = {
    */
   restoreTimerHooks() {
     if (!isHooked) return;
-    const g = /** @type {any} */ (global);
+    const g = global as any;
     g.setTimeout = originalSetTimeout;
     g.clearTimeout = originalClearTimeout;
     g.setInterval = originalSetInterval;

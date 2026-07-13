@@ -14,6 +14,8 @@
   },
   "scripts": {
     "dev": "http-server .",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/server.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:client": "vitest run",
     "test:client:browser": "vitest run -c vitest.browser.config.js",
@@ -44,6 +46,7 @@
     "playwright": "^1.60.0",
     "prettier": "^3.2.5",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.63.0",
     "vitest": "^4.1.9"
   },
   "dependencies": {

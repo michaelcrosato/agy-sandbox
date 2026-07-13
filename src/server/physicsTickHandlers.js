@@ -66,20 +66,21 @@ export function updateAILogic(room, dt) {
  * @param {Object} room The active GameInstance room.
  */
 export function applyTractorForces(room) {
+  // Collect cargo pods once rather than rescanning all entities per tractor
+  // ship; when there are no pods the whole loop is skipped.
+  const pods = room.engine.entities.filter((e) => e.type === "cargo_pod");
+  if (pods.length === 0) return;
+
   for (const ent of room.engine.entities) {
     if (ent.type === "ship" && !ent.isDestroyed) {
       if (ent.outfits && ent.outfits.includes("Tractor Beam Matrix")) {
-        for (const pod of room.engine.entities) {
-          if (pod.type === "cargo_pod") {
-            const toShip = ent.position.subtract(pod.position);
-            const dist = toShip.magnitude();
-            if (dist > 1 && dist <= 250) {
-              const forceMag = 400000 / (dist * dist + 100);
-              const pullForce = toShip
-                .normalize()
-                .multiply(forceMag * pod.mass);
-              pod.applyForce(pullForce);
-            }
+        for (const pod of pods) {
+          const toShip = ent.position.subtract(pod.position);
+          const dist = toShip.magnitude();
+          if (dist > 1 && dist <= 250) {
+            const forceMag = 400000 / (dist * dist + 100);
+            const pullForce = toShip.normalize().multiply(forceMag * pod.mass);
+            pod.applyForce(pullForce);
           }
         }
       }
@@ -92,82 +93,87 @@ export function applyTractorForces(room) {
  * @param {Object} room The active GameInstance room.
  */
 export function handleCargoCollection(room) {
-  const podsToRemove = [];
-  for (const pod of room.engine.entities) {
-    if (pod.type === "cargo_pod") {
-      for (const ship of room.engine.entities) {
-        if (ship.type === "ship" && !ship.isDestroyed) {
-          const dist = ship.position.distance(pod.position);
-          if (dist <= ship.radius + pod.radius) {
-            if (pod.isTrainingSalvage) {
-              podsToRemove.push(pod);
-              const client = Array.from(room.clients.values()).find(
-                (c) => c.ship === ship,
-              );
-              if (client) {
-                client.tutorialStep = "dock_at_port";
-                client.send({
-                  type: "notification",
-                  message:
-                    "Salvage harvested! Return to the spaceport and land [L] to complete onboarding.",
-                  style: "success",
-                });
-                client.send({
-                  type: "tutorial_state",
-                  step: "dock_at_port",
-                });
-                client.send({
-                  type: "cargo_pickup",
-                  resourceType: pod.resourceType,
-                  amount: pod.amount,
-                  x: pod.position.x,
-                  y: pod.position.y,
-                });
-                client.sendStats();
-              }
-              break;
-            }
+  // Restrict the collision scan to the relevant entity subsets and resolve each
+  // ship's client via a map built once, instead of scanning all entities twice
+  // and rebuilding a clients array per collision.
+  const pods = room.engine.entities.filter((e) => e.type === "cargo_pod");
+  if (pods.length === 0) return;
+  const ships = room.engine.entities.filter(
+    (e) => e.type === "ship" && !e.isDestroyed,
+  );
+  if (ships.length === 0) return;
 
-            const success = ship.addCargo(pod.resourceType, pod.amount);
-            if (success) {
-              podsToRemove.push(pod);
-              const client = Array.from(room.clients.values()).find(
-                (c) => c.ship === ship,
-              );
-              if (client) {
-                client.send({
-                  type: "notification",
-                  message: `+${pod.amount} ${pod.resourceType.toUpperCase()} collected!`,
-                  style: "success",
-                });
-                client.send({
-                  type: "cargo_pickup",
-                  resourceType: pod.resourceType,
-                  amount: pod.amount,
-                  x: pod.position.x,
-                  y: pod.position.y,
-                });
-                client.sendStats();
-              }
-              break;
-            } else {
-              const client = Array.from(room.clients.values()).find(
-                (c) => c.ship === ship,
-              );
-              if (
-                client &&
-                (!ship.lastCargoFullAlert ||
-                  Date.now() - ship.lastCargoFullAlert > 2000)
-              ) {
-                ship.lastCargoFullAlert = Date.now();
-                client.send({
-                  type: "notification",
-                  message:
-                    "Cargo bay is FULL! Upgrade cargo holds or sell commodities.",
-                  style: "error",
-                });
-              }
-            }
+  const clientByShip = new Map();
+  for (const c of room.clients.values()) {
+    if (c.ship) clientByShip.set(c.ship, c);
+  }
+
+  const podsToRemove = [];
+  for (const pod of pods) {
+    for (const ship of ships) {
+      const dist = ship.position.distance(pod.position);
+      if (dist <= ship.radius + pod.radius) {
+        if (pod.isTrainingSalvage) {
+          podsToRemove.push(pod);
+          const client = clientByShip.get(ship);
+          if (client) {
+            client.tutorialStep = "dock_at_port";
+            client.send({
+              type: "notification",
+              message:
+                "Salvage harvested! Return to the spaceport and land [L] to complete onboarding.",
+              style: "success",
+            });
+            client.send({
+              type: "tutorial_state",
+              step: "dock_at_port",
+            });
+            client.send({
+              type: "cargo_pickup",
+              resourceType: pod.resourceType,
+              amount: pod.amount,
+              x: pod.position.x,
+              y: pod.position.y,
+            });
+            client.sendStats();
+          }
+          break;
+        }
+
+        const success = ship.addCargo(pod.resourceType, pod.amount);
+        if (success) {
+          podsToRemove.push(pod);
+          const client = clientByShip.get(ship);
+          if (client) {
+            client.send({
+              type: "notification",
+              message: `+${pod.amount} ${pod.resourceType.toUpperCase()} collected!`,
+              style: "success",
+            });
+            client.send({
+              type: "cargo_pickup",
+              resourceType: pod.resourceType,
+              amount: pod.amount,
+              x: pod.position.x,
+              y: pod.position.y,
+            });
+            client.sendStats();
+          }
+          break;
+        } else {
+          const client = clientByShip.get(ship);
+          if (
+            client &&
+            (!ship.lastCargoFullAlert ||
+              Date.now() - ship.lastCargoFullAlert > 2000)
+          ) {
+            ship.lastCargoFullAlert = Date.now();
+            client.send({
+              type: "notification",
+              message:
+                "Cargo bay is FULL! Upgrade cargo holds or sell commodities.",
+              style: "error",
+            });
           }
         }
       }
@@ -225,27 +231,30 @@ export function applyNebulaHazards(room, originalRegens) {
  * @param {Map<Object, number>} originalCooldowns Map storing original weapon cooldowns to restore.
  */
 export function applyCosmicStormHazards(room, dt, originalCooldowns) {
+  // Collect storms once instead of rescanning every entity per ship; storms are
+  // usually absent, so this short-circuits the whole per-ship loop.
+  const storms = room.engine.entities.filter((e) => e.type === "cosmic_storm");
+  if (storms.length === 0) return;
+
   for (const ent of room.engine.entities) {
     if (ent.type === "ship" && !ent.isDestroyed) {
-      for (const storm of room.engine.entities) {
-        if (storm.type === "cosmic_storm") {
-          const dx = ent.position.x - storm.position.x;
-          const dy = ent.position.y - storm.position.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist <= storm.radius) {
-            if (storm.hazardType === "emp_storm") {
-              // Drain ship energy reserves (-15 energy/sec)
-              ent.energy = Math.max(0, ent.energy - 15 * dt);
-              // Double weapon cooldown delay
-              if (!originalCooldowns.has(ent)) {
-                originalCooldowns.set(ent, ent.weaponCooldown);
-              }
-              ent.weaponCooldown = originalCooldowns.get(ent) * 2.0;
-            } else if (storm.hazardType === "radioactive_cloud") {
-              // Deals slow, direct armor decay if shields are depleted (-5 armor/sec)
-              if (ent.shield <= 0) {
-                ent.armor = Math.max(0, ent.armor - 5 * dt);
-              }
+      for (const storm of storms) {
+        const dx = ent.position.x - storm.position.x;
+        const dy = ent.position.y - storm.position.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist <= storm.radius) {
+          if (storm.hazardType === "emp_storm") {
+            // Drain ship energy reserves (-15 energy/sec)
+            ent.energy = Math.max(0, ent.energy - 15 * dt);
+            // Double weapon cooldown delay
+            if (!originalCooldowns.has(ent)) {
+              originalCooldowns.set(ent, ent.weaponCooldown);
+            }
+            ent.weaponCooldown = originalCooldowns.get(ent) * 2.0;
+          } else if (storm.hazardType === "radioactive_cloud") {
+            // Deals slow, direct armor decay if shields are depleted (-5 armor/sec)
+            if (ent.shield <= 0) {
+              ent.armor = Math.max(0, ent.armor - 5 * dt);
             }
           }
         }

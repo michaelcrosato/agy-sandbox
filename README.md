@@ -64,8 +64,9 @@ Everything is optional; the server boots with sensible defaults.
   `npm run benchmark:cluster`.
 - **Observability** — `/metrics` endpoint, plus two HTML dashboards served by the game server:
   `http://localhost:8080/dashboard.html` (ops telemetry) and
-  `http://localhost:8080/dashboard-codex.html` (the generated "Living Codex" code map; run
-  `npm run codex:generate` first).
+  `http://localhost:8080/dashboard-codex.html` (the "Living Codex" code map). The codex dashboard
+  is a static page that fetches `/codex`; run `npm run codex:generate` first to produce the
+  `plan/codex.json` it reads.
 
 ---
 
@@ -84,7 +85,7 @@ npm run format:check
 
 Do not claim a change is green unless the relevant command actually ran and passed.
 
-CI (`.github/workflows/ci.yml`) mirrors the gate on Node 22/24/26 for every push/PR to `main`/`develop`, plus the jsdom client suite. The browser-screenshot suite is local-only (Windows baselines).
+CI (`.github/workflows/ci.yml`) mirrors the gate on Node 22/24/26 for every push/PR to `main`/`master`/`develop`, plus the jsdom client suite. The browser-screenshot suite is local-only (Windows baselines).
 
 ---
 
@@ -120,16 +121,16 @@ For a per-module map, regenerate and read [`docs/ai/REPO_MAP.md`](docs/ai/REPO_M
 
 ## Canonical docs
 
-| File                                         | Purpose                                                       |
-| -------------------------------------------- | ------------------------------------------------------------- |
-| [`AGENTS.md`](AGENTS.md)                     | Canonical operating manual for agents and humans. Read first. |
-| [`docs/AXIOMS.md`](docs/AXIOMS.md)           | Immutable constitution; substrate, read-only.                 |
-| [`docs/AGENT-LOOP.md`](docs/AGENT-LOOP.md)   | Compliance protocol; substrate, read-only.                    |
-| [`docs/GOAL.md`](docs/GOAL.md)               | Product blueprint and architecture intent.                    |
-| [`plan/PROGRESS.md`](plan/PROGRESS.md)       | Live work queue and resume anchor.                            |
-| [`plan/specs/`](plan/specs/)                 | Atomic implementation specs (001–177 shipped).                |
-| [`docs/ai/REPO_MAP.md`](docs/ai/REPO_MAP.md) | Generated repo navigation map for agents.                     |
-| [`docs/LOG.md`](docs/LOG.md)                 | Reverse-chronological operational ledger.                     |
+| File                                         | Purpose                                                        |
+| -------------------------------------------- | -------------------------------------------------------------- |
+| [`AGENTS.md`](AGENTS.md)                     | Canonical operating manual for agents and humans. Read first.  |
+| [`docs/AXIOMS.md`](docs/AXIOMS.md)           | Immutable constitution; substrate, read-only.                  |
+| [`docs/AGENT-LOOP.md`](docs/AGENT-LOOP.md)   | Compliance protocol; substrate, read-only.                     |
+| [`docs/GOAL.md`](docs/GOAL.md)               | Product blueprint and architecture intent.                     |
+| [`plan/PROGRESS.md`](plan/PROGRESS.md)       | Live work queue and resume anchor.                             |
+| [`plan/specs/`](plan/specs/)                 | Atomic specs for waves 001–177 (status in `plan/PROGRESS.md`). |
+| [`docs/ai/REPO_MAP.md`](docs/ai/REPO_MAP.md) | Generated repo navigation map for agents.                      |
+| [`docs/LOG.md`](docs/LOG.md)                 | Reverse-chronological operational ledger.                      |
 
 Historical ledgers (completed waves, journals, superseded blueprints) live in [`plan/archive/`](plan/archive/).
 

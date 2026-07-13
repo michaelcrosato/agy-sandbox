@@ -50,17 +50,27 @@ function sendForbidden(res) {
 }
 
 /**
- * Reads a file synchronously with retries on lock contention.
+ * Awaitable delay that yields the event loop instead of busy-waiting.
+ * @param {number} ms
+ * @returns {Promise<void>}
+ */
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Reads a file with retries on lock contention, awaiting between attempts so the
+ * event loop is never blocked (previously a synchronous busy-wait spun the CPU).
  * @param {string} filePath
  * @param {BufferEncoding} options
  * @param {number} [retries]
- * @param {number} [delay]
- * @returns {string}
+ * @param {number} [delayMs]
+ * @returns {Promise<string>}
  */
-function readFileSyncWithRetry(filePath, options, retries = 5, delay = 20) {
+async function readFileWithRetry(filePath, options, retries = 5, delayMs = 20) {
   for (let i = 0; i < retries; i++) {
     try {
-      return fs.readFileSync(filePath, options);
+      return await fs.promises.readFile(filePath, options);
     } catch (err) {
       if (
         (err.code === "EBUSY" ||
@@ -68,10 +78,7 @@ function readFileSyncWithRetry(filePath, options, retries = 5, delay = 20) {
           err.code === "ENOENT") &&
         i < retries - 1
       ) {
-        const start = Date.now();
-        while (Date.now() - start < delay) {
-          // busy wait
-        }
+        await delay(delayMs);
         continue;
       }
       throw err;
@@ -79,22 +86,29 @@ function readFileSyncWithRetry(filePath, options, retries = 5, delay = 20) {
   }
 }
 
-function writeFileSyncWithRetry(
+/**
+ * Writes a file with retries on lock contention, awaiting between attempts.
+ * @param {string} filePath
+ * @param {string} data
+ * @param {BufferEncoding} options
+ * @param {number} [retries]
+ * @param {number} [delayMs]
+ * @returns {Promise<void>}
+ */
+async function writeFileWithRetry(
   filePath,
   data,
   options,
   retries = 5,
-  delay = 20,
+  delayMs = 20,
 ) {
   for (let i = 0; i < retries; i++) {
     try {
-      return fs.writeFileSync(filePath, data, options);
+      await fs.promises.writeFile(filePath, data, options);
+      return;
     } catch (err) {
       if ((err.code === "EBUSY" || err.code === "EPERM") && i < retries - 1) {
-        const start = Date.now();
-        while (Date.now() - start < delay) {
-          // busy wait
-        }
+        await delay(delayMs);
         continue;
       }
       throw err;
@@ -316,7 +330,7 @@ export function handleRestRequest(req, res, options) {
       return;
     }
     readBodyWithLimit(req, MAX_ADMIN_BODY_BYTES)
-      .then((body) => {
+      .then(async (body) => {
         const payload = JSON.parse(body);
         if (!payload || typeof payload !== "object") {
           res.writeHead(400, {
@@ -366,7 +380,7 @@ export function handleRestRequest(req, res, options) {
 
         const targetDomain = domain.trim().toLowerCase();
         const configPath = path.resolve(ROOT_DIR, "plan/config.json");
-        const configContent = readFileSyncWithRetry(configPath, "utf-8");
+        const configContent = await readFileWithRetry(configPath, "utf-8");
         const config = JSON.parse(configContent);
 
         if (!config.sandboxFirewall) {
@@ -409,7 +423,7 @@ export function handleRestRequest(req, res, options) {
           return;
         }
 
-        writeFileSyncWithRetry(
+        await writeFileWithRetry(
           configPath,
           JSON.stringify(config, null, 2),
           "utf-8",

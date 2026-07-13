@@ -103,14 +103,14 @@ export class EntityInterpolator {
       // Cap extrapolation to half a segment to avoid runaway drift
       const overshoot = Math.min(renderTime - last.time, segmentDt * 0.5);
       const t = overshoot / segmentDt;
+      // Extrapolate heading the same way as position: carry the last segment's
+      // angular velocity forward by `t`. (Previously this was fed to lerpAngle
+      // with a hardcoded factor of 0, which discarded the extrapolation and
+      // froze the heading at last.heading.)
       return {
         x: last.x + (last.x - prev.x) * t,
         y: last.y + (last.y - prev.y) * t,
-        heading: lerpAngle(
-          last.heading,
-          last.heading + shortestArc(prev.heading, last.heading) * t,
-          0,
-        ),
+        heading: last.heading + shortestArc(prev.heading, last.heading) * t,
       };
     }
 

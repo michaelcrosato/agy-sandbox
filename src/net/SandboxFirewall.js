@@ -18,13 +18,39 @@ export class SandboxFirewall {
   /**
    * @param {Object} [options]
    * @param {Array<string>} [options.allowlistDomains] - Standard approved egress domains.
+   * @param {number} [options.maxBlockedEvents=100] - Ring-buffer cap on retained block records.
    */
   constructor({
     allowlistDomains = ["google.com", "api.google.com", "localhost"],
+    maxBlockedEvents = 100,
   } = {}) {
     this.allowlistDomains = allowlistDomains.map((d) => d.toLowerCase());
     this.blockCount = 0;
+    /**
+     * Recent block records, retained newest-last and bounded to
+     * `maxBlockedEvents`. `blockCount` remains the lifetime total. Bounding this
+     * prevents unbounded memory growth (and `/metrics` payload bloat) under
+     * sustained egress-block activity from a misbehaving guest run.
+     * @type {Array<{host: string, timestamp: number, reason: string}>}
+     */
     this.blockedEvents = [];
+    this.maxBlockedEvents = maxBlockedEvents;
+  }
+
+  /**
+   * Appends a block record, trimming the oldest entries past the cap.
+   * @param {string} host
+   * @param {string} reason
+   * @private
+   */
+  recordBlockedEvent(host, reason) {
+    this.blockedEvents.push({ host, timestamp: Date.now(), reason });
+    if (this.blockedEvents.length > this.maxBlockedEvents) {
+      this.blockedEvents.splice(
+        0,
+        this.blockedEvents.length - this.maxBlockedEvents,
+      );
+    }
   }
 
   /**
@@ -115,7 +141,7 @@ export class SandboxFirewall {
     if (this.isPrivateIp(lowerHost)) {
       this.blockCount++;
       const reason = `Outbound firewall blocked connection to private IP range: ${host}`;
-      this.blockedEvents.push({ host, timestamp: Date.now(), reason });
+      this.recordBlockedEvent(host, reason);
       SandboxSecurityRegistry.logViolation("firewall", "connect", {
         host,
         reason,
@@ -131,7 +157,7 @@ export class SandboxFirewall {
     if (!isAllowed) {
       this.blockCount++;
       const reason = `Outbound firewall blocked non-allowlisted host domain: ${host}`;
-      this.blockedEvents.push({ host, timestamp: Date.now(), reason });
+      this.recordBlockedEvent(host, reason);
       SandboxSecurityRegistry.logViolation("firewall", "connect", {
         host,
         reason,
@@ -156,7 +182,7 @@ export class SandboxFirewall {
     if (this.isPrivateIp(ip)) {
       this.blockCount++;
       const reason = `Outbound firewall blocked resolved private IP: ${ip}`;
-      this.blockedEvents.push({ host: ip, timestamp: Date.now(), reason });
+      this.recordBlockedEvent(ip, reason);
       SandboxSecurityRegistry.logViolation("firewall", "connect", {
         host: ip,
         reason,

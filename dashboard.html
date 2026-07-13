@@ -977,6 +977,19 @@
     let pollInterval = null;
     let fallbackCounter = 0;
 
+    // Escape server-provided strings before inserting them via innerHTML.
+    // Room mode/tags and chronicle text embed player-influenced values
+    // (nicknames, room metadata); output escaping is defense-in-depth on top of
+    // the server-side input sanitization.
+    function escapeHtml(text) {
+      return String(text ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
     // Rolling History Logs for Vector Sparklines (max 50 points, spec 073)
     const maxHistoryPoints = 50;
     const tickHistory = [];
@@ -1069,15 +1082,15 @@
         return `
           <div class="chronicle-item">
             <div class="chronicle-icon">
-              \${iconMarkup}
+              ${iconMarkup}
             </div>
             <div class="chronicle-content">
-              <div class="chronicle-title">\${e.title}</div>
-              <div class="chronicle-desc">\${e.description}</div>
+              <div class="chronicle-title">${escapeHtml(e.title)}</div>
+              <div class="chronicle-desc">${escapeHtml(e.description)}</div>
               <div class="chronicle-meta">
-                <span class="chronicle-badge">\${e.category}</span>
-                <span>Sector: <strong>\${e.sector}</strong></span>
-                <span>\${timeStr}</span>
+                <span class="chronicle-badge">${escapeHtml(e.category)}</span>
+                <span>Sector: <strong>${escapeHtml(e.sector)}</strong></span>
+                <span>${escapeHtml(timeStr)}</span>
               </div>
             </div>
           </div>
@@ -1208,10 +1221,10 @@
                 <span class="shard-badge">Node ${shardIdx}</span>
               </td>
               <td>
-                <strong style="color: #f1f5f9;">${mode}</strong>
+                <strong style="color: #f1f5f9;">${escapeHtml(mode)}</strong>
               </td>
               <td>
-                ${tags.map(t => `<span class="tag-badge">${t}</span>`).join('')}
+                ${tags.map(t => `<span class="tag-badge">${escapeHtml(t)}</span>`).join('')}
               </td>
               <td>
                 <span class="capacity-ratio">${room.players} / ${room.maxPlayers}</span>

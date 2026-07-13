@@ -66,20 +66,21 @@ export function updateAILogic(room, dt) {
  * @param {Object} room The active GameInstance room.
  */
 export function applyTractorForces(room) {
+  // Collect cargo pods once rather than rescanning all entities per tractor
+  // ship; when there are no pods the whole loop is skipped.
+  const pods = room.engine.entities.filter((e) => e.type === "cargo_pod");
+  if (pods.length === 0) return;
+
   for (const ent of room.engine.entities) {
     if (ent.type === "ship" && !ent.isDestroyed) {
       if (ent.outfits && ent.outfits.includes("Tractor Beam Matrix")) {
-        for (const pod of room.engine.entities) {
-          if (pod.type === "cargo_pod") {
-            const toShip = ent.position.subtract(pod.position);
-            const dist = toShip.magnitude();
-            if (dist > 1 && dist <= 250) {
-              const forceMag = 400000 / (dist * dist + 100);
-              const pullForce = toShip
-                .normalize()
-                .multiply(forceMag * pod.mass);
-              pod.applyForce(pullForce);
-            }
+        for (const pod of pods) {
+          const toShip = ent.position.subtract(pod.position);
+          const dist = toShip.magnitude();
+          if (dist > 1 && dist <= 250) {
+            const forceMag = 400000 / (dist * dist + 100);
+            const pullForce = toShip.normalize().multiply(forceMag * pod.mass);
+            pod.applyForce(pullForce);
           }
         }
       }
@@ -225,27 +226,30 @@ export function applyNebulaHazards(room, originalRegens) {
  * @param {Map<Object, number>} originalCooldowns Map storing original weapon cooldowns to restore.
  */
 export function applyCosmicStormHazards(room, dt, originalCooldowns) {
+  // Collect storms once instead of rescanning every entity per ship; storms are
+  // usually absent, so this short-circuits the whole per-ship loop.
+  const storms = room.engine.entities.filter((e) => e.type === "cosmic_storm");
+  if (storms.length === 0) return;
+
   for (const ent of room.engine.entities) {
     if (ent.type === "ship" && !ent.isDestroyed) {
-      for (const storm of room.engine.entities) {
-        if (storm.type === "cosmic_storm") {
-          const dx = ent.position.x - storm.position.x;
-          const dy = ent.position.y - storm.position.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist <= storm.radius) {
-            if (storm.hazardType === "emp_storm") {
-              // Drain ship energy reserves (-15 energy/sec)
-              ent.energy = Math.max(0, ent.energy - 15 * dt);
-              // Double weapon cooldown delay
-              if (!originalCooldowns.has(ent)) {
-                originalCooldowns.set(ent, ent.weaponCooldown);
-              }
-              ent.weaponCooldown = originalCooldowns.get(ent) * 2.0;
-            } else if (storm.hazardType === "radioactive_cloud") {
-              // Deals slow, direct armor decay if shields are depleted (-5 armor/sec)
-              if (ent.shield <= 0) {
-                ent.armor = Math.max(0, ent.armor - 5 * dt);
-              }
+      for (const storm of storms) {
+        const dx = ent.position.x - storm.position.x;
+        const dy = ent.position.y - storm.position.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist <= storm.radius) {
+          if (storm.hazardType === "emp_storm") {
+            // Drain ship energy reserves (-15 energy/sec)
+            ent.energy = Math.max(0, ent.energy - 15 * dt);
+            // Double weapon cooldown delay
+            if (!originalCooldowns.has(ent)) {
+              originalCooldowns.set(ent, ent.weaponCooldown);
+            }
+            ent.weaponCooldown = originalCooldowns.get(ent) * 2.0;
+          } else if (storm.hazardType === "radioactive_cloud") {
+            // Deals slow, direct armor decay if shields are depleted (-5 armor/sec)
+            if (ent.shield <= 0) {
+              ent.armor = Math.max(0, ent.armor - 5 * dt);
             }
           }
         }

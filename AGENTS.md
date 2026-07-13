@@ -62,24 +62,27 @@ Package manager: **npm**. Runtime policy: `.nvmrc` pins local dev to Node 24; `p
 | Substrate integrity | `npm run agent:verify-substrate` |
 | Core gate | `npm run agent:check:core` |
 | Full agent/commit gate | `npm run agent:check` |
-| Jest tests | `npm test` |
+| Build | `npm run build` (tsc → `dist/`) |
+| Tests (Vitest) | `npm test` |
 | Client tests | `npm run test:client` |
 | Browser client tests | `npm run test:client:browser` |
 | Lint | `npm run lint` |
 | Typecheck | `npm run typecheck` |
 | Format check | `npm run format:check` |
 | Format write | `npm run format` |
-| Run game | `node src/server.js`, then open `http://localhost:8080` |
+| Run game | `npm run build` then `npm start` (`node dist/server.js`), then open `http://localhost:8080` |
 
-`npm run agent:check` is the gate of record: substrate integrity, Prettier check, ESLint, typecheck, Jest, then client tests. Use `agent:check:core` only as an inner-loop shortcut; do not call a task done from the core shortcut alone.
+`npm run agent:check` is the gate of record: it regenerates the codex map, then runs substrate integrity, the Prettier check, ESLint, typecheck (`tsc --noEmit`), the `tsc` build, and the full Vitest suite (node + jsdom + browser projects). `agent:check:core` runs the same checks without regenerating the codex map; use it only as an inner-loop shortcut, and do not call a task done from the core shortcut alone.
 
 ## 4. Coding rules
 
+- Sources are TypeScript (`src/**/*.ts`), built by `tsc` to `dist/`. Server-side code is type-checked at `strict: false`; the browser client under `src/client/**` (and `src/main.ts`) is `// @ts-nocheck` for now — compiled for emit but not yet type-checked. Tightening types is tracked in `plan/BACKLOG.md`.
+- Use **erasable TypeScript syntax only** — no `enum`, `namespace`, parameter properties, or decorators (`erasableSyntaxOnly` is enforced in `tsconfig.build.json`) — so the build strips types without transforming them and `dist/` stays a faithful strip of the source.
 - Use ES modules only (`import`/`export`, no CommonJS).
 - Keep `src/engine`, `src/physics`, `src/net`, and `src/persistence` pure: no DOM, sockets, timers, direct filesystem effects, or unseeded randomness in test-reachable paths.
 - Seed or inject randomness; never let `Math.random` leak into deterministic assertions.
 - Add or update tests for every behavior change.
-- Prefer pure helpers plus thin server handlers over adding logic to `src/server.js`.
+- Prefer pure helpers plus thin server handlers over adding logic to `src/server.ts`.
 - Use JSDoc on exported functions; prefix intentionally-unused variables/params with `_`.
 - Do not add placeholders, TODO-only stubs, partial files, or debug leftovers.
 - Use Conventional Commits.
@@ -99,7 +102,7 @@ Always forbidden unless explicitly authorized: force-push, history rewrite, `--n
 - Start from `plan/PROGRESS.md` and `docs/ai/REPO_MAP.md`; do not blind-scan the repo.
 - Skip `node_modules/`, `.git/`, `package-lock.json`, `coverage/`, `data/`, `night-queue/`, `.claude/`, and other generated/runtime folders.
 - Read only the relevant `src/` module and its tests unless the spec requires broader context.
-- `src/server.js` is the main risky seam; read the relevant section, then extract to tested modules when possible.
+- `src/server.ts` is the main risky seam; read the relevant section, then extract to tested modules when possible.
 - `docs/LOG.md` is newest-first; read only the top entries unless investigating history.
 - Avoid new overlapping context docs. Prefer one canonical source plus thin pointers.
 

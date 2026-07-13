@@ -9,23 +9,23 @@ protocol and does not override the substrate boundary, conventions, or git workf
 | Step | Command | Pass condition |
 | --- | --- | --- |
 | Install | `npm ci` | clean install from lockfile |
-| **Full gate (= CI)** | `npm run agent:check` | prettier --check + eslint + **typecheck** + jest all green |
-| Tests only | `npm test` | all suites pass (Jest) |
-| **Client tests** | `npm run test:client` | Vitest+jsdom client suite (separate runner; client-touching specs) |
-| One suite | `npm test -- src/engine/<X>.test.js` | targeted pass |
+| **Full gate (= CI)** | `npm run agent:check` | prettier --check + eslint + **typecheck** + **build** + Vitest all green |
+| Tests only | `npm test` | all suites pass (Vitest: node + jsdom + browser projects) |
+| **Client tests** | `npm run test:client` | Vitest jsdom client suite (project filter; client-touching specs) |
+| One suite | `npm test -- src/engine/<X>.test.ts` | targeted pass |
 | Lint | `npm run lint` | eslint exits 0 |
 | Format (write) | `npm run format` | — |
 | **Type-check** | `npm run typecheck` (`tsc --noEmit`) | exit 0 over `engine\|net\|physics\|server\|persistence` (all checked; see `tsconfig.json`) |
-| **Build** | _none_ | project has no build step (static + node) |
-| Server smoke | `PORT=18190 NODE_ENV=test node src/server.js` | prints "LISTENING", no crash (Ctrl-C) |
+| **Build** | `npm run build` (`tsc -p tsconfig.build.json`) | emits `dist/`; integration suites boot `dist/server.js`, so build before `npm test` |
+| Server smoke | `npm run build` then `PORT=18190 NODE_ENV=test node dist/server.js` | prints "LISTENING", no crash (Ctrl-C) |
 | Security | `npm audit` | track high/critical; see `specs/001` |
 | LOG compliance | `python scripts/validate-log-compliance.py` | PASS before committing a LOG entry |
 
-Baseline to preserve or improve: **the full `npm run agent:check` gate green** (substrate verify,
-Prettier, ESLint, typecheck, Jest, Vitest client) plus `npm audit` at 0 vulnerabilities. Do not
-hand-write test counts here — they drift; the generated `plan/CODEX.md` carries current metrics.
-Toolchain: `ws` 8.x, ESLint 10, Jest 30, TypeScript 6, Vitest 4 (+jsdom / +browser-playwright),
-`@google/genai`; runtime `dependencies` is just `ws`.
+Baseline to preserve or improve: **the full `npm run agent:check` gate green** (codex map, substrate
+verify, Prettier, ESLint, typecheck, `tsc` build, Vitest node/jsdom/browser) plus `npm audit` at 0
+vulnerabilities. Do not hand-write test counts here — they drift; the generated `plan/CODEX.md`
+carries current metrics. Toolchain: `ws` 8.x, ESLint 10, TypeScript 6, Vitest 4 (+jsdom /
++browser-playwright), `@google/genai`; runtime `dependencies` is just `ws`.
 
 > **Ledger safety (learned the hard way, iter-0037):** a rogue writer once clobbered the entire
 > `docs/LOG.md` history by matching the `== LOG-ANCHOR ==` *substring in the Rules text*. Always prepend
@@ -40,8 +40,8 @@ Toolchain: `ws` 8.x, ESLint 10, Jest 30, TypeScript 6, Vitest 4 (+jsdom / +brows
 3. **Read** the spec file fully (Description, DoD/Acceptance, Implementation Approach, Test Strategy).
 4. **Implement** the smallest correct slice. Keep `src/engine|physics|net|persistence` **pure** (no DOM,
    sockets, timers, or `Math.random` in test-reachable paths; seed/inject randomness).
-5. **Test** every behavior with deterministic Jest specs beside the source; verify server-touching work
-   by booting the server.
+5. **Test** every behavior with deterministic Vitest specs beside the source; verify server-touching work
+   by building (`npm run build`) and booting `dist/server.js`.
 6. **Gate:** `npm run agent:check` MUST be green. Never weaken or bypass it.
 7. **Record:** tick the spec's acceptance boxes, set `PROGRESS.md` to `[x] Done`, and prepend a compliant
    entry to `../docs/LOG.md` (newest-first below `== LOG-ANCHOR ==`; validate with the python script).
@@ -64,8 +64,11 @@ Toolchain: `ws` 8.x, ESLint 10, Jest 30, TypeScript 6, Vitest 4 (+jsdom / +brows
   real legal/security ambiguity.
 
 ## Notes for downstream agents
-- The engine is the safe place to add logic. `src/server.js` is now a thin composition root that wires the
-  tested modules under `src/server/` (covered by `src/server/*.integration.test.js`) — add new server behavior
-  as a pure helper plus a thin handler rather than inlining it into `server.js`.
+- Sources are TypeScript (`src/**/*.ts`), built by `tsc` to `dist/`; the server runs from `dist/server.js`
+  and the browser loads `dist/main.js`. Server-side is type-checked at `strict: false`; the client is
+  `// @ts-nocheck` for now. Keep to erasable syntax only (no `enum`/`namespace`/param-properties/decorators).
+- The engine is the safe place to add logic. `src/server.ts` is now a thin composition root that wires the
+  tested modules under `src/server/` (covered by `src/server/*.integration.test.ts`) — add new server behavior
+  as a pure helper plus a thin handler rather than inlining it into `server.ts`.
 - Reuse existing patterns: `createSeededRng` (GenerativeMissions) for RNG; frozen `DEFAULT_*_OPTIONS`
-  option objects; pure modules + a thin server handler; `*.test.js` beside source.
+  option objects; pure modules + a thin server handler; `*.test.ts` beside source.

@@ -1,9 +1,9 @@
+import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 /**
  * loop-monitor.test.js
  * Comprehensive unit tests for loop-monitor.js control plane health checks.
  */
 
-import { jest } from "@jest/globals";
 import fs from "node:fs";
 import childProcess from "node:child_process";
 import { checkAnomaly, runDaemon } from "./loop-monitor.js";
@@ -28,20 +28,20 @@ describe("Control Loop Monitor (Anomaly Detector)", () => {
   };
 
   beforeEach(() => {
-    existsSpy = jest.spyOn(fs, "existsSync").mockImplementation((p) => {
+    existsSpy = vi.spyOn(fs, "existsSync").mockImplementation((p) => {
       const pathStr = String(p);
       if (pathStr.includes("loop_active.lock")) return false;
       if (pathStr.includes("logs")) return false;
       return true;
     });
-    readSpy = jest.spyOn(fs, "readFileSync");
-    readdirSpy = jest.spyOn(fs, "readdirSync");
-    statSpy = jest.spyOn(fs, "statSync");
-    execSpy = jest.spyOn(childProcess, "execSync");
+    readSpy = vi.spyOn(fs, "readFileSync");
+    readdirSpy = vi.spyOn(fs, "readdirSync");
+    statSpy = vi.spyOn(fs, "statSync");
+    execSpy = vi.spyOn(childProcess, "execSync");
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   test("should report no anomalies under healthy normal execution", () => {
@@ -184,8 +184,8 @@ describe("Control Loop Monitor (Anomaly Detector)", () => {
   });
 
   test("runDaemon should loop and terminate when an anomaly is detected", async () => {
-    jest.useFakeTimers();
-    const exitSpy = jest.spyOn(process, "exit").mockImplementation(() => {
+    vi.useFakeTimers();
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
       throw new Error("process.exit");
     });
 
@@ -216,11 +216,11 @@ describe("Control Loop Monitor (Anomaly Detector)", () => {
     const daemonPromise = runDaemon();
 
     await expect(
-      Promise.all([daemonPromise, jest.advanceTimersByTimeAsync(60 * 1000)]),
+      Promise.all([daemonPromise, vi.advanceTimersByTimeAsync(60 * 1000)]),
     ).rejects.toThrow("process.exit");
 
     expect(exitSpy).toHaveBeenCalledWith(1);
 
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 });

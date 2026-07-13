@@ -30,7 +30,7 @@ export default defineConfig({
           setupFiles: ["./vitest.setup.node.js"],
           // `scripts/**` is included because the agent control-plane tests
           // (generate-codex, loop-monitor, validate-specs) ran under Jest too.
-          include: ["src/**/*.test.js", "scripts/**/*.test.js"],
+          include: ["src/**/*.test.{js,ts}", "scripts/**/*.test.js"],
           exclude: ["src/client/**", "**/node_modules/**"],
           pool: "vmForks",
           testTimeout: 30000,

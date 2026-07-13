@@ -136,6 +136,17 @@ describe("EntityInterpolator", () => {
     expect(result.x).toBeCloseTo(150); // 100 + 100*0.5
   });
 
+  test("extrapolates heading past the latest snapshot (not frozen)", () => {
+    const interp = new EntityInterpolator({ bufferDelay: 0 });
+    // Heading rotates 0 -> 1.0 rad over the last segment while x/y hold still.
+    interp.push("a", 0, 0, 0, 0);
+    interp.push("a", 100, 0, 0, 1.0);
+
+    // renderTime=150 → t=0.5 → heading = 1.0 + (1.0-0)*0.5 = 1.5 (kept rotating)
+    const result = interp.getInterpolated("a", 150);
+    expect(result.heading).toBeCloseTo(1.5);
+  });
+
   test("trims history to maxHistory", () => {
     const interp = new EntityInterpolator({ bufferDelay: 0, maxHistory: 3 });
     for (let i = 0; i < 10; i++) {

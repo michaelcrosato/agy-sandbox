@@ -81,7 +81,8 @@ Everything is optional; the server boots with sensible defaults.
 ```powershell
 npm run agent:check          # full gate: codex map + substrate + format + lint + typecheck + build + Vitest
 npm run agent:check:core     # same gate without regenerating the codex map (inner-loop shortcut)
-npm test                     # Vitest: node + jsdom + browser projects, in one run
+npm test                     # Vitest: node + jsdom + browser projects, in one run (local, Windows)
+npm run test:ci              # Vitest node + jsdom projects only (what CI runs; no browser suite)
 npm run test:node            # Vitest node project (engine/physics/net/persistence/server, incl. integration)
 npm run test:client          # Vitest jsdom client suite
 npm run test:client:browser  # Vitest browser suite (Playwright/Chromium; win32 golden screenshots)
@@ -93,7 +94,7 @@ npm run format:check
 
 Do not claim a change is green unless the relevant command actually ran and passed.
 
-CI (`.github/workflows/ci.yml`) mirrors the gate on Node 22/24/26 for every push/PR to `main`/`master`/`develop`: it installs Chromium (Playwright) and runs the full Vitest suite (node + jsdom + browser projects) after `npm run build`. The browser screenshots are win32 golden baselines, so cross-platform rendering diffs may need refreshed baselines.
+CI (`.github/workflows/ci.yml`) mirrors the gate on Node 22/24/26 for every push/PR to `main`/`master`/`develop`. After `npm run build` it installs Chromium (Playwright) and runs the **node + jsdom** Vitest projects only (`npm run test:ci`) — **not** the **browser** project. The browser visual suite (`npm run test:client:browser`) asserts against win32 golden screenshots (`src/client/__tests__/__screenshots__/`), so it is **local-only** (Windows baselines) and would not match on Linux CI. `npm test` (and therefore `npm run agent:check`) runs all three projects and is the full gate on Windows; CI deliberately runs the node + jsdom subset. Chromium is still installed in CI because the node project's `PlaywrightVisual` integration test launches it to capture (not compare) screenshots.
 
 ---
 

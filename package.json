@@ -17,6 +17,7 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "test": "vitest run",
+    "test:ci": "vitest run --project node --project jsdom",
     "test:node": "vitest run --project node",
     "test:client": "vitest run --project jsdom",
     "test:client:browser": "vitest run --project browser",

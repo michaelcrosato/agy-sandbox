@@ -43,6 +43,38 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - Entries **SHOULD** target 150–350 words, and **MUST NOT** exceed 500 words unless labeled an `INCIDENT` or `ROLLBACK`.
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
+## 2026-07-13T10:20 · iter-0187 · GREEN · typescript-migration-and-ci-project-split
+
+- **Baseline:** `5e20d93` on `feat/typescript-migration`; the full `src/**` tree already migrated to
+  TypeScript, gate green locally, working tree clean.
+- **Move:** Finalize the JavaScript→TypeScript migration and fix the one CI regression before opening
+  the PR — keep the win32 browser visual suite local-only so Linux CI runs the node + jsdom projects.
+- **Changed:**
+  - Migration (prior commits on this branch): every `src/**` source is now `.ts`, compiled by `tsc`
+    to `dist/` via `tsconfig.build.json` (erasable syntax only); the server runs from `dist/server.js`
+    and the browser is served the compiled `dist/` bundle. Jest was replaced by a single unified Vitest
+    config with three projects (node, jsdom, browser). Type-checking stays `strict: false` for now and
+    the browser client is `// @ts-nocheck` — tightening is a documented follow-up in `plan/BACKLOG.md`.
+  - CI (this iter): added a `test:ci` npm script (`vitest run --project node --project jsdom`) and
+    switched the CI test step from `npm test` (all three projects) to `npm run test:ci`. Kept the
+    `npx playwright install chromium --with-deps` step because the node project's
+    `PlaywrightVisual.integration.test.ts` launches Chromium to capture (not golden-compare)
+    screenshots, so it works on Linux. Matrix (22/24/26), concurrency, least-privilege permissions,
+    per-job timeouts, and `persist-credentials: false` unchanged.
+  - README: rewrote the CI paragraph and validation command list to document that the browser visual
+    suite (`npm run test:client:browser`) asserts against win32 goldens under `__screenshots__/`, is
+    local-only, and is not run in CI — making the `npm test` (all projects, Windows) vs CI (node +
+    jsdom) split explicit rather than surprising.
+- **Decisions:** Kept the browser screenshot suite as a Windows-local gate instead of regenerating
+  Linux goldens or dropping the visual regression — the original design intentionally scoped it
+  local-only; CI still exercises Chromium through the capture-only node integration test.
+- **Validation:** `npm run agent:check` green on win32 (codex + substrate + format + lint + typecheck +
+  build + full Vitest: 159 files / 1661 tests; exit 0). CI-critical subset
+  `npx vitest run --project node --project jsdom` green (157 files / 1656 tests).
+  `python scripts/validate-log-compliance.py` passes.
+- **Next:** Open the PR from `feat/typescript-migration`; then start tightening types (enable `strict`,
+  remove the client `@ts-nocheck`) per `plan/BACKLOG.md`.
+
 ## 2026-07-13T06:00 · iter-0186 · GREEN · operating-docs-and-config-modernization
 
 - **Baseline:** `8eb5328` (main synced to develop); improvement pass already merged.

@@ -63,8 +63,13 @@ jobs:
         run: npm run build
 
       - name: Run Tests
-        # `vitest run` executes all three projects (node, jsdom, browser).
-        run: npm test
+        # Run only the node and jsdom projects. The browser project
+        # (src/client/**/*.browser.test.ts) asserts against win32 golden PNGs
+        # under __screenshots__/, so it is local-only (Windows baselines) and
+        # cannot match on Linux CI. The node project's PlaywrightVisual
+        # integration test still launches Chromium (capture-only, no golden
+        # comparison), so the Playwright install step above stays required.
+        run: npm run test:ci
 
   verify:
     runs-on: ubuntu-latest

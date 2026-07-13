@@ -1,3 +1,6 @@
+/**
+ * GameInstance coordinates sector engine simulations, warp portals, entities, and room states.
+ */
 import { Vector2D } from "../physics/Vector2D.js";
 import { Ship } from "./Ship.js";
 import { Planet } from "./Planet.js";
@@ -17,6 +20,7 @@ import { PLANET_PROFILES } from "./ProductionModel.js";
 import { recordKill, shipBountyValue } from "./CombatRating.js";
 import { mineYield } from "./Mining.js";
 import { shipName, createSeededRng } from "./NameGenerator.js";
+import { makeEmptyCargo } from "./commodities.js";
 import { squadManager } from "../server/SquadManager.js";
 import { SandboxSecurityRegistry } from "../net/SandboxSecurityRegistry.js";
 import { FactionWarCampaign } from "./FactionWarCampaign.js";
@@ -86,6 +90,8 @@ export class GameInstance {
         heading: ship.heading,
         radius: ship.radius,
         ownerId: ship.id,
+        damage: proj.damage,
+        shieldPierce: proj.shieldPierce,
       });
     };
 
@@ -808,6 +814,11 @@ export class GameInstance {
             typeof ent.hasActiveInterdictor === "function"
               ? ent.hasActiveInterdictor()
               : false;
+          base.outfits = ent.outfits || [];
+        } else if (ent.type === "projectile") {
+          base.ownerId = ent.ownerId;
+          base.damage = ent.damage;
+          base.shieldPierce = ent.shieldPierce;
         } else if (ent.type === "cargo_pod") {
           base.resourceType = ent.resourceType;
           base.amount = ent.amount;
@@ -1322,6 +1333,8 @@ export class GameInstance {
               this.engine.addEntity(pod);
             }
           }
+          // Reset ship's cargo hold to empty to avoid duplicates
+          ent.cargo = makeEmptyCargo();
         }
         this.broadcastNotification(
           `${ent.name} has been destroyed in combat.`,

@@ -42,7 +42,7 @@ describe("SquadManager (spec 059)", () => {
   });
 
   test("dissolves empty squads completely when all members leave", () => {
-    const squad = manager.createSquad("p1");
+    const _squad = manager.createSquad("p1");
     expect(manager.squads.size).toBe(1);
 
     manager.leaveSquad("p1");

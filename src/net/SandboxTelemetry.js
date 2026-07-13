@@ -86,7 +86,7 @@ export class SandboxTelemetry {
 
       // 3. Disk Footprint
       this.diskSizeBytes = this.getDirSizeRecursive(this.rootPath);
-    } catch (err) {
+    } catch (_err) {
       // Defensively swallow polling errors to avoid halting host thread
     }
   }
@@ -121,7 +121,7 @@ export class SandboxTelemetry {
           totalSize += stat.size;
         }
       }
-    } catch (err) {
+    } catch (_err) {
       // Return partial size or fallback gracefully on permission blocks
     }
     return totalSize;

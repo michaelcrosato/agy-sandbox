@@ -1,47 +1,28 @@
-import { Worker } from "worker_threads";
 import http from "http";
-import fs from "fs";
 import WebSocket from "ws";
 import { ProcessReaper } from "../net/ProcessReaper.js";
+import {
+  bootGameServerWorker,
+  stopGameServerWorker,
+} from "./testSupport/integrationHarness.js";
 
 describe("Concurrency Stress & Latency Injection Integration Tests (SPEC-095)", () => {
   let worker;
   const port = 18198;
+  const persistenceDir = "./data-test-concurrency";
 
   beforeAll(async () => {
-    // Purge test directories to avoid leftover persistence files
-    try {
-      fs.rmSync("./data-test-concurrency", { recursive: true, force: true });
-    } catch {
-      // ignore
-    }
-
     // Boot the game server Worker on dedicated port 18198
-    worker = new Worker(new URL("../server.js", import.meta.url), {
-      env: {
-        NODE_ENV: "test",
-        PORT: String(port),
-        SHARD_INDEX: "0",
-        WORKERS: "1",
-        PERSISTENCE_DIR: "./data-test-concurrency",
-      },
-    });
+    worker = await bootGameServerWorker({ port, persistenceDir });
 
     // Register worker with the ProcessReaper for clean teardown safety (SPEC-092)
     ProcessReaper.registerWorker(worker);
-
-    // Wait for the server to bind and start
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-  });
+  }, 25000);
 
   afterAll(async () => {
     // Terminate worker & reap process resources cleanly
     await ProcessReaper.reap();
-    try {
-      fs.rmSync("./data-test-concurrency", { recursive: true, force: true });
-    } catch {
-      // ignore
-    }
+    await stopGameServerWorker(worker, persistenceDir);
   });
 
   test("backpressure frame-shedding actively triggers when event loop lag is induced", async () => {

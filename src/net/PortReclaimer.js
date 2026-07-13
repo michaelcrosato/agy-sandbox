@@ -69,7 +69,7 @@ export async function reclaimPort(port) {
             pids.push(pid);
           }
         }
-      } catch (err) {
+      } catch (_err) {
         // lsof returns exit code 1 if no process is found on the port
       }
     }

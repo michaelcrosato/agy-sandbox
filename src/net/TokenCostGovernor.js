@@ -34,6 +34,9 @@ let originalHttpGet = null;
 let originalHttpsGet = null;
 let originalFetch = null;
 
+/**
+ * Automated LLM API Token Cost Governance & Mock Sentry.
+ */
 export const TokenCostGovernor = {
   /**
    * Registers a mock pattern and its corresponding completed response.

@@ -58,7 +58,9 @@ let virtualCowActive = false;
 const virtualFiles = new Map(); // resolved absolute path -> Buffer or string
 const virtualDirs = new Set(); // resolved absolute path of directories
 
-// Virtual Write stream class for Zero-Trust COW
+/**
+ * Virtual Write stream class for Zero-Trust COW.
+ */
 class VirtualWriteStream extends Writable {
   constructor(filePath) {
     super();
@@ -92,14 +94,16 @@ class VirtualWriteStream extends Writable {
   }
 }
 
-// Virtual Read stream class for Zero-Trust COW
+/**
+ * Virtual Read stream class for Zero-Trust COW.
+ */
 class VirtualReadStream extends Readable {
   constructor(filePath, data) {
     super();
     this.data = Buffer.isBuffer(data) ? data : Buffer.from(data);
     this.sent = false;
   }
-  _read(size) {
+  _read(_size) {
     if (this.sent) {
       this.push(null);
       return;
@@ -631,7 +635,7 @@ export const ProcessSentinel = {
     if (isPatched) return;
 
     childProcess.spawn = /** @type {any} */ (
-      function (command, args, options) {
+      function (command, args, _options) {
         if (
           !process.env.GUEST_SCRIPT_PATH &&
           !process.env.TEST_SENTINEL_FORCE
@@ -652,7 +656,7 @@ export const ProcessSentinel = {
     );
 
     childProcess.spawnSync = /** @type {any} */ (
-      function (command, args, options) {
+      function (command, args, _options) {
         if (
           !process.env.GUEST_SCRIPT_PATH &&
           !process.env.TEST_SENTINEL_FORCE
@@ -673,7 +677,7 @@ export const ProcessSentinel = {
     );
 
     childProcess.fork = /** @type {any} */ (
-      function (modulePath, args, options) {
+      function (modulePath, args, _options) {
         if (
           !process.env.GUEST_SCRIPT_PATH &&
           !process.env.TEST_SENTINEL_FORCE
@@ -746,7 +750,7 @@ export const ProcessSentinel = {
     );
 
     childProcess.execSync = /** @type {any} */ (
-      function (command, options) {
+      function (command, _options) {
         if (
           !process.env.GUEST_SCRIPT_PATH &&
           !process.env.TEST_SENTINEL_FORCE
@@ -807,7 +811,7 @@ export const ProcessSentinel = {
     );
 
     childProcess.execFileSync = /** @type {any} */ (
-      function (file, args, options) {
+      function (file, args, _options) {
         if (
           !process.env.GUEST_SCRIPT_PATH &&
           !process.env.TEST_SENTINEL_FORCE
@@ -852,7 +856,7 @@ export const ProcessSentinel = {
       fs.writeFile.__promisify__ = originalWriteFile.__promisify__;
     }
 
-    fs.writeFileSync = function (file, data, ...args) {
+    fs.writeFileSync = function (file, data, ..._args) {
       const resolved = resolveSafePath(file);
       checkPath(resolved, true);
       if (virtualCowActive) {
@@ -886,7 +890,7 @@ export const ProcessSentinel = {
       fs.mkdir.__promisify__ = originalMkdir.__promisify__;
     }
 
-    fs.mkdirSync = function (dir, ...args) {
+    fs.mkdirSync = function (dir, ..._args) {
       const resolved = resolveSafePath(dir);
       checkPath(resolved, true);
       if (virtualCowActive) {
@@ -946,7 +950,7 @@ export const ProcessSentinel = {
       fs.unlink.__promisify__ = originalUnlink.__promisify__;
     }
 
-    fs.unlinkSync = function (p, ...args) {
+    fs.unlinkSync = function (p, ..._args) {
       const resolved = resolveSafePath(p);
       checkPath(resolved, true);
       if (virtualCowActive) {
@@ -999,7 +1003,7 @@ export const ProcessSentinel = {
       fs.rename.__promisify__ = originalRename.__promisify__;
     }
 
-    fs.renameSync = function (oldPath, newPath, ...args) {
+    fs.renameSync = function (oldPath, newPath, ..._args) {
       const resolvedOld = resolveSafePath(oldPath);
       const resolvedNew = resolveSafePath(newPath);
       checkPath(resolvedOld, true);
@@ -1033,7 +1037,7 @@ export const ProcessSentinel = {
       return originalRenameSync.apply(this, arguments);
     };
 
-    fs.createWriteStream = function (pathName, ...args) {
+    fs.createWriteStream = function (pathName, ..._args) {
       const resolved = resolveSafePath(pathName);
       checkPath(resolved, true);
       if (virtualCowActive) {
@@ -1125,7 +1129,7 @@ export const ProcessSentinel = {
       fs.readdir.__promisify__ = originalReaddir.__promisify__;
     }
 
-    fs.readdirSync = function (dir, ...args) {
+    fs.readdirSync = function (dir, ..._args) {
       const resolved = resolveSafePath(dir);
       checkPath(resolved, false);
       let physical = [];
@@ -1148,7 +1152,7 @@ export const ProcessSentinel = {
       return physical;
     };
 
-    fs.createReadStream = function (pathName, ...args) {
+    fs.createReadStream = function (pathName, ..._args) {
       const resolved = resolveSafePath(pathName);
       checkPath(resolved, false);
       if (virtualCowActive && virtualFiles.has(resolved)) {
@@ -1169,7 +1173,7 @@ export const ProcessSentinel = {
 
     // Monkeypatch fs.promises if available
     if (fs.promises) {
-      fs.promises.writeFile = function (file, data, ...args) {
+      fs.promises.writeFile = function (file, data, ..._args) {
         const resolved = resolveSafePath(file);
         checkPath(resolved, true);
         if (virtualCowActive) {
@@ -1184,7 +1188,7 @@ export const ProcessSentinel = {
         return originalPromisesWriteFile.apply(this, arguments);
       };
 
-      fs.promises.mkdir = function (dir, ...args) {
+      fs.promises.mkdir = function (dir, ..._args) {
         const resolved = resolveSafePath(dir);
         checkPath(resolved, true);
         if (virtualCowActive) {
@@ -1205,7 +1209,7 @@ export const ProcessSentinel = {
         return originalPromisesRm.apply(this, arguments);
       };
 
-      fs.promises.unlink = function (p, ...args) {
+      fs.promises.unlink = function (p, ..._args) {
         const resolved = resolveSafePath(p);
         checkPath(resolved, true);
         if (virtualCowActive) {
@@ -1215,7 +1219,7 @@ export const ProcessSentinel = {
         return originalPromisesUnlink.apply(this, arguments);
       };
 
-      fs.promises.rename = function (oldPath, newPath, ...args) {
+      fs.promises.rename = function (oldPath, newPath, ..._args) {
         const resolvedOld = resolveSafePath(oldPath);
         const resolvedNew = resolveSafePath(newPath);
         checkPath(resolvedOld, true);
@@ -1250,7 +1254,7 @@ export const ProcessSentinel = {
         return originalPromisesReadFile.apply(this, arguments);
       };
 
-      fs.promises.readdir = async function (dir, ...args) {
+      fs.promises.readdir = async function (dir, ..._args) {
         const resolved = resolveSafePath(dir);
         checkPath(resolved, false);
         if (virtualCowActive) {

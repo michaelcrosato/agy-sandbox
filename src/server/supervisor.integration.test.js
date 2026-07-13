@@ -6,7 +6,7 @@ import { ProcessReaper } from "../net/ProcessReaper.js";
 
 describe("Supervisor process model integration (spec 019c)", () => {
   let worker0;
-  let worker1;
+  let _worker1;
   const port0 = 18082;
   const port1 = 18083;
 
@@ -38,7 +38,7 @@ describe("Supervisor process model integration (spec 019c)", () => {
     );
 
     // Boot Worker 1 on port1 (Shard index 1, Shard count 2)
-    worker1 = ProcessReaper.registerWorker(
+    _worker1 = ProcessReaper.registerWorker(
       new Worker(new URL("../server.js", import.meta.url), {
         env: {
           NODE_ENV: "test",

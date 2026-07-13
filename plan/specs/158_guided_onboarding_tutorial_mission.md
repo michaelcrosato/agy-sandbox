@@ -17,7 +17,7 @@ Build an interactable, multi-step guided interactive tutorial mission sequence t
 - Spawn a dedicated tutorial room containing a training drone and a mock salvage pod when a player initiates the tutorial.
 - Design a stunning golden-glassmorphic HUD onboarding cockpit card rendering step descriptions, active checkboxes, progress status bars, and floating tutorial arrows or alerts.
 - Support step progression triggers: e.g. pressing thrust increases throttle to progress the first step, locking onto the drone entity progresses the second.
-- Authored integration and unit tests in `src/server/tutorialHandlers.test.js` or `src/client/tutorialUI.test.js` verifying tutorial initialization, state progression, and cleanup.
+- Authored integration and unit tests in `src/server/tutorialHandlers.test.js` or `src/client/__tests/TutorialManager.test.js` verifying tutorial initialization, state progression, and cleanup.
 
 **Out:**
 

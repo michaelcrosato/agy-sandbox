@@ -2,7 +2,7 @@
 
 ## Summary
 
-Build an automated end-to-end visual regression test suite using Playwright or Vitest Browser Mode inside `src/client/__tests__/CanvasRenderer.browser.test.js` or `src/client/__tests__/PlaywrightVisual.test.js`. Verify that all golden-glassmorphic HUD cards, terminal consoles, and SVG progress meters align perfectly and render correctly across desktop, tablet, and responsive grid layouts, auto-archiving screenshots to `browser_recordings/` on validation sweeps.
+Build an automated end-to-end visual regression test suite using Playwright or Vitest Browser Mode inside `src/client/__tests/CanvasRenderer.browser.test.js` or `src/server/PlaywrightVisual.integration.test.js`. Verify that all golden-glassmorphic HUD cards, terminal consoles, and SVG progress meters align perfectly and render correctly across desktop, tablet, and responsive grid layouts, auto-archiving screenshots to `browser_recordings/` on validation sweeps.
 
 ## Motivation
 

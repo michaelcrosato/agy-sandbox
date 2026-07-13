@@ -1,36 +1,21 @@
-import { Worker } from "worker_threads";
 import http from "http";
-import fs from "fs";
+import {
+  bootGameServerWorker,
+  stopGameServerWorker,
+} from "./testSupport/integrationHarness.js";
 
 describe("Dashboard and Metrics HTTP Integration Tests (spec 044)", () => {
   let worker;
   const port = 18089;
+  const persistenceDir = "./data-test-dashboard";
 
   beforeAll(async () => {
-    // Purge test directories to avoid leftover registry or sector files dirtying the state
-    try {
-      fs.rmSync("./data-test-dashboard", { recursive: true, force: true });
-    } catch {
-      // ignore
-    }
-
     // Boot Worker on custom port
-    worker = new Worker(new URL("../server.js", import.meta.url), {
-      env: {
-        NODE_ENV: "test",
-        PORT: String(port),
-        SHARD_INDEX: "0",
-        WORKERS: "1",
-        PERSISTENCE_DIR: "./data-test-dashboard",
-      },
-    });
-
-    // Wait for the worker to bind to the port
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-  });
+    worker = await bootGameServerWorker({ port, persistenceDir });
+  }, 25000);
 
   afterAll(async () => {
-    await worker.terminate();
+    await stopGameServerWorker(worker, persistenceDir);
   });
 
   test("GET /metrics returns 200 and application/json Content-Type", () => {

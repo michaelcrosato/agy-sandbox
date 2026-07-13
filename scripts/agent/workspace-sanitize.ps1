@@ -13,7 +13,7 @@ Write-Host "[WORKSPACE-SANITIZE] Sanitizing workspace under: $RepoRoot" -Foregro
 function Remove-DirectorySafe ($dirPath) {
     if (Test-Path $dirPath -PathType Container) {
         # Check if it is a protected path
-        if ($dirPath -match "(\\plan\\|\\.agents\\|\\.git\\|\\node_modules\\|docs\\LOG\.md$)") {
+        if ($dirPath -match "([\\/]plan[\\/]|[\\/]\.agents[\\/]|[\\/]\.git[\\/]|[\\/]node_modules[\\/]|docs[\\/]LOG\.md$)") {
             Write-Host "[WARNING] Refusing to delete protected directory: $dirPath" -ForegroundColor Yellow
             return
         }
@@ -31,7 +31,7 @@ function Remove-DirectorySafe ($dirPath) {
 function Remove-FileSafe ($filePath) {
     if (Test-Path $filePath -PathType Leaf) {
         # Check if it is a protected path
-        if ($filePath -match "(\\plan\\|\\.agents\\|\\.git\\|\\node_modules\\|docs\\LOG\.md$)") {
+        if ($filePath -match "([\\/]plan[\\/]|[\\/]\.agents[\\/]|[\\/]\.git[\\/]|[\\/]node_modules[\\/]|docs[\\/]LOG\.md$)") {
             Write-Host "[WARNING] Refusing to delete protected file: $filePath" -ForegroundColor Yellow
             return
         }
@@ -46,7 +46,7 @@ function Remove-FileSafe ($filePath) {
 }
 
 # 3. Clean up untracked temporary directories matching data-test-*
-Get-ChildItem -Path $RepoRoot -Directory -Filter "data-test-*" | ForEach-Object {
+Get-ChildItem -Path $RepoRoot -Directory -Filter "data-test-*" -Force | ForEach-Object {
     Remove-DirectorySafe $_.FullName
 }
 
@@ -55,9 +55,9 @@ $vitestAttachments = Join-Path $RepoRoot ".vitest-attachments"
 Remove-DirectorySafe $vitestAttachments
 
 # 5. Clean up temporary files like .git-commit-msg.txt in repo root and subdirs (excluding protected folders)
-Get-ChildItem -Path $RepoRoot -File -Filter ".git-commit-msg.txt" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+Get-ChildItem -Path $RepoRoot -File -Filter ".git-commit-msg.txt" -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
     $path = $_.FullName
-    if ($path -notmatch "(\\plan\\|\\.agents\\|\\.git\\|\\node_modules\\|docs\\LOG\.md$)") {
+    if ($path -notmatch "([\\/]plan[\\/]|[\\/]\.agents[\\/]|[\\/]\.git[\\/]|[\\/]node_modules[\\/]|docs[\\/]LOG\.md$)") {
         Remove-FileSafe $path
     }
 }
@@ -65,9 +65,9 @@ Get-ChildItem -Path $RepoRoot -File -Filter ".git-commit-msg.txt" -Recurse -Erro
 # 6. Clean up temporary Node/npm/yarn/pnpm debug logs
 $logFilters = @("npm-debug.log*", "yarn-debug.log*", "yarn-error.log*", "lerna-debug.log*", ".pnpm-debug.log*")
 foreach ($filter in $logFilters) {
-    Get-ChildItem -Path $RepoRoot -File -Filter $filter -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+    Get-ChildItem -Path $RepoRoot -File -Filter $filter -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
         $path = $_.FullName
-        if ($path -notmatch "(\\plan\\|\\.agents\\|\\.git\\|\\node_modules\\|docs\\LOG\.md$)") {
+        if ($path -notmatch "([\\/]plan[\\/]|[\\/]\.agents[\\/]|[\\/]\.git[\\/]|[\\/]node_modules[\\/]|docs[\\/]LOG\.md$)") {
             Remove-FileSafe $path
         }
     }
@@ -76,9 +76,9 @@ foreach ($filter in $logFilters) {
 # 7. Clean up standard OS temporary files
 $osTempFilters = @("Thumbs.db", ".DS_Store")
 foreach ($filter in $osTempFilters) {
-    Get-ChildItem -Path $RepoRoot -File -Filter $filter -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+    Get-ChildItem -Path $RepoRoot -File -Filter $filter -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
         $path = $_.FullName
-        if ($path -notmatch "(\\plan\\|\\.agents\\|\\.git\\|\\node_modules\\|docs\\LOG\.md$)") {
+        if ($path -notmatch "([\\/]plan[\\/]|[\\/]\.agents[\\/]|[\\/]\.git[\\/]|[\\/]node_modules[\\/]|docs[\\/]LOG\.md$)") {
             Remove-FileSafe $path
         }
     }

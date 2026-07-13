@@ -1,23 +1,17 @@
-import { Worker } from "worker_threads";
 import http from "http";
 import fs from "fs";
 import path from "path";
+import {
+  bootGameServerWorker,
+  stopGameServerWorker,
+} from "./testSupport/integrationHarness.js";
 
 describe("Living Codex & Dashboard HTTP Integration Tests (SPEC-102)", () => {
   let worker;
   const port = 18199;
+  const persistenceDir = "./data-test-codex-dashboard";
 
   beforeAll(async () => {
-    // Purge test directories
-    try {
-      fs.rmSync("./data-test-codex-dashboard", {
-        recursive: true,
-        force: true,
-      });
-    } catch {
-      // ignore
-    }
-
     // Ensure codex.json exists for the server to load
     const codexPath = path.resolve("plan/codex.json");
     if (!fs.existsSync(codexPath)) {
@@ -29,22 +23,11 @@ describe("Living Codex & Dashboard HTTP Integration Tests (SPEC-102)", () => {
     }
 
     // Boot Worker on custom port
-    worker = new Worker(new URL("../server.js", import.meta.url), {
-      env: {
-        NODE_ENV: "test",
-        PORT: String(port),
-        SHARD_INDEX: "0",
-        WORKERS: "1",
-        PERSISTENCE_DIR: "./data-test-codex-dashboard",
-      },
-    });
-
-    // Wait for the worker to bind to the port
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-  });
+    worker = await bootGameServerWorker({ port, persistenceDir });
+  }, 25000);
 
   afterAll(async () => {
-    await worker.terminate();
+    await stopGameServerWorker(worker, persistenceDir);
   });
 
   test("GET /codex returns 200 and application/json Content-Type", () => {

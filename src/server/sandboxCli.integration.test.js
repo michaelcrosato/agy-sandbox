@@ -1,6 +1,8 @@
-import { Worker } from "worker_threads";
 import http from "http";
-import fs from "fs";
+import {
+  bootGameServerWorker,
+  stopGameServerWorker,
+} from "./testSupport/integrationHarness.js";
 
 describe("Interactive Codex CLI Sandbox Terminal HTTP Integration Tests (SPEC-153)", () => {
   let worker;
@@ -8,40 +10,13 @@ describe("Interactive Codex CLI Sandbox Terminal HTTP Integration Tests (SPEC-15
   const dbDir = "./data-test-sandbox-cli";
 
   beforeAll(async () => {
-    // Purge test directories
-    try {
-      fs.rmSync(dbDir, { recursive: true, force: true });
-    } catch {
-      // ignore
-    }
-
     // Boot Server Worker on custom port
-    worker = new Worker(new URL("../server.js", import.meta.url), {
-      env: {
-        NODE_ENV: "test",
-        PORT: String(port),
-        SHARD_INDEX: "0",
-        WORKERS: "1",
-        PERSISTENCE_DIR: dbDir,
-      },
-    });
-
-    // Wait for the worker to bind to the port
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-  });
+    worker = await bootGameServerWorker({ port, persistenceDir: dbDir });
+  }, 25000);
 
   afterAll(async () => {
-    // Terminate worker
-    if (worker) {
-      await worker.terminate();
-    }
-
-    // Clean up test directories
-    try {
-      fs.rmSync(dbDir, { recursive: true, force: true });
-    } catch {
-      // ignore
-    }
+    // Terminate worker & clean up test directories
+    await stopGameServerWorker(worker, dbDir);
   });
 
   const sendPost = (pathUrl, payload) => {
@@ -112,16 +87,21 @@ describe("Interactive Codex CLI Sandbox Terminal HTTP Integration Tests (SPEC-15
     expect(res.body.error).toContain("MOCK_CLI_CRASH");
   });
 
-  test("should support forcefully reaping a running process via the sandbox/kill endpoint", async () => {
-    // Call the kill endpoint with a mock PID.
-    // Even if PID doesn't exist, ProcessReaper gracefully returns on Windows/Linux.
+  test("should refuse to reap a PID this server did not spawn", async () => {
+    // Hardening: /api/sandbox/kill must only reap process trees spawned by
+    // GuestRunner, never an arbitrary attacker-chosen host PID.
     const payload = {
       pid: 99999,
     };
 
     const res = await sendPost("/api/sandbox/kill", payload);
-    expect(res.statusCode).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.message).toContain("forcefully reaped");
+    expect(res.statusCode).toBe(403);
+    expect(res.body.error).toContain("not spawned by this server");
+  });
+
+  test("should reject a missing or invalid PID before any reap attempt", async () => {
+    const res = await sendPost("/api/sandbox/kill", { pid: "not-a-pid" });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toContain("Valid PID parameter is required");
   });
 });

@@ -50,7 +50,24 @@ data-test-*/
 
 # Persistent security audit json ledger and transient sandbox worktrees
 plan/security_audit.json
+plan/*_runner_test.json
+.sandbox-worktrees/
 .sandbox-worktrees-test/
+.sandbox-runner-test-dir/
+
+# Guest-sandbox runner scratch fixtures written during tests
+src/net/temp_guest_*
+src/net/temp_cli_*
 
 # Active loop lockfile
 plan/loop_active.lock
+
+# Agent execution metadata and logs
+.agents/
+
+# Generated artifacts (rebuilt by `npm run codex:generate` and the test suites)
+plan/CODEX.md
+plan/codex.json
+plan/monitoring_report.json
+browser_recordings/
+

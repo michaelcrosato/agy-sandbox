@@ -3,7 +3,6 @@ import path from "path";
 import childProcess from "child_process";
 import { jest } from "@jest/globals";
 import { ZeroTraceTeardown } from "./ZeroTraceTeardown.js";
-import { GuestRunner } from "./GuestRunner.js";
 
 describe("ZeroTraceTeardown (SPEC-176)", () => {
   afterEach(() => {
@@ -45,16 +44,20 @@ describe("ZeroTraceTeardown (SPEC-176)", () => {
       if (pid) {
         ZeroTraceTeardown.killProcessTree(pid);
 
-        // Check if dead
-        let isDead = false;
-        try {
-          process.kill(pid, 0);
-        } catch (err) {
-          isDead = err.code === "ESRCH";
-        }
-        expect(isDead).toBe(true);
+        // Wait a short time for OS process cleanup
+        setTimeout(() => {
+          let isDead = false;
+          try {
+            process.kill(pid, 0);
+          } catch (err) {
+            isDead = err.code === "ESRCH";
+          }
+          expect(isDead).toBe(true);
+          done();
+        }, 100);
+      } else {
+        done();
       }
-      done();
     }, 500);
   });
 

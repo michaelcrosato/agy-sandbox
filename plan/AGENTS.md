@@ -21,10 +21,11 @@ protocol and does not override the substrate boundary, conventions, or git workf
 | Security | `npm audit` | track high/critical; see `specs/001` |
 | LOG compliance | `python scripts/validate-log-compliance.py` | PASS before committing a LOG entry |
 
-Baseline to preserve or improve (v3 · 2026-05-30, ENTIRE v2 blueprint shipped): **696 Jest tests / 51
-suites + 17 client tests green; typecheck (`tsc --noEmit`) green; `npm audit` 0; `npm outdated` empty.**
-Toolchain is current (`ws` 8.21, ESLint 10, Jest 30, TypeScript 6, Vitest+jsdom, `@google/genai`); runtime
-`dependencies` is just `ws`.
+Baseline to preserve or improve: **the full `npm run agent:check` gate green** (substrate verify,
+Prettier, ESLint, typecheck, Jest, Vitest client) plus `npm audit` at 0 vulnerabilities. Do not
+hand-write test counts here — they drift; the generated `plan/CODEX.md` carries current metrics.
+Toolchain: `ws` 8.x, ESLint 10, Jest 30, TypeScript 6, Vitest 4 (+jsdom / +browser-playwright),
+`@google/genai`; runtime `dependencies` is just `ws`.
 
 > **Ledger safety (learned the hard way, iter-0037):** a rogue writer once clobbered the entire
 > `docs/LOG.md` history by matching the `== LOG-ANCHOR ==` *substring in the Rules text*. Always prepend

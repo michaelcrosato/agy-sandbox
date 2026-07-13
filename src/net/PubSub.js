@@ -19,7 +19,6 @@ export class PubSub {
    * @param {boolean} [_options.sharded] - Use Redis sharded pub/sub if available.
    * @returns {Promise<void>}
    */
-  // eslint-disable-next-line no-unused-vars
   async publish(_channel, _msg, _options = {}) {
     throw new Error("PubSub.publish must be implemented by subclass");
   }
@@ -32,7 +31,6 @@ export class PubSub {
    * @param {boolean} [_options.sharded] - Use Redis sharded pub/sub if available.
    * @returns {Promise<void>}
    */
-  // eslint-disable-next-line no-unused-vars
   async subscribe(_channel, _cb, _options = {}) {
     throw new Error("PubSub.subscribe must be implemented by subclass");
   }
@@ -45,7 +43,6 @@ export class PubSub {
    * @param {boolean} [_options.sharded] - Use Redis sharded pub/sub if available.
    * @returns {Promise<void>}
    */
-  // eslint-disable-next-line no-unused-vars
   async unsubscribe(_channel, _cb = null, _options = {}) {
     throw new Error("PubSub.unsubscribe must be implemented by subclass");
   }

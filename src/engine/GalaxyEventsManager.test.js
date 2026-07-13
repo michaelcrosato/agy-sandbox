@@ -9,7 +9,7 @@ describe("GalaxyEventsManager core logic", () => {
 
   it("triggers a forced event type successfully", () => {
     const gem = new GalaxyEventsManager();
-    const event = gem.triggerEvent("famine");
+    const _event = gem.triggerEvent("famine");
     expect(gem.activeEvent).toBeDefined();
     expect(gem.activeEvent.type).toBe("famine");
     expect(gem.activeEvent.name).toBe("Famine");

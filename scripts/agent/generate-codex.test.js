@@ -1,6 +1,6 @@
+import { generateCodexGraph } from "./generate-codex.js";
 import fs from "fs";
 import path from "path";
-import { generateCodexGraph } from "./generate-codex.js";
 
 describe("Living Codex & Codebase Ontology Generator (SPEC-101)", () => {
   test("successfully scans the codebase and builds the knowledge graph", () => {
@@ -32,6 +32,7 @@ describe("Living Codex & Codebase Ontology Generator (SPEC-101)", () => {
     if (apiRateLimiterFile) {
       expect(apiRateLimiterFile).toHaveProperty("path");
       expect(apiRateLimiterFile).toHaveProperty("loc");
+      expect(apiRateLimiterFile).toHaveProperty("fileOverview");
       expect(apiRateLimiterFile.classes.length).toBeGreaterThan(0);
       expect(apiRateLimiterFile.classes[0].name).toBe("ApiRateLimiter");
       expect(apiRateLimiterFile.testFile).toContain(
@@ -60,5 +61,13 @@ describe("Living Codex & Codebase Ontology Generator (SPEC-101)", () => {
       expect(entry.symbols[0]).toHaveProperty("type");
       expect(entry.symbols[0]).toHaveProperty("line");
     }
+  });
+
+  test("writes REPO_MAP.md during synchronization", () => {
+    const repoMapPath = path.resolve("docs/ai/REPO_MAP.md");
+    expect(fs.existsSync(repoMapPath)).toBe(true);
+    const content = fs.readFileSync(repoMapPath, "utf8");
+    expect(content).toContain("# Repo Map (for agents)");
+    expect(content).toContain("## Core product logic");
   });
 });

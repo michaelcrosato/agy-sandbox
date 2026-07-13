@@ -1,9 +1,16 @@
-import { verifyWebSocketClient, connectionFloodSentry } from "../server.js";
+import { verifyWebSocketClient } from "./verifyWebSocketClient.js";
+import { ConnectionFloodSentry } from "../net/ConnectionFloodSentry.js";
 import { jest } from "@jest/globals";
 
-describe("verifyWebSocketClient", () => {
+describe("verifyWebSocketClient modular utility", () => {
+  let connectionFloodSentry;
+  let allowedOrigins;
+
   beforeEach(() => {
-    connectionFloodSentry.reset();
+    connectionFloodSentry = new ConnectionFloodSentry({
+      maxConnectionsPerIp: 5,
+    });
+    allowedOrigins = ["http://localhost:8080", "localhost:8080"];
   });
 
   test("rejects request if URI length exceeds 2048", () => {
@@ -18,7 +25,10 @@ describe("verifyWebSocketClient", () => {
       },
     };
 
-    verifyWebSocketClient(mockInfo, mockCb);
+    verifyWebSocketClient(mockInfo, mockCb, {
+      allowedOrigins,
+      connectionFloodSentry,
+    });
     expect(mockCb).toHaveBeenCalledWith(false, 414, "URI Too Long");
   });
 
@@ -35,7 +45,10 @@ describe("verifyWebSocketClient", () => {
       },
     };
 
-    verifyWebSocketClient(mockInfo, mockCb);
+    verifyWebSocketClient(mockInfo, mockCb, {
+      allowedOrigins,
+      connectionFloodSentry,
+    });
     expect(mockCb).toHaveBeenCalledWith(false, 413, "Payload Too Large");
   });
 
@@ -55,7 +68,10 @@ describe("verifyWebSocketClient", () => {
       },
     };
 
-    verifyWebSocketClient(mockInfo, mockCb);
+    verifyWebSocketClient(mockInfo, mockCb, {
+      allowedOrigins,
+      connectionFloodSentry,
+    });
     expect(mockCb).toHaveBeenCalledWith(true);
   });
 
@@ -64,7 +80,6 @@ describe("verifyWebSocketClient", () => {
     const mockCb = jest.fn();
 
     // Set maxConnectionsPerIp to 2 for this test
-    const originalLimit = connectionFloodSentry.maxConnectionsPerIp;
     connectionFloodSentry.maxConnectionsPerIp = 2;
 
     const makeInfo = () => ({
@@ -80,21 +95,18 @@ describe("verifyWebSocketClient", () => {
       },
     });
 
-    try {
-      // First connection
-      verifyWebSocketClient(makeInfo(), mockCb);
-      expect(mockCb).toHaveBeenLastCalledWith(true);
+    const opts = { allowedOrigins, connectionFloodSentry };
 
-      // Second connection
-      verifyWebSocketClient(makeInfo(), mockCb);
-      expect(mockCb).toHaveBeenLastCalledWith(true);
+    // First connection
+    verifyWebSocketClient(makeInfo(), mockCb, opts);
+    expect(mockCb).toHaveBeenLastCalledWith(true);
 
-      // Third connection (exceeds limit 2)
-      verifyWebSocketClient(makeInfo(), mockCb);
-      expect(mockCb).toHaveBeenLastCalledWith(false, 429, "Too Many Requests");
-    } finally {
-      // Restore limit
-      connectionFloodSentry.maxConnectionsPerIp = originalLimit;
-    }
+    // Second connection
+    verifyWebSocketClient(makeInfo(), mockCb, opts);
+    expect(mockCb).toHaveBeenLastCalledWith(true);
+
+    // Third connection (exceeds limit 2)
+    verifyWebSocketClient(makeInfo(), mockCb, opts);
+    expect(mockCb).toHaveBeenLastCalledWith(false, 429, "Too Many Requests");
   });
 });

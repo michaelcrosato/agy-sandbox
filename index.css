@@ -779,6 +779,38 @@ h1, h2, h3, h4 {
   box-shadow: 0 6px 22px var(--color-green-glow);
 }
 
+.btn-audio-toggle {
+  background: rgba(255, 179, 0, 0.15);
+  border: 1px solid rgba(255, 179, 0, 0.45);
+  color: var(--color-gold);
+  text-shadow: 0 0 6px var(--color-gold-glow);
+  font-weight: 700;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  outline: none;
+}
+
+.btn-audio-toggle:hover {
+  background: rgba(255, 179, 0, 0.3);
+  border-color: rgba(255, 179, 0, 0.7);
+  box-shadow: 0 0 10px rgba(255, 179, 0, 0.35);
+  transform: scale(1.02);
+}
+
+.btn-audio-toggle.muted {
+  background: rgba(255, 179, 0, 0.05);
+  border: 1px solid rgba(255, 179, 0, 0.2);
+  color: rgba(255, 179, 0, 0.5);
+  text-shadow: none;
+}
+
+.btn-audio-toggle.muted:hover {
+  background: rgba(255, 179, 0, 0.15);
+  border-color: rgba(255, 179, 0, 0.4);
+  color: var(--color-gold);
+  text-shadow: 0 0 4px var(--color-gold-glow);
+}
+
 .spaceport-footer {
   display: flex;
   justify-content: flex-end;

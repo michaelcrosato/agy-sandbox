@@ -13,6 +13,7 @@ import { NetworkHandler } from "./client/NetworkHandler.js";
 import { NEBULAE } from "./engine/Nebulae.js";
 import { EntityInterpolator } from "./client/Interpolator.js";
 import { TutorialManager } from "./client/TutorialManager.js";
+import SoundEngine from "./client/audio/SoundEngine.js";
 
 // Global game variables
 let isLanded = false;
@@ -89,6 +90,9 @@ function getNextWarpGate(entities) {
 }
 
 const uiController = new UIController();
+const initialMuted = localStorage.getItem("audio_muted") === "true";
+const soundEffectsEngine = new SoundEngine({ muted: initialMuted });
+uiController.soundEffectsEngine = soundEffectsEngine;
 const missionManager = new MissionManager();
 const spaceportUI = new SpaceportUI(uiController, missionManager);
 
@@ -197,6 +201,17 @@ missionManager.onStorylineStageAdvanced = (mission) => {
 const canvas = document.getElementById("space-canvas");
 const renderer = new CanvasRenderer(canvas);
 const inputHandler = new InputHandler();
+
+// Start sound engine on first user gesture
+const initAudioOnGesture = () => {
+  soundEffectsEngine.start();
+  window.removeEventListener("click", initAudioOnGesture);
+  window.removeEventListener("keydown", initAudioOnGesture);
+  window.removeEventListener("touchstart", initAudioOnGesture);
+};
+window.addEventListener("click", initAudioOnGesture);
+window.addEventListener("keydown", initAudioOnGesture);
+window.addEventListener("touchstart", initAudioOnGesture);
 
 // Trigger initial viewport size calculations
 renderer.resize();
@@ -526,11 +541,32 @@ engine.onProjectileFired = (proj, ship) => {
   const dir = ship.getDirectionVector();
   const muzzleX = ship.position.x + dir.x * (ship.radius + 2);
   const muzzleY = ship.position.y + dir.y * (ship.radius + 2);
-  renderer.spawnExplosion(
-    muzzleX,
-    muzzleY,
-    ship.id === "player" ? "#00ffcc" : "#ff3333",
-  );
+  let color;
+  if (proj.shieldPierce > 0) {
+    color = "#ffff33";
+  } else if (proj.damage >= 50) {
+    color = "#d03ffc";
+  } else if (proj.damage >= 25) {
+    color = "#00ff66";
+  } else {
+    color = ship.id === player.id ? "#00ffcc" : "#ff3333";
+  }
+  renderer.spawnExplosion(muzzleX, muzzleY, color);
+
+  let weaponType = "laser";
+  if (ship && ship.outfits) {
+    const outfitsLower = ship.outfits.map((o) =>
+      typeof o === "string" ? o.toLowerCase() : "",
+    );
+    if (outfitsLower.some((o) => o.includes("plasma"))) {
+      weaponType = "plasma";
+    } else if (outfitsLower.some((o) => o.includes("neutron"))) {
+      weaponType = "neutron";
+    } else if (outfitsLower.some((o) => o.includes("ion"))) {
+      weaponType = "ion";
+    }
+  }
+  soundEffectsEngine.playWeapon(weaponType, ship.position);
 };
 
 engine.onEntityDestroyed = (ent) => {
@@ -718,6 +754,7 @@ inputHandler.onWarpPressed = () => {
     renderer.warpTimer = 0;
     renderer.warpTunnelStars = [];
     player.clearControls();
+    soundEffectsEngine.playWarpJump();
 
     uiController.notify(
       `Entering Hyperlane Warp Drive to ${gate.targetSector.toUpperCase()} Sector!`,
@@ -807,6 +844,9 @@ inputHandler.onLandPressed = () => {
 
     // Open glassmorphic trading/outfit spaceport screen
     spaceportUI.open(player, targetPlanet, planets);
+    if (soundEffectsEngine) {
+      soundEffectsEngine.playDock();
+    }
     uiController.notify(
       `Landed safely on ${targetPlanet.name}. Ship systems secured.`,
       "success",
@@ -822,6 +862,9 @@ inputHandler.onLandPressed = () => {
 // Bind launch callback to resume game simulation
 spaceportUI.onLaunch = () => {
   isLanded = false;
+  if (soundEffectsEngine) {
+    soundEffectsEngine.playUndock();
+  }
 
   // Reposition ship slightly outside the planet coordinate radius to prevent immediately re-landing
   const targetPlanet = spaceportUI.planet;
@@ -1208,6 +1251,7 @@ function syncEntitiesFromServer(serverEntities) {
           localEnt.maxHeat = ent.maxHeat;
           localEnt.isOverheated = ent.isOverheated;
           localEnt.isDisabled = ent.isDisabled;
+          localEnt.outfits = ent.outfits || [];
         } else if (localEnt.type === "cargo_pod") {
           localEnt.resourceType = ent.resourceType;
           localEnt.amount = ent.amount;
@@ -1250,6 +1294,7 @@ function syncEntitiesFromServer(serverEntities) {
         newShip.maxHeat = ent.maxHeat;
         newShip.isOverheated = ent.isOverheated;
         newShip.isDisabled = ent.isDisabled;
+        newShip.outfits = ent.outfits || [];
         newShip.controls = ent.controls || {
           isThrusting: false,
           isBraking: false,
@@ -1266,6 +1311,8 @@ function syncEntitiesFromServer(serverEntities) {
           heading: ent.heading,
         });
         newProj.ownerId = ent.ownerId;
+        newProj.damage = ent.damage;
+        newProj.shieldPierce = ent.shieldPierce;
         engine.addEntity(newProj);
       } else if (ent.type === "cargo_pod") {
         const newPod = new SpaceEntity({
@@ -1498,6 +1545,9 @@ network.onLanded = (msg) => {
   const targetPlanet = planets.find((p) => p.name === msg.planetName);
   if (targetPlanet) {
     spaceportUI.open(player, targetPlanet, planets);
+    if (soundEffectsEngine) {
+      soundEffectsEngine.playDock();
+    }
     uiController.notify(
       `Landed safely on ${targetPlanet.name}. Ship systems secured.`,
       "success",
@@ -1508,6 +1558,9 @@ network.onLanded = (msg) => {
 network.onLaunched = () => {
   isLanded = false;
   spaceportUI.close();
+  if (soundEffectsEngine) {
+    soundEffectsEngine.playUndock();
+  }
 
   const targetPlanet = spaceportUI.planet;
   if (targetPlanet) {
@@ -1533,6 +1586,7 @@ network.onWarpSuccess = (msg) => {
   // Disable user input and autopilot
   player.clearControls();
   autopilotActive = false;
+  soundEffectsEngine.playWarpJump();
 
   // Display visual transition notification
   uiController.notify(
@@ -1620,7 +1674,17 @@ network.onProjectileFired = (msg) => {
     const dir = new Vector2D(Math.cos(msg.heading), Math.sin(msg.heading));
     const muzzleX = msg.x + dir.x * (shooter.radius + 2);
     const muzzleY = msg.y + dir.y * (shooter.radius + 2);
-    renderer.spawnExplosion(muzzleX, muzzleY, "#00ffcc");
+    let color;
+    if (msg.shieldPierce > 0) {
+      color = "#ffff33";
+    } else if (msg.damage >= 50) {
+      color = "#d03ffc";
+    } else if (msg.damage >= 25) {
+      color = "#00ff66";
+    } else {
+      color = msg.ownerId === player.id ? "#00ffcc" : "#ff3333";
+    }
+    renderer.spawnExplosion(muzzleX, muzzleY, color);
   }
 };
 
@@ -1662,6 +1726,9 @@ network.onCargoPickup = (msg) => {
     msg.y,
     color,
   );
+  if (soundEffectsEngine) {
+    soundEffectsEngine.playCargoPickup({ x: msg.x, y: msg.y });
+  }
 };
 
 network.onPingReceived = (pingMs) => {
@@ -1902,6 +1969,13 @@ function gameLoop(time) {
   // Calculate elapsed frame step in seconds
   let dt = (time - lastTime) / 1000;
   lastTime = time;
+
+  if (player && player.position) {
+    soundEffectsEngine.setListenerPosition(
+      player.position.x,
+      player.position.y,
+    );
+  }
 
   // Prune stale entities from interpolator
   interpolator.prune(Date.now() - 5000);
@@ -2540,3 +2614,32 @@ window.addEventListener("resize", () => {
     renderGalaxyMap();
   }
 });
+
+// Bind Audio Toggle
+const audioToggleBtn = document.getElementById("btn-audio-toggle");
+if (audioToggleBtn) {
+  if (initialMuted) {
+    audioToggleBtn.classList.add("muted");
+    audioToggleBtn.innerText = "AUDIO: OFF";
+  } else {
+    audioToggleBtn.classList.remove("muted");
+    audioToggleBtn.innerText = "AUDIO: ON";
+  }
+
+  audioToggleBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    soundEffectsEngine.start();
+
+    if (soundEffectsEngine.muted) {
+      soundEffectsEngine.unmute();
+      localStorage.setItem("audio_muted", "false");
+      audioToggleBtn.classList.remove("muted");
+      audioToggleBtn.innerText = "AUDIO: ON";
+    } else {
+      soundEffectsEngine.mute();
+      localStorage.setItem("audio_muted", "true");
+      audioToggleBtn.classList.add("muted");
+      audioToggleBtn.innerText = "AUDIO: OFF";
+    }
+  });
+}

@@ -161,7 +161,7 @@ export const IntegrityGuard = {
                 writable: false,
                 configurable: false,
               });
-            } catch (err) {
+            } catch (_err) {
               // Ignore or degrade gracefully if we can't lock it
             }
           }

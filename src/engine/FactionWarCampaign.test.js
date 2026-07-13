@@ -94,7 +94,7 @@ describe("FactionWarCampaign Engine Unit Tests", () => {
     };
 
     // Before skirmish values
-    const prevCoreFed = campaign.militaryPower.core.Federation;
+    const _prevCoreFed = campaign.militaryPower.core.Federation;
 
     // Tick enough times to trigger skirmishes
     for (let i = 0; i < 10; i++) {

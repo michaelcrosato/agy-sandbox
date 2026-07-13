@@ -43,6 +43,20 @@ The `STATUS` token in the header line **MUST** be exactly one of:
 - Entries **SHOULD** target 150–350 words, and **MUST NOT** exceed 500 words unless labeled an `INCIDENT` or `ROLLBACK`.
 - This file **MUST** be rotated into monthly archives (`docs/log/YYYY-MM.md`) once it crosses 1,000 lines or 250 KB.
   == LOG-ANCHOR ==
+## 2026-07-13T05:20 · iter-0185 · GREEN · audit-driven-improvement-pass
+
+- **Baseline:** `258c430` on `develop`; clean tree after the production overhaul.
+- **Move:** Run an adversarially-verified audit (correctness, security, tests, performance, DX) and land the confirmed high-value, low-risk fixes as small focused commits.
+- **Changed:**
+  - Security: escaped guest-controlled sandbox telemetry (RPC feed + both breach-log renderers) in `dashboard-codex.html` and repaired a broken chronicle render in `dashboard.html`, escaping its player-derived fields — closing stored-XSS vectors reachable via the public `/metrics` endpoint.
+  - Correctness: fixed `Interpolator` heading extrapolation (was frozen via a `lerpAngle(..,0)` no-op) and the SPEC-090 load-shedding filter (shed the real `generic`/`gem_asteroid` asteroid types, not a type that never exists); the load-shedding test used the same fictional type and gave false confidence.
+  - Reliability/perf: bounded `SandboxFirewall.blockedEvents`; replaced the fs-retry busy-wait with awaited async retries; cut per-tick O(n²) rescans in `handleCargoCollection`, `applyCosmicStormHazards`, and `applyTractorForces`.
+  - Tests: added coverage for the mode/tags XSS sanitizer, `httpSecurity` edge cases, and the integration harness readiness poll.
+  - Docs/DX: `private`+`repository` in `package.json`; corrected README/AGENTS accuracy; recorded deferred hardening (send-path backpressure, AI perception cost, `/metrics` auth, LICENSE) in `plan/BACKLOG.md`.
+- **Decisions:** Deferred the send-path backpressure change and AI-perception optimization as higher-risk/lower-marginal-value (world-state path already hard-drops slow clients); documented rather than implemented.
+- **Validation:** `npm run agent:check` green — Jest, Vitest client, lint, typecheck, format, substrate all pass; `npm audit` 0 vulnerabilities.
+- **Next:** If load testing shows memory pressure, route all sends through a shared `bufferedAmount` guard; reuse the interest grid for AI perception.
+
 ## 2026-07-12T21:20 · iter-0184 · GREEN · repository-overhaul-and-security-hardening
 
 - **Baseline:** `ce62e39` on `develop`; production-readiness overhaul of the full repo.

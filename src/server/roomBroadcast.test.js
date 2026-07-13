@@ -62,7 +62,8 @@ describe("roomBroadcast", () => {
         },
         {
           id: "asteroid-1",
-          type: "asteroid",
+          // Real asteroids are typed "generic"/"gem_asteroid", not "asteroid".
+          type: "gem_asteroid",
           x: 100,
           y: 100,
           position: { x: 100, y: 100 },
@@ -169,13 +170,17 @@ describe("roomBroadcast", () => {
       binaryProtocol: false,
     });
 
-    // Asteroids and projectiles should be filtered out
+    // Asteroids (generic/gem_asteroid) and projectiles should be filtered out
     const sentData1 = JSON.parse(client1.ws.send.mock.calls[0][0]);
     const sentEntities1 = Object.values(sentData1.entities || {});
-    const hasAsteroid = sentEntities1.some((e) => e.type === "asteroid");
+    const hasAsteroid = sentEntities1.some(
+      (e) => e.type === "generic" || e.type === "gem_asteroid",
+    );
     const hasProjectile = sentEntities1.some((e) => e.type === "projectile");
     expect(hasAsteroid).toBe(false);
     expect(hasProjectile).toBe(false);
+    // Ships remain visible.
+    expect(sentEntities1.some((e) => e.type === "ship")).toBe(true);
   });
 
   test("terminates connections for slow clients (backpressure drop)", () => {

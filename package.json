@@ -2,8 +2,13 @@
   "name": "agy-sandbox",
   "version": "1.0.0",
   "description": "Starfall: Living Galaxy — browser-native multiplayer space sim with an autonomous-engineering harness",
+  "private": true,
   "main": "src/server.js",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/michaelcrosato/agy-sandbox.git"
+  },
   "engines": {
     "node": ">=22"
   },

@@ -68,10 +68,17 @@ export function broadcastRoomState(room, options) {
           )
         : allEntities;
 
-    // Event-Loop Latency Backpressure load-shedding (SPEC-090):
+    // Event-Loop Latency Backpressure load-shedding (SPEC-090): drop
+    // non-essential clutter (asteroids + projectiles) under latency pressure.
+    // Asteroids are typed "generic"/"gem_asteroid" (see GameInstance
+    // spawnNewAsteroid and the mining/collision predicates), not "asteroid" —
+    // the previous filter matched a type that never exists, so it shed nothing.
     if (latencyMonitor && latencyMonitor.shouldShed("optional")) {
       visible = visible.filter(
-        (ent) => ent.type !== "asteroid" && ent.type !== "projectile",
+        (ent) =>
+          ent.type !== "generic" &&
+          ent.type !== "gem_asteroid" &&
+          ent.type !== "projectile",
       );
     }
 

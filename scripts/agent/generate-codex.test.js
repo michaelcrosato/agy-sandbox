@@ -1,4 +1,4 @@
-import { generateCodexGraph } from "./generate-codex.js";
+import { generateCodexGraph, run } from "./generate-codex.js";
 import fs from "fs";
 import path from "path";
 
@@ -64,6 +64,10 @@ describe("Living Codex & Codebase Ontology Generator (SPEC-101)", () => {
   });
 
   test("writes REPO_MAP.md during synchronization", () => {
+    // REPO_MAP.md is a generated (gitignored) artifact, so drive the generator
+    // and assert it produced the file — including creating docs/ai/ if a fresh
+    // clone doesn't have it yet.
+    run();
     const repoMapPath = path.resolve("docs/ai/REPO_MAP.md");
     expect(fs.existsSync(repoMapPath)).toBe(true);
     const content = fs.readFileSync(repoMapPath, "utf8");

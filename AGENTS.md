@@ -19,7 +19,7 @@ These files are write-protected substrate. Do not modify, rename, delete, or pla
 - `scripts/validate-log-compliance.py`
 - `scripts/manifest.txt`
 
-The cross-platform verifier is `npm run agent:verify-substrate`. It reads `scripts/manifest.txt` and fails if any protected file hash changes.
+The cross-platform verifier is `npm run agent:verify-substrate`. It reads `scripts/manifest.txt` and fails if any protected file hash changes. `manifest.txt` is the manifest itself (the source of truth for the hash set), so it holds the other six files' hashes and is not self-hashed — it stays protected by this list and review, not by the checksum.
 
 ## 1. Read-first order
 

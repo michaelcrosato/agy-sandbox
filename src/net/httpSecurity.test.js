@@ -15,7 +15,11 @@ describe("httpSecurity", () => {
       ["127.0.0.1", true],
       ["::1", true],
       ["::ffff:127.0.0.1", true],
+      // IPv4-mapped loopback other than the exact string exercises the
+      // startsWith("::ffff:127.") branch, not just exact equality.
+      ["::ffff:127.0.0.5", true],
       ["127.5.5.5", true],
+      ["  ::1  ", true],
       ["10.0.0.1", false],
       ["203.0.113.7", false],
       ["", false],
@@ -86,6 +90,13 @@ describe("httpSecurity", () => {
       req.emit("data", Buffer.from("too many bytes"));
       await expect(p).rejects.toMatchObject({ code: "E_BODY_TOO_LARGE" });
     });
+
+    test("rejects when the request stream errors", async () => {
+      const req = makeReq();
+      const p = readBodyWithLimit(req, 1024);
+      req.emit("error", new Error("socket hang up"));
+      await expect(p).rejects.toThrow("socket hang up");
+    });
   });
 
   describe("resolveStaticFile", () => {
@@ -126,6 +137,14 @@ describe("httpSecurity", () => {
       expect(resolveStaticFile(root, "/%2e%2e/secret.js")).toBeNull();
       expect(resolveStaticFile(root, "/foo\0.html")).toBeNull();
     });
+
+    test("denied directory wins even for an allowlisted extension", () => {
+      // The prefix check runs before the extension allowlist, so a .js/.html
+      // under a sensitive directory is still refused.
+      expect(resolveStaticFile(root, "/plan/report.js")).toBeNull();
+      expect(resolveStaticFile(root, "/docs/guide.html")).toBeNull();
+      expect(resolveStaticFile(root, "/tickets/note.html")).toBeNull();
+    });
   });
 
   describe("clientIpFromRequest", () => {
@@ -145,6 +164,19 @@ describe("httpSecurity", () => {
         socket: { remoteAddress: "10.0.0.1" },
       };
       expect(clientIpFromRequest(req, { trustProxy: true })).toBe("1.2.3.4");
+    });
+
+    test("falls back to socket when trusted but no X-Forwarded-For is present", () => {
+      const req = { headers: {}, socket: { remoteAddress: "10.0.0.1" } };
+      expect(clientIpFromRequest(req, { trustProxy: true })).toBe("10.0.0.1");
+    });
+
+    test("falls back to socket when trusted but X-Forwarded-For is blank", () => {
+      const req = {
+        headers: { "x-forwarded-for": "   " },
+        socket: { remoteAddress: "10.0.0.1" },
+      };
+      expect(clientIpFromRequest(req, { trustProxy: true })).toBe("10.0.0.1");
     });
 
     test("falls back to unknown with no socket", () => {

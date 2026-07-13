@@ -3663,7 +3663,7 @@
                       `<div style="display: flex; gap: 0.35rem; line-height: 1.2;">
                         <span style="color: #6b7280; flex-shrink: 0;">[${ev.time}]</span>
                         <span style="color: ${ev.color}; font-weight: 700; flex-shrink: 0;">[${ev.type}]</span>
-                        <span style="word-break: break-all;">${ev.text}</span>
+                        <span style="word-break: break-all;">${escapeHtml(ev.text)}</span>
                       </div>`
                   )
                   .join("");
@@ -3733,7 +3733,7 @@
                             white-space: pre-wrap;
                             margin-top: 0.25rem;
                             border: 1px solid rgba(255,255,255,0.02);
-                          ">${v.stack}</pre>
+                          ">${escapeHtml(v.stack)}</pre>
                         </details>`
                       : "";
 
@@ -3756,13 +3756,13 @@
                           min-width: 90px;
                           text-align: center;
                           text-transform: uppercase;
-                        ">${v.category}</span>
-                        
-                        <span style="color: #64748b; font-size: 0.75rem;">${v.timestampIso.substring(11, 19)}</span>
-                        
+                        ">${escapeHtml(v.category)}</span>
+
+                        <span style="color: #64748b; font-size: 0.75rem;">${escapeHtml(v.timestampIso.substring(11, 19))}</span>
+
                         <div style="flex: 1;">
-                          <strong style="color: #e2e8f0; font-size: 0.75rem;">${v.action}</strong>
-                          <span style="color: #cbd5e1; font-size: 0.75rem; margin-left: 0.5rem;">${v.details?.reason || v.details?.path || v.details?.host || v.details?.url || ""}</span>
+                          <strong style="color: #e2e8f0; font-size: 0.75rem;">${escapeHtml(v.action)}</strong>
+                          <span style="color: #cbd5e1; font-size: 0.75rem; margin-left: 0.5rem;">${escapeHtml(v.details?.reason || v.details?.path || v.details?.host || v.details?.url || "")}</span>
                           ${stackMarkup}
                         </div>
                       </div>
@@ -4197,13 +4197,13 @@
                         min-width: 90px;
                         text-align: center;
                         text-transform: uppercase;
-                      ">${v.category}</span>
-                      
-                      <span style="color: #64748b; font-size: 0.75rem;">${v.timestampIso.substring(11, 19)}</span>
-                      
+                      ">${escapeHtml(v.category)}</span>
+
+                      <span style="color: #64748b; font-size: 0.75rem;">${escapeHtml(v.timestampIso.substring(11, 19))}</span>
+
                       <div style="flex: 1;">
-                        <strong style="color: #e2e8f0; font-size: 0.75rem;">${v.action}</strong>
-                        <span style="color: #cbd5e1; font-size: 0.75rem; margin-left: 0.5rem;">${v.details?.reason}</span>
+                        <strong style="color: #e2e8f0; font-size: 0.75rem;">${escapeHtml(v.action)}</strong>
+                        <span style="color: #cbd5e1; font-size: 0.75rem; margin-left: 0.5rem;">${escapeHtml(v.details?.reason)}</span>
                         <details style="margin-top: 0.25rem;">
                           <summary style="font-size: 0.7rem; color: #64748b; cursor: pointer; user-select: none;">Show Callstack</summary>
                           <pre style="
@@ -4217,7 +4217,7 @@
                             white-space: pre-wrap;
                             margin-top: 0.25rem;
                             border: 1px solid rgba(255,255,255,0.02);
-                          ">${v.stack}</pre>
+                          ">${escapeHtml(v.stack)}</pre>
                         </details>
                       </div>
                     </div>
@@ -4478,7 +4478,7 @@
       }
 
       function escapeHtml(text) {
-        return text
+        return String(text ?? "")
           .replace(/&/g, "&amp;")
           .replace(/</g, "&lt;")
           .replace(/>/g, "&gt;")

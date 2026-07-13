@@ -10,12 +10,17 @@
  * concurrent file/database race conditions.
  */
 export class GalacticChronicle {
+  declare _writeQueue;
+  declare events;
+  declare key;
+  declare maxEvents;
+  declare store;
   /**
    * @param {Object} [config]
    * @param {import("./Store.js").Store} [config.store] - The backing store instance.
    * @param {number} [config.maxEvents=200] - Maximum history capacity before pruning.
    */
-  constructor({ store, maxEvents = 200 } = {}) {
+  constructor({ store, maxEvents = 200 }: any = {}) {
     if (!store) {
       throw new TypeError("GalacticChronicle: a Store instance is required");
     }
@@ -63,7 +68,7 @@ export class GalacticChronicle {
     title,
     description,
     impactMetrics,
-  } = {}) {
+  }: any = {}) {
     const event = {
       timestamp: Date.now(),
       sector: sector || "Unknown",

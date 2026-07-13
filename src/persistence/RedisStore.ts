@@ -11,12 +11,14 @@ import { Store } from "./Store.js";
  * All operations are async and return Promises, matching the Store contract.
  */
 export class RedisStore extends Store {
+  declare client;
+  declare keyPrefix;
   /**
    * @param {Object} [config]
    * @param {Object} [config.client] - The injected Redis (or fake) client. Must implement async `get`, `set`, and `exists`.
    * @param {string} [config.keyPrefix="starfall:"] - Prefix for Redis keys to isolate namespaces.
    */
-  constructor({ client, keyPrefix = "starfall:" } = {}) {
+  constructor({ client, keyPrefix = "starfall:" }: any = {}) {
     super();
     if (!client) {
       throw new Error("RedisStore constructor: client must be provided");

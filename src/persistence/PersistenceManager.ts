@@ -20,13 +20,16 @@ import {
  * it is unit-testable against any {@link Store} backend.
  */
 export class PersistenceManager {
+  declare _autosaveHandle;
+  declare logger;
+  declare store;
   /**
    * @param {Object} [config]
    * @param {import("./Store.js").Store} [config.store] - Backing store, validated at runtime (filesystem, memory, ...).
    * @param {(msg: string, err?: Error) => void} [config.logger] - Optional log sink.
    *   Defaults to `console.warn` so failures are visible without crashing.
    */
-  constructor({ store, logger } = {}) {
+  constructor({ store, logger }: any = {}) {
     if (!store) {
       throw new TypeError("PersistenceManager: a Store instance is required");
     }

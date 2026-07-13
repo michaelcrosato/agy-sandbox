@@ -43,7 +43,7 @@ export class Store {
    * @param {string} _key
    * @returns {Promise<boolean>}
    */
-  async has(_key) {
+  async has(_key): Promise<boolean> {
     throw new Error("Store.has must be implemented by subclass");
   }
 }
@@ -57,6 +57,7 @@ export class Store {
  * state through a stale reference — load/save behave like a real disk store.
  */
 export class InMemoryStore extends Store {
+  declare data;
   constructor() {
     super();
     this.data = new Map();
@@ -92,6 +93,7 @@ export class InMemoryStore extends Store {
  * JSON file that a later `load` would choke on.
  */
 export class JsonFileStore extends Store {
+  declare dir;
   /**
    * @param {Object} [config={}]
    * @param {string} [config.dir="./data"] - Directory the store reads/writes inside.

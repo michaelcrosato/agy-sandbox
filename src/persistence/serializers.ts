@@ -157,7 +157,9 @@ export function applyGalaxy(gameInstance, data) {
   if (!gameInstance || !data) return;
 
   if (Array.isArray(data.planets) && Array.isArray(gameInstance.planets)) {
-    const byName = new Map(gameInstance.planets.map((p) => [p.name, p]));
+    const byName = new Map<any, any>(
+      gameInstance.planets.map((p) => [p.name, p]),
+    );
     for (const snapshot of data.planets) {
       const planet = byName.get(snapshot.name);
       if (!planet) continue;

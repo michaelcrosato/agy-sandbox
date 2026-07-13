@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Starfall: Living Galaxy — browser-native multiplayer space sim with an autonomous-engineering harness",
   "private": true,
-  "main": "src/server.ts",
+  "main": "dist/server.js",
   "type": "module",
   "repository": {
     "type": "git",

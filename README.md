@@ -17,16 +17,22 @@ Requires Node.js ≥ 22 (`.nvmrc` pins 24).
 
 ```powershell
 npm ci
-node src/server.js
+npm run build   # tsc → dist/
+npm start       # node dist/server.js
 ```
 
 Open **http://localhost:8080** in a modern browser.
 
-> `npm run dev` only serves static files. It does not run the authoritative simulation or multiplayer server.
+> Sources are TypeScript. `npm run build` compiles `src/**/*.ts` to `dist/`, and
+> both the server (`node dist/server.js`) and the browser client (`dist/main.js`)
+> are served from there. Re-run `npm run build` after editing `src/`.
+>
+> `npm run dev` only serves static files (and does not recompile TypeScript). It
+> does not run the authoritative simulation or multiplayer server.
 
 ### Play with friends
 
-Keep `node src/server.js` running and expose it with a tunnel, for example:
+Keep `npm start` (`node dist/server.js`) running and expose it with a tunnel, for example:
 
 ```bash
 cloudflared tunnel --url http://localhost:8080
@@ -55,10 +61,10 @@ Everything is optional; the server boots with sensible defaults.
 - **Environment variables** — documented in [`.env.example`](.env.example) (port, persistence dir,
   autosave cadence, protocol feature flags, origin allowlist, scaling, guest-sandbox secrets).
 - **Hot-reloaded tunables** — [`plan/config.json`](plan/config.json) is watched at runtime
-  (`src/net/ConfigWatcher.js`): WebSocket/API rate limits, faction-standing thresholds,
+  (`src/net/ConfigWatcher.ts`): WebSocket/API rate limits, faction-standing thresholds,
   connection-flood caps, resource limits, firewall allowlist. Edits apply without a restart.
 - **Scaling** — single process by default. Set `WORKERS=N` for sharded cluster mode
-  (`src/server/supervisor.js`), and `REDIS_URL` (+ `REDIS_SCALE_OUT=1`) to swap the JSON file store
+  (`src/server/supervisor.ts`), and `REDIS_URL` (+ `REDIS_SCALE_OUT=1`) to swap the JSON file store
   and in-memory pub/sub for Redis. Without Redis the server persists to `PERSISTENCE_DIR` (default
   `./data`). Smoke-test cluster mode with `npm run cluster:smoke`; benchmark with
   `npm run benchmark:cluster`.
@@ -73,11 +79,13 @@ Everything is optional; the server boots with sensible defaults.
 ## Validation
 
 ```powershell
-npm run agent:check          # full gate: substrate integrity + format + lint + typecheck + Jest + client tests
-npm run agent:check:core     # faster inner-loop gate, excludes client tests
-npm test                     # Jest suite (engine/physics/net/persistence/server, incl. integration)
-npm run test:client          # Vitest client suite (jsdom)
+npm run agent:check          # full gate: codex map + substrate + format + lint + typecheck + build + Vitest
+npm run agent:check:core     # same gate without regenerating the codex map (inner-loop shortcut)
+npm test                     # Vitest: node + jsdom + browser projects, in one run
+npm run test:node            # Vitest node project (engine/physics/net/persistence/server, incl. integration)
+npm run test:client          # Vitest jsdom client suite
 npm run test:client:browser  # Vitest browser suite (Playwright/Chromium; win32 golden screenshots)
+npm run build                # tsc → dist/ (server + client)
 npm run lint
 npm run typecheck
 npm run format:check
@@ -85,37 +93,49 @@ npm run format:check
 
 Do not claim a change is green unless the relevant command actually ran and passed.
 
-CI (`.github/workflows/ci.yml`) mirrors the gate on Node 22/24/26 for every push/PR to `main`/`master`/`develop`, plus the jsdom client suite. The browser-screenshot suite is local-only (Windows baselines).
+CI (`.github/workflows/ci.yml`) mirrors the gate on Node 22/24/26 for every push/PR to `main`/`master`/`develop`: it installs Chromium (Playwright) and runs the full Vitest suite (node + jsdom + browser projects) after `npm run build`. The browser screenshots are win32 golden baselines, so cross-platform rendering diffs may need refreshed baselines.
 
 ---
 
 ## Architecture
 
 ```text
-Browser client (index.html + src/main.js + src/client/*)
+Browser client (index.html + dist/main.js ← src/main.ts + src/client/*)
   │  WebSocket (JSON in / binary state broadcasts out)
   ▼
 verifyWebSocketClient (origin allowlist, flood sentry)
   ▼
 clientConnection.preprocessMessage (rate limit, backpressure, parse, schema validation)
   ▼
-messageRouter → ~20 typed handlers (src/server/*Handlers.js)
+messageRouter → ~20 typed handlers (src/server/*Handlers.ts)
   ▼
 GameInstance rooms tick at 30 Hz (src/engine/* pure simulation)
   ▼
 roomBroadcast (area-of-interest filtering + binary codec) → clients
 ```
 
-- `src/server.js` is a composition root: it wires the tested modules under `src/server/` and owns
-  only the tick interval and process lifecycle.
+- `src/server.ts` is a composition root: it wires the tested modules under `src/server/` and owns
+  only the tick interval and process lifecycle. It is built to `dist/server.js` and run from there.
 - `src/engine/`, `src/physics/`, `src/net/`, `src/persistence/` are pure (no DOM, sockets, timers,
   or unseeded randomness in test-reachable paths) — enforced by convention and tests.
-- Persistence is JSON snapshots via `src/persistence/Store.js` by default, Redis optional.
-- The guest-runner sandbox under `src/net/Guest*.js` is harness infrastructure for running
+- Persistence is JSON snapshots via `src/persistence/Store.ts` by default, Redis optional.
+- The guest-runner sandbox under `src/net/Guest*.ts` is harness infrastructure for running
   untrusted automation scripts locally with egress/resource governance; it is not part of the
   player-facing game loop.
 
 For a per-module map, regenerate and read [`docs/ai/REPO_MAP.md`](docs/ai/REPO_MAP.md) (`npm run codex:generate`).
+
+### TypeScript
+
+The codebase is TypeScript. `tsc` compiles `src/**/*.ts` to `dist/` (config in
+[`tsconfig.build.json`](tsconfig.build.json)); `index.html` loads the compiled `dist/main.js`, and
+the server runs from `dist/server.js`. Type-checking (`npm run typecheck`, config in
+[`tsconfig.json`](tsconfig.json)) covers the server-side graph at `strict: false`. The browser
+client is currently `// @ts-nocheck` — it compiles for emit but is not type-checked yet; tightening
+types (enabling `strict`, removing the client `@ts-nocheck`) is tracked in
+[`plan/BACKLOG.md`](plan/BACKLOG.md). Sources stay to erasable TypeScript syntax only (no `enum`,
+`namespace`, parameter properties, or decorators) so the build strips types without transforming
+them.
 
 ---
 
@@ -157,18 +177,18 @@ Historical ledgers (completed waves, journals, superseded blueprints) live in [`
 │   ├── run-agent.js          <- GitHub issue-triggered agent (label: autonomous)
 │   ├── run-afk-loop.*        <- local unattended loop launchers
 │   └── claude-night.ps1      <- overnight task queue runner
-├── src/
-│   ├── server.js             <- authoritative server composition root
+├── src/                      <- TypeScript sources (compiled to dist/ by tsc)
+│   ├── server.ts             <- authoritative server composition root
 │   ├── server/               <- extracted server modules (+ testSupport/ harness)
 │   ├── engine/               <- pure simulation modules
 │   ├── physics/              <- pure physics primitives
 │   ├── net/                  <- protocol, security sentries, metrics, guest sandbox
 │   ├── persistence/          <- store/persistence abstractions
 │   └── client/               <- browser client logic (+ __tests__/)
-└── index.html, index.css     <- game client shell
+└── index.html, index.css     <- game client shell (loads dist/main.js)
 ```
 
-Generated locally (gitignored): `plan/CODEX.md`, `plan/codex.json`, `plan/monitoring_report.json`, `browser_recordings/`, `data/`.
+Generated locally (gitignored): `dist/` (the `tsc` build output), `plan/CODEX.md`, `plan/codex.json`, `plan/monitoring_report.json`, `browser_recordings/`, `data/`.
 
 ---
 
@@ -181,7 +201,7 @@ when exposing it to the public internet:
   gated: it accepts only loopback callers, or requests carrying a matching `X-Admin-Token` header
   when `ADMIN_TOKEN` is set (constant-time compared). With no token set, remote callers are refused
   rather than served — so exposing the port does not expose remote code execution.
-- **Static file serving** is allowlist-based (`src/net/httpSecurity.js`): only web asset extensions
+- **Static file serving** is allowlist-based (`src/net/httpSecurity.ts`): only web asset extensions
   are served, and dotfiles (`.env`, `.git`), config, `data/`, and `node_modules/` are refused.
 - **`X-Forwarded-For`** is ignored unless `TRUST_PROXY=1`, so connection-flood limits can't be
   bypassed with a spoofed header when the server is directly exposed.
@@ -199,10 +219,11 @@ above is the active mitigation; escaping in the dashboards themselves is still r
 - No authentication or accounts: players are identified by a per-connection random id and a
   self-chosen nickname. Fine for friendly servers; not for open internet deployment.
 - `ALLOWED_ORIGINS` defaults to allowing all origins — set it when exposing the server publicly.
-- The guest-runner sandbox (`src/net/Guest*.js`) hardens untrusted script execution with static
+- The guest-runner sandbox (`src/net/Guest*.ts`) hardens untrusted script execution with static
   analysis, egress/DNS allowlists, and resource caps, but is defense-in-depth, not a security
   boundary; only expose `/api/sandbox/*` to trusted operators.
-- The browser visual-regression suite runs only on Windows (win32 golden screenshots) and is not in CI.
+- The browser visual-regression baselines are win32 golden screenshots (`src/client/__tests__/__screenshots__/`);
+  on other platforms the rendering-diff assertions may need refreshed baselines.
 - Server logs mix human-oriented emoji lines with the structured JSON logger (`LOG_LEVEL` applies to
   the latter); unification is tracked in `plan/BACKLOG.md`.
 

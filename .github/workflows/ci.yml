@@ -48,7 +48,8 @@ jobs:
         run: npm run agent:verify-substrate
 
       - name: Run Formatting Check
-        run: npx prettier --check "src/**/*.{js,json}" "scripts/**/*.js" ".github/**/*.md" README.md
+        # Mirrors the `format:check` script glob, which includes the .ts sources.
+        run: npm run format:check
 
       - name: Run Linting
         run: npm run lint

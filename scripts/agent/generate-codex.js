@@ -42,7 +42,7 @@ function walkDirectory(dir, filter = () => true) {
   return results;
 }
 
-// Extract JSDocs, classes, functions, and lines of code from a JS file
+// Extract JSDocs, classes, functions, and lines of code from a source file
 function parseSourceFile(filePath) {
   let content;
   try {
@@ -65,8 +65,8 @@ function parseSourceFile(filePath) {
   const classRegex = /(?:export\s+)?class\s+(\w+)/g;
   // Matches "export function functionName"
   const funcRegex = /export\s+function\s+(\w+)/g;
-  // Matches "export const variableName ="
-  const constRegex = /export\s+const\s+(\w+)\s*=/g;
+  // Matches "export const variableName =" (or a typed "export const name: Type =")
+  const constRegex = /export\s+const\s+(\w+)\s*[:=]/g;
 
   // Parse JSDocs and symbols line by line
   let inJsDoc = false;
@@ -252,7 +252,10 @@ export function generateCodexGraph() {
 
     const files = walkDirectory(
       fullPath,
-      (file) => file.endsWith(".js") && !file.endsWith(".test.js"),
+      (file) =>
+        file.endsWith(".ts") &&
+        !file.endsWith(".test.ts") &&
+        !file.endsWith(".d.ts"),
     );
     for (const f of files) {
       const parsed = parseSourceFile(f);
@@ -263,7 +266,10 @@ export function generateCodexGraph() {
   // 2. Gather all test files
   const rootSrc = path.resolve("src");
   if (fs.existsSync(rootSrc)) {
-    const tests = walkDirectory(rootSrc, (file) => file.endsWith(".test.js"));
+    const tests = walkDirectory(
+      rootSrc,
+      (file) => file.endsWith(".test.ts") || file.endsWith(".test.js"),
+    );
     for (const t of tests) {
       const parsed = parseTestFile(t);
       if (parsed) testFiles.push(parsed);
@@ -272,8 +278,9 @@ export function generateCodexGraph() {
 
   const scriptsDir = path.resolve("scripts");
   if (fs.existsSync(scriptsDir)) {
-    const tests = walkDirectory(scriptsDir, (file) =>
-      file.endsWith(".test.js"),
+    const tests = walkDirectory(
+      scriptsDir,
+      (file) => file.endsWith(".test.ts") || file.endsWith(".test.js"),
     );
     for (const t of tests) {
       const parsed = parseTestFile(t);
@@ -293,12 +300,15 @@ export function generateCodexGraph() {
 
   // 4. Map tests and specs to source files, and detect Epistemic Debt
   const mappedSourceFiles = sourceFiles.map((src) => {
-    // Map test file (either src/area/File.test.js or under __tests__)
-    const baseName = path.basename(src.path, ".js");
+    // Map test file (either src/area/File.test.ts|js or under __tests__)
+    const baseName = path.basename(src.path, ".ts");
     const matchedTest = testFiles.find((t) => {
       return (
+        t.path.includes(`/${baseName}.test.ts`) ||
         t.path.includes(`/${baseName}.test.js`) ||
+        t.path.includes(`/__tests__/${baseName}.test.ts`) ||
         t.path.includes(`/__tests__/${baseName}.test.js`) ||
+        t.path.includes(`/__tests/${baseName}.test.ts`) ||
         t.path.includes(`/__tests/${baseName}.test.js`)
       );
     });
@@ -541,7 +551,7 @@ function cleanJsDocDescription(jsdoc) {
 
 // Formats a filename to a clean title
 function formatFilename(filePath) {
-  const base = path.basename(filePath, ".js");
+  const base = path.basename(filePath, ".ts");
   return base
     .replace(/([A-Z])/g, " $1")
     .trim()
@@ -559,8 +569,8 @@ excludes \`node_modules/\`) and \`.aiignore\`. Full operating rules: \`../../AGE
 
 | What | File | Notes |
 | --- | --- | --- |
-| **Game server** (authoritative) | \`src/server.js\` | Composition root: Node \`ws\` + static HTTP on \`:8080\`. Wires the tested modules under \`src/server/\`; covered by the \`src/server/*.integration.test.js\` suites. |
-| **Browser client** bootstrap | \`src/main.js\` | Loaded by \`index.html\`; wires engine + \`src/client/*\`. Client units are tested under \`src/client/__tests__/\` (Vitest). |
+| **Game server** (authoritative) | \`src/server.ts\` → \`dist/server.js\` | Composition root: Node \`ws\` + static HTTP on \`:8080\`. Built with \`tsc\` and run via \`node dist/server.js\`. Wires the tested modules under \`src/server/\`; covered by the \`src/server/*.integration.test.ts\` suites. |
+| **Browser client** bootstrap | \`src/main.ts\` → \`dist/main.js\` | Compiled to \`dist/\` and loaded by \`index.html\`; wires engine + \`src/client/*\`. Client units are tested under \`src/client/__tests__/\` (Vitest). |
 | **Page shell** | \`index.html\`, \`index.css\` | DOM/HUD the client renders into. |
 
 ## Core product logic — \`src/\` (this is what you improve)
@@ -588,14 +598,15 @@ excludes \`node_modules/\`) and \`.aiignore\`. Full operating rules: \`../../AGE
 
   md += `
 Rule of thumb: anything under \`engine/\`, \`physics/\`, \`net/\`, \`persistence/\` is pure and **must** stay
-that way (no DOM, sockets, timers, or \`Math.random\` in test-reachable paths). Tests sit beside source
-as \`*.test.js\`.
+that way (no DOM, sockets, timers, or \`Math.random\` in test-reachable paths). Sources are \`.ts\` (built
+to \`dist/\` with \`tsc\`); tests sit beside source as \`*.test.ts\`.
 
 ## Config & tooling
 
-- \`package.json\` — scripts (\`test\`, \`lint\`, \`format\`, \`format:check\`, \`agent:bootstrap\`, \`agent:check\`), deps.
-- \`eslint.config.js\` — flat config; \`no-unused-vars: warn\`; globals node+jest+browser.
-- \`.github/workflows/ci.yml\` — the gate of record on push/PR to \`main\`/\`develop\`: substrate verify → prettier **--check** → eslint → typecheck → jest (Node 22/24/26 matrix) + Vitest client job.
+- \`package.json\` — scripts (\`build\`, \`start\`, \`test\`, \`lint\`, \`format\`, \`format:check\`, \`agent:bootstrap\`, \`agent:check\`), deps.
+- \`tsconfig.json\` / \`tsconfig.build.json\` — typecheck config (\`--noEmit\`) and the \`tsc\` build that emits \`dist/\`.
+- \`eslint.config.js\` — flat config; \`no-unused-vars: warn\`; globals node+browser.
+- \`.github/workflows/ci.yml\` — the gate of record on push/PR to \`main\`/\`develop\`: substrate verify → prettier **--check** → eslint → typecheck → **build** → Vitest (node + jsdom + browser), Node 22/24/26 matrix.
 - \`scripts/agent/*.{sh,ps1}\` — agent-facing wrappers; \`check\` mirrors CI exactly.
 - \`.env.example\` — runtime/automation env vars (copy to \`.env\`, which is gitignored).
 

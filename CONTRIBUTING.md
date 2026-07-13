@@ -11,7 +11,8 @@ git workflow, and the write-protected substrate files you must not modify).
 ```bash
 npm ci
 # ...make a small, focused change with tests...
-npm run agent:check   # format + lint + typecheck + Jest + Vitest client — must be green
+npm run build         # tsc → dist/ (needed to run the server / integration suites)
+npm run agent:check   # format + lint + typecheck + build + Vitest (node/jsdom/browser) — must be green
 ```
 
 - Use [Conventional Commits](https://www.conventionalcommits.org/) (`feat`, `fix`,

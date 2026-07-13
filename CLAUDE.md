@@ -7,9 +7,9 @@ other agents read `AGENTS.md` directly, so both stay in sync from one source).
 
 ## Claude Code specifics
 
-- **Gate of record:** run `npm run agent:check` (substrate verify + Prettier +
-  ESLint + `tsc` + Jest + Vitest client) before committing. Never weaken or skip a
-  test to make it pass.
+- **Gate of record:** run `npm run agent:check` (codex map + substrate verify +
+  Prettier + ESLint + `tsc --noEmit` + `tsc` build + Vitest: node/jsdom/browser)
+  before committing. Never weaken or skip a test to make it pass.
 - **Substrate is off-limits:** never edit the files listed in `AGENTS.md` §0.
   `.claude/settings.json` also denies edits to them as a backstop.
 - **Purity:** keep `src/engine`, `src/physics`, `src/net`, and `src/persistence`

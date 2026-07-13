@@ -627,6 +627,13 @@ export function run() {
   const codexMdPath = path.resolve("plan/CODEX.md");
   const repoMapPath = path.resolve("docs/ai/REPO_MAP.md");
 
+  // These outputs are gitignored, so their directories may not exist in a fresh
+  // clone (e.g. docs/ai/ has no other tracked files). Ensure they exist before
+  // writing so `codex:generate` works on a clean checkout / CI runner.
+  for (const outPath of [codexJsonPath, codexMdPath, repoMapPath]) {
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
+  }
+
   console.log(
     `💾 Writing structured codebase ontology data to ${codexJsonPath}...`,
   );

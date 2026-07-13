@@ -5,6 +5,11 @@ import { Vector2D } from "../physics/Vector2D.js";
  * Projectile class representing weapon discharges (e.g. laser bolts, plasma cells) in space.
  */
 export class Projectile extends SpaceEntity {
+  declare damage;
+  declare lifetime;
+  declare maxLifetime;
+  declare ownerId;
+  declare shieldPierce;
   /**
    * Creates a Projectile.
    * @param {Object} config - Configuration parameters.

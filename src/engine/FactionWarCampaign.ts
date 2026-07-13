@@ -37,6 +37,12 @@ export const SECTOR_NAMES = Object.freeze({
  * Strategic headless engine managing galactic conflicts tick-by-tick.
  */
 export class FactionWarCampaign {
+  declare activeSieges;
+  declare battleHistory;
+  declare blockades;
+  declare militaryPower;
+  declare seed;
+  declare ticks;
   /**
    * Creates a FactionWarCampaign engine.
    * @param {Object} [initialState] - Pre-loaded state for restoring after restart.
@@ -471,7 +477,7 @@ export class FactionWarCampaign {
     if (!power) return "Independents";
     let dominant = "Independents";
     let max = -1;
-    for (const [faction, val] of Object.entries(power)) {
+    for (const [faction, val] of Object.entries(power) as [string, any][]) {
       if (val > max) {
         max = val;
         dominant = faction;

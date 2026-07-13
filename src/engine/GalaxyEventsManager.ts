@@ -3,6 +3,8 @@
  * dynamic economic shocks and market events across galactic sectors.
  */
 export class GalaxyEventsManager {
+  declare activeEvent;
+  declare rng;
   /**
    * @param {Object} [config]
    * @param {function} [config.rng] - Custom random generator.

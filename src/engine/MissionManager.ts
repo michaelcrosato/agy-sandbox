@@ -9,6 +9,14 @@ import {
  * Manages the procedural mission generation, active contract tracking, and completion cycles.
  */
 export class MissionManager {
+  declare activeMissions;
+  declare availableMissions;
+  declare bountyNames;
+  declare courierCommodities;
+  declare onBountyAccepted;
+  declare onEscortAccepted;
+  declare onStorylineStageAdvanced;
+  declare storylineCompleted;
   constructor() {
     this.activeMissions = [];
     this.availableMissions = {}; // Map of planetName -> Array of missions
@@ -200,8 +208,8 @@ export class MissionManager {
           if (standing < 30) {
             m.reward = 2000;
           } else {
-            /** @type {any} */ (m).standingRequired = 30;
-            /** @type {any} */ (m).faction = planetFaction;
+            /** @type {any} */ m.standingRequired = 30;
+            /** @type {any} */ m.faction = planetFaction;
           }
         }
       }
@@ -352,7 +360,7 @@ export class MissionManager {
    * @param {Object} player - Player ship.
    * @param {Object} [world={}] - World context for consequences.
    */
-  checkArrivalCompletions(destinationName, player, world = {}) {
+  checkArrivalCompletions(destinationName, player, world: any = {}) {
     const completed = [];
     const remaining = [];
 
@@ -528,7 +536,7 @@ export class MissionManager {
    * @param {Object} player - Player ship.
    * @param {Object} [world={}] - World context for consequences.
    */
-  checkBountyCompletion(shipName, player, world = {}) {
+  checkBountyCompletion(shipName, player, world: any = {}) {
     const index = this.activeMissions.findIndex(
       (m) =>
         (m.type === "bounty" && m.targetName === shipName) ||
@@ -653,7 +661,7 @@ export class MissionManager {
    * @returns {?{mission: Object, marketChanges: Array<Object>, factionChanges: Array<Object>}}
    *   Result of completion, or `null` if the id isn't an active generated mission.
    */
-  completeGeneratedMission(missionId, player, world = {}) {
+  completeGeneratedMission(missionId, player, world: any = {}) {
     const index = this.activeMissions.findIndex(
       (m) => m.id === missionId && m.generated === true,
     );

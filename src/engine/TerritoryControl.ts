@@ -7,6 +7,8 @@
  * the owner by 10 points, and maps the controlling faction to dynamic sector parameters.
  */
 export class TerritoryControl {
+  declare onControlShift;
+  declare sectors;
   /**
    * Creates a TerritoryControl engine.
    * @param {Object} [initialState] - Pre-loaded state for restoring after restart.
@@ -110,7 +112,10 @@ export class TerritoryControl {
     let highestRivalFaction = null;
     let highestRivalInfluence = -1;
 
-    for (const [faction, score] of Object.entries(sector.influence)) {
+    for (const [faction, score] of Object.entries(sector.influence) as [
+      string,
+      any,
+    ][]) {
       if (faction === currentOwner) continue;
       if (score > highestRivalInfluence) {
         highestRivalInfluence = score;
@@ -140,7 +145,10 @@ export class TerritoryControl {
   decayInfluence(dt) {
     const decayAmount = 0.2 * dt; // 0.2 points per second base decay rate
 
-    for (const [sectorId, sector] of Object.entries(this.sectors)) {
+    for (const [sectorId, sector] of Object.entries(this.sectors) as [
+      string,
+      any,
+    ][]) {
       const owner = sector.controllingFaction;
 
       for (const faction of Object.keys(sector.influence)) {

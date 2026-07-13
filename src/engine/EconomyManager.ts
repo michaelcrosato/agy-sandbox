@@ -7,6 +7,10 @@ import { BASE_MARKETS } from "./GameInstance.js";
  * price normalization, and random economic events across all galactic sectors.
  */
 export class EconomyManager {
+  declare activeEconomicEvent;
+  declare eventDurationTimer;
+  declare planets;
+  declare priceElasticity;
   /**
    * Creates an EconomyManager.
    * @param {Array<Planet>} planets - List of planets in the game instance.

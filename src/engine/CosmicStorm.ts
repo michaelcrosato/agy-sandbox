@@ -7,6 +7,10 @@ import { Vector2D } from "../physics/Vector2D.js";
  * Extends SpaceEntity for physics engine compatibility and static analysis compliance.
  */
 export class CosmicStorm extends SpaceEntity {
+  declare color;
+  declare description;
+  declare hazardType;
+  declare particleColor;
   /**
    * Creates a CosmicStorm instance.
    * @param {Object} [config]
@@ -30,7 +34,7 @@ export class CosmicStorm extends SpaceEntity {
     hazardType = "emp_storm",
     color = "rgba(255, 140, 0, 0.12)",
     particleColor = "rgba(255, 140, 0, 0.35)",
-  } = {}) {
+  }: any = {}) {
     super({
       id,
       type: "cosmic_storm",
@@ -78,7 +82,7 @@ export class CosmicStorm extends SpaceEntity {
    * @param {Object} data
    * @returns {CosmicStorm}
    */
-  static fromJSON(data = {}) {
+  static fromJSON(data: any = {}) {
     return new CosmicStorm({
       id: data.id,
       name: data.name,

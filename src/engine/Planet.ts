@@ -5,6 +5,13 @@ import { DEFAULT_OUTFITS } from "./outfitCatalog.js";
  * Planet class representing static celestial hubs with markets, outfitters, and shipyards.
  */
 export class Planet extends SpaceEntity {
+  declare color;
+  declare description;
+  declare landingRadius;
+  declare market;
+  declare outfitter;
+  declare services;
+  declare shipyard;
   /**
    * Creates a Planet.
    * @param {Object} config - Configuration: `name`, optional `description`, `color`,
@@ -24,7 +31,7 @@ export class Planet extends SpaceEntity {
     faction = null,
     services = { repair: true, refuel: true },
     ...parentParams
-  }) {
+  }: any) {
     // Planets are static, high-radius, high-mass entities
     super({
       type: "planet",

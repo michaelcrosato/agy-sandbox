@@ -11,6 +11,34 @@ import { Vector2D } from "../../physics/Vector2D.js";
  * AIController manages NPC behavior states (wander, chase, patrol, trade) and maps them into ship controls.
  */
 export class AIController {
+  declare caravanCargo;
+  declare caravanState;
+  declare conflictFactionA;
+  declare conflictFactionB;
+  declare consumerPlanetName;
+  declare currentGoal;
+  declare destination;
+  declare escortMode;
+  declare factionPolicy;
+  declare factionRegistry;
+  declare flagship;
+  declare formation;
+  declare isConflictZone;
+  declare isRefuelTanker;
+  declare isSmuggler;
+  declare orbitAngle;
+  declare perceptionOptions;
+  declare producerPlanetName;
+  declare refuelTargetId;
+  declare role;
+  declare route;
+  declare ship;
+  declare standingPolicy;
+  declare target;
+  declare targetPlanetName;
+  declare useUtilityAdvisor;
+  declare wanderAngle;
+  declare wanderTimer;
   /**
    * Creates an AIController for a ship.
    * @param {Ship} ship - The ship being controlled.
@@ -654,7 +682,7 @@ export class AIController {
 
     // Focus Intercept Command - break off and intercept flagship's locked target
     if (this.escortMode === "intercept") {
-      let currentTarget = this.flagship.target;
+      const currentTarget = this.flagship.target;
 
       if (currentTarget && !currentTarget.isDestroyed) {
         this.target = currentTarget;
@@ -905,9 +933,9 @@ export class AIController {
     let bestPlanet = null;
     let bestScore = -1;
 
-    const list = /** @type {Array<*>} */ (
-      Array.isArray(entities) ? entities : []
-    );
+    const list = /** @type {Array<*>} */ Array.isArray(entities)
+      ? entities
+      : [];
     const planets = list.filter(
       (e) => e && e.type === "planet" && !e.isDestroyed,
     );
@@ -979,7 +1007,7 @@ export class AIController {
     this.destination = bestPlanet.position;
     this.steerTowards(this.destination);
 
-    const planet = /** @type {*} */ (bestPlanet);
+    const planet = /** @type {*} */ bestPlanet;
     const dist = this.ship.position.distance(this.destination);
     const landingRadius =
       planet.landingRadius !== undefined ? planet.landingRadius : 60;

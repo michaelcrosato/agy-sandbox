@@ -72,7 +72,7 @@ describe("EconomyManager", () => {
     sol.market.food = 200;
 
     // Normalization should drift it back
-    let changed = manager.normalizePrices();
+    const changed = manager.normalizePrices();
     expect(changed).toContain(sol);
     expect(sol.market.food).toBeLessThan(200);
     expect(sol.market.food).toBeGreaterThan(originalFoodPrice);

@@ -23,7 +23,7 @@ describe("GalaxyEventsManager core logic", () => {
   });
 
   it("triggers random event using custom RNG", () => {
-    let rngVal = 0.5; // mid range
+    const rngVal = 0.5; // mid range
     const gem = new GalaxyEventsManager({ rng: () => rngVal });
     const event = gem.triggerEvent();
     expect(gem.activeEvent).not.toBeNull();

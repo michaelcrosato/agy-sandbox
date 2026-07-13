@@ -4,6 +4,23 @@ import { Vector2D } from "../physics/Vector2D.js";
  * Base class representing a physical object in a 2D top-down space environment.
  */
 export class SpaceEntity {
+  declare _isDestroyed;
+  declare accumulatorForce;
+  declare angularVelocity;
+  declare destroyedBy;
+  declare faction;
+  declare heading;
+  declare id;
+  declare mass;
+  declare name;
+  declare position;
+  declare radius;
+  declare role;
+  declare sector;
+  declare targetPosition;
+  declare targetSector;
+  declare type;
+  declare velocity;
   /**
    * Creates a SpaceEntity.
    * @param {Object} config - Configuration parameters.

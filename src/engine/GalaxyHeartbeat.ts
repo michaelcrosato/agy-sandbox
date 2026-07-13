@@ -17,6 +17,15 @@ import { SandboxSecurityRegistry } from "../net/SandboxSecurityRegistry.js";
  * The class is pure and deterministic: it owns no timers, sockets, or randomness.
  */
 export class GalaxyHeartbeat {
+  declare baseMarkets;
+  declare diffusionRate;
+  declare economyDriftsTotal;
+  declare equilibriumRate;
+  declare lanes;
+  declare planets;
+  declare productionOptions;
+  declare profiles;
+  declare pulses;
   /**
    * @param {Object} config
    * @param {Array<Object>} [config.planets] - Market-bearing systems; each needs `.name` and `.market`.
@@ -244,12 +253,15 @@ export class GalaxyHeartbeat {
 
     // 4. Audit production / consumption profile strengths
     if (this.profiles) {
-      for (const [planetName, profile] of Object.entries(this.profiles)) {
+      for (const [planetName, profile] of Object.entries(this.profiles) as [
+        string,
+        any,
+      ][]) {
         if (!profile) continue;
         if (profile.produces) {
           for (const [commodity, strength] of Object.entries(
             profile.produces,
-          )) {
+          ) as [string, any][]) {
             if (
               typeof strength !== "number" ||
               !Number.isFinite(strength) ||
@@ -278,7 +290,7 @@ export class GalaxyHeartbeat {
         if (profile.consumes) {
           for (const [commodity, strength] of Object.entries(
             profile.consumes,
-          )) {
+          ) as [string, any][]) {
             if (
               typeof strength !== "number" ||
               !Number.isFinite(strength) ||

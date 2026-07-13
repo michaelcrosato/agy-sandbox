@@ -65,7 +65,7 @@ function isPirateLike(ent) {
  * @param {Object} self - The perceiving ship.
  * @returns {boolean}
  */
-export function defaultIsThreat(ent, self, opts = {}) {
+export function defaultIsThreat(ent, self, opts: any = {}) {
   if (!ent || ent.type !== "ship" || ent.isDestroyed) return false;
 
   // Use faction standings & relations if available
@@ -119,7 +119,6 @@ export function defaultIsThreat(ent, self, opts = {}) {
  * @returns {number}
  */
 export function defaultThreatLevel(ent, self, _opts = {}) {
-  _opts;
   return clamp01(0.8 * armorFraction(ent));
 }
 
@@ -131,7 +130,7 @@ export function defaultThreatLevel(ent, self, _opts = {}) {
  * @param {Object} [opts]
  * @returns {boolean}
  */
-export function defaultIsPrey(ent, self, opts = {}) {
+export function defaultIsPrey(ent, self, opts: any = {}) {
   if (self.role !== "pirate") return false;
   if (!ent || ent.type !== "ship" || ent.isDestroyed) return false;
 
@@ -160,7 +159,6 @@ export function defaultIsPrey(ent, self, opts = {}) {
  * @returns {number}
  */
 export function defaultPreyWeakness(ent, self, _opts = {}) {
-  _opts;
   return clamp01(0.6 + 0.4 * (1 - armorFraction(ent)));
 }
 
@@ -172,7 +170,7 @@ export function defaultPreyWeakness(ent, self, _opts = {}) {
  * @param {Object} [opts]
  * @returns {boolean}
  */
-export function defaultIsTrade(ent, self, opts = {}) {
+export function defaultIsTrade(ent, self, opts: any = {}) {
   if (self.role === "pirate") return false;
   if (!ent || ent.type !== "planet" || ent.isDestroyed) return false;
 
@@ -196,7 +194,7 @@ export function defaultIsTrade(ent, self, opts = {}) {
  * @param {Object} [opts]
  * @returns {number}
  */
-export function defaultTradeProfit(ent, self, opts = {}) {
+export function defaultTradeProfit(ent, self, opts: any = {}) {
   if (!ent || ent.type !== "planet" || !ent.market) return 0.6;
   const list = opts.entities || [];
   const otherPlanets = list.filter(
@@ -352,7 +350,7 @@ export function isTargetedBySecurity(ship, entities) {
  *   isTargetedBySecurity:boolean}}
  */
 export function buildPerception(ship, entities, options = {}) {
-  const opts = { ...DEFAULT_PERCEPTION_OPTIONS, ...options };
+  const opts: any = { ...DEFAULT_PERCEPTION_OPTIONS, ...options };
   // Attach entities list so classifiers can access other entities
   opts.entities = entities;
 

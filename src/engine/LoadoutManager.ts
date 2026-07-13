@@ -164,9 +164,9 @@ export function calculatePresetCost(
   sectorId = null,
 ) {
   const outfits = getPresetOutfits(preset);
-  let current = [...ship.outfits];
-  let target = [...outfits];
-  let toSell = [];
+  const current = [...ship.outfits];
+  const target = [...outfits];
+  const toSell = [];
 
   // Identify matching items to keep, leaving only non-matching to buy/sell
   for (const name of [...current]) {

@@ -6,6 +6,61 @@ import { makeEmptyCargo } from "./commodities.js";
  * Enhanced Ship class representing player and NPC ships with shields, armor, cargo, credits, weapons, and upgrade systems.
  */
 export class Ship extends SpaceEntity {
+  declare activeWeaponCooldown;
+  declare armor;
+  declare boostMultiplier;
+  declare bountyValue;
+  declare bountyVouchers;
+  declare brakePower;
+  declare cargo;
+  declare cargoCapacity;
+  declare combatRating;
+  declare combatValue;
+  declare controls;
+  declare credits;
+  declare decoyJammerActive;
+  declare energy;
+  declare energyRegen;
+  declare heat;
+  declare heatDissipation;
+  declare hullMass;
+  declare hyperFuel;
+  declare isChaffActive;
+  declare isDisabled;
+  declare isInterdicting;
+  declare isOverheated;
+  declare isSmuggler;
+  declare isVengeanceHunter;
+  declare kills;
+  declare maxArmor;
+  declare maxEnergy;
+  declare maxHeat;
+  declare maxHyperFuel;
+  declare maxOutfitMass;
+  declare maxShield;
+  declare maxSpeed;
+  declare miningYieldMultiplier;
+  declare navalMerits;
+  declare navalRank;
+  declare needsShieldCoordination;
+  declare outfitMass;
+  declare outfits;
+  declare passengerCapacity;
+  declare ramscoopRate;
+  declare shield;
+  declare shieldRegen;
+  declare shieldRegenDelay;
+  declare target;
+  declare thrustPower;
+  declare timeSinceLastHit;
+  declare turnRate;
+  declare weaponCooldown;
+  declare weaponDamage;
+  declare weaponEnergyCost;
+  declare weaponHeatCost;
+  declare weaponRange;
+  declare weaponShieldPierce;
+  declare weaponSpeed;
   /**
    * Creates a Ship entity.
    * @param {Object} config - Configuration: `thrustPower`, `brakePower`,
@@ -39,7 +94,7 @@ export class Ship extends SpaceEntity {
     bountyVouchers = [],
     maxOutfitMass = 3000,
     ...parentParams
-  } = {}) {
+  }: any = {}) {
     super({ type: "ship", mass: 2000, radius: 15, ...parentParams });
 
     this.name = name;
@@ -335,7 +390,7 @@ export class Ship extends SpaceEntity {
    * @returns {number} Sum of all cargo items.
    */
   getCargoWeight() {
-    return Object.values(this.cargo).reduce((a, b) => a + b, 0);
+    return Object.values(this.cargo).reduce((a: number, b: number) => a + b, 0);
   }
 
   /**

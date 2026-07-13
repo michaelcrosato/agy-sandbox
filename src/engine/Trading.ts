@@ -188,7 +188,7 @@ export function findBestTradeRoutes(planets, registry, playerId) {
       const pB = planets[j];
 
       for (const commodity of commodities) {
-        let baseBuyPrice = pA.market[commodity];
+        const baseBuyPrice = pA.market[commodity];
         let baseSellPrice = pB.market[commodity];
         if (baseBuyPrice === undefined || baseSellPrice === undefined) continue;
 

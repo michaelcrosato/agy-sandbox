@@ -156,6 +156,11 @@ export function dockingPermitted(standing, options = DEFAULT_OPTIONS) {
  * All state is plain data and can be round-tripped through `JSON`.
  */
 export class FactionRegistry {
+  declare factions;
+  declare options;
+  declare relations;
+  declare standings;
+  declare territoryControl;
   /**
    * @param {Object} [config] - `factions` (roster), `relations` (pairwise map),
    *   `options` (merged onto `DEFAULT_OPTIONS`), and `standings`
@@ -471,7 +476,7 @@ export class FactionRegistry {
    * @param {Object} [data={}]
    * @returns {FactionRegistry}
    */
-  static fromJSON(data = {}) {
+  static fromJSON(data: any = {}) {
     return new FactionRegistry({
       factions: data.factions,
       relations: data.relations,

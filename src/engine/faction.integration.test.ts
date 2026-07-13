@@ -1506,7 +1506,7 @@ describe("mission + trade faction standings (spec 032)", () => {
 
         // Run room decay
         room.decayReputations(); // default rate is 0.05%
-        let fedStanding = room.factionRegistry.getStanding(
+        const fedStanding = room.factionRegistry.getStanding(
           playerId,
           "Federation",
         );

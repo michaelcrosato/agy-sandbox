@@ -186,7 +186,7 @@ function findSurplusSource(
  * @param {Object} [options.tuning] - Overrides merged onto `DEFAULT_GENERATIVE_OPTIONS`.
  * @returns {Array<Object>} Generated missions; empty when no eligible shortages/targets exist.
  */
-export function generateMissionsFromWorld(world = {}, options = {}) {
+export function generateMissionsFromWorld(world: any = {}, options: any = {}) {
   const rng = options.rng;
   if (typeof rng !== "function") {
     throw new Error(
@@ -350,7 +350,7 @@ export function generateMissionsFromWorld(world = {}, options = {}) {
  * @param {Object} [world.factionRegistry] - `FactionRegistry`-shaped object exposing `adjustStanding`.
  * @returns {{marketChanges: Array<Object>, factionChanges: Array<Object>}}
  */
-export function applyMissionConsequences(mission, world = {}) {
+export function applyMissionConsequences(mission, world: any = {}) {
   const result = { marketChanges: [], factionChanges: [] };
   if (!mission || !mission.consequences) return result;
 

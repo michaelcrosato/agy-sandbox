@@ -4,6 +4,9 @@
  * using FNV-1a to detect coordinate jumps, drifts, and corruptions.
  */
 export class DeterminismSentry {
+  declare driftAlertsTotal;
+  declare lastEntitiesState;
+  declare lastFrameHash;
   constructor() {
     this.driftAlertsTotal = 0;
     this.lastFrameHash = null;

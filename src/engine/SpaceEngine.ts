@@ -11,6 +11,15 @@ import { DEFAULT_WEAPON_COSTS } from "./WeaponArchetypes.js";
  * Orchestrator class managing simulation state, entity updates, weapon fires, and circular elastic collisions.
  */
 export class SpaceEngine {
+  declare entities;
+  declare globalDrag;
+  declare onEntityDestroyed;
+  declare onProjectileFired;
+  declare restitution;
+  // Ramming-damage tuning constants assigned at module scope after the class.
+  declare static RAM_MIN_IMPACT_SPEED;
+  declare static RAM_DAMAGE_COEF;
+  declare static RAM_DAMAGE_COEF_MASS;
   /**
    * Creates a SpaceEngine.
    * @param {Object} config - Configuration parameters.
@@ -248,7 +257,7 @@ export class SpaceEngine {
    * @param {SpaceEntity} e2 - Second colliding entity.
    */
   resolveProjectileCollision(e1, e2) {
-    const proj = /** @type {*} */ (e1.type === "projectile" ? e1 : e2);
+    const proj = /** @type {*} */ e1.type === "projectile" ? e1 : e2;
     const target = e1.type === "projectile" ? e2 : e1;
 
     // Projectile can't hit its own launcher or other projectiles or static planets
@@ -262,7 +271,7 @@ export class SpaceEngine {
 
     // Apply damage to target
     if (target.type === "ship") {
-      const shipTarget = /** @type {Ship} */ (target);
+      const shipTarget = /** @type {Ship} */ target;
       shipTarget.takeDamage(proj.damage, proj.shieldPierce || 0);
       if (shipTarget.isDestroyed) {
         shipTarget.destroyedBy = proj.ownerId;
@@ -367,11 +376,11 @@ export class SpaceEngine {
   applyRamDamage(target, other, damage) {
     if (
       target.type !== "ship" ||
-      typeof (/** @type {*} */ (target).takeDamage) !== "function"
+      typeof (/** @type {*} */ target.takeDamage) !== "function"
     ) {
       return;
     }
-    const shipTarget = /** @type {Ship} */ (target);
+    const shipTarget = /** @type {Ship} */ target;
     shipTarget.takeDamage(damage);
     if (shipTarget.isDestroyed && !shipTarget.destroyedBy) {
       shipTarget.destroyedBy = other.id;

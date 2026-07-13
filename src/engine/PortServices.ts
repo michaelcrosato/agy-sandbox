@@ -111,7 +111,7 @@ export function applyRefuel(ship, options = {}) {
  */
 export function refineCost(
   quantity,
-  options = {},
+  options: any = {},
   registry = null,
   playerId = null,
   faction = null,
@@ -359,7 +359,10 @@ export function redeemFactionVouchers(
   // Calculate dynamic standing/reputation adjustments (1 point per 1000 CR value)
   let totalReputationGained = 0;
   if (factionRegistry && playerId) {
-    for (const [f, totalValue] of Object.entries(factionTotals)) {
+    for (const [f, totalValue] of Object.entries(factionTotals) as [
+      string,
+      any,
+    ][]) {
       const repDelta = Math.max(0.5, totalValue / 1000);
       factionRegistry.adjustStanding(playerId, f, repDelta);
       totalReputationGained += repDelta;

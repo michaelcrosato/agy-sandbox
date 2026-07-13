@@ -11,6 +11,28 @@ export default tseslint.config(
   {
     files: ["**/*.ts"],
     extends: [tseslint.configs.recommended],
+    // TypeScript-migration allowances (Phase 2). The migration converts the
+    // server-side sources from JS to TS to make them COMPILE as TypeScript
+    // under `strict: false` / `noImplicitAny: false`; complete typing is a
+    // documented follow-up, so implicit and explicit `any` are expected here.
+    // Align the two rules that otherwise fight this with the project's
+    // established JS conventions:
+    // - `no-explicit-any` off: `any` is the intended placeholder while the
+    //   type surface is filled in incrementally (matches `noImplicitAny:false`).
+    // - `no-unused-vars` mirrors the base JS rule below (warn, `_`-prefix ignore)
+    //   instead of the stricter recommended error, so behaviour is identical
+    //   across `.js` and `.ts`.
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+    },
   },
   // Shared language options + project rules for all files.
   {

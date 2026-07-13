@@ -56,6 +56,38 @@ export function getSectorFromPosition(pos) {
  * economies, and dynamic galactic factions.
  */
 export class GameInstance {
+  declare activeEconomicEvent;
+  declare activeSectorEvent;
+  declare ais;
+  declare baseMarkets;
+  declare chronicle;
+  declare clients: Map<string, any>;
+  declare conflictFactionA;
+  declare conflictFactionB;
+  declare cosmicStorms;
+  declare determinismSentry;
+  declare economyManager;
+  declare engine;
+  declare escortAmbushTimer;
+  declare factionRegistry;
+  declare factionWarCampaign;
+  declare fleets: Map<string, Set<any>>;
+  declare galaxyEventsManager;
+  declare galaxyHeartbeat;
+  declare hunterSpawnTimer;
+  declare id;
+  declare isConflictZone;
+  declare lastActiveTime;
+  declare lastEliteHunterSpawnTime;
+  declare maxPlayers;
+  declare mode;
+  declare name;
+  declare patrolSpawnTimer;
+  declare pendingTimers;
+  declare planets;
+  declare spaceScanAccumulator;
+  declare tags;
+  declare territoryControl;
   constructor(id, name) {
     this.id = id;
     this.name = name;
@@ -596,7 +628,9 @@ export class GameInstance {
   // Tracks every timer the instance schedules so they can be cancelled on
   // destroy() and never keep the process (or the Jest runner) alive on their own.
   scheduleTimer(fn, ms) {
-    const id = setTimeout(() => {
+    // `any`: with the build's DOM lib, setTimeout resolves to the browser
+    // overload (returns number); this is a Node timer handle with `.unref()`.
+    const id: any = setTimeout(() => {
       this.pendingTimers.delete(id);
       fn();
     }, ms);
@@ -786,7 +820,7 @@ export class GameInstance {
     return this.engine.entities
       .filter((ent) => ent.type !== "planet")
       .map((ent) => {
-        const base = {
+        const base: any = {
           id: ent.id,
           type: ent.type,
           x: Math.round(ent.position.x * 10) / 10,
@@ -1315,7 +1349,10 @@ export class GameInstance {
       } else {
         // Player/Merchant ship: eject its cargo hold contents as pods
         if (ent.cargo) {
-          for (const [resource, count] of Object.entries(ent.cargo)) {
+          for (const [resource, count] of Object.entries(ent.cargo) as [
+            string,
+            any,
+          ][]) {
             for (let i = 0; i < count; i++) {
               const angle = Math.random() * Math.PI * 2;
               const speed = 30 + Math.random() * 50;

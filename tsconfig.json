@@ -17,7 +17,7 @@
     "src/net/**/*.js",
     "src/physics/**/*.ts",
     "src/server/**/*.js",
-    "src/engine/**/*.js",
+    "src/engine/**/*.ts",
     "src/persistence/**/*.js"
   ],
   "exclude": ["node_modules", "**/*.test.js", "**/*.test.ts"]

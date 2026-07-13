@@ -139,6 +139,58 @@ describe("connectionHandlers", () => {
       expect(options.joinRoom).toHaveBeenCalled();
       expect(options.broadcastLobbySync).toHaveBeenCalled();
     });
+
+    test("create branch sanitizes malicious mode/tags before storing them (stored-XSS defense)", () => {
+      const before = new Set(options.instances.keys());
+      // A mode no existing room offers forces matchRoom() into the create branch.
+      handleConnectionAction(
+        clientObj,
+        {
+          type: "quick_join",
+          nickname: "Pilot",
+          mode: "<img src=x onerror=alert(1)>",
+          tags: ["<script>evil</script>", "   ", "ok"],
+        },
+        ws,
+        options,
+      );
+
+      const newKey = [...options.instances.keys()].find((k) => !before.has(k));
+      expect(newKey).toBeDefined();
+      const created = options.instances.get(newKey);
+
+      // HTML/injection characters are stripped from the stored metadata...
+      expect(created.mode).not.toMatch(/[<>&"'`/\\]/);
+      for (const tag of created.tags) {
+        expect(tag).not.toMatch(/[<>&"'`/\\]/);
+      }
+      // ...empty/whitespace-only tags are dropped...
+      expect(created.tags).not.toContain("");
+      expect(created.tags).toContain("ok");
+      expect(options.joinRoom).toHaveBeenCalled();
+    });
+
+    test("queues the client when a matching room exists but is full", () => {
+      // Make the only matching room report itself as full so matchRoom() queues.
+      options.instances.get("public").metadata.mockReturnValue({
+        id: "public",
+        name: "Public Sector",
+        players: 50,
+        maxPlayers: 50,
+        mode: "standard",
+        tags: [],
+      });
+
+      handleConnectionAction(
+        clientObj,
+        { type: "quick_join", nickname: "Pilot", mode: "standard" },
+        ws,
+        options,
+      );
+
+      expect(options.matchmakingQueue.enqueue).toHaveBeenCalled();
+      expect(options.joinRoom).not.toHaveBeenCalled();
+    });
   });
 
   describe("create_room message", () => {

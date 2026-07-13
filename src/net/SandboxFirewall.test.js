@@ -79,6 +79,21 @@ describe("SandboxFirewall", () => {
     expect(firewall.checkIp("8.8.8.8").allowed).toBe(true);
   });
 
+  test("blockedEvents is bounded so sustained blocks cannot grow memory unboundedly", () => {
+    const bounded = new SandboxFirewall({ maxBlockedEvents: 5 });
+    for (let i = 0; i < 50; i++) {
+      bounded.checkHost(`blocked-${i}.example`);
+    }
+    // Ring buffer retains only the most recent maxBlockedEvents entries...
+    expect(bounded.blockedEvents.length).toBe(5);
+    expect(bounded.blockedEvents[bounded.blockedEvents.length - 1].host).toBe(
+      "blocked-49.example",
+    );
+    expect(bounded.blockedEvents[0].host).toBe("blocked-45.example");
+    // ...while blockCount stays the lifetime total.
+    expect(bounded.blockCount).toBe(50);
+  });
+
   test("activateFirewall intercepts dns.lookup and net.connect", (done) => {
     activateFirewall(firewall);
 

@@ -112,7 +112,7 @@ try {
     fs.writeFileSync(
       tempImportScript,
       `try {
-  await import("../../src/server.js");
+  await import("../../dist/server.js");
   console.log("IMPORT_SUCCESS");
 } catch (err) {
   console.log("IMPORT_BLOCKED: " + err.message);

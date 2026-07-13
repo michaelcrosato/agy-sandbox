@@ -471,7 +471,7 @@ export async function startServer({
 
   // 4. Start HTTP/WS listening
   return new Promise((resolve, reject) => {
-    server.on("error", async (err) => {
+    server.on("error", async (err: any) => {
       if (err.code === "EADDRINUSE") {
         console.warn(
           `[SERVER BOOT] Port [${port}] is occupied. Initiating Port Conflict Self-Healer...`,

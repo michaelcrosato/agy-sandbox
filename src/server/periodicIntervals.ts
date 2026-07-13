@@ -41,7 +41,7 @@ export function startPeriodicIntervals({
   shardIndex,
   workers,
   heartbeatMs = DEFAULT_HEARTBEAT_MS,
-}) {
+}: any) {
   const handles: any = {};
 
   // 1. Anomaly detection monitor (1 second)
